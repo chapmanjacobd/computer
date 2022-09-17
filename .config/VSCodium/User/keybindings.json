@@ -1,0 +1,32 @@
+// Place your key bindings in this file to override the defaults
+[
+    {
+      "key": "ctrl+enter",
+      "command": "workbench.action.terminal.runSelectedText"
+    },
+    {
+      "key": "ctrl+e",
+      "command": "workbench.action.toggleSidebarVisibility"
+    },
+    {
+      "key": "ctrl+b",
+      "command": "editor.action.addSelectionToNextFindMatch"
+    },
+    {
+      "key": "ctrl+meta+w",
+      "command": "-workbench.action.toggleTabsVisibility"
+    },
+    {
+      "key": "ctrl+meta+w",
+      "command": "workbench.action.toggleEditorVisibility"
+    },
+  
+    {
+      "key": "alt+x",
+      "command": "redo"
+    },
+    {
+      "key": "ctrl+r",
+      "command": "workbench.action.files.save"
+    }
+  ]
