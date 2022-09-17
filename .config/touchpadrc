@@ -1,0 +1,6 @@
+[autodisable]
+KeyboardActivityTimeoutMs=0
+
+[parameters]
+AccelFactor=0.29752066115702475
+Tapping=true

@@ -1,0 +1,4 @@
+[$Version]
+update_info=disable_kmix.upd:PlasmaVolume_DisableKMixAutostart
+[Global]
+VolumePercentageStep=1

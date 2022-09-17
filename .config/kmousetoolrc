@@ -1,0 +1,14 @@
+[ProgramOptions]
+Version=1.12
+
+[UserOptions]
+AudibleClick=false
+DragTime=3
+DwellTime=5
+IsMinimized=false
+MouseToolIsRunning=false
+Movement=5
+SmartDrag=false
+strokesEnabled=false
+x=800
+y=0

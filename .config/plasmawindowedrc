@@ -1,0 +1,7 @@
+[Applets][3]
+immutability=1
+plugin=org.kde.plasma.calculator
+
+[Applets][3][Configuration]
+PreloadWeight=42
+geometry=1640,632,160,226

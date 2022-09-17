@@ -1,0 +1,30 @@
+# This file contains definitions for valid strokes for KMouseTool
+# To make sense of the numbers: 
+# The mouse path begins and ends when the mouse is paused.
+# Imagine a square enclosing the path.
+# Divide the square into 9 boxes, and number them like so:
+# 1 2 3
+# 4 5 6
+# 7 8 9
+# 
+# The mouse path can then be described by a sequence of numbers:
+# for example, "12321" describes the mouse moving from left to right and back.
+# This general scheme follows libstroke (http://www.etla.net/~willey/projects/libstroke/)
+# although it was reimplemented from scratch for KMouseTool.
+
+# For each stroke recognized, provide an integer describing an action
+# KMouseTool can take.  At the moment, valid actions are:
+# -1     Do not click
+#  1     Normal click (use Smart Drag if that's enabled)
+#  2     Right  click
+#  3     Double click
+
+#Stroke	Action
+1231	2
+12321	2
+131	2
+1321	2
+3123	3
+313	3
+32123	3
+3213	3

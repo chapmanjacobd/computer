@@ -1,0 +1,17 @@
+[Completion]
+List=
+Mode=5
+
+[General Options]
+Show Menubar=true
+Show Phrasebook Bar=true
+Show Statusbar=true
+Show speak button=true
+
+[Preferences]
+AutomaticSpeak=No
+
+[TTS System]
+Codec=Local
+StdIn=true
+useQtSpeech=true

@@ -1,0 +1,12 @@
+/syncthing/**
+/borg/
+/yarn/
+/Code/
+/SideQuest/
+/chromium/
+/VSCodium/
+/Slack/
+/VSCode/
+/kwinrc
+/gcloud/logs/
+/plasmaConfSaver/

@@ -1,0 +1,351 @@
+[Carbon Copy Settings]
+CC app/plugin commands=false
+CC command output=true
+CC console commands=true
+CC enabled=false
+CC script commands=false
+
+[Command Editor Windows]
+Argument completion=true
+Auto completion on cursor navigation=false
+Auto word completion=true
+Autosave enabled=true
+Autosave interval=5
+Autosave keep saves=false
+Calltips=true
+Completion enabled=true
+Completion min chars=2
+Completion option flags=8
+Completion timeout=250
+Cursor navigate completions=false
+Filename completion=true
+Max number of recent files=10
+Object completion=true
+Script file filter=*.R *.S *.q *.Rhistory
+
+[Console Settings]
+add piped commands to history=0
+command history defaults to context sensitive=false
+history=r
+max console lines=500
+max history length=100
+pipe user commands through console=true
+save history=true
+
+[Editor]
+large object warning limit=250000
+
+[FileDialogSize]
+eDP-1 Window-Maximized 1600x900=true
+
+[FileDialogUrls]
+workspaces=file:///home/xk/d/37 Code/Rprojects/
+
+[General]
+initial dir mode=0
+initial dir spec=
+last known data dir=/usr/share/rkward/
+show help on startup=true
+startup action=3
+
+[General Options]
+Geometry=1600,878
+
+[Graphics Device Windows]
+default_device=0
+default_device_custom=cairoDevice
+graphics_height=7
+graphics_hist_enable=true
+graphics_hist_max_length=20
+graphics_hist_max_plotsize=1024
+graphics_width=7
+kde printing=true
+replace_device=0
+
+[Internal]
+config file version=5
+previous runtime version=0.7.1
+
+[KFileDialog Settings]
+Recent Files[$e]=file:$HOME/d/37 Code/Rprojects/t.RData,file:$HOME/d/37 Code/Rprojects/t.RData.rkworkplace
+Recent URLs[$e]=file:$HOME/d/37 Code/Rprojects/,file:$HOME/d/37 Code/
+detailViewIconSize=16
+
+[KTextEditor Document]
+Allow End of Line Detection=true
+BOM=false
+Backup Local=true
+Backup Prefix=
+Backup Remote=true
+Backup Suffix=~
+Encoding=UTF-8
+End of Line=0
+Indent On Backspace=true
+Indent On Tab=true
+Indent On Text Paste=false
+Indentation Mode=r
+Indentation Width=4
+Keep Extra Spaces=false
+Line Length Limit=4096
+Newline at End of File=true
+On-The-Fly Spellcheck=false
+Overwrite Mode=false
+PageUp/PageDown Moves Cursor=false
+Remove Spaces=2
+ReplaceTabsDyn=true
+Show Spaces=0
+Show Tabs=true
+Smart Home=true
+Swap Directory=
+Swap File Mode=1
+Swap Sync Interval=15
+Tab Handling=2
+Tab Width=4
+Trailing Marker Size=1
+Word Wrap=true
+Word Wrap Column=100
+
+[KTextEditor Editor]
+Encoding Prober Type=1
+Fallback Encoding=ISO-8859-15
+
+[KTextEditor Renderer]
+Animate Bracket Matching=false
+Auto Color Theme Selection=false
+Color Theme=gruvbox Dark
+Font=Monospace,10,-1,5,50,0,0,0,0,0
+Schema=Normal
+Show Indentation Lines=false
+Show Whole Bracket Expression=false
+Word Wrap Marker=false
+
+[KTextEditor View]
+Allow Mark Menu=true
+Auto Brackets=true
+Auto Center Lines=0
+Auto Completion=true
+Backspace Remove Composed Characters=false
+Bookmark Menu Sorting=0
+Bracket Match Preview=false
+Chars To Enclose Selection=
+Default Mark Type=1
+Dynamic Word Wrap=true
+Dynamic Word Wrap Align Indent=80
+Dynamic Word Wrap At Static Marker=false
+Dynamic Word Wrap Indicators=1
+Dynamic Wrap not at word boundaries=false
+Fold First Line=false
+Folding Bar=true
+Folding Preview=true
+Icon Bar=false
+Input Mode=1
+Keyword Completion=true
+Line Modification=false
+Line Numbers=false
+Maximum Search History Size=100
+Mouse Paste At Cursor Position=false
+Persistent Selection=false
+Scroll Bar Marks=false
+Scroll Bar Mini Map All=false
+Scroll Bar Mini Map Width=60
+Scroll Bar MiniMap=true
+Scroll Bar Preview=true
+Scroll Past End=true
+Search/Replace Flags=140
+Show Line Count=false
+Show Lines Count=false
+Show Scrollbars=0
+Show Word Count=false
+Smart Copy Cut=true
+Text Drag And Drop=true
+User Sets Of Chars To Enclose Selection=
+Vi Input Mode Steal Keys=false
+Vi Relative Line Numbers=false
+Word Completion=true
+Word Completion Minimal Word Length=3
+Word Completion Remove Tail=true
+
+[Logfiles]
+logfile dir=/home/xk/.rkward/
+
+[MDI]
+focus policy=0
+
+[Object Browser]
+package blacklist=GO
+
+[Object Browser][Tool window]
+show class field=true
+show hidden vars=false
+show label field=true
+show type field=true
+
+[Object Browser][Varselector]
+show class field=true
+show hidden vars=false
+show label field=true
+show type field=true
+
+[Output Window]
+auto_raise=true
+auto_show=true
+custom css file=
+graphics_height=480
+graphics_jpg_quality=75
+graphics_type=NULL
+graphics_width=480
+
+[Plugin Settings]
+All known plugin maps=/usr/share/rkward/analysis.pluginmap,/usr/share/rkward/data.pluginmap,/usr/share/rkward/distributions.pluginmap,/usr/share/rkward/embedded.pluginmap,/usr/share/rkward/import_export.pluginmap,/usr/share/rkward/irt.pluginmap,/usr/share/rkward/menu.pluginmap,/usr/share/rkward/plots.pluginmap,/usr/share/rkward/under_development.pluginmap,/usr/share/rkward/x11device.pluginmap
+Code display default=false
+Code display size=250
+Interface Preferences=1
+Other preview size=250
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/analysis.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::analysis
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/data.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::data
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/distributions.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::distributions
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/embedded.pluginmap]
+Active=false
+Broken=false
+Quirky=false
+id=rkward::embedded
+priority=0
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/import_export.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::import_export
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/irt.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::irt
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/menu.pluginmap]
+Active=false
+Broken=false
+Quirky=false
+id=rkward::menu
+priority=0
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/plots.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::plots
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/under_development.pluginmap]
+Active=false
+Broken=false
+Quirky=false
+id=rkward::under_development
+priority=1
+timestamp=2020,1,20,6,52,27
+
+[Plugin Settings][Known Plugin maps][/usr/share/rkward/x11device.pluginmap]
+Active=true
+Broken=false
+Quirky=false
+id=rkward::x11device
+priority=2
+timestamp=2020,1,20,6,52,27
+
+[R Settings]
+CRAN mirror url=@CRAN@
+LibraryLocations=
+OutDec=.
+Repositories=http://files.kde.org/rkward/R/
+addsyspaths=
+archive packages=false
+check.bounds=false
+digits=7
+editor=<rkward>
+expressions=5000
+further init commands=
+keep.source=true
+keep.source.pkgs=false
+max.print=99999
+pager=<rkward>
+source_packages=true
+warn=0
+warnings.length=1000
+width=80
+
+[RInterface Watch Settings]
+app command filter=5
+max log lines=1000
+plugin command filter=5
+sync command filter=4
+user command filter=15
+
+[Recent Command Files]
+File1[$e]=$HOME/d/37 Code/Rprojects/test.R
+File2[$e]=$HOME/d/37 Code/Rprojects/smaller.R
+Name1[$e]=test.R
+Name2[$e]=smaller.R
+
+[Recent Files]
+File1[$e]=$HOME/d/37 Code/Rprojects/t.RData.rkworkplace
+File2[$e]=$HOME/d/37 Code/Rprojects/t.RData
+Name1[$e]=t.RData.rkworkplace
+Name2[$e]=t.RData
+
+[ToolwindowBars]
+view_size_0=200
+view_size_1=468
+view_size_2=200
+view_size_3=353
+
+[Workplace]
+cd to workspace on load=true
+save mode=0
+
+[file browser window]
+Allow Expansion=false
+Decoration position=2
+Show Inline Previews=true
+Show hidden files=false
+Sort by=Name
+Sort directories first=true
+Sort reversed=false
+View Style=Tree
+
+[main window options]
+RestorePositionForNextInstance=false
+State=AAAA/wAAAAD9AAAAAAAABkAAAAL5AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAWAG0AYQBpAG4AVABvAG8AbABCAGEAcgEAAAAA/////wAAAAAAAAAA
+ToolBarsMovable=Disabled
+eDP-1 Window-Maximized 1600x900=true
+eDP-1 XPosition=0
+eDP-1 YPosition=0

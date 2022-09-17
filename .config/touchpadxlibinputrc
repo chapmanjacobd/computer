@@ -1,0 +1,18 @@
+[ETPS/2 Elantech Touchpad]
+middleEmulation=false
+pointerAcceleration=0.4
+tapToClick=true
+
+[MSFT0001:00 06CB:CE2D Touchpad]
+pointerAcceleration=0.4
+tapToClick=true
+
+[SynPS/2 Synaptics TouchPad]
+tapToClick=true
+
+[UNIW0001:00 093A:0255 Touchpad]
+clickMethodAreas=false
+clickMethodClickfinger=true
+disableWhileTyping=false
+pointerAcceleration=0.6
+tapToClick=true

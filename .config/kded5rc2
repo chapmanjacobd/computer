@@ -1,0 +1,8 @@
+[Module-bluedevil]
+autoload=false
+
+[Module-browserintegrationreminder]
+autoload=false
+
+[PlasmaBrowserIntegration]
+shownCount=100
