@@ -1,0 +1,1 @@
+/home/xk/github/xk/curati/

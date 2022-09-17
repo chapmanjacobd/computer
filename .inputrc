@@ -1,0 +1,51 @@
+set menu-complete-display-prefix On
+set show-all-if-unmodified On
+set show-mode-in-prompt on
+set echo-control-characters off
+
+set completion-prefix-display-length 2
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+"\eOA": history-search-backward
+"\eOB": history-search-forward
+"\C-h": backward-kill-word
+"\C-w": backward-kill-word
+
+# Completion tweaks
+set completion-ignore-case on
+set completion-map-case on
+set show-all-if-ambiguous on
+set mark-symlinked-directories on
+
+set skip-completed-text on
+set colored-stats on
+
+# Allow UTF-8 input and output
+set input-meta on
+set output-meta on
+set convert-meta off
+
+# Use the text that has already been typed as the prefix for searching through
+# commands (i.e. more intelligent Up/Down behavior)
+"\e[B": history-search-forward
+"\e[A": history-search-backward
+
+# Do not autocomplete hidden files unless the pattern explicitly begins with a dot
+set match-hidden-files off
+
+# Show all autocomplete results at once
+set page-completions off
+
+# If there are more than 200 possible completions for a word, ask to show them all
+set completion-query-items 200
+
+# Show extra file information when completing, like `ls -F` does
+set visible-stats on
+
+
+# Use Alt/Meta + Delete to delete the preceding word
+"\e[3;3~": kill-word
+
+## enable Alt-arrows
+"\e[1;5D": backward-word ### Alt left
+"\e[1;5C": forward-word ### Alt right

@@ -1,0 +1,5 @@
+# XONSH WEBCONFIG START
+$PROMPT = '{YELLOW}{env_name} {BOLD_GREEN}{cwd} {gitstatus}{RESET} {prompt_end} '
+$XONSH_COLOR_STYLE = 'vs'
+xontrib load abbrevs argcomplete autojump avox coreutils fzf-widgets histcpy kitty mpl onepath output_search pdb pipeliner prompt_ret_code schedule vox whole_word_jumping xpg z
+# XONSH WEBCONFIG END

@@ -1,0 +1,6 @@
+.headers on
+.mode box
+.timer on
+.progress 500000
+.eqp on
+.changes on
