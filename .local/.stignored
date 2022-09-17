@@ -1,0 +1,14 @@
+/state/
+/lib/
+/include/
+/share/Trash/
+/share/virtualenv/
+/share/virtualenvs/
+/share/containers/
+/share/icons/
+/share/DBeaverData/drivers/
+/share/kactivitymanagerd/
+/share/Steam
+/share/lutris
+/var/pmbootstrap
+/bin/
