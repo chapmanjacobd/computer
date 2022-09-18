@@ -98,6 +98,7 @@
 /.config/gtk-2.0/
 /.config/gtk-3.0/
 /.config/gtk-4.0/
+.config/gtkrc
 /.config/guake/
 /.config/gwenviewrc
 /.config/Hardcoded Software/
@@ -138,6 +139,8 @@
 /.config/kmagrc
 /.config/kmenueditrc
 /.config/kmozillahelperrc
+.config/konsolerc
+.config/konsolesshconfig
 /.config/krusaderrc
 /.config/kscreenlockerrc
 /.config/ktimezonedrc
@@ -263,6 +266,7 @@
 /.config/tenacity/
 /.config/Thunar/
 /.config/Trolltech/
+.config/Trolltech.conf
 /.config/TUDelft/
 /.config/tuxedo-control-center/
 /.config/tuxedofancontrol/
