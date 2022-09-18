@@ -164,7 +164,7 @@
 /.config/Microsoft/
 /.config/Microsoft Teams - Preview/
 /.config/.mono/
-/.config/mpv/
+.config/mpv/history.log
 /.config/mpv/watch_later/
 /.config/MusicBrainz/
 /.config/nautilus/
