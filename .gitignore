@@ -261,7 +261,6 @@
 /.config/sxkhd/
 /.config/synapse/
 /.config/syncthing/
-/.config/systemd/
 /.config/TabNine/
 /.config/tenacity/
 /.config/Thunar/

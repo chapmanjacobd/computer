@@ -1,0 +1,10 @@
+[Unit]
+Description=/usr/bin/fish -c dl_monthly
+
+[Timer]
+Persistent=yes
+OnCalendar=monthly
+RandomizedDelaySec=90m
+
+[Install]
+WantedBy=timers.target

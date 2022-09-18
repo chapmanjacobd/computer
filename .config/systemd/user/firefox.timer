@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/firefox
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 9:30
+
+[Install]
+WantedBy=timers.target

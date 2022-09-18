@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/fish -c opentabs /home/xk/mc/_yt_edu
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 17:05
+
+[Install]
+WantedBy=timers.target

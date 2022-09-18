@@ -1,0 +1,10 @@
+[Unit]
+Description=/usr/bin/fish -c dl_weekly
+
+[Timer]
+Persistent=yes
+OnCalendar=weekly
+RandomizedDelaySec=1h 30min
+
+[Install]
+WantedBy=timers.target

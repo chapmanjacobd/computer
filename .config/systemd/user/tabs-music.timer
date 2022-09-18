@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/fish -c opentabs /home/xk/mc/_music
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 17:15
+
+[Install]
+WantedBy=timers.target

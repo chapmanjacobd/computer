@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/fish -c lb tabs /home/xk/lb/tabs.db
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 9:58
+
+[Install]
+WantedBy=timers.target
