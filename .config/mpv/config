@@ -35,3 +35,4 @@ demuxer-readahead-secs=180
 af="scaletempo2,lavfi=[pan=1c|c0=0.5*c0+0.5*c1],volume=replaygain-track"
 sub-fix-timing=yes
 replaygain=track
+demuxer-mkv-subtitle-preroll=yes
