@@ -57,6 +57,7 @@
 /.config/dolphin-emu/
 /.config/earthengine/
 /.config/Electron/
+.config/emaildefaults
 /.config/enchant/
 /.config/environment.d/
 /.config/Epic/
@@ -178,6 +179,7 @@
 /.config/obsidian/
 /.config/obs-studio/
 /.config/offlinebay/
+.config/okularrc
 /.config/omf/
 /.config/oomox/
 /.config/openbox/
@@ -391,4 +393,3 @@
 /.xsession-errors
 /.y2control/
 /.zoom/
-.config/okularrc
