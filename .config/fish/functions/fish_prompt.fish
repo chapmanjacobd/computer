@@ -1,4 +1,3 @@
-# Defined in /home/xk/.config/fish/functions/fish_prompt.fish @ line 2
 function fish_prompt --description 'Write out the prompt'
     set -l last_status $status
     set -l last_pipestatus $pipestatus
@@ -118,7 +117,7 @@ function fish_prompt --description 'Write out the prompt'
 
     function prompt_git_pwd
         set -q argv[1]
-        or set argv $PWD
+        or set argv (pwd -P)
 
         set -l reporoot (git rev-parse --show-toplevel 2>/dev/null)
         string replace // / (string replace -r '^'"$reporoot"'($|/)' (basename "$reporoot")':$1/' $argv)
