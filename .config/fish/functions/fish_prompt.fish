@@ -116,12 +116,26 @@ function fish_prompt --description 'Write out the prompt'
             set suffix (echo "🃁🃂🃍🃎🍞🌎🌍🌏🌌🌭🌮🌯🌝🌞🌟🌠🐘🐄🎅🧋🌸🌺🧁🦋🍭🍓🌾🌻☕✨🐑🍓🍯🍂🥧🍰🍪🍙🥐🥨🥞🍮🍋🍉🐻🐈🍊🧇❤️" | fold -w1 | shuf -n1)
     end
 
+    function prompt_git_pwd
+        set -q argv[1]
+        or set argv $PWD
+
+        set -l reporoot (git rev-parse --show-toplevel 2>/dev/null)
+        string replace // / (string replace -r '^'"$reporoot"'($|/)' (basename "$reporoot")':$1/' $argv)
+    end
+
+    set vcs_prompt (__fish_vcs_prompt)
+
     # PWD
     set_color $color_cwd
-    echo -n (prompt_pwd)
+    if test -n "$vcs_prompt"
+        echo -n (prompt_git_pwd)
+    else
+        echo -n (prompt_pwd)
+    end
     set_color normal
 
-    printf '%s ' (__fish_vcs_prompt)
+    printf '%s ' $vcs_prompt
 
     __fish_print_pipestatus $last_pipestatus
 
