@@ -1,4 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function ext
-awk -F'.' '{print $NF}'
+    awk -F'.' '{print $NF}' $argv
 end
