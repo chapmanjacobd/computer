@@ -1,0 +1,4 @@
+# Defined interactively
+function asc
+    sort | uniq -c | sort -g
+end
