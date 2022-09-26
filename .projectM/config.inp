@@ -1,22 +1,22 @@
 Aspect Correction = 1
-Easter Egg Parameter = 10
+Easter Egg Parameter = 2
 FPS = 40
 Fullscreen = false
-Hard Cut Sensitivity = 1
+Hard Cut Sensitivity = 1.5
 Menu Font = VeraMono.ttf
 Mesh X = 200
-Mesh Y = 20
-Preset Duration = 40
+Mesh Y = 30
+Preset Duration = 30
 Preset Path = /usr/share/projectM/presets
-Shuffle Enabled = 1
+Shuffle Enabled = 0
 Smooth Preset Duration = 25
 Smooth Transition Duration = 5
 Soft Cut Ratings Enabled = 1
-Texture Size = 512
+Texture Size = 2048
 Title Font = Vera.ttf
-Window Height = 10
+Window Height = 20
 Window Width = 100
-00
+
 
 ght
 
