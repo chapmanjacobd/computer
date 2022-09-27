@@ -108,7 +108,7 @@ function handle_tick(_, time_pos)
 	-- time_pos might be nil after the file changes
 	if time_pos == nil then return end
 
-	if not sped_up and time_pos > last_sub_end + cfg.lead_in then
+	if last_sub_end and not sped_up and time_pos > last_sub_end + cfg.lead_in then
 		if seek_skip then start_seek_skip()
 		else
 			initial_speed = mp.get_property_number("speed")
