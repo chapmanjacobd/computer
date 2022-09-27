@@ -1,15 +1,17 @@
+/.projectM/presets
+.projectM/playlist
+/bin/
+/net.downloadhelper.coapp*
 /.android/
 /.android-sdk/
 /.audacity-data/
 /.aws/
 /.bash_history
 /.bash_logout
-/bin/
 /.boto
 /.cache/
 /.cargo/
 /.cheat.sh/
-/.cht.sh/
 /.config/abrt/
 /.config/akonadi/
 /.config/alvr/
@@ -352,7 +354,6 @@
 /.mnt/
 /.mozilla/
 /.murex_modules/
-/net.downloadhelper.coapp*
 /.nicotine/
 /.npm/
 /.nx/
@@ -392,6 +393,3 @@
 /.xsel.log
 /.xsession-errors
 /.y2control/
-/.zoom/
-/.projectM/presets
-.projectM/playlist
