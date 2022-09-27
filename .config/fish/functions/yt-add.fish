@@ -19,7 +19,8 @@ function yt-add
     end
 
     echo $url >>$curatifile
-    yt-dlp --cookies-from-browser firefox --flat-playlist --print "%(url)s" $ytopts $url | tee -a ~/.jobs/todo/$folder
+    ~/lb/
+    library dladd --category $folder $url
 end
 complete -f -k -c yt-add -a "(__fish_complete_directories ~/d/ DFOLDER | sed 's|/home/xk/d/\(.*\)/|\1|' )"
 complete -f -k -c yt-add -a "(fd . ~/mc/ -E '*reddit*' -etxt -x cat)"
