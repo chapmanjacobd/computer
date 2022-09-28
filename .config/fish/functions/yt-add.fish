@@ -20,7 +20,7 @@ function yt-add
 
     echo $url >>$curatifile
     ~/lb/
-    library dladd --category $folder $url
+    lb-dev dladd --category $folder $url
 end
 complete -f -k -c yt-add -a "(__fish_complete_directories ~/d/ DFOLDER | sed 's|/home/xk/d/\(.*\)/|\1|' )"
 complete -f -k -c yt-add -a "(fd . ~/mc/ -E '*reddit*' -etxt -x cat)"
