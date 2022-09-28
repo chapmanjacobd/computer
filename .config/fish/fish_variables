@@ -1,0 +1,106 @@
+# This file contains fish universal variable definitions.
+# VERSION: 3.0
+SETUVAR --export ANDROID_HOME:/home/xk/\x2eandroid\x2dsdk/Sdk/
+SETUVAR --export ANDROID_SDK_ROOT:/home/xk/bin/Android/Sdk/
+SETUVAR --export CARGO_NET_GIT_FETCH_WITH_CLI:true
+SETUVAR --export CLOUDSDK_PYTHON:python3\x2e9
+SETUVAR --export DISPLAY:0
+SETUVAR --export EDITOR:nano
+SETUVAR FZF_DEFAULT_OPTS:\x2d\x2dheight\x2040\x25
+SETUVAR FZF_DISABLE_KEYBINDINGS:0
+SETUVAR FZF_LEGACY_KEYBINDINGS:1
+SETUVAR FZF_PREVIEW_DIR_CMD:ls
+SETUVAR FZF_PREVIEW_FILE_CMD:head\x20\x2dn\x2010
+SETUVAR FZF_TMUX_HEIGHT:40\x25
+SETUVAR --export HOST_IP:172\x2e25\x2e48\x2e1
+SETUVAR --export LD_PRELOAD:/home/xk/bin/libstderred\x2eso
+SETUVAR --export OPENSSL_CONF:/etc/ssl
+SETUVAR --export PIPENV_VERBOSITY:\x2d1
+SETUVAR --export PYTHONBREAKPOINT:ipdb\x2eset_trace
+SETUVAR ZO_CMD:zo
+SETUVAR Z_CMD:z
+SETUVAR Z_DATA:/home/xk/\x2elocal/share/z/data
+SETUVAR Z_DATA_DIR:/home/xk/\x2elocal/share/z
+SETUVAR Z_EXCLUDE:\x5e/home/xk\x24
+SETUVAR --export __fish_git_prompt_showuntrackedfiles:1
+SETUVAR __fish_initialized:3400
+SETUVAR _fish_abbr__3F_:\x7e/
+SETUVAR _fish_abbr_asciiterm:termtosvg\x20\x2d\x2dscreen\x2dgeometry\x3d100x10\x20\x2d\x2dmin\x2dframe\x2dduration\x3d200\x20\x2d\x2dmax\x2dframe\x2dduration\x3d5000\x20\x2d\x2dtemplate\x3dsolarized_light
+SETUVAR _fish_abbr_bead:bat\x20\x2dr\x200\x3a10
+SETUVAR _fish_abbr_bsubvdel:sudo\x20btrfs\x20subvolume\x20delete\x20\x2d\x2dcommit\x2deach
+SETUVAR _fish_abbr_busage:sudo\x20btrfs\x20fi\x20usage
+SETUVAR _fish_abbr_clip:xclip\x20\x2dsel\x20clip
+SETUVAR _fish_abbr_dd:dd\x20status\x3dprogress\x20if\x3d\x20of\x3d
+SETUVAR _fish_abbr_df:df\x20\x2dh\x20\x26\x26\x20sudo\x20btrfs\x20filesystem\x20show
+SETUVAR _fish_abbr_fdh:fd\x20\x2d\x2dhidden\x20\x2d\x2dexclude\x20\x27\x2egit\x27
+SETUVAR _fish_abbr_fdwatch:fd\x20\x2dx\x20fish\x20\x2dc\x20\x22mpvonce\x20\x7b\x7d\x22
+SETUVAR _fish_abbr_fi:sudo\x20btrfs\x20fi\x20usage
+SETUVAR _fish_abbr_grep:grep\x20\x2di
+SETUVAR _fish_abbr_gs:git\x20status
+SETUVAR _fish_abbr_milky:projectM\x2djack
+SETUVAR _fish_abbr_mvl:mvl\x20\x2ds\x22\x22
+SETUVAR _fish_abbr_ncdu:NO_COLOR\x3d1\x20gdu
+SETUVAR _fish_abbr_nicotine:flatpak\x20run\x20org\x2enicotine_plus\x2eNicotine
+SETUVAR _fish_abbr_p:pipenv\x20shell
+SETUVAR _fish_abbr_preview:fzf\x20\x2d\x2dpreview\x20\x27bat\x20\x2d\x2dcolor\x20\x22always\x22\x20\x7b\x7d\x27
+SETUVAR _fish_abbr_q:exit
+SETUVAR _fish_abbr_rm:trash\x2dput
+SETUVAR _fish_abbr_rmove:rsync\x20\x2da\x20\x2d\x2dinfo\x3dprogress2\x20\x2d\x2dno\x2dinc\x2drecursive\x20\x2d\x2dremove\x2dsource\x2dfiles\x20\x2d\x2dbackup\x2ddir\x20\x28date\x20\x22\x2b\x25d\x2e\x25m\x2e\x25Y\x22\x29
+SETUVAR _fish_abbr_rsync:rsync\x20\x2dauh\x20\x2d\x2dinfo\x3dprogress2\x20\x2d\x2dno\x2dinc\x2drecursive
+SETUVAR _fish_abbr_sde:sudo\x20dnf\x20erase
+SETUVAR _fish_abbr_sdi:sudo\x20dnf\x20install
+SETUVAR _fish_abbr_sdu:sudo\x20dnf\x20update
+SETUVAR _fish_abbr_sed:sed\x20\x27s\x7c\x7c\x7c\x27
+SETUVAR _fish_abbr_sort:sort\x20\x2d\x2dunique\x20\x2d\x2dignore\x2dcase
+SETUVAR _fish_abbr_sys:systemctl
+SETUVAR _fish_abbr_sze:sudo\x20zypper\x20rm
+SETUVAR _fish_abbr_szi:sudo\x20zypper\x20install\x20\x2d\x2dno\x2drecommends
+SETUVAR _fish_abbr_szs:sudo\x20zypper\x20search\x20\x2ds
+SETUVAR _fish_abbr_szu:sudo\x20zypper\x20dup
+SETUVAR _fish_abbr_tee:tee\x20\x2da
+SETUVAR _fish_abbr_tmux:tmux\x20new\x2dsession\x20\x2dA\x20\x2ds\x20phone
+SETUVAR _fish_abbr_wipa:git\x20add\x20\x2e
+SETUVAR _fish_abbr_wts:wt\x20\x2dp\x20\x2du\x20duration\x20\x2ds
+SETUVAR _fish_abbr_xpaste:xclip\x20\x2dselection\x20clipboard\x20\x2do
+SETUVAR _fish_abbr_yt_2E_ogg:yta
+SETUVAR _fish_abbr_ytaadd:lb\x2ddev\x20dladd\x20\x2d\x2daudio\x20\x2dc\x2081_New_Music
+SETUVAR _fish_abbr_ytadd:lb\x2ddev\x20dladd\x20\x2d\x2dvideo\x20\x2dc\x2071_Mealtime_Videos
+SETUVAR _fish_abbr_zip:zip\x20\x2dqr
+SETUVAR _fish_abbr_zypperhist:\x22cut\x20\x2dd\x20\x22\x7c\x22\x20\x2df\x201\x2d4\x20\x2ds\x20\x2d\x2doutput\x2ddelimiter\x20\x22\x20\x7c\x20\x22\x20/var/log/zypp/history\x20\x7c\x20grep\x20\x2dv\x20\x22\x20radd\x20\x22
+SETUVAR _fisher_chapmanjacobd_2F_fish_2D_pipenv_files:/home/xk/\x2econfig/fish/conf\x2ed/pipenv\x2efish
+SETUVAR _fisher_edc_2F_bass_files:/home/xk/\x2econfig/fish/functions/__bass\x2epy\x1e/home/xk/\x2econfig/fish/functions/bass\x2efish
+SETUVAR _fisher_fisherman_2F_z_files:/home/xk/\x2econfig/fish/functions/__z\x2efish\x1e/home/xk/\x2econfig/fish/functions/__z_add\x2efish\x1e/home/xk/\x2econfig/fish/functions/__z_clean\x2efish\x1e/home/xk/\x2econfig/fish/functions/__z_complete\x2efish\x1e/home/xk/\x2econfig/fish/conf\x2ed/z\x2efish
+SETUVAR _fisher_jorgebucaran_2F_fisher_files:/home/xk/\x2econfig/fish/functions/fisher\x2efish\x1e/home/xk/\x2econfig/fish/completions/fisher\x2efish
+SETUVAR _fisher_patrickF1_2F_fzf_2E_fish_files:/home/xk/\x2econfig/fish/functions/_fzf_configure_bindings_help\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_extract_var_info\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_preview_changed_file\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_preview_file\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_report_file_type\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_directory\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_git_log\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_git_status\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_history\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_processes\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_search_variables\x2efish\x1e/home/xk/\x2econfig/fish/functions/_fzf_wrapper\x2efish\x1e/home/xk/\x2econfig/fish/functions/fzf_configure_bindings\x2efish\x1e/home/xk/\x2econfig/fish/conf\x2ed/fzf\x2efish\x1e/home/xk/\x2econfig/fish/completions/fzf_configure_bindings\x2efish
+SETUVAR _fisher_plugins:jorgebucaran/fisher\x1eedc/bass\x1efisherman/z\x1epatrickF1/fzf\x2efish\x1echapmanjacobd/fish\x2dpipenv
+SETUVAR fish_color_autosuggestion:555\x1ebrblack
+SETUVAR fish_color_cancel:\x2dr
+SETUVAR fish_color_command:005fd7
+SETUVAR fish_color_comment:990000
+SETUVAR fish_color_cwd:green
+SETUVAR fish_color_cwd_root:red
+SETUVAR fish_color_end:009900
+SETUVAR fish_color_error:ff0000
+SETUVAR fish_color_escape:00a6b2
+SETUVAR fish_color_history_current:\x2d\x2dbold
+SETUVAR fish_color_host:normal
+SETUVAR fish_color_host_remote:yellow
+SETUVAR fish_color_match:\x2d\x2dbackground\x3dbrblue
+SETUVAR fish_color_normal:normal
+SETUVAR fish_color_operator:00a6b2
+SETUVAR fish_color_param:00afff
+SETUVAR fish_color_quote:999900
+SETUVAR fish_color_redirection:00afff
+SETUVAR fish_color_search_match:bryellow\x1e\x2d\x2dbackground\x3dbrblack
+SETUVAR fish_color_selection:white\x1e\x2d\x2dbold\x1e\x2d\x2dbackground\x3dbrblack
+SETUVAR fish_color_status:red
+SETUVAR fish_color_user:brgreen
+SETUVAR fish_color_valid_path:\x2d\x2dunderline
+SETUVAR fish_features:stderr\x2dnocaret\x1eqmark\x2dnoglob\x1eregex\x2deasyesc\x1eampersand\x2dnobg\x2din\x2dtoken
+SETUVAR fish_key_bindings:fish_default_key_bindings
+SETUVAR fish_pager_color_completion:normal
+SETUVAR fish_pager_color_description:B3A06D\x1eyellow
+SETUVAR fish_pager_color_prefix:normal\x1e\x2d\x2dbold\x1e\x2d\x2dunderline
+SETUVAR fish_pager_color_progress:brwhite\x1e\x2d\x2dbackground\x3dcyan
+SETUVAR fish_pager_color_selected_background:\x2dr
+SETUVAR fish_user_paths:/home/xk/\x2epulumi/bin\x1e/home/xk/\x2ecargo/bin\x1e/usr/local/bin\x1e/usr/bin\x1e/home/xk/\x2elocal/bin\x1e/home/xk/bin\x1e/bin
