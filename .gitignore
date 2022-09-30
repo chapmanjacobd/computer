@@ -1,7 +1,8 @@
 /.projectM/presets
-.projectM/playlist
+/.projectM/playlist
 /bin/
 /net.downloadhelper.coapp*
+/.Xauthority
 /.android/
 /.android-sdk/
 /.audacity-data/
@@ -389,4 +390,3 @@
 /.w3m/
 /.wget-hsts
 /.wine/
-/.Xauthority
