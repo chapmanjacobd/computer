@@ -1,6 +1,8 @@
 /.projectM/presets
 /.projectM/playlist
 /.vscode-R/
+/.vscode-oss/
+/.vscode/
 /.wget-hsts
 /net.downloadhelper.coapp*
 /.Xauthority
@@ -388,4 +390,3 @@
 /.viminfo
 /.vnc/
 /.vscode/
-/.vscode-oss/
