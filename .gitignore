@@ -317,6 +317,7 @@
 /.debug/
 /discovery*
 /Discovery*
+/opencellid
 /.docker/
 /.eclipse/
 /.electron/
@@ -388,4 +389,3 @@
 /.units_history
 /.var/
 /.viminfo
-/.vnc/
