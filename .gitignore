@@ -1,3 +1,4 @@
+/.var/
 /.viminfo
 /.projectM/presets
 /.projectM/playlist
@@ -388,4 +389,3 @@
 /.tixati/
 /.tmp/
 /.units_history
-/.var/
