@@ -1,3 +1,4 @@
+/.tmp/
 /.units_history
 /.var/
 /.viminfo
@@ -388,4 +389,3 @@
 /.swt/
 /.themes/
 /.tixati/
-/.tmp/
