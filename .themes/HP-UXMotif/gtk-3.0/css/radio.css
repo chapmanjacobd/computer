@@ -1,0 +1,40 @@
+/*********
+ * Radio *
+ *********/
+
+GtkRadioButton {
+		-GtkCheckButton-indicator-size: 13;
+    -GtkCheckMenuItem-indicator-size: 13;
+    engine: unico;
+    border-style: none;
+}
+
+.radio,
+.radio row:selected,
+.radio row:selected:focused {
+    background-image: url("data/radio.png");
+}
+
+.radio:insensitive,
+.radio row:selected:insensitive,
+.radio row:selected:focused:insensitive {
+    background-image: url("data/radio.png");
+}
+
+.radio:active,
+.radio row:selected:active,
+.radio row:selected:focused:active {
+    background-image: url("data/radio-active.png");
+}
+
+.radio:active:insensitive,
+.radio row:selected:active:insensitive,
+.radio row:selected:focused:active:insensitive {
+    background-image: url("data/radio-active.png");
+}
+
+.radio:inconsistent,
+.radio row:selected:inconsistent,
+.radio row:selected:focused:inconsistent {
+    background-image: url("data/radio-active.png");
+}

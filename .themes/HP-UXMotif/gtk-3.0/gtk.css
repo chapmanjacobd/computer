@@ -1,0 +1,31 @@
+/* Default color scheme */
+@define-color fg_color #000;
+@define-color bg_color #C5B2A8;
+@define-color base_color #A8978F;
+@define-color text_color #000;
+@define-color selected_bg_color #ECA770;
+@define-color selected_fg_color #000;
+@define-color tooltip_bg_color #ffffe1;
+@define-color tooltip_fg_color #000;
+
+/* Custom colors */
+@define-color menubar_color #4991A6;
+
+/* For all widgets */
+* { 
+    border-style: outset;
+    border-width: 2;
+}
+
+/* Load css... */
+@import url("css/button.css");
+@import url("css/scrollbar.css");
+@import url("css/scale.css");
+@import url("css/progressbar.css");
+@import url("css/spinbutton.css");
+@import url("css/menu.css");
+@import url("css/entry.css");
+@import url("css/check.css");
+@import url("css/radio.css");
+
+

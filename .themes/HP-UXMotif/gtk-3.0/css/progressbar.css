@@ -1,0 +1,14 @@
+/***************
+ * ProgressBar * 
+ ***************/
+
+GtkProgressBar {
+    padding: 1;
+    border-style: none;
+}
+
+GtkProgressBar.trough {
+    background-color: @base_color;
+    border-image: url("data/border-active.png") 2 2 2 2;
+    border-style: none;
+}

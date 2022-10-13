@@ -1,0 +1,16 @@
+/********* 
+ * Scale *
+ *********/
+
+GtkScale.slider {
+		border-image: url("data/border.png") 2 2 2 2;
+    border-style: none;
+    overlay: url("data/test.png");
+}
+
+GtkScale.trough {
+    background-color: @base_color;
+    border-image: url("data/border-active.png") 2 2 2 2;
+    border-style: none;
+}
+

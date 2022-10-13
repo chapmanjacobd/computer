@@ -1,0 +1,29 @@
+/*************
+ * Scrollbar * 
+ *************/
+
+GtkScrollbar {
+    -GtkRange-arrow-scaling: 0.6; /* 0 */
+    -GtkRange-slider-width: 12;
+    -GtkRange-stepper-size: 11;
+    -GtkScrollbar-min-slider-length: 30;
+}
+
+GtkScrollbar.trough {
+    background-color: @base_color;
+    border-image: url("data/border-active.png") 2 2 2 2;
+    border-style: none;
+}
+
+GtkScrollbar.slider {
+    background-color: @bg_color;
+    border-image: url("data/border.png") 2 2 2 2;
+    border-style: none;
+}
+
+/* Problem with arrows... */
+/*GtkScrollbar.vertical.button {
+    background-color: #ff0000;
+    background-image: url("data/arrow-down.png");
+    border-style: none;
+}*/
