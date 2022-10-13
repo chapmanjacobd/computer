@@ -1,8 +1,0 @@
-/**************
- * SpinButton *
- **************/
-
-GtkSpinButton.button {
-    background-color: @bg_color;
-    border-image: url("border.png") 2 2 2 2;
-}
