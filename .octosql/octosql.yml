@@ -1,0 +1,3 @@
+files:
+  json:
+    max_line_size_bytes: 33554432
