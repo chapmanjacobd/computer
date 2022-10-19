@@ -1,3 +1,4 @@
+/.ssh/
 /.ssr/
 /.steam/
 /.octosql/
@@ -387,4 +388,3 @@
 /.quicktype-vscode/
 /.rubberband.wisdom.d
 /.sqlite_history
-/.ssh/
