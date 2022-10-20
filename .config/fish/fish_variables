@@ -36,6 +36,7 @@ SETUVAR _fish_abbr_df:df\x20\x2dh\x20\x26\x26\x20sudo\x20btrfs\x20filesystem\x20
 SETUVAR _fish_abbr_fdh:fd\x20\x2d\x2dhidden\x20\x2d\x2dexclude\x20\x27\x2egit\x27
 SETUVAR _fish_abbr_fdwatch:fd\x20\x2dx\x20fish\x20\x2dc\x20\x22mpvonce\x20\x7b\x7d\x22
 SETUVAR _fish_abbr_fi:sudo\x20btrfs\x20fi\x20usage
+SETUVAR _fish_abbr_gi:gdalinfo\x20/vsigs/
 SETUVAR _fish_abbr_grep:grep\x20\x2di
 SETUVAR _fish_abbr_gs:git\x20status
 SETUVAR _fish_abbr_milky:projectM\x2djack
