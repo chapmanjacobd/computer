@@ -1,3 +1,4 @@
+/.sqlite_history
 /.ssh/
 /.ssr/
 /.steam/
@@ -387,4 +388,3 @@
 /.qt/
 /.quicktype-vscode/
 /.rubberband.wisdom.d
-/.sqlite_history
