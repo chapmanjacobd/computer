@@ -31,6 +31,7 @@ SETUVAR _fish_abbr_bead:bat\x20\x2dr\x200\x3a10
 SETUVAR _fish_abbr_bsubvdel:sudo\x20btrfs\x20subvolume\x20delete\x20\x2d\x2dcommit\x2deach
 SETUVAR _fish_abbr_busage:sudo\x20btrfs\x20fi\x20usage
 SETUVAR _fish_abbr_clip:xclip\x20\x2dsel\x20clip
+SETUVAR _fish_abbr_cup:docker\x20compose\x20\x2df\x20docker/docker\x2dcompose\x2eyaml\x20up
 SETUVAR _fish_abbr_dd:dd\x20status\x3dprogress\x20if\x3d\x20of\x3d
 SETUVAR _fish_abbr_df:df\x20\x2dh\x20\x26\x26\x20sudo\x20btrfs\x20filesystem\x20show
 SETUVAR _fish_abbr_fdh:fd\x20\x2d\x2dhidden\x20\x2d\x2dexclude\x20\x27\x2egit\x27

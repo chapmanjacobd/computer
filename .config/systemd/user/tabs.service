@@ -1,6 +1,5 @@
 [Unit]
 Description=/usr/bin/fish -c lb tabs /home/xk/lb/tabs.db
-Requires=mnt-d.mount
 
 [Service]
 Type=simple
