@@ -10,3 +10,4 @@
 /kwinrc
 /gcloud/logs/
 /plasmaConfSaver/
+/systemd/user/*wants/
