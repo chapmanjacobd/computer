@@ -638,9 +638,3 @@
 .config/fish/functions/windows.fish
 .config/fish/functions/wordfreq.fish
 .config/fish/functions/wrap.fish
-.config/fish/functions/ytIEs.fish
-.config/fish/functions/ytREs.fish
-.config/fish/functions/ytUREs.fish
-.config/fish/functions/yta.fish
-.config/fish/functions/yte.fish
-.config/fish/functions/ytea.fish
