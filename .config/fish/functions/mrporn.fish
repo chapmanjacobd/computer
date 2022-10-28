@@ -6,6 +6,6 @@ function mrporn
     ) /mnt/d/ /mnt/d/60_Now_Watching/
 
     rsync -a --remove-source-files --files-from=(
-        lb wt ~/lb/tax.db --portrait -L 48 -u 'play_count,duration desc' -p f -E 60_Now_Watching -s 69 --moved /mnt/d/ /mnt/d/60_Now_Watching/ | psub
+        lb wt ~/lb/tax.db -L 48 -u 'play_count,duration desc' -p f -E 60_Now_Watching -s 69 --moved /mnt/d/ /mnt/d/60_Now_Watching/ | psub
     ) /mnt/d/ /mnt/d/60_Now_Watching/
 end
