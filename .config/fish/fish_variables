@@ -55,6 +55,7 @@ SETUVAR _fish_abbr_sdi:sudo\x20dnf\x20install
 SETUVAR _fish_abbr_sdu:sudo\x20dnf\x20update
 SETUVAR _fish_abbr_sed:sed\x20\x27s\x7c\x7c\x7c\x27
 SETUVAR _fish_abbr_sort:sort\x20\x2d\x2dunique\x20\x2d\x2dignore\x2dcase
+SETUVAR _fish_abbr_split:split\x20\x2dd\x20\x2dC\x2050MB
 SETUVAR _fish_abbr_sys:systemctl
 SETUVAR _fish_abbr_sze:sudo\x20zypper\x20rm
 SETUVAR _fish_abbr_szi:sudo\x20zypper\x20install\x20\x2d\x2dno\x2drecommends
