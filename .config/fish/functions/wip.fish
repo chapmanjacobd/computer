@@ -13,7 +13,7 @@ function wip
     git add .
     git --no-pager diff HEAD
     git diff --stat HEAD
-    echo 
+    echo
     git status
     if set -q _flag_yes; or gum confirm
         gitupdate .
