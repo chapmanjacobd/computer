@@ -153,33 +153,6 @@
     "{[!.],[!.][!.],[!.][!.][!.],[!.][!.][!.][!.],[!.][!.][!.][!.][!.]}{[],[!.],[!.][!.][!.][!.][!.],[!.][!.][!.][!.][!.][!.][!.][!.][!.][!.]}{[],[!.],[!.][!.][!.][!.][!.][!.][!.][!.][!.][!.][!.][!.][!.][!.][!.]}": "plaintext",
   },
   "cSpell.userWords": [
-    "Cejas",
-    "HHMMSS",
-    "Mapbox",
-    "Nonsyndicated",
-    "UNLI",
-    "alpinejs",
-    "cenote",
-    "cloudfunctions",
-    "firestore",
-    "gcfi",
-    "geojson",
-    "hsla",
-    "mapboxgl",
-    "oclif",
-    "pomelotravel",
-    "promisify",
-    "recordset",
-    "recordsets",
-    "semibold",
-    "sentennces",
-    "specialise",
-    "swimlane",
-    "tailwindcss",
-    "threadpool",
-    "transformative",
-    "vals",
-    "voronoi",
     "acodec",
     "aiohttp",
     "alpinejs",
@@ -212,6 +185,7 @@
     "epsg",
     "exactextract",
     "excepthook",
+    "executescript",
     "Exif",
     "exiftool",
     "eyeware",
@@ -347,9 +321,9 @@
   "r.alwaysUseActiveTerminal": true,
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
-    "source.organizeImports": true,
-    "source.sortMembers": true
+    "source.fixAll": false,
+    "source.organizeImports": false,
+    "source.sortMembers": false
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
@@ -401,15 +375,12 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": false,
     },
-  },
-  "workbench.editorAssociations": {
-    "*.ipynb": "jupyter.notebook.ipynb"
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "sql.format.enable": false,
   "editor.guides.indentation": false,
   "diffEditor.wordWrap": "off",
   "blockman.n04ColorComboPreset": "Classic Light (Solid colors)",
-  "editor.inlayHints.enabled": false,
   "blockman.n32BlackListOfFileFormats": "plaintext, markdown, sql, json, jinja-sql",
   "blockman.n05CustomColorOfDepth0": "none",
   "blockman.n20CustomColorOfDepth0Border": "none",
