@@ -207,7 +207,6 @@
 /.config/offlinebay/
 .config/okularrc
 /.config/omf/
-/.config/oomox/
 /.config/openbox/
 /.config/openvr/
 /.config/opera/
@@ -247,7 +246,6 @@
 /.config/QGIS3rc
 /.config/qmk/
 /.config/qpdfview/
-/.config/qt5ct/
 /.config/QtProject/
 /.config/QtProject.conf
 /.config/qutebrowser/
