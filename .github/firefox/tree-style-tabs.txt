@@ -1,0 +1,30 @@
+.tab {
+  height: 18px;
+}
+.tab.active {
+}
+.tab.active .label {
+  font-weight: bold;
+}
+.tab.unread .label {
+  color: #212899 !important;
+  font-style: none !important;
+}
+.newtab-button-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+}
+.tab:not(:hover) .closebox {
+  display: none;
+}
+#tabbar {
+  top: 10px !important;
+  bottom:1px !important;
+}
+.tab.pinned {
+  margin-top: 20px;
+height:18px;
+}

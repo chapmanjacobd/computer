@@ -1,0 +1,43 @@
+unmapAll
+
+map n scrollDown
+map e scrollUp
+map m scrollLeft
+map i scrollRight
+map c copyCurrentUrl
+
+map v openCopiedUrlInNewTab
+map B enterInsertMode
+map z enterVisualMode
+map Z enterVisualLineMode
+
+map t focusInput
+map q LinkHints.activateMode
+map Q LinkHints.activateModeWithQueue
+#map  LinkHints.activateModeToDownloadLink
+#map  LinkHints.activateModeToCopyLinkUrl
+map r goPrevious
+map s goNext
+map gt nextFrame
+
+map p Vomnibar.activate
+map P Vomnibar.activateInNewTab
+#map  Vomnibar.activateBookmarks
+map F Vomnibar.activateTabSelection
+#map  Vomnibar.activateEditUrl
+
+map / enterFindMode
+map n performFind
+map N performBackwardsFind
+
+map 1 goBack
+map 2 goForward
+
+map T createTab
+map w previousTab
+map f nextTab
+map b visitPreviousTab
+
+map x removeTab
+map X restoreTab
+map ? showHelp
