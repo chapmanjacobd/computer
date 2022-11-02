@@ -21,7 +21,7 @@ Any portion of my own code I release as CC0
 
 @-moz-document url("about:blank"), url-prefix("http://"), url-prefix("https://"), url-prefix("ftp://"), url-prefix("file://") {
 /*
- * Drop the below regex, after a comma, just before the opening curly bracket above, to exclude websites from solarization: 
+ * Drop the below regex, after a comma, just before the opening curly bracket above, to exclude websites from solarization:
  * ,regexp("https?://(www\.)?(?!(userstyles\.org|docs\.google|github)\..*).*")
  */
 scrollbar {
@@ -125,8 +125,8 @@ div[role=dialog],
       div[class*="content"], div[class*="container"],
       div[style*="visibility: visible"],
       div[id*="popup"],
-      div[class*="popup"], 
-      div[style*="display: block"], 
+      div[class*="popup"],
+      div[style*="display: block"],
 */
 div[class*="clearfix"] {
     background-color: #c8b4a0e0 !important;
@@ -141,11 +141,11 @@ div[class*="clearfix"] {
 background: #cebdab !important;
 }
 
-    
+
 .widget-pane-visible {
     background-color: #C8B4A0 !important;
 }
-    
+
 
 iframe,
 embed,
