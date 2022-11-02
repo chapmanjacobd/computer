@@ -442,7 +442,6 @@
 .config/fish/functions/dl_daily.fish
 .config/fish/functions/dl_monthly.fish
 .config/fish/functions/dl_weekly.fish
-.config/fish/functions/dlstatus.fish
 .config/fish/functions/docker-cleanup.fish
 .config/fish/functions/dpCML.fish
 .config/fish/functions/dpcp.fish
