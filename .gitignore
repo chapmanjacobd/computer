@@ -594,7 +594,6 @@
 .config/fish/functions/standuphorizontally.fish
 .config/fish/functions/sudo.fish
 .config/fish/functions/swallowFlags.fish
-.config/fish/functions/sync_history.fish
 .config/fish/functions/systemd-cron.fish
 .config/fish/functions/table.fish
 .config/fish/functions/tar-cd.fish
@@ -625,4 +624,3 @@
 .config/fish/functions/videodbs.fish
 .config/fish/functions/vpn.fish
 .config/fish/functions/vpn_use.fish
-.config/fish/functions/watchLog.fish

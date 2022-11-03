@@ -43,6 +43,7 @@ SETUVAR _fish_abbr_grep:grep\x20\x2di
 SETUVAR _fish_abbr_gs:git\x20status
 SETUVAR _fish_abbr_milky:projectM\x2djack
 SETUVAR _fish_abbr_mvl:mvl\x20\x2ds\x22\x22
+SETUVAR _fish_abbr_nano:micro
 SETUVAR _fish_abbr_ncdu:NO_COLOR\x3d1\x20gdu
 SETUVAR _fish_abbr_nicotine:flatpak\x20run\x20org\x2enicotine_plus\x2eNicotine
 SETUVAR _fish_abbr_p:pipenv\x20shell
