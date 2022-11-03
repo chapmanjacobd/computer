@@ -211,6 +211,7 @@
     "HHMMSS",
     "hsla",
     "hstack",
+    "iloc",
     "interdimensional",
     "ipdb",
     "jsonipc",
