@@ -8,7 +8,7 @@ fi
 # User specific aliases and functions
 export PATH="$HOME/bin:$HOME/.cargo/bin:$PATH"
 export GOPATH=$HOME/.go
-export VISUAL=nano
+export VISUAL=micro
 export EDITOR="$VISUAL"
 
 eval "$(dircolors)"

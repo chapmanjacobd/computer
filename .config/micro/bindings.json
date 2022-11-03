@@ -1,5 +1,8 @@
 {
     "Alt-/": "lua:comment.comment",
     "CtrlUnderscore": "lua:comment.comment",
-    "Ctrl-w": "Quit"
+    "CtrlK": "CutLine",
+    "CtrlU": "Paste",
+    "CtrlX": "Quit",
+    "CtrlW": "Find"
 }
