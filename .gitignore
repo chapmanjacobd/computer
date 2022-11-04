@@ -387,7 +387,6 @@
 /.python_history
 /.qt/
 /.quicktype-vscode/
-.config/fish/completions/
 .config/fish/conf.d/
 .config/fish/functions/12hrCSVto24hr.fish
 .config/fish/functions/activate.fish
@@ -609,4 +608,3 @@
 .config/fish/functions/upfotos.fish
 .config/fish/functions/videodbs.fish
 .config/fish/functions/vpn.fish
-.config/fish/functions/vpn_use.fish
