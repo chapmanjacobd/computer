@@ -1,3 +1,4 @@
+/.config/gallery-dl/config.json
 /.zoom/
 /.config/micro/buffers/history
 /.vscode-server/
@@ -105,7 +106,6 @@
 /.config/Franz/
 /.config/fsearch/
 /.config/fselect/
-/.config/gallery-dl/
 /.config/gcloud/
 /.config/gconf/
 /.config/geany/
@@ -319,7 +319,6 @@
 /.config/yarn/
 /.config/yarpen.cz/
 /.config/yelp/
-/.config/yt-dlg/
 /.config/zathura/
 /.config/Zeal/
 /.config/zim/
@@ -343,7 +342,6 @@
 /github/
 /.gnome/
 /.gnupg/
-/.gradle/
 /.grass8/
 /.gsutil/
 /.icons/
@@ -406,7 +404,6 @@
 .config/fish/functions/bdfr-links.fish
 .config/fish/functions/bigdpi.fish
 .config/fish/functions/blockdomain.fish
-.config/fish/functions/bookingdl.fish
 .config/fish/functions/bq_fetch_dataset_schema.fish
 .config/fish/functions/capitalize.fish
 .config/fish/functions/castmusic.fish
@@ -434,13 +431,6 @@
 .config/fish/functions/delete_if_no_audio.fish
 .config/fish/functions/devmode.fish
 .config/fish/functions/diskstatus.fish
-.config/fish/functions/dl-get-photos.fish
-.config/fish/functions/dl-get-sounds.fish
-.config/fish/functions/dl-get-videos.fish
-.config/fish/functions/dl.fish
-.config/fish/functions/dl_daily.fish
-.config/fish/functions/dl_monthly.fish
-.config/fish/functions/dl_weekly.fish
 .config/fish/functions/docker-cleanup.fish
 .config/fish/functions/dpCML.fish
 .config/fish/functions/dpcp.fish
@@ -467,9 +457,6 @@
 .config/fish/functions/gc.fish
 .config/fish/functions/gcp-resize.fish
 .config/fish/functions/gcsweblink.fish
-.config/fish/functions/gdl-insta.fish
-.config/fish/functions/gdl-reddit.fish
-.config/fish/functions/gdl.fish
 .config/fish/functions/genAudio.fish
 .config/fish/functions/genFileCSV.fish
 .config/fish/functions/getTabs.fish
@@ -493,7 +480,6 @@
 .config/fish/functions/highlight.fish
 .config/fish/functions/hyperion.fish
 .config/fish/functions/incrFileSuffix.fish
-.config/fish/functions/instadl.fish
 .config/fish/functions/ip-addr.fish
 .config/fish/functions/is_vertical_video.fish
 .config/fish/functions/isparent.fish
@@ -567,7 +553,6 @@
 .config/fish/functions/resizecityphotos.fish
 .config/fish/functions/rest.fish
 .config/fish/functions/restore.fish
-.config/fish/functions/rgYTdl.fish
 .config/fish/functions/rip.fish
 .config/fish/functions/row.fish
 .config/fish/functions/savefilenames.fish
