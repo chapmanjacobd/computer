@@ -330,7 +330,6 @@
 /.debug/
 /discovery*
 /Discovery*
-/opencellid
 /.docker/
 /.eclipse/
 /.electron/
