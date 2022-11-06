@@ -12,4 +12,7 @@ function mrrelax
     rsync -a --remove-source-files --files-from=(
         lt ~/lb/63_Sounds.db -L 24 -p wf --moved /mnt/d/ /mnt/d/64_Relaxation/ | psub
     ) /mnt/d/ /mnt/d/64_Relaxation/
+
+    lb fsadd --video ~/lb/fs/tax.db /mnt/d/64_Relaxation/
+
 end

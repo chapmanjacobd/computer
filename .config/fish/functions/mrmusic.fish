@@ -4,4 +4,6 @@ function mrmusic
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --files-from=(
         lt ~/lb/audio.db -w 'play_count=0' -u random -L 300 -p f --moved /mnt/d/ /mnt/d/80_Now_Listening/ | psub
     ) /mnt/d/ /mnt/d/80_Now_Listening/
+
+    lb fsadd --audio ~/lb/audio.db /mnt/d/80_Now_Listening/
 end
