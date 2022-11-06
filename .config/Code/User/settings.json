@@ -427,5 +427,4 @@
     "black",
     "--line-length=120"
   ],
-  "window.zoomLevel": 1,
 }
