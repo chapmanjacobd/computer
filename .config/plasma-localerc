@@ -1,4 +1,7 @@
 [Formats]
-LANG=Default.UTF-8
+LANG=C.UTF-8
 LC_TIME=C
 useDetailed=true
+
+[Translations]
+LANGUAGE=C
