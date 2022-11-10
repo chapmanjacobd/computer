@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/fish -c opentabs /home/xk/mc/tabs.txt
+
+[Service]
+Type=simple
+RemainAfterExit=no
+Environment="DISPLAY=:0"
+ExecStart=
+ExecStart="/usr/bin/fish" "-c" "opentabs /home/xk/mc/tabs.txt"
