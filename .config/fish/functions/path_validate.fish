@@ -3,7 +3,7 @@ function path_validate --description 'check if a string is a valid filename on M
     set fname "$argv[1]"
 
     # must have at least one letter/number
-echo "$fname" | command grep -Pq '\w+'; or return 1
+    echo "$fname" | command grep -Pq '\w+'; or return 1
 
     # cannot start or end with a space
     echo "$fname" | command grep -Pq '^ .*$'; and return 1

@@ -429,7 +429,6 @@
 .config/fish/functions/default.fish
 .config/fish/functions/defaultset.fish
 .config/fish/functions/deleteSong.fish
-.config/fish/functions/delete_if_no_audio.fish
 .config/fish/functions/devmode.fish
 .config/fish/functions/diskstatus.fish
 .config/fish/functions/docker-cleanup.fish
@@ -458,7 +457,6 @@
 .config/fish/functions/gc.fish
 .config/fish/functions/gcp-resize.fish
 .config/fish/functions/gcsweblink.fish
-.config/fish/functions/genAudio.fish
 .config/fish/functions/genFileCSV.fish
 .config/fish/functions/getTabs.fish
 .config/fish/functions/getWikipediaText.fish
@@ -473,16 +471,12 @@
 .config/fish/functions/gitup.fish
 .config/fish/functions/gsave.fish
 .config/fish/functions/gt.fish
-.config/fish/functions/has_audio.fish
-.config/fish/functions/has_both_audio_video.fish
 .config/fish/functions/has_sub.fish
-.config/fish/functions/has_video.fish
 .config/fish/functions/hekaton.fish
 .config/fish/functions/highlight.fish
 .config/fish/functions/hyperion.fish
 .config/fish/functions/incrFileSuffix.fish
 .config/fish/functions/ip-addr.fish
-.config/fish/functions/is_vertical_video.fish
 .config/fish/functions/isparent.fish
 .config/fish/functions/json-compress.fish
 .config/fish/functions/keepvid.fish
@@ -521,7 +515,6 @@
 .config/fish/functions/nohupbg.fish
 .config/fish/functions/note.fish
 .config/fish/functions/notes.fish
-.config/fish/functions/o.fish
 .config/fish/functions/opentabs.fish
 .config/fish/functions/path_explode.fish
 .config/fish/functions/pf.fish
@@ -531,7 +524,6 @@
 .config/fish/functions/port.fish
 .config/fish/functions/pretty_csv.fish
 .config/fish/functions/print-files-in-use.fish
-.config/fish/functions/process_audio.fish
 .config/fish/functions/pulumi-cp-secret.fish
 .config/fish/functions/quiet.fish
 .config/fish/functions/r.fish
@@ -539,7 +531,6 @@
 .config/fish/functions/radd.fish
 .config/fish/functions/random-file.fish
 .config/fish/functions/randomFilePaths.fish
-.config/fish/functions/randomPhoto.fish
 .config/fish/functions/random_choice.fish
 .config/fish/functions/reddit-add.fish
 .config/fish/functions/reddit-links-ignore.fish
@@ -560,7 +551,6 @@
 .config/fish/functions/scr.fish
 .config/fish/functions/screendim.fish
 .config/fish/functions/sdr.fish
-.config/fish/functions/sendToPomelo.fish
 .config/fish/functions/senddev.fish
 .config/fish/functions/sendroid.fish
 .config/fish/functions/sendroidmusic.fish
@@ -575,11 +565,9 @@
 .config/fish/functions/sp.fish
 .config/fish/functions/spaces.fish
 .config/fish/functions/split_by_silence.fish
-.config/fish/functions/split_long_audio.fish
 .config/fish/functions/splitcsv.fish
 .config/fish/functions/standuphdmi.fish
 .config/fish/functions/standuphorizontally.fish
-.config/fish/functions/sudo.fish
 .config/fish/functions/swallowFlags.fish
 .config/fish/functions/systemd-cron.fish
 .config/fish/functions/table.fish
@@ -589,7 +577,6 @@
 .config/fish/functions/time-until.fish
 .config/fish/functions/times1nodata0.fish
 .config/fish/functions/tmuxcleanup.fish
-.config/fish/functions/toAudio.fish
 .config/fish/functions/trash-empty.fish
 .config/fish/functions/trim-right.fish
 .config/fish/functions/trim-trailing-slash.fish

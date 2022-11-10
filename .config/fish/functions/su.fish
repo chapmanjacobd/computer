@@ -1,4 +1,4 @@
 # Defined interactively
 function su
-sudo fish
+    sudo fish
 end
