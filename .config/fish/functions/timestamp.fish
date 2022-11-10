@@ -1,3 +1,4 @@
+# Defined via `source`
 function timestamp
-    date -Iminutes | cut -d+ -f1 | makeValidFilename
+    date +%s -d "$argv"
 end
