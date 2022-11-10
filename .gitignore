@@ -588,7 +588,6 @@
 .config/fish/functions/temp.fish
 .config/fish/functions/time-until.fish
 .config/fish/functions/times1nodata0.fish
-.config/fish/functions/timestamp.fish
 .config/fish/functions/tmuxcleanup.fish
 .config/fish/functions/toAudio.fish
 .config/fish/functions/trash-empty.fish
