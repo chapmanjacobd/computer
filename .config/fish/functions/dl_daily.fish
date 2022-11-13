@@ -11,5 +11,5 @@ function dl_daily
     for db in ~/lb/reddit/*.db
         lb redditupdate $db --lookback 2
     end
-
+    library redditupdate ~/lb/fs/tax.db --lookback 2
 end
