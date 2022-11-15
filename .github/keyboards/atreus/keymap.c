@@ -3,8 +3,8 @@
 
 #include "atreus.h"
 
-#define _COLEMAK  0
-#define _KAMELOC  1
+#define _QWERTY  0
+#define _YTREWQ  1
 #define _IKAPILA  2
 #define _IKASHFT  3
 #define _FNCTION  5
@@ -14,8 +14,8 @@
 #define _LYRTBL  9
 
 enum custom_keycodes {
-  COLEMAK = SAFE_RANGE,
-  KAMELOC,
+  QWERTY = SAFE_RANGE,
+  YTREWQ,
   IKAPILA,
   IKASHFT,
   FNCTION,
@@ -27,41 +27,41 @@ enum custom_keycodes {
 
 //TD Declarations
 enum {
-VOM = 0,
-PRN,
-EGT,
-HRD,
-XRD,
-DSH,
-ESC,
-EQE,
-PGN,
-HND,
-COD,
-UND,
-MND,
-F11,
-F12,
-F13,
-F14,
-F15,
-F16,
-F17,
-F18,
-F19,
-F20,
-//unicode_inputctl
-LINUX,
-WIN,
-WINSH,
-OSX,
+  VOM = 0,
+  PRN,
+  EGT,
+  HRD,
+  XRD,
+  DSH,
+  ESC,
+  EQE,
+  PGN,
+  HND,
+  COD,
+  UND,
+  MND,
+  F11,
+  F12,
+  F13,
+  F14,
+  F15,
+  F16,
+  F17,
+  F18,
+  F19,
+  F20,
+  //unicode_inputctl
+  LINUX,
+  WIN,
+  WINSH,
+  OSX,
 };
 
 #define _______     KC_TRNS
 #define XXXXXXX     KC_NO
 
 // action-TAP for key/mod behavior LT(layer, KC)
-#define XK_TAB      LT(_KAMELOC, KC_TAB)
+#define XK_TAB      LT(_YTREWQ, KC_TAB)
 
 #define XK_SPC      LT(_IKAPILA, KC_SPC)
 #define XK_ENT      LT(_IKAPILA, KC_ENT)
@@ -78,7 +78,7 @@ OSX,
 #define ALT_SC      MT(MOD_RALT, KC_SCLN)
 #define CTL_SL      MT(MOD_RCTL, KC_SLSH)
 #define SFT_APO     MT(MOD_RSFT, KC_QUOT)
-#define SFT_X       MT(MOD_LSFT, KC_X)
+#define SFT_Z       MT(MOD_LSFT, KC_Z)
 
 //sticky modifiers
 #define KYCTL       OSM(MOD_LCTL)
@@ -143,15 +143,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 */
 
 // Colemak PB&J (Mod-DH)
-[_COLEMAK] = KEYMAP( \
-     KC_Q,  KC_W,   KC_F,    KC_P,    KC_B,                      KC_J,     KC_L,     KC_U,    KC_Y,  ALT_SC,  \
-     KC_A,  KC_R,   KC_S,    KC_T,    KC_G,                      KC_M,     KC_N,     KC_E,    KC_I,    KC_O,  \
-    SFT_X,  KC_C,   KC_D,    KC_V,    KC_Z,                      KC_K,     KC_H,  KC_COMM,  KC_DOT,  CTL_SL,  \
+[_QWERTY] = KEYMAP( \
+     KC_Q,  KC_W,   KC_E,    KC_R,    KC_T,                      KC_Y,     KC_U,     KC_I,    KC_O,    KC_P,  \
+     KC_A,  KC_S,   KC_D,    KC_F,    KC_G,                      KC_H,     KC_J,     KC_K,    KC_L,  ALT_SC,  \
+    SFT_Z,  KC_X,   KC_C,    KC_V,    KC_B,                      KC_N,     KC_M,  KC_COMM,  KC_DOT,  CTL_SL,  \
     KYCTL, TT(_ROUSES), KYALT, XK_BSC, XK_SPC, XK_TAB, SFT_APO, XK_ENT,  XK_PGDN,  KC_RGUI, PIPBOY,  XK_ESC  \
 ),
 
 // useful for one-handed typing
-[_KAMELOC] = KEYMAP( \
+[_YTREWQ] = KEYMAP( \
   KC_SCLN,    KC_Y,    KC_U,    KC_L,   KC_J,                      KC_B,    KC_P,    KC_F,    KC_W,    KC_Q,  \
      KC_O,    KC_I,    KC_E,    KC_N,   KC_M,                      KC_G,    KC_T,    KC_S,    KC_R,    KC_A,  \
   KC_SLSH,  KC_DOT, KC_COMM,    KC_H,   KC_K,                      KC_Z,    KC_V,    KC_D,    KC_C,    KC_X,  \
@@ -231,7 +231,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   │ 1  │ 0  │ENT │ () │ M5 ├────┐    ┌────┤    │MW_D│MW_U│    │ AC0│
   ├────┼────┼────┼────┼────┤    │    │    ├────┼────┼────┼────┼────┤
   │    │    │    │    │    │    │    │    │    │    │    │    │    │
-  └────┴────┴────┴────┴────┴────┘    └────┴────┴────┴────┴────┴────┘ 
+  └────┴────┴────┴────┴────┴────┘    └────┴────┴────┴────┴────┴────┘
 */
 
 [_ROUSES] =  KEYMAP( \
