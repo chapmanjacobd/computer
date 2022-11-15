@@ -2,9 +2,10 @@
   "python.analysis.autoImportCompletions": true,
   "editor.fontSize": 17,
   "editor.suggestFontSize": 17,
+  "editor.fontFamily": "'DejaVu Sans Mono', 'monospace', monospace",
+  "terminal.integrated.fontFamily": "'DejaVu Sans Mono', 'monospace', monospace",
   "terminal.integrated.fontSize": 16,
   "terminal.integrated.scrollback": 10000,
-  "terminal.integrated.fontFamily": "Courier New",
   "terminal.external.linuxExec": "kitty",
   "terminal.explorerKind": "external",
   "terminal.integrated.profiles.linux": {
