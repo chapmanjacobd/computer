@@ -586,4 +586,3 @@
 .config/fish/functions/type-last-command.fish
 .config/fish/functions/uid.fish
 .config/fish/functions/unar.fish
-.config/fish/functions/uncommit.fish
