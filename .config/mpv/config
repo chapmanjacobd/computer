@@ -38,7 +38,6 @@ sub-auto=fuzzy
 sub-gauss=1.0
 sub-gray=yes
 sub-fix-timing=yes
-sub-visibility=no
 
 demuxer-seekable-cache=yes
 demuxer-max-bytes=500MiB
