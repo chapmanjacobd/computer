@@ -9,9 +9,7 @@ function dl_weekly
 
     library tubeupdate ~/lb/audio.db
     library tubeupdate ~/lb/video.db
-    #library download ~/lb/video.db --video --small --prefix /mnt/d/
-    #library download ~/lb/audio.db --audio --prefix /mnt/d/
-    #library download ~/lb/fs/tax.db --safe --small --video --prefix /mnt/d/69_Taxes/
+    # dl
 
     for folder in 61_Photos_Unsorted
         ~/d/$folder/
