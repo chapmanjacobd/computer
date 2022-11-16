@@ -4,6 +4,7 @@
 /.subversion/
 /.config/gallery-dl/config.json
 /.zoom/
+/.config/micro/backups/
 /.config/micro/buffers/history
 /.vscode-server/
 /.config/arkrc
