@@ -1,4 +1,6 @@
 function unar
-    /usr/bin/unar -q "$argv"
-    and trash "$argv"
+    for f in $argv
+        /usr/bin/unar -q "$f"
+        and trash "$f"
+    end
 end
