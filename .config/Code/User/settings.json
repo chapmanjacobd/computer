@@ -430,4 +430,5 @@
     "black",
     "--line-length=120"
   ],
+  "Lua.telemetry.enable": false,
 }

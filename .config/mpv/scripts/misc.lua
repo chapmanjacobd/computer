@@ -28,7 +28,7 @@ function dump(o)
             if type(k) ~= 'number' then
                 k = '"' .. k .. '"'
             end
-            s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
+            s = s .. '[' .. k .. '] = ' .. dump(v) .. ' '
         end
         return s .. '} '
     else
