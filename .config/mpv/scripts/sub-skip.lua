@@ -3,6 +3,7 @@ local cfg = {
     default_state = true,
     seek_mode_default = false,
     min_skip_interval = 3,
+    max_nonskip_interval = 7,
     speed_skip_speed = 2.5,
     lead_in = 0,
     lead_out = 1,
@@ -39,6 +40,7 @@ function calc_next_delay()
 
     if was_visible then mp.set_property_bool("sub-visibility", true) end
 
+    -- print('initial_delay', initial_delay, 'new_delay', new_delay)
     -- if the delay didn't change, the next line hasn't been demuxed yet
     -- (or there are no more lines)
     -- else calculate difference between previous delay and shifted delay
@@ -56,6 +58,7 @@ end
 
 function end_seek_skip(next_sub_begin)
     mp.set_property_number("time-pos", next_sub_begin - cfg.lead_out)
+    print('end_seek_skip end_skip')
     end_skip()
 end
 
@@ -105,6 +108,7 @@ end
 
 local initial_speed = mp.get_property_number("speed")
 local initial_video_sync = mp.get_property("video-sync")
+local start_idle = nil
 function handle_tick(_, time_pos)
     -- time_pos might be nil after the file changes
     if time_pos == nil then return end
@@ -121,31 +125,46 @@ function handle_tick(_, time_pos)
             mp.set_property_number("speed", cfg.speed_skip_speed)
             sped_up = true
         end
+        start_idle = nil
     elseif sped_up and next_sub_start == nil then
         -- next_sub_start == nil means that no next line has been
         -- found during blind skip
         local next_delay = calc_next_delay()
         if next_delay ~= nil then next_sub_start = time_pos + next_delay end
     elseif sped_up and time_pos > next_sub_start - cfg.lead_out then
+        print('handle_tick end_skip')
         end_skip()
+    elseif not sped_up then
+        if (start_idle == nil) or (start_idle > time_pos) then
+            start_idle = time_pos
+        end
+        elapsed_idle = time_pos - start_idle
+        -- print('elapsed_idle', elapsed_idle)
+        -- if we haven't done anything for 7 seconds then set last_sub_end to now
+        if cfg.max_nonskip_interval < elapsed_idle then
+            print('spoooodup')
+            last_sub_end = time_pos
+        end
     end
 end
 
 -- INITIALIZATION/SHARED FUNCTIONALITY --
 
 function start_skip()
+    print('start_skip')
+    start_idle = nil
     skipping = true
     mp.observe_property("time-pos", "number", handle_tick)
 end
 
 function end_skip()
-    mp.unobserve_property(handle_tick)
+    -- mp.unobserve_property(handle_tick)
     skipping = false
     sped_up = false
     mp.set_property_number("speed", initial_speed)
     mp.set_property("video-sync", "audio")
     mp.set_property("video-sync", initial_video_sync)
-    last_sub_end, next_sub_start = nil
+    last_sub_end, next_sub_start = nil, nil
 end
 
 function handle_sub_change(_, sub_end)
@@ -153,6 +172,7 @@ function handle_sub_change(_, sub_end)
         local time_pos = mp.get_property_number("time-pos")
         local next_delay = calc_next_delay()
 
+        -- print('handle_sub_change', sub_end, last_sub_end, time_pos, next_delay)
         last_sub_end = time_pos
         if next_delay ~= nil then
             if next_delay < cfg.min_skip_interval then
@@ -163,6 +183,7 @@ function handle_sub_change(_, sub_end)
         end
         start_skip()
     elseif skipping and sub_end then
+        print('handle_sub_change end_skip')
         end_skip()
     end
 end
@@ -200,7 +221,7 @@ function switch_mode()
     mp.osd_message("Seek skip " .. (seek_skip and "enabled" or "disabled"))
 end
 
-mp.add_key_binding("Ctrl+Alt+v", "switch-mode", switch_mode)
+mp.add_key_binding("Ctrl+V", "switch-mode", switch_mode)
 
 function set_speed_skip_speed(new_value)
     cfg.speed_skip_speed = new_value
