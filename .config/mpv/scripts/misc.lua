@@ -1,5 +1,4 @@
 -- load-script ~/.config/mpv/scripts/misc.lua
-
 -- hide subs if same as audio (similar to --subs-with-matching-audio)
 local selected_tracks = {}
 
@@ -21,23 +20,29 @@ function get_selected_tracks()
         i = i + 1
     end
 end
-get_selected_tracks()
-
-if (selected_tracks['audio'] ~= nil) and (selected_tracks['audio'] == selected_tracks['sub']) then
-    mp.set_property('sub-visibility', 'no')
-end
 
 function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
+    if type(o) == 'table' then
+        local s = '{ '
+        for k, v in pairs(o) do
+            if type(k) ~= 'number' then
+                k = '"' .. k .. '"'
+            end
+            s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
+        end
+        return s .. '} '
+    else
+        return tostring(o)
+    end
 end
 
-print(dump(selected_tracks))
+function misc(name, value)
+    get_selected_tracks()
+    print(dump(selected_tracks))
+    mp.set_property('sub-visibility', 'yes')
+    if (selected_tracks['audio'] ~= nil) and (selected_tracks['audio'] == selected_tracks['sub']) then
+        mp.set_property('sub-visibility', 'no')
+    end
+end
+
+mp.observe_property('track-list', "native", misc)
