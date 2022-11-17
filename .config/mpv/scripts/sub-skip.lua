@@ -19,6 +19,7 @@ require("mp.options").read_options(cfg, nil, function(changes)
     end
 end)
 
+local selected_tracks = {}
 local active = cfg.default_state
 local seek_skip = cfg.seek_mode_default
 local skipping = false
@@ -188,9 +189,31 @@ function handle_sub_change(_, sub_end)
     end
 end
 
+function get_selected_tracks()
+    local i = 0
+    local tracks_count = mp.get_property_number("track-list/count")
+    while i < tracks_count do
+        local track_type = mp.get_property(string.format("track-list/%d/type", i))
+        local track_selected = mp.get_property(string.format("track-list/%d/selected", i))
+
+        if track_selected == "yes" then
+            selected_tracks[track_type] = true
+        end
+
+        i = i + 1
+    end
+end
+mp.observe_property('track-list', "native", activate)
+
 function activate()
-    mp.observe_property("sub-end", "number", handle_sub_change)
-    active = true
+    get_selected_tracks()
+
+    if selected_tracks['video'] ~= nil and selected_tracks['sub'] ~= nil then
+        mp.observe_property("sub-end", "number", handle_sub_change)
+        active = true
+    else
+        deactivate()
+    end
 end
 
 function deactivate()
@@ -200,7 +223,6 @@ function deactivate()
     active = false
 end
 
-if active then activate() end
 
 -- CONFIG --
 
