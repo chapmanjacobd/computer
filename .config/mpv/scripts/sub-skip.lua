@@ -203,12 +203,11 @@ function get_selected_tracks()
         i = i + 1
     end
 end
-mp.observe_property('track-list', "native", activate)
 
 function activate()
     get_selected_tracks()
 
-    if selected_tracks['video'] ~= nil and selected_tracks['sub'] ~= nil then
+    if (selected_tracks['video'] ~= nil) and (selected_tracks['sub'] ~= nil) then
         mp.observe_property("sub-end", "number", handle_sub_change)
         active = true
     else
@@ -223,6 +222,7 @@ function deactivate()
     active = false
 end
 
+mp.observe_property('track-list', "native", activate)
 
 -- CONFIG --
 
