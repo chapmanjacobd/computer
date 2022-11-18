@@ -422,7 +422,6 @@
 .config/fish/functions/connectbak.fish
 .config/fish/functions/connectpgsql.fish
 .config/fish/functions/connectpgsql5433.fish
-.config/fish/functions/copy-last-command.fish
 .config/fish/functions/crontab.fish
 .config/fish/functions/csv.fish
 .config/fish/functions/csv_grep.fish
