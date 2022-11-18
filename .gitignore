@@ -584,4 +584,3 @@
 .config/fish/functions/trim-trailing-slash.fish
 .config/fish/functions/turn-monitor-off.fish
 .config/fish/functions/tweepi.fish
-.config/fish/functions/type-last-command.fish
