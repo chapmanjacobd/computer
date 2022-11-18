@@ -12,4 +12,6 @@ function dl_daily
         lb redditupdate $db --lookback 2
     end
     library redditupdate ~/lb/fs/tax.db --lookback 2
+
+    lb hnadd --oldest ~/lb/hackernews/hn.db
 end
