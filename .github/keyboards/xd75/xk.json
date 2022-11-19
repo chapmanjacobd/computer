@@ -7,7 +7,7 @@
   "layout": "LAYOUT_ortho_5x15",
   "layers": [
     [
-      "KC_GRV",
+      "LSFT_T(KC_GRV)",
       "KC_1",
       "KC_2",
       "KC_3",
