@@ -59,7 +59,7 @@ end
 
 function end_seek_skip(next_sub_begin)
     mp.set_property_number("time-pos", next_sub_begin - cfg.lead_out)
-    print('end_seek_skip end_skip')
+    -- print('end_seek_skip end_skip')
     end_skip()
 end
 
@@ -133,7 +133,7 @@ function handle_tick(_, time_pos)
         local next_delay = calc_next_delay()
         if next_delay ~= nil then next_sub_start = time_pos + next_delay end
     elseif sped_up and time_pos > next_sub_start - cfg.lead_out then
-        print('handle_tick end_skip')
+        -- print('handle_tick end_skip')
         end_skip()
     elseif not sped_up then
         if (start_idle == nil) or (start_idle > time_pos) then
@@ -141,9 +141,9 @@ function handle_tick(_, time_pos)
         end
         elapsed_idle = time_pos - start_idle
         -- print('elapsed_idle', elapsed_idle)
-        -- if we haven't done anything for 7 seconds then set last_sub_end to now
+        -- if we haven't done anything for n seconds then set last_sub_end to now
         if cfg.max_nonskip_interval < elapsed_idle then
-            print('spoooodup')
+            -- print('idle skip')
             last_sub_end = time_pos
         end
     end
@@ -152,7 +152,7 @@ end
 -- INITIALIZATION/SHARED FUNCTIONALITY --
 
 function start_skip()
-    print('start_skip')
+    -- print('start_skip')
     start_idle = nil
     skipping = true
     mp.observe_property("time-pos", "number", handle_tick)
@@ -184,7 +184,7 @@ function handle_sub_change(_, sub_end)
         end
         start_skip()
     elseif skipping and sub_end then
-        print('handle_sub_change end_skip')
+        -- print('handle_sub_change end_skip')
         end_skip()
     end
 end
