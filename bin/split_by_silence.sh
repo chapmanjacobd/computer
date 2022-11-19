@@ -36,7 +36,7 @@ SPLITS=$(
 )
 
 if [[ "$SPLITS" != *","* ]]; then
-  echo "No splits: $SPLITS"
+  echo "No splits"
   exit 0
 fi
 
