@@ -14,4 +14,7 @@ function dl_daily
     library redditupdate ~/lb/fs/tax.db --lookback 2
 
     lb hnadd --oldest ~/lb/hackernews/hn.db
+
+    ~
+    trash-empty 10 -f
 end
