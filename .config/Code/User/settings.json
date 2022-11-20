@@ -178,6 +178,7 @@
     "consts",
     "crosspostable",
     "Cutline",
+    "daemonized",
     "dataframe",
     "DEMUXERS",
     "downloadqueue",
