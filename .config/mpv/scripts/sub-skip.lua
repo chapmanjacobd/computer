@@ -5,7 +5,7 @@ local cfg = {
     min_skip_interval = 3,
     max_nonskip_interval = 7,
     speed_skip_speed = 2.5,
-    lead_in = 0,
+    lead_in = 1,
     lead_out = 1,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
@@ -159,7 +159,6 @@ function start_skip()
 end
 
 function end_skip()
-    start_idle = nil
     -- mp.unobserve_property(handle_tick)
     skipping = false
     sped_up = false
@@ -167,6 +166,7 @@ function end_skip()
     mp.set_property("video-sync", "audio")
     mp.set_property("video-sync", initial_video_sync)
     last_sub_end, next_sub_start = nil, nil
+    start_idle = nil
 end
 
 function handle_sub_change(_, sub_end)
