@@ -159,6 +159,7 @@ function start_skip()
 end
 
 function end_skip()
+    start_idle = nil
     -- mp.unobserve_property(handle_tick)
     skipping = false
     sped_up = false
