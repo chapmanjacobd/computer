@@ -5,8 +5,7 @@ local cfg = {
     min_skip_interval = 3,
     max_nonskip_interval = 7,
     speed_skip_speed = 2.5,
-    lead_in = 1,
-    lead_out = 1,
+    lead_out = 0,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
 }
@@ -114,7 +113,7 @@ function handle_tick(_, time_pos)
     -- time_pos might be nil after the file changes
     if time_pos == nil then return end
 
-    if last_sub_end and not sped_up and time_pos > last_sub_end + cfg.lead_in then
+    if not sped_up and last_sub_end ~= nil and time_pos > last_sub_end then
         if seek_skip then
             start_seek_skip()
         else
@@ -126,23 +125,23 @@ function handle_tick(_, time_pos)
             mp.set_property_number("speed", cfg.speed_skip_speed)
             sped_up = true
         end
-        start_idle = nil
-    elseif sped_up and next_sub_start == nil then
-        -- next_sub_start == nil means that no next line has been
-        -- found during blind skip
+    elseif next_sub_start == nil then
+        -- no next line was found during blind skip
         local next_delay = calc_next_delay()
-        if next_delay ~= nil then next_sub_start = time_pos + next_delay end
+        if next_delay ~= nil then
+            next_sub_start = time_pos + next_delay
+        end
     elseif sped_up and time_pos > next_sub_start - cfg.lead_out then
         -- print('handle_tick end_skip')
         end_skip()
-    elseif not sped_up then
+    elseif not sped_up and not seek_skip then
         if (start_idle == nil) or (start_idle > time_pos) then
             start_idle = time_pos
         end
         elapsed_idle = time_pos - start_idle
         -- print('elapsed_idle', elapsed_idle)
-        -- if we haven't done anything for n seconds then set last_sub_end to now
         if cfg.max_nonskip_interval < elapsed_idle then
+            -- subtitle hasn't changed for n seconds so we speed up
             -- print('idle skip')
             last_sub_end = time_pos
         end
@@ -153,7 +152,6 @@ end
 
 function start_skip()
     -- print('start_skip')
-    start_idle = nil
     skipping = true
     mp.observe_property("time-pos", "number", handle_tick)
 end
@@ -170,6 +168,9 @@ function end_skip()
 end
 
 function handle_sub_change(_, sub_end)
+    if sub_end then
+        start_idle = nil
+    end
     if not sub_end and not skipping then
         local time_pos = mp.get_property_number("time-pos")
         local next_delay = calc_next_delay()
