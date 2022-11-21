@@ -38,7 +38,7 @@ Chile
 China
 Côte de Ivoire
 Cameroon
-Congo, Democratic Republic of the
+Democratic Republic of the Congo
 Congo
 Colombia
 Comoros
@@ -125,7 +125,7 @@ Macao
 Saint Martin
 Morocco
 Monaco
-Moldova, Republic of
+Moldova
 Madagascar
 Maldives
 Mexico
@@ -167,7 +167,7 @@ Puerto Rico
 North Korea
 Portugal
 Paraguay
-Palestine, State of
+Palestine
 French Polynesia
 Qatar
 Réunion
@@ -206,8 +206,8 @@ Trinidad and Tobago
 Tunisia
 Turkey
 Tuvalu
-Taiwan, Province of China
-Tanzania, United Republic of
+Taiwan
+Tanzania
 Uganda
 Ukraine
 Uruguay
