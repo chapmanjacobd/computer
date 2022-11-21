@@ -5,7 +5,7 @@ local cfg = {
     min_skip_interval = 3,
     max_nonskip_interval = 7,
     speed_skip_speed = 2.5,
-    lead_out = 0,
+    lead_out = 1,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
 }

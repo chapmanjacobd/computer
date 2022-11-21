@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 9:30 run lt-wakeup'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 9:30
+
+[Install]
+WantedBy=timers.target
+
