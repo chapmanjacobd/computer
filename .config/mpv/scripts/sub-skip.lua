@@ -171,7 +171,11 @@ function handle_sub_change(_, sub_end)
     if sub_end then
         start_idle = nil
     end
-    if not sub_end and not skipping then
+
+    if sub_end and (skipping or sped_up) then
+        -- print('handle_sub_change end_skip')
+        end_skip()
+    elseif not sub_end and not skipping then
         local time_pos = mp.get_property_number("time-pos")
         local next_delay = calc_next_delay()
 
@@ -185,9 +189,6 @@ function handle_sub_change(_, sub_end)
             end
         end
         start_skip()
-    elseif skipping and sub_end then
-        -- print('handle_sub_change end_skip')
-        end_skip()
     end
 end
 
