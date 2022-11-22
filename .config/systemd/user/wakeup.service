@@ -1,8 +1,0 @@
-[Unit]
-Description='On *-*-* 9:30 run lt-wakeup'
-
-[Service]
-Type=simple
-RemainAfterExit=no
-ExecStart='/usr/bin/fish' '-c' 'lt-wakeup'
-
