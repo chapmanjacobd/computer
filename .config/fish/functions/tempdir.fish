@@ -1,4 +1,4 @@
-function td
+function tempdir
     set -l prefix temp
     if test (count $argv) -eq 1
         set prefix "temp-$argv[1]"
