@@ -572,4 +572,3 @@
 .config/fish/functions/swallowFlags.fish
 .config/fish/functions/systemd-cron.fish
 .config/fish/functions/table.fish
-.config/fish/functions/tar-cd.fish
