@@ -15,5 +15,6 @@ function dl_weekly
         gallery-dl --input-file ~/mc/$folder.txt
     end
 
+    trash ~/d/.stversions/*
     dbackups
 end
