@@ -570,4 +570,3 @@
 .config/fish/functions/standuphdmi.fish
 .config/fish/functions/standuphorizontally.fish
 .config/fish/functions/swallowFlags.fish
-.config/fish/functions/systemd-cron.fish
