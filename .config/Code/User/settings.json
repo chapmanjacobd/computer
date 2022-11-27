@@ -267,6 +267,7 @@
     "renamer",
     "reproject",
     "Reprojecting",
+    "rmlint",
     "rowid",
     "rowspan",
     "scodec",
@@ -301,7 +302,8 @@
     "vcodec",
     "voronoi",
     "webvtt",
-    "wraplength"
+    "wraplength",
+    "xattr"
   ],
   "editor.stopRenderingLineAfter": 15000,
   "gitlens.statusBar.enabled": false,
