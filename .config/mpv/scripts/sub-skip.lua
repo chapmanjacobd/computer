@@ -157,7 +157,6 @@ function start_skip()
 end
 
 function end_skip()
-    -- mp.unobserve_property(handle_tick)
     skipping = false
     sped_up = false
     mp.set_property_number("speed", initial_speed)
@@ -219,6 +218,7 @@ function activate()
 end
 
 function deactivate()
+    mp.unobserve_property(handle_tick)
     seek_skip_timer:kill()
     end_skip()
     mp.unobserve_property(handle_sub_change)
