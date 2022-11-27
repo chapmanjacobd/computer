@@ -74,9 +74,6 @@ SETUVAR _fish_abbr_wtns:wt\x20\x2dw\x20subtitle_count\x3d0\x20\x2dOO
 SETUVAR _fish_abbr_wts:wt\x20\x2dp\x20\x2du\x20duration\x20\x2ds
 SETUVAR _fish_abbr_xpaste:xclip\x20\x2dselection\x20clipboard\x20\x2do
 SETUVAR _fish_abbr_yt_2E_ogg:yta
-SETUVAR _fish_abbr_ytaadd:lb\x20dladd\x20\x7e/lb/audio\x2edb
-SETUVAR _fish_abbr_ytadd:lb\x20dladd\x20\x7e/lb/video\x2edb
-SETUVAR _fish_abbr_ytadd5:lb\x20tubeadd\x20\x2d\x2ddl\x2dconfig\x20match_filter\x3d\x27duration\x3e1440\x27\x20\x7e/lb/video\x2edb
 SETUVAR _fish_abbr_ytd:lb\x20dladd\x20\x7e/lb/video\x2edb
 SETUVAR _fish_abbr_ytd5:lb\x20tubeadd\x20\x2d\x2ddl\x2dconfig\x20match_filter\x3d\x27duration\x3e1440\x27\x20\x7e/lb/video\x2edb
 SETUVAR _fish_abbr_ytda:lb\x20dladd\x20\x7e/lb/audio\x2edb
