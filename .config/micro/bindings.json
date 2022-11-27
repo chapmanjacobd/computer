@@ -1,10 +1,10 @@
 {
     "Alt-/": "lua:comment.comment",
     "CtrlUnderscore": "lua:comment.comment",
-    "CtrlK": "CutLine",
-    "CtrlU": "Paste",
-    "CtrlX": "Quit",
-    "CtrlW": "Find",
+    "Ctrl-k": "CutLine",
+    "Ctrl-u": "Paste",
+    //"CtrlX": "Quit",
+    //"CtrlW": "Find",
 
 	// These bindings are also present in all Windows Notepad-like textinputs, e.g. HTML textarea, often referred to as Common User Access (CUA)
 	
@@ -79,12 +79,6 @@
 	// editor.action.commentLine
 	"Ctrl-/": "lua:comment.comment",
 
-	// editor.action.deleteLines
-	// "CtrlShift-k"
-	"\u001b[107;6u": "DeleteLine",
-	// Not documented in vscode but de facto keybinding shift+del (?)
-	// editor.action.clipboardCutAction
-	"ShiftDelete": "CutLine",
 	// deleteWordLeft
 	"CtrlBackspace": "DeleteWordLeft",
 	"OldBackspace": "DeleteWordLeft",
