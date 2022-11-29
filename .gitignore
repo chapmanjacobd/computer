@@ -567,4 +567,3 @@
 .config/fish/functions/sp.fish
 .config/fish/functions/spaces.fish
 .config/fish/functions/split_by_silence.fish
-.config/fish/functions/splitcsv.fish
