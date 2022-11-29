@@ -1,1 +1,1 @@
-/home/xk/m/obsidian/
+/home/xk/d/00_Metadata/journal/
