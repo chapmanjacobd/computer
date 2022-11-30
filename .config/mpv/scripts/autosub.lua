@@ -10,12 +10,15 @@ end
 
 function load_sub_fn()
   path = mp.get_property("path")
-  srt_path = string.gsub(path, "%.%w+$", ".srt")
-  t = { args = { "subliminal", "download", "-s", "-f", "-l", "en", path } }
+  -- print(path)
+  path = path:gsub("[%-_ ]*%[[%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_]%](%.%w%w%w)$", '%1')
+  -- print(path)
+  t = { args = { "subliminal", "download", "--opensubtitles", "xk3", "idiZQc2kVyvsQk8!" "-s", "-f", "-l", "en", path } }
 
   mp.osd_message("Searching subtitle")
   res = utils.subprocess(t)
   if res.error == nil then
+    srt_path = string.gsub(path, "%.%w+$", ".srt")
     if mp.commandv("sub_add", srt_path) then
       mp.msg.warn("Subtitle download succeeded")
       mp.osd_message("Subtitle '" .. srt_path .. "' download succeeded")

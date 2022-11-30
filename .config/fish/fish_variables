@@ -40,6 +40,7 @@ SETUVAR _fish_abbr_fdwatch:fd\x20\x2dx\x20fish\x20\x2dc\x20\x22mpvonce\x20\x7b\x
 SETUVAR _fish_abbr_fi:sudo\x20btrfs\x20fi\x20usage
 SETUVAR _fish_abbr_funced:funced\x20\x2ds
 SETUVAR _fish_abbr_gi:gdalinfo\x20/vsigs/
+SETUVAR _fish_abbr_gits:git\x20log\x20\x2dp\x20\x2dS
 SETUVAR _fish_abbr_grep:grep\x20\x2di
 SETUVAR _fish_abbr_gs:git\x20status
 SETUVAR _fish_abbr_hibernate:systemctl\x20hibernate
