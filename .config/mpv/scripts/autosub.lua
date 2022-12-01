@@ -11,7 +11,7 @@ end
 function load_sub_fn()
   path = mp.get_property("path")
   print(path)
-  path = path:gsub("[%-_ ]*%[[%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_]%](%.%w%w%w)$", '%1')
+  path = path:gsub("[%-_ ]*%[[%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_]%](%.%w%w%w%w?)$", '%1')
   print(path)
   t = { args = { "subliminal", "--opensubtitles", "xk3", "idiZQc2kVyvsQk8!", "download", "-s", "-f", "-l", "en", path } }
 
