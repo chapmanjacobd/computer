@@ -1,3 +1,4 @@
+kde-inhibit --colorCorrect sleep 0.1
 sleep 5
 pkill ibus
 xinput set-prop 9 310 1
