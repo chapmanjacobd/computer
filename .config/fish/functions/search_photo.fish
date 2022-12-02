@@ -1,4 +1,4 @@
-function sp
+function search_photo
     google-chrome https://www.pexels.com/search/"$argv"
 
     google-chrome https://unsplash.com/search/photos/"$argv"
