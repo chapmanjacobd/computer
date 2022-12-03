@@ -1,3 +1,4 @@
+/.config/kactivitymanagerd-switcher
 /.RData
 /.duckdb_history
 /.config/Trolltech.conf
@@ -563,4 +564,4 @@
 .config/fish/functions/slideshowFill.fish
 .config/fish/functions/slideshowgen.fish
 .config/fish/functions/smalldpi.fish
-.config/fish/functions/soulseek.fish
+/.config/kactivitymanagerd-switcher
