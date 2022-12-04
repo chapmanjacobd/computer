@@ -1,5 +1,5 @@
 unbind ^J main
-bind ^s writeout main
+bind ^s savefile main
 bind ^x cut main
 bind ^z undo main
 bind ^y redo main
