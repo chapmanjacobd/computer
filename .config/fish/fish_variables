@@ -5,7 +5,7 @@ SETUVAR --export ANDROID_SDK_ROOT:/home/xk/bin/Android/Sdk/
 SETUVAR --export CARGO_NET_GIT_FETCH_WITH_CLI:true
 SETUVAR --export CLOUDSDK_PYTHON:python3\x2e9
 SETUVAR --export DISPLAY:0
-SETUVAR --export EDITOR:micro
+SETUVAR --export EDITOR:nano
 SETUVAR FZF_DEFAULT_OPTS:\x2d\x2dheight\x2040\x25
 SETUVAR FZF_DISABLE_KEYBINDINGS:0
 SETUVAR FZF_LEGACY_KEYBINDINGS:1
@@ -46,7 +46,7 @@ SETUVAR _fish_abbr_gs:git\x20status
 SETUVAR _fish_abbr_hibernate:systemctl\x20hibernate
 SETUVAR _fish_abbr_milky:projectM\x2djack
 SETUVAR _fish_abbr_mvl:mvl\x20\x2ds\x22\x22
-SETUVAR _fish_abbr_ncdu:NO_COLOR\x3d1\x20gdu
+SETUVAR _fish_abbr_ncdu:NO_COLOR\x3d1\x20ncdu
 SETUVAR _fish_abbr_nicotine:flatpak\x20run\x20org\x2enicotine_plus\x2eNicotine
 SETUVAR _fish_abbr_p:pipenv\x20shell
 SETUVAR _fish_abbr_preview:fzf\x20\x2d\x2dpreview\x20\x27bat\x20\x2d\x2dcolor\x20\x22always\x22\x20\x7b\x7d\x27

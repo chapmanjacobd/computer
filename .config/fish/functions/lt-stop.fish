@@ -1,4 +1,8 @@
 # Defined interactively
 function lt-stop
-    library stop
+    if pgrep -f 'lb lt'
+        lb stop
+    else
+        ssh pakon lb stop
+    end
 end
