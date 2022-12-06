@@ -1,3 +1,4 @@
+# Defined interactively
 function refreshLibrary
     ~/lb/
     b lb fsupdate video.db
