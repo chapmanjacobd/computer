@@ -1,3 +1,6 @@
+/.config/Microsoft Teams - Preview/
+/.config/Microsoft/ Teams - Preview/
+/.config/Microsoft/
 /*.mkv
 /*.bak
 /.config/kactivitymanagerd-switcher
@@ -8,8 +11,6 @@
 /.subversion/
 /.config/gallery-dl/config.json
 /.zoom/
-/.config/micro/backups/
-/.config/micro/buffers/history
 /.vscode-server/
 /.config/arkrc
 /.steampath
@@ -203,8 +204,6 @@
 /.config/Meltytech/
 /.config/Mendeley_Ltd./
 /.config/menus/
-/.config/Microsoft/
-/.config/Microsoft Teams - Preview/
 /.config/.mono/
 /.config/MusicBrainz/
 /.config/nautilus/
