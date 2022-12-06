@@ -1,11 +1,61 @@
 unbind ^J main
-bind ^s savefile main
-bind ^x cut main
-bind ^z undo main
-bind ^y redo main
-bind ^f whereis main
-bind ^w exit main
-bind F3 findnext main
-bind ^h replace main
-set tabsize 4
+unbind ^K main
+unbind ^N main
+unbind ^U all
+unbind ^Y all
+unbind M-J main
+unbind M-T main
+
 set mouse
+set multibuffer
+set tabsize 4
+set zap
+set trimblanks
+set softwrap
+set smarthome
+set stateflags
+set positionlog
+
+bind ^/ comment main
+bind ^A mark main
+bind ^B wherewas all
+bind ^C copy main
+bind ^D findprevious all
+bind ^E execute main
+bind ^F whereis all
+bind ^f whereis main
+bind ^G findnext all
+bind ^H exit help
+bind ^h replace main
+bind ^L linter execute
+bind ^L refresh main
+bind ^O insert main
+bind ^P location main
+bind ^R replace main
+bind ^s savefile main
+bind ^T cutrestoffile execute
+bind ^T gotodir browser
+bind ^T gotoline main
+bind ^V paste all
+bind ^w exit main
+bind ^x cut main
+bind ^y redo main
+bind ^z undo main
+bind F3 findnext main
+bind M-R redo main
+bind M-U undo main
+bind ^H chopwordleft main
+
+extendsyntax python tabgives "    "
+extendsyntax makefile tabgives "	"
+
+set titlecolor bold,white,black
+set promptcolor black,normal
+set statuscolor bold,white,black
+set errorcolor bold,white,red
+set spotlightcolor black,lightyellow
+set selectedcolor lightwhite,magenta
+set stripecolor ,yellow
+set scrollercolor cyan
+set numbercolor cyan
+set keycolor cyan
