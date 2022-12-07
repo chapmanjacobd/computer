@@ -195,6 +195,7 @@
     "featureset",
     "ffprobe",
     "firestore",
+    "FLATGEOBUF",
     "framebuffer",
     "fspath",
     "ftfy",
