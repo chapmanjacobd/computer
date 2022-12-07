@@ -483,7 +483,6 @@
 .config/fish/functions/ip-addr.fish
 .config/fish/functions/isparent.fish
 .config/fish/functions/json-compress.fish
-.config/fish/functions/keepvid.fish
 .config/fish/functions/kill-on-port.fish
 .config/fish/functions/la.fish
 .config/fish/functions/last-function-name.fish
