@@ -546,8 +546,6 @@
 .config/fish/functions/replaceExt.fish
 .config/fish/functions/resetsshfs.fish
 .config/fish/functions/resizecityphotos.fish
-.config/fish/functions/rest.fish
-.config/fish/functions/restore.fish
 .config/fish/functions/rip.fish
 .config/fish/functions/row.fish
 .config/fish/functions/savefilenames.fish
