@@ -60,7 +60,7 @@ sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon k
 #gcloud auth login
 #https://www.ctrl.blog/entry/fedora-hibernate.html
 python -m pip install --upgrade pip
-python -m pip install yt-dlp pipenv catt
+python -m pip install yt-dlp pipenv catt xklb
 
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
 #cd ~ && restorecon -vR .
