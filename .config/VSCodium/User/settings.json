@@ -401,5 +401,6 @@
   "workbench.startupEditor": "none",
   "workbench.statusBar.visible": true,
   "material-icon-theme.saturation": 0,
-  "window.zoomLevel": 1
+  "window.zoomLevel": 1,
+  "search.useIgnoreFiles": false
 }
