@@ -1,3 +1,4 @@
+/.config/partitionmanagerrc
 /.config/Microsoft Teams - Preview/
 /.config/Microsoft/ Teams - Preview/
 /.config/Microsoft/
@@ -556,4 +557,3 @@
 .config/fish/functions/sendroid.fish
 .config/fish/functions/sendroidmusic.fish
 .config/fish/functions/sendroidsd.fish
-.config/fish/functions/seqn.fish
