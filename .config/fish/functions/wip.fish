@@ -12,6 +12,7 @@ function wip
 
     git add .
     git --no-pager diff HEAD
+    echo
     git diff --stat HEAD
     echo
     git status
@@ -21,3 +22,4 @@ function wip
         git push
     end
 end
+
