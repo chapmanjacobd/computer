@@ -28,6 +28,7 @@ SETUVAR Z_EXCLUDE:\x5e/home/xk\x24
 SETUVAR --export __fish_git_prompt_showuntrackedfiles:1
 SETUVAR __fish_initialized:3400
 SETUVAR _fish_abbr__3F_:\x7e/
+SETUVAR _fish_abbr_arpa:arp\x20\x2da
 SETUVAR _fish_abbr_asciiterm:termtosvg\x20\x2d\x2dscreen\x2dgeometry\x3d100x10\x20\x2d\x2dmin\x2dframe\x2dduration\x3d200\x20\x2d\x2dmax\x2dframe\x2dduration\x3d5000\x20\x2d\x2dtemplate\x3dsolarized_light
 SETUVAR _fish_abbr_bead:bat\x20\x2dr\x200\x3a10
 SETUVAR _fish_abbr_bsubvdel:sudo\x20btrfs\x20subvolume\x20delete\x20\x2d\x2dcommit\x2deach
