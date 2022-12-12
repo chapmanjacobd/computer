@@ -1,7 +1,7 @@
 # Defined interactively
 function sitdown
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.HDMI-A-0.disable output.DisplayPort-0.disable output.DVI-D-0.disable
+        kscreen-doctor output.HDMI-A-1.disable output.DisplayPort-0.disable output.DVI-D-1.disable
         kscreen-doctor output.DisplayPort-0.enable
     end
     if grep -qEi "(DP-1)" (kscreen-doctor -o | psub)
