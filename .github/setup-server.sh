@@ -26,3 +26,4 @@ cd ~/ && mkdir -p bin/ && cd bin/ && rm -rf bfs/ && git clone https://github.com
 cd bfs && make release && sudo make install
 
 sudo dnf install (cat ~/.github/dnf_installed)
+sudo systemctl set-default multi-user.target
