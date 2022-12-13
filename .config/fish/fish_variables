@@ -57,7 +57,7 @@ SETUVAR _fish_abbr_q:exit
 SETUVAR _fish_abbr_rm:trash\x2dput
 SETUVAR _fish_abbr_rmove:rsync\x20\x2da\x20\x2d\x2dinfo\x3dprogress2\x20\x2d\x2dno\x2dinc\x2drecursive\x20\x2d\x2dremove\x2dsource\x2dfiles\x20\x2d\x2dbackup\x2ddir\x20\x28date\x20\x22\x2b\x25d\x2e\x25m\x2e\x25Y\x22\x29
 SETUVAR _fish_abbr_rsync:rsync\x20\x2dauh\x20\x2d\x2dinfo\x3dprogress2\x20\x2d\x2dno\x2dinc\x2drecursive
-SETUVAR _fish_abbr_sde:sudo\x20dnf\x20erase
+SETUVAR _fish_abbr_sde:dnferase
 SETUVAR _fish_abbr_sdi:dnfinstall
 SETUVAR _fish_abbr_sdu:sudo\x20dnf\x20update
 SETUVAR _fish_abbr_sed:sed\x20\x27s\x7c\x7c\x7c\x27
