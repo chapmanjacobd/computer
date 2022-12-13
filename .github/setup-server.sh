@@ -27,3 +27,5 @@ cd bfs && make release && sudo make install
 
 sudo dnf install (cat ~/.github/dnf_installed)
 sudo systemctl set-default multi-user.target
+curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher (cat ~/.config/fish/fish_plugins)
+
