@@ -456,7 +456,6 @@
 .config/fish/functions/files.fish
 .config/fish/functions/filesDeep.fish
 .config/fish/functions/filterByGenre.fish
-.config/fish/functions/filterfile.fish
 .config/fish/functions/findandreplace.fish
 .config/fish/functions/findmusic.fish
 .config/fish/functions/fish-map.fish
