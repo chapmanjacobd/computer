@@ -460,7 +460,6 @@
 .config/fish/functions/findandreplace.fish
 .config/fish/functions/findmusic.fish
 .config/fish/functions/fish-map.fish
-.config/fish/functions/fish_greeting.fish
 .config/fish/functions/fish_right_prompt.fish
 .config/fish/functions/fisher.fish
 .config/fish/functions/forganize.fish
