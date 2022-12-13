@@ -1,4 +1,9 @@
+/.local/*.ovpn
 /.local/magnets
+/.config/kded5rc
+/.config/kateschemarc
+/.config/gtkrc-2.0
+/.config/ksmserverrc
 /.config/partitionmanagerrc
 /.config/Microsoft Teams - Preview/
 /.config/Microsoft/ Teams - Preview/
@@ -555,4 +560,3 @@
 .config/fish/functions/screendim.fish
 .config/fish/functions/sdr.fish
 .config/fish/functions/senddev.fish
-.config/fish/functions/sendroid.fish

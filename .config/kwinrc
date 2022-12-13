@@ -1,5 +1,5 @@
 [$Version]
-update_info=kwin.upd:replace-scalein-with-scale,kwin.upd:port-minimizeanimation-effect-to-js,kwin.upd:port-scale-effect-to-js,kwin.upd:port-dimscreen-effect-to-js,kwin.upd:auto-bordersize,kwin.upd:animation-speed,kwin.upd:desktop-grid-click-behavior,kwin.upd:no-swap-encourage,kwin.upd:make-translucency-effect-disabled-by-default,kwin.upd:remove-flip-switch-effect,kwin.upd:remove-cover-switch-effect,kwin.upd:remove-cubeslide-effect,kwin.upd:remove-xrender-backend,kwin.upd:enable-scale-effect-by-default,kwin.upd:animation-speed-cleanup
+update_info=kwin.upd:replace-scalein-with-scale,kwin.upd:port-minimizeanimation-effect-to-js,kwin.upd:port-scale-effect-to-js,kwin.upd:port-dimscreen-effect-to-js,kwin.upd:auto-bordersize,kwin.upd:animation-speed,kwin.upd:desktop-grid-click-behavior,kwin.upd:no-swap-encourage,kwin.upd:make-translucency-effect-disabled-by-default,kwin.upd:remove-flip-switch-effect,kwin.upd:remove-cover-switch-effect,kwin.upd:remove-cubeslide-effect,kwin.upd:remove-xrender-backend,kwin.upd:enable-scale-effect-by-default,kwin.upd:animation-speed-cleanup,kwin.upd:overview-group-plugin-id
 
 [Compositing]
 Backend=OpenGL
@@ -23,7 +23,12 @@ Scale=1
 Transform=normal
 
 [DrmOutputs][82d0686c74][82d0686c74]
+BorderActivate=9
+BorderActivateCylinder=9
+BorderActivateSphere=9
 Scale=1
+TabBox=false
+TabBoxAlternative=false
 
 [Effect-CoverSwitch]
 TabBox=false
@@ -52,7 +57,24 @@ BorderActivate=9
 BorderActivateAll=9
 BorderActivateClass=9
 
+[Effect-desktopgrid]
+BorderActivate=9
+
+[Effect-diminactive]
+DimDesktop=true
+DimFullScreen=false
+DimPanels=true
+Strength=5
+TabBox=false
+TabBoxAlternative=false
+
 [Effect-kwin4_effect_translucency]
+Inactive=48
+
+[Effect-presentwindows]
+BorderActivate=9
+BorderActivateAll=9
+BorderActivateClass=9
 Inactive=48
 
 [Effect-windowview]

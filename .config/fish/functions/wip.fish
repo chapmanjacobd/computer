@@ -10,6 +10,7 @@ function wip
         set _flag_yes true
     end
 
+    git reset
     git add .
     git --no-pager diff HEAD
     echo
@@ -22,4 +23,3 @@ function wip
         git push
     end
 end
-
