@@ -1,4 +1,6 @@
 # Defined via `source`
 function pyformat
-    ssort $argv && isort --profile black --line-length=120 $argv && black --line-length=120 --skip-string-normalization $argv
+    for file in $argv
+        ssort $file && isort --profile black --line-length=120 $file && black --line-length=120 --skip-string-normalization $file
+    end
 end

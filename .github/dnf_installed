@@ -6,3 +6,4 @@ mesa-dri-drivers
 mesa-vdpau-drivers
 powertop
 vdpauinfo
+xorg-x11-drv-amdgpu
