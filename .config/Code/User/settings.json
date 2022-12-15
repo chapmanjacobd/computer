@@ -186,6 +186,7 @@
     "DEMUXERS",
     "downloadqueue",
     "dropna",
+    "dtype",
     "dtypes",
     "epsg",
     "exactextract",
