@@ -1,0 +1,8 @@
+[Unit]
+Description='On 12-15..31 0/18:30 run firefox https://store.epicgames.com/en-US/free-games'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+ExecStart='/usr/bin/fish' '-c' 'firefox https://store.epicgames.com/en-US/free-games'
+
