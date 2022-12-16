@@ -11,6 +11,6 @@ function tv
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
     keepscreenon && xset s off
     #breaktimer disable && pkill breaktimer
-    pactl set-default-sink alsa_output.pci-0000_01_00.1.pro-output-9
+    pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     ~/.config/autostart.sh &
 end
