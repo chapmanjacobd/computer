@@ -356,7 +356,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_17Actions0]
-CommandURL=fish -c lt-stop
+CommandURL=fish -c lt-toggle
 Type=COMMAND_URL
 
 [Data_10_17Conditions]
