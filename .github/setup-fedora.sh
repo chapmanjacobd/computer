@@ -17,8 +17,6 @@ echo "EnablePublicDiskSharing 0" | sudo tee -a /usr/NX/etc/node.cfg
 echo "EnableSyslogSupport 1" | sudo tee -a /usr/NX/etc/node.cfg
 sudo /usr/NX/bin/nxserver --restart
 
-echo "sshfs#xk@bababushka.duckdns.org:/mnt/d/	  /mnt/d	fuse   defaults,user,nofail,_netdev,reconnect,delay_connect,ConnectTimeout=5,ServerAliveInterval=5,TCPKeepAlive=no,port=564 0 0" | sudo tee -a /etc/fstab
-
 sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf group update core -y
 sudo dnf --with-optional -y groupinstall Multimedia
