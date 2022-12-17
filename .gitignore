@@ -278,7 +278,6 @@
 /.config/rstudio/
 /.config/RStudio/
 /.config/RStudiorc
-/.config/SalSoft/
 /.config/Sebastien Vavassori/
 /.config/session/
 /.config/Shotcutrc
@@ -508,8 +507,6 @@
 .config/fish/functions/loadmagnets.fish
 .config/fish/functions/log.fish
 .config/fish/functions/logNice.fish
-.config/fish/functions/lsof.fish
-.config/fish/functions/lsoff.fish
 .config/fish/functions/lt-search.fish
 .config/fish/functions/makeAudioTolerable.fish
 .config/fish/functions/makeValidFilename.fish
