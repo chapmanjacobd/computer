@@ -508,7 +508,6 @@
 .config/fish/functions/loadmagnets.fish
 .config/fish/functions/log.fish
 .config/fish/functions/logNice.fish
-.config/fish/functions/ls.fish
 .config/fish/functions/lsof.fish
 .config/fish/functions/lsoff.fish
 .config/fish/functions/lt-search.fish
