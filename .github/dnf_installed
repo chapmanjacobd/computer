@@ -7,6 +7,7 @@ kitty-terminfo
 mesa-dri-drivers
 mesa-vdpau-drivers
 powertop
+remove-retired-packages
 rpmconf
 system-upgrade
 vdpauinfo
