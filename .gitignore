@@ -1,8 +1,8 @@
+/.local/magnets
 /NoMachine/
 *giveaway*
 /.config/fish/completions/fzf_configure_bindings.fish
 /.local/*.ovpn
-/.local/magnets
 /.config/kded5rc
 /.config/kateschemarc
 /.config/gtkrc-2.0
@@ -504,7 +504,6 @@
 .config/fish/functions/load_env_file.fish
 .config/fish/functions/load_env_prod.fish
 .config/fish/functions/load_env_qa.fish
-.config/fish/functions/loadmagnets.fish
 .config/fish/functions/log.fish
 .config/fish/functions/logNice.fish
 .config/fish/functions/lt-search.fish
