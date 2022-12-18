@@ -1,3 +1,4 @@
+/.config/systemd/user/*.target.wants/
 /.local/Downloads/
 /.config/kdiff3fileitemactionrc
 /.local/magnets
