@@ -20,6 +20,7 @@ perl
 powertop
 remove-retired-packages
 rpmconf
+stress
 symlinks
 sysfsutils
 system-upgrade
