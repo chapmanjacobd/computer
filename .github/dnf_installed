@@ -15,6 +15,7 @@ kitty-terminfo
 krusader
 mesa-dri-drivers
 mesa-vdpau-drivers
+mpv
 perl
 powertop
 remove-retired-packages
