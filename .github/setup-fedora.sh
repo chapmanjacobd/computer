@@ -2,6 +2,7 @@
 
 source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
+source "${BASH_SOURCE%/vscode_extensions.sh}"
 
 sudo dnf install https://download.nomachine.com/download/8.2/Linux/nomachine_8.2.3_4_x86_64.rpm
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDNOM8a1uNNCgaB0l5qALnACNxFzRZ1Nt9MBfbtrO5/2MkqWYQGGHBcXjIqGqhqTNfQvzFDCKzbaCYEMnE7d/TDyoNh7HhB6XtKi2qsYmDmUWkXfYCzWvRD+/45RiABQcJwJ2Q58fQ4CXeVJWRpdpWjIohOuGJe1diCOSDIurkTw9XqiGwVUU4tLfIdfUCCLYcFTvyz7XBL6LIvLkokxKD0FkDJvijxKVk0R0EMjYmoaVAQXblFDQhM0wg5urYo8Oz3pnPoSd/rTb35yy1e9Zrw3GqebV1q5pMolqz77gslZait/c0zq1xdS2TH7KNK8z0EQtM6LQ99TZPOwKtHGwTqCr/GM8cgJlNCCmwilPtX6fz3rSFhmw9MXZACVwUTVoONIc1cRcCoZr/rmDea4Ai1nYBslLsDFaLBFjR2rdFoDHpsND8ELX7KROh+4QZOxI6nfu3zw/xS5eLkMnF1I+9sTlclr03xPv5idCOX6PappCeSyKBN4PmvGQEeV8yWwU0=" > ~/.nx/config/authorized.crt
