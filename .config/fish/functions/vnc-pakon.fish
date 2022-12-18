@@ -1,4 +1,4 @@
 # Defined interactively
 function vnc-pakon
-    ssh xk@pakon -f -L 4102:localhost:4000 sleep 20 && /usr/NX/bin/nxplayer --session ~/bin/nomachine/ssh_pakon.nxs
+    ssh xk@pakon -f -L 4102:localhost:4000 sleep 20 && /usr/NX/bin/nxplayer --session ~/.ssh/ssh_pakon.nxs
 end
