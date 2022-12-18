@@ -1,5 +1,5 @@
 [Unit]
-Description='On 12-15..31 0/18:30 run firefox https://store.epicgames.com/en-US/free-games'
+Description='On 12-15..31 18:30 run firefox https://store.epicgames.com/en-US/free-games'
 
 [Service]
 Type=simple
