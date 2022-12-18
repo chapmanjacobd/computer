@@ -1,3 +1,4 @@
+/.config/copyq/
 /.config/plasma-pk-updates
 /.config/plasma.emojierrc
 /gak/
@@ -105,7 +106,6 @@
 /.config/compton/
 /.config/.config/
 /.config/configstore/
-/.config/copyq/
 /.config/darktable/
 /.config/dconf/
 /.config/defaultkde5.tar.gz
