@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-source setup-server.sh
+source "${BASH_SOURCE%/setup-server.sh}"
+sudo systemctl set-default graphical.target
 
 sudo dnf install https://download.nomachine.com/download/8.2/Linux/nomachine_8.2.3_4_x86_64.rpm
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDNOM8a1uNNCgaB0l5qALnACNxFzRZ1Nt9MBfbtrO5/2MkqWYQGGHBcXjIqGqhqTNfQvzFDCKzbaCYEMnE7d/TDyoNh7HhB6XtKi2qsYmDmUWkXfYCzWvRD+/45RiABQcJwJ2Q58fQ4CXeVJWRpdpWjIohOuGJe1diCOSDIurkTw9XqiGwVUU4tLfIdfUCCLYcFTvyz7XBL6LIvLkokxKD0FkDJvijxKVk0R0EMjYmoaVAQXblFDQhM0wg5urYo8Oz3pnPoSd/rTb35yy1e9Zrw3GqebV1q5pMolqz77gslZait/c0zq1xdS2TH7KNK8z0EQtM6LQ99TZPOwKtHGwTqCr/GM8cgJlNCCmwilPtX6fz3rSFhmw9MXZACVwUTVoONIc1cRcCoZr/rmDea4Ai1nYBslLsDFaLBFjR2rdFoDHpsND8ELX7KROh+4QZOxI6nfu3zw/xS5eLkMnF1I+9sTlclr03xPv5idCOX6PappCeSyKBN4PmvGQEeV8yWwU0=" > ~/.nx/config/authorized.crt
@@ -44,12 +45,6 @@ sudo dnf install -y codium google-cloud-sdk mpv ffmpeg python3 python3-pip git a
 
 #setxkbmap us -variant altgr-intl -option caps:backspace
 
-wget https://github.com/tom-james-watson/breaktimer-app/releases/latest/download/BreakTimer.AppImage -P ~/.local/bin/
-
-sudo dnf install -y https://zoom.us/client/latest/zoom_x86_64.rpm
-sudo dnf install -y https://download2.tixati.com/download/tixati-2.89-1.x86_64.rpm
-sudo dnf install -y https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
-
 sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror chromium docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmahjongg kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring
 # sudo dnf erase plasma-discover
 
@@ -62,5 +57,5 @@ python -m pip install --upgrade pip
 python -m pip install yt-dlp pipenv catt xklb
 
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
-#cd ~ && restorecon -vR .
+cd ~ && restorecon -vR .
 #reboot

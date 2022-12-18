@@ -1,3 +1,6 @@
+/.config/plasma-pk-updates
+/.config/plasma.emojierrc
+/gak/
 /.config/systemd/user/*.target.wants/
 /.local/Downloads/
 /.config/kdiff3fileitemactionrc
