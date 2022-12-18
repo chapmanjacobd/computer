@@ -13,6 +13,7 @@ powertop
 remove-retired-packages
 rpmconf
 symlinks
+sysfsutils
 system-upgrade
 vdpauinfo
 xinput
