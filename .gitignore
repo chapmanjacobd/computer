@@ -1,3 +1,6 @@
+/.config/plasmanotifyrc
+/Games
+/*.desktop
 /.xsession-errors
 /.config/copyq/
 /.config/plasma-pk-updates
