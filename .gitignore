@@ -557,4 +557,3 @@
 .config/fish/functions/regex.fish
 .config/fish/functions/regexpesc.fish
 .config/fish/functions/replaceExt.fish
-.config/fish/functions/resetsshfs.fish
