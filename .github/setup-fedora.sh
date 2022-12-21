@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "${BASH_SOURCE%/setup-server.sh}"
+#source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
 source "${BASH_SOURCE%/vscode_extensions.sh}"
 
