@@ -148,7 +148,7 @@ Type=ACTION_DATA_GROUP
 
 [Data_10]
 Comment=Comment
-DataCount=18
+DataCount=19
 Enabled=true
 Name=layer2
 SystemGroup=0
@@ -397,6 +397,32 @@ TriggersCount=1
 Key=Ctrl+Alt+P
 Type=SHORTCUT
 Uuid={6b5114b9-b799-4d0f-ab5d-41cc7102511e}
+
+[Data_10_19]
+Comment=Comment
+Enabled=true
+Name=watch no subtitle
+Type=SIMPLE_ACTION_DATA
+
+[Data_10_19Actions]
+ActionsCount=1
+
+[Data_10_19Actions0]
+CommandURL=fish -c "wt -w subtitle_count=0 -OO"
+Type=COMMAND_URL
+
+[Data_10_19Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_10_19Triggers]
+Comment=Simple_action
+TriggersCount=1
+
+[Data_10_19Triggers0]
+Key=Ctrl+Alt+Shift+P
+Type=SHORTCUT
+Uuid={56f62e05-51ca-4865-97e4-fc85a17f20ab}
 
 [Data_10_1Actions]
 ActionsCount=1
