@@ -37,6 +37,7 @@ SETUVAR _fish_abbr_clip:cb
 SETUVAR _fish_abbr_cup:docker\x20compose\x20\x2df\x20docker/docker\x2dcompose\x2eyaml\x20up
 SETUVAR _fish_abbr_dd:dd\x20status\x3dprogress\x20if\x3d\x20of\x3d
 SETUVAR _fish_abbr_df:df\x20\x2dh
+SETUVAR _fish_abbr_erm:string\x20escape\x20\x7c\x20xargs\x20rm
 SETUVAR _fish_abbr_fdh:fd\x20\x2d\x2dhidden\x20\x2d\x2dexclude\x20\x27\x2egit\x27
 SETUVAR _fish_abbr_fdwatch:fd\x20\x2dx\x20fish\x20\x2dc\x20\x22mpvonce\x20\x7b\x7d\x22
 SETUVAR _fish_abbr_fi:sudo\x20btrfs\x20fi\x20usage
