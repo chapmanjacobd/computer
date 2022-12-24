@@ -26,5 +26,6 @@ symlinks
 sysfsutils
 system-upgrade
 vdpauinfo
+wine
 xinput
 xorg-x11-drv-amdgpu
