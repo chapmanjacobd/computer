@@ -394,7 +394,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_10_18Triggers0]
-Key=Ctrl+Alt+P
+Key=Ctrl+Shift+O
 Type=SHORTCUT
 Uuid={6b5114b9-b799-4d0f-ab5d-41cc7102511e}
 

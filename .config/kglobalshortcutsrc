@@ -37,6 +37,7 @@ _k_friendly_name=Custom Shortcuts Service
 {1b8dbfb7-c706-47fa-a1cd-d3b7573abb3d}=Alt+F,none,castvolup
 {41168343-5cde-4ad9-90a1-c4117c18d0c9}=Alt+W,none,castvoldown
 {4e65ea70-60ac-4eaa-a704-413d55aad127}=Alt+],none,speedup
+{56f62e05-51ca-4865-97e4-fc85a17f20ab}=Ctrl+Alt+Shift+P,none,watch no subtitle
 {5f7de456-6402-45b0-b87a-6de60c92c306}=Alt+[,none,speeddown
 {63f4d3ee-9e43-41ce-9f7b-bf86f709deb6}=Alt+D,none,videoDelete
 {6b5114b9-b799-4d0f-ab5d-41cc7102511e}=Ctrl+Shift+O,none,watch
@@ -55,9 +56,8 @@ _k_friendly_name=Custom Shortcuts Service
 {c1b32653-c74c-458a-b0f4-20ecd471ca31}=Alt+PgDown,none,xcalib
 {d03619b6-9b3c-48cc-9d9c-a2aadb485550}=none,none,Search
 {d5ac8674-44ea-4280-98f8-2fbe2c1c2ee0}=Alt+PgUp,none,xcalib-clear
-{e556ea94-e5b6-4a86-a0c3-1d8e1e901360}=Alt+P,none,stop
+{e556ea94-e5b6-4a86-a0c3-1d8e1e901360}=Alt+P,none,listen-toggle
 {e8d8a547-830e-4b0f-a512-9f93a2225cad}=Meta+F,none,krusader
-{e90b7ea3-8929-4dcd-a143-960b4778e23d}=Ctrl+Alt+I,none,listen
 
 [kmix]
 _k_friendly_name=Audio Volume
@@ -361,11 +361,11 @@ view_zoom_out=Meta+-,Meta+-,Zoom Out
 
 [mediacontrol]
 _k_friendly_name=Media Controller
-mediavolumedown=none,,Media volume down
-mediavolumeup=none,,Media volume up
+mediavolumedown=none,none,Media volume down
+mediavolumeup=none,none,Media volume up
 nextmedia=Media Next,Media Next,Media playback next
 pausemedia=Media Pause,Media Pause,Pause media playback
-playmedia=none,,Play media playback
+playmedia=none,none,Play media playback
 playpausemedia=Media Play,Media Play,Play/Pause media playback
 previousmedia=Media Previous,Media Previous,Media playback previous
 stopmedia=Media Stop,Media Stop,Stop media playback
