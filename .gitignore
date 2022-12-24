@@ -424,7 +424,6 @@
 .config/fish/functions/audioActualTime.fish
 .config/fish/functions/audioCompressAndSplit.fish
 .config/fish/functions/audiodbs.fish
-.config/fish/functions/backup.fish
 .config/fish/functions/bass.fish
 .config/fish/functions/bc.fish
 .config/fish/functions/bdfr-links.fish
@@ -448,8 +447,6 @@
 .config/fish/functions/crontab.fish
 .config/fish/functions/csv.fish
 .config/fish/functions/csv_grep.fish
-.config/fish/functions/dbackup.fish
-.config/fish/functions/dbackups.fish
 .config/fish/functions/default.fish
 .config/fish/functions/defaultset.fish
 .config/fish/functions/deleteSong.fish
