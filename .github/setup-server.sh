@@ -32,8 +32,6 @@ cd bfs && make release && sudo make install
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install flathub org.freedesktop.Platform.ffmpeg-full
 
-flatpak remote-add --if-not-exists winepak https://dl.winepak.org/repo/winepak.flatpakrepo
-
 sudo dnf install $(cat ~/.github/dnf_installed)
 
 sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
