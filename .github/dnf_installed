@@ -25,6 +25,7 @@ stress
 symlinks
 sysfsutils
 system-upgrade
+util-linux
 vdpauinfo
 wine
 xdotool
