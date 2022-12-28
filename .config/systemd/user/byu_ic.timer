@@ -1,0 +1,10 @@
+[Unit]
+Description='On 12-31 12:30 run firefox https://ic.byu.edu/'
+
+[Timer]
+Persistent=yes
+OnCalendar=12-31 12:30
+
+[Install]
+WantedBy=timers.target
+

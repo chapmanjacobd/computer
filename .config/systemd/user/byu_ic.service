@@ -1,0 +1,8 @@
+[Unit]
+Description='On 12-31 12:30 run firefox https://ic.byu.edu/'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+ExecStart='/usr/bin/fish' '-c' 'firefox https://ic.byu.edu/'
+
