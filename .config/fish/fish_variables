@@ -76,6 +76,7 @@ SETUVAR _fish_abbr_td:tempdir
 SETUVAR _fish_abbr_tee:tee\x20\x2da
 SETUVAR _fish_abbr_timers:systemctl\x20\x2d\x2duser\x20list\x2dtimers\x20\x2d\x2dall\x20\x2d\x2dno\x2dpager
 SETUVAR _fish_abbr_tmux:tmux\x20new\x2dsession\x20\x2dA\x20\x2ds\x20phone
+SETUVAR _fish_abbr_watch:viddy
 SETUVAR _fish_abbr_wipa:git\x20add\x20\x2e
 SETUVAR _fish_abbr_wtns:wt\x20\x2dw\x20subtitle_count\x3d0\x20\x2dOO
 SETUVAR _fish_abbr_wts:wt\x20\x2dp\x20\x2du\x20duration\x20\x2ds
