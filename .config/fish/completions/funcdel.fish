@@ -1,1 +1,1 @@
-complete -c funced -xa "(functions -na)" -d "Save function"
+complete -c funcdel -xa "(functions -na)" -d "Delete function"
