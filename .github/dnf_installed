@@ -15,11 +15,12 @@ keepassxc
 kitty
 kitty-terminfo
 krusader
+libmediainfo
 megatools
 mesa-dri-drivers
 mesa-vdpau-drivers
 mpv
-mpv-libs
+mpv-devel
 perl
 powertop
 remove-retired-packages
