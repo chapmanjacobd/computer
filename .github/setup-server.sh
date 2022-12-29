@@ -31,7 +31,6 @@ cd bfs && make release && sudo make install
 
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install flathub org.freedesktop.Platform.ffmpeg-full
-flatpak install flathub com.usebottles.bottles
 
 sudo dnf install $(cat ~/.github/dnf_installed)
 
