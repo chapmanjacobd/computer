@@ -504,7 +504,6 @@
 .config/fish/functions/lastconfigaccessed.fish
 .config/fish/functions/lb-dev.fish
 .config/fish/functions/lbformat.fish
-.config/fish/functions/lbrelease.fish
 .config/fish/functions/lbtest.fish
 .config/fish/functions/lf.fish
 .config/fish/functions/library-stats.fish
