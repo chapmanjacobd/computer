@@ -43,5 +43,3 @@ function funcdel --description 'Remove the current definition of all specified f
 
     return $retval
 end
-complete -c funcdel -s d -l directory -d "dir to remove function(s) from" -a '$fish_function_path' -r
-complete -c funcdel -s q -d "suppress output" -r
