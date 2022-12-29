@@ -19,6 +19,7 @@ megatools
 mesa-dri-drivers
 mesa-vdpau-drivers
 mpv
+mpv-libs
 perl
 powertop
 remove-retired-packages
