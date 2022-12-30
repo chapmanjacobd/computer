@@ -11,8 +11,8 @@ autofit=50%x40%
 quiet=yes
 
 vo=gpu-next
-hwdec=auto-safe
-gpu-hwdec-interop=vaapi-egl
+hwdec=auto-safe-copy
+gpu-hwdec-interop=vaapi
 
 osd-font="Noto Sans"
 osd-font-size=40
