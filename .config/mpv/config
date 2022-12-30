@@ -10,6 +10,10 @@ geometry=100%:100%
 autofit=50%x40%
 quiet=yes
 
+vo=gpu-next
+hwdec=auto-safe
+gpu-hwdec-interop=vaapi-egl
+
 osd-font="Noto Sans"
 osd-font-size=40
 osd-color="#ffffff"
