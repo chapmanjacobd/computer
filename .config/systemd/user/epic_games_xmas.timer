@@ -1,9 +1,9 @@
 [Unit]
-Description='On 12-15..31 18:30 run firefox https://store.epicgames.com/en-US/free-games'
+Description='On 12-15..28 18:30 run firefox https://store.epicgames.com/en-US/free-games'
 
 [Timer]
 Persistent=yes
-OnCalendar=12-15..31 18:30
+OnCalendar=12-15..28 18:30
 
 [Install]
 WantedBy=timers.target
