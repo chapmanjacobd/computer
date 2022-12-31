@@ -1,5 +1,3 @@
-
-
 [Unit]
 Description=/usr/bin/fish -c dl_weekly
 Requires=mnt-d.mount

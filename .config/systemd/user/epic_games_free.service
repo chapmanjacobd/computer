@@ -1,5 +1,7 @@
 [Unit]
 Description='On Thu 18:30 run firefox https://store.epicgames.com/en-US/free-games'
+Requires=xdg-desktop-autostart.target
+Requires=firefox.service
 
 [Service]
 Type=simple

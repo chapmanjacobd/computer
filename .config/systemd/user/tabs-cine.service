@@ -1,5 +1,7 @@
 [Unit]
 Description=/usr/bin/fish -c cine
+Requires=xdg-desktop-autostart.target
+Requires=firefox.service
 
 [Service]
 Type=simple
