@@ -10,9 +10,9 @@ geometry=100%:100%
 autofit=50%x40%
 quiet=yes
 
-#vo=gpu
-#hwdec=auto-safe-copy
-#gpu-hwdec-interop=vaapi
+vo=gpu
+hwdec=auto-safe-copy
+gpu-hwdec-interop=vaapi
 
 osd-font="Noto Sans"
 osd-font-size=40
