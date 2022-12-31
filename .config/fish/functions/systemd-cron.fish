@@ -10,6 +10,8 @@ Description='On $cal run $cmd'
 [Service]
 Type=simple
 RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 600
 ExecStart='/usr/bin/fish' '-c' '$cmd'
 " >~/.config/systemd/user/$unit.service
 
