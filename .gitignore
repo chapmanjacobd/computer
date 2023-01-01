@@ -1,4 +1,4 @@
-/.config/plasmanotifyrc
+/.icons/
 /.config/plasmanotifyrc
 /Games
 /*.desktop
@@ -371,7 +371,6 @@
 /.gnupg/
 /.grass8/
 /.gsutil/
-/.icons/
 /.ipython/
 /.java/
 /.jkiss-lm/
