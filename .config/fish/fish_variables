@@ -54,6 +54,7 @@ SETUVAR _fish_abbr_mvl:mvl\x20\x2ds\x22\x22
 SETUVAR _fish_abbr_ncdu:NO_COLOR\x3d1\x20ncdu
 SETUVAR _fish_abbr_nicotine:flatpak\x20run\x20org\x2enicotine_plus\x2eNicotine
 SETUVAR _fish_abbr_p:pipenv\x20shell
+SETUVAR _fish_abbr_pgrep:pgrep\x20\x2dfa
 SETUVAR _fish_abbr_preview:fzf\x20\x2d\x2dpreview\x20\x27bat\x20\x2d\x2dcolor\x20\x22always\x22\x20\x7b\x7d\x27
 SETUVAR _fish_abbr_q:exit
 SETUVAR _fish_abbr_rm:trash\x2dput
