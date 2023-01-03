@@ -4,7 +4,7 @@ Description='On 12-15..28 18:30 run firefox https://store.epicgames.com/en-US/fr
 [Timer]
 Persistent=yes
 OnCalendar=12-15..28 18:30
+OnCalendar=01-05 18:30
 
 [Install]
 WantedBy=timers.target
-
