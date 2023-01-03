@@ -1,6 +1,6 @@
 # Defined interactively
 function magnets
-    rmdir ~/d/Downloads/*** 2>/dev/null
+    rmdir ~/.local/Downloads/*** 2>/dev/null
 
     if test $DISPLAY = ':1001'
         pgrep tixati >/dev/null
