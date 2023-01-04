@@ -139,6 +139,7 @@
 /.config/fsearch/
 /.config/fselect/
 /.config/gcloud/
+/.config/gcloud.bak/
 /.config/gconf/
 /.config/geany/
 /.config/geeqie/
