@@ -19,7 +19,6 @@ SETUVAR --export PIPENV_VERBOSITY:\x2d1
 SETUVAR --export PSQLRC:/pg/psqlrc
 SETUVAR --export PYTHONBREAKPOINT:ipdb\x2eset_trace
 SETUVAR --export PYTHONIOENCODING:utf\x2d8
-SETUVAR --export PYTHON_KEYRING_BACKEND:keyring\x2ebackends\x2enull\x2eKeyring
 SETUVAR ZO_CMD:zo
 SETUVAR Z_CMD:z
 SETUVAR Z_DATA:/home/xk/\x2elocal/share/z/data
