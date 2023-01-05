@@ -10,6 +10,8 @@ geometry=100%:100%
 autofit=50%x40%
 quiet=yes
 
+input-ipc-server=~/.config/mpv/socket
+
 vo=gpu
 hwdec=auto-safe-copy
 gpu-hwdec-interop=vaapi
