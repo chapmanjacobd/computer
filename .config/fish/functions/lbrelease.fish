@@ -1,7 +1,7 @@
 function lbrelease --argument oldver newver
     ~/lb/
 
-    poetry update
+    PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring poetry update
     sed -i "s|$oldver|$newver|" pyproject.toml xklb/__init__.py
 
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
