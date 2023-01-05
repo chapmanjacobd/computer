@@ -1,8 +1,8 @@
-# Defined interactively
 function skipthrough
-    echo 'seek 20' | socat - $MPV_SOCKET
-    sleep 2
-    echo 'seek 20' | socat - $MPV_SOCKET
-    sleep 1
-    echo 'seek 50' | socat - $MPV_SOCKET
+    while fish -c "echo 'no-osd seek 5' | socat - $MPV_SOCKET"
+        and :
+        and sleep 2
+    end
+
+    trash $MPV_SOCKET
 end
