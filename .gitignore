@@ -540,4 +540,3 @@
 .config/fish/functions/print-files-in-use.fish
 .config/fish/functions/pulumi-cp-secret.fish
 .config/fish/functions/quiet.fish
-.config/fish/functions/r.fish
