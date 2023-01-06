@@ -1,5 +1,5 @@
 # Defined in - @ line 2
-function incrFileSuffix
+function increment
     for file in $argv
         set match (string match -e -r '(.+)\.(\d+)\.([^.]+)' $file)
         if test $status -eq 0
