@@ -497,7 +497,6 @@
 .config/fish/functions/hekaton.fish
 .config/fish/functions/highlight.fish
 .config/fish/functions/hyperion.fish
-.config/fish/functions/incrFileSuffix.fish
 .config/fish/functions/ip-addr.fish
 .config/fish/functions/isparent.fish
 .config/fish/functions/json-compress.fish
