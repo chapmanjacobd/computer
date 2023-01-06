@@ -3,7 +3,8 @@ Description='On Thu 18:30 run firefox https://store.epicgames.com/en-US/free-gam
 
 [Timer]
 Persistent=yes
-OnCalendar=Thu 18:30
+OnCalendar=Wed *-*-8..14 18:30
+OnCalendar=Wed *-*-22..31 18:30
 
 [Install]
 WantedBy=timers.target
