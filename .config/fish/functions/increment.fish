@@ -1,6 +1,5 @@
 # Defined in - @ line 2
-function increment
-    for file in $argv
+function increment -a file
         set match (string match -e -r '(.+)\.(\d+)\.([^.]+)' $file)
         if test $status -eq 0
             set root $match[-3]
@@ -10,18 +9,11 @@ function increment
             set match (string match -e -r '(.+)\.([^.]+)' $file)
             if test $status -ne 0
                 # file does not have a dot. what to do?
-                return
             end
             set root $match[-2]
             set n 1
             set ext $match[-1]
         end
-        if test $n -gt 31
-            set n 1
-        end
-        if test $n -gt 30
-            trash $file
-        end
-        mv -iv $file $root.$n.$ext
-    end
+
+        echo $root.$n.$ext
 end
