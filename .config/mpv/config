@@ -11,6 +11,7 @@ autofit=50%x40%
 quiet=yes
 
 input-ipc-server=~/.config/mpv/socket
+ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
 
 vo=gpu
 hwdec=auto-copy
