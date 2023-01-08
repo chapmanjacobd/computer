@@ -31,7 +31,7 @@ save-position-on-quit
 watch-later-options-remove=pause,mute,fullscreen
 write-filename-in-watch-later-config
 
-alang=ja,jp,jpn,de,deu,ger,eng,en,enUS,en-US,English
+alang=ja,jp,jpn,kr,krn,cn,ch,de,deu,ger,eng,en,enUS,en-US,English
 slang=en,eng
 blend-subtitles=yes
 volume=100
