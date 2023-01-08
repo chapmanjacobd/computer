@@ -13,8 +13,7 @@ quiet=yes
 input-ipc-server=~/.config/mpv/socket
 
 vo=gpu
-hwdec=auto-safe-copy
-gpu-hwdec-interop=vaapi
+hwdec=auto-copy
 
 osd-font="Noto Sans"
 osd-font-size=40
@@ -28,7 +27,7 @@ screenshot-directory=~/d/90_Now_Viewing/
 screenshot-template=mpv-%F-%P
 
 save-position-on-quit
-watch-later-options-remove=pause
+watch-later-options-remove=pause,mute,fullscreen
 write-filename-in-watch-later-config
 
 alang=ja,jp,jpn,de,deu,ger,eng,en,enUS,en-US,English
