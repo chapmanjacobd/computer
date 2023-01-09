@@ -4,6 +4,6 @@ function gitls-authors
         printf "%s\t%s\n" "$f" (gitblame-percent "$f" | string join ', ')
     end | column -t
 
-    echo Total
+    echo Commit summary
     git shortlog -ns
 end
