@@ -3,6 +3,10 @@ function gitblame-percent --argument file
     set line_count (wc -l $file | cut -d' ' -f1)
     set authors (git blame --line-porcelain "$file" | grep "^author " | desc)
 
+    if test $line_count -eq 0
+        return
+    end
+
     for author in $authors
         set author_count (echo $author | sed 's| author.*$||')
 
