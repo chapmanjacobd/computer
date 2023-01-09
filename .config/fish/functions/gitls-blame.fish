@@ -4,6 +4,6 @@ function gitls-blame
         printf "%s\t%s\n" "$f" (gitblame-percent "$f" | string join ', ')
     end | column -t
 
-    echo Commit summary
+    printf '\nCommit summary:\n'
     git shortlog -ns
 end
