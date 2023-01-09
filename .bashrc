@@ -28,8 +28,6 @@ export HISTIGNORE="&:ls:[bf]g:exit"
 # Settings for interactive shell only inside this block
 if [[ $- == *i* ]]
 then
-    export CLOUDSDK_PYTHON=python3.10
-
     #Prevent Ctrl+S Freezing things
     #stty -ixon
 
