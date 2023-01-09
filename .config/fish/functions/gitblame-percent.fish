@@ -11,6 +11,6 @@ function gitblame-percent --argument file
         set author_count (echo $author | sed 's| author.*$||')
 
         printf (echo $author | sed 's|^.*author ||')
-        printf ' (%s%s)\n' (math -s1 "$author_count/$line_count * 100") '%'
+        printf ' (%s%s)\n' (math -s0 "$author_count/$line_count * 100") '%'
     end
 end
