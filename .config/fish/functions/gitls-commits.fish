@@ -1,4 +1,4 @@
 # Defined interactively
-function gitls-commits
+function gitls1-commits
     git log --pretty=format: --name-only | filter-empty-lines | asc
 end
