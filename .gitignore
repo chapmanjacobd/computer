@@ -535,4 +535,3 @@
 .config/fish/functions/playSomething.fish
 .config/fish/functions/playSomethingReturnFiles.fish
 .config/fish/functions/port-user.fish
-.config/fish/functions/port.fish
