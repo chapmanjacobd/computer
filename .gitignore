@@ -534,4 +534,3 @@
 .config/fish/functions/pf.fish
 .config/fish/functions/playSomething.fish
 .config/fish/functions/playSomethingReturnFiles.fish
-.config/fish/functions/port-user.fish
