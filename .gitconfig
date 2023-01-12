@@ -53,7 +53,7 @@
 	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
 	autoStash = true
-[url "git@github.com:"]
-	insteadOf = https://github.com/
 [log]
 	date = relative-local
+[url "git@github.com:"]
+	insteadOf = https://github.com/
