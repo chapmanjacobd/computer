@@ -27,5 +27,9 @@
   {
     "key": "ctrl+r",
     "command": "workbench.action.files.save"
+  },
+  {
+    "key": "alt+z",
+    "command": "editor.action.toggleWordWrap"
   }
 ]
