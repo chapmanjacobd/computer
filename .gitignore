@@ -1,3 +1,4 @@
+/.config/systemmonitorrc
 /.config/systemd/user/priv*
 /.config/mpv/socket
 /.bigqueryrc
