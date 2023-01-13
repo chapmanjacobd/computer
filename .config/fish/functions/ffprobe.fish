@@ -1,4 +1,4 @@
 # Defined interactively
 function ffprobe
-    command ffprobe -hide_banner -loglevel warning $argv
+    command ffprobe -hide_banner $argv
 end
