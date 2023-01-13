@@ -529,6 +529,5 @@
 .config/fish/functions/nohupbg.fish
 .config/fish/functions/note.fish
 .config/fish/functions/notes.fish
-.config/fish/functions/opentabs.fish
 .config/fish/functions/path_explode.fish
 .config/fish/functions/pf.fish
