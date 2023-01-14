@@ -1,5 +1,5 @@
 function vpn
-    # sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+    sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
     # fish -c 'sudo openvpn --mute-replay-warnings --script-security 2 --config /home/xk/d/30_Computing/oci.ovpn' & disown
     sshuttle --dns -r oci 0/0 ::/0
 end
