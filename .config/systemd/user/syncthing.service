@@ -3,7 +3,7 @@ Description=Syncthing - Open Source Continuous File Synchronization
 Documentation=man:syncthing(1)
 
 [Service]
-ExecStart=sleep 30 && /usr/bin/ionice -c 2 /usr/bin/syncthing serve -no-browser -no-restart -logflags=0
+ExecStart=sleep 30 && /usr/bin/ionice -c 2 /usr/bin/syncthing serve --no-browser --no-restart --logflags=0
 Restart=on-failure
 RestartSec=5
 SuccessExitStatus=3 4
