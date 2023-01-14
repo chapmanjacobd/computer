@@ -1,5 +1,9 @@
 # Defined interactively
 function btrfs_check_delete_snapshot -a mnt
+    if not string length --quiet $mnt
+        return 1
+    end
+
     sudo btrfs subvolume snapshot -r $mnt $mnt/.snapshots/two
 
     set tmp_diff (mktemp)
