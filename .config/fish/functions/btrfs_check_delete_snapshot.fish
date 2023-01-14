@@ -1,0 +1,19 @@
+# Defined interactively
+function btrfs_check_delete_snapshot -a mnt
+    sudo btrfs subvolume snapshot -r $mnt $mnt/.snapshots/two
+
+    set tmp_diff (mktemp)
+    sudo btrfs send --no-data -p $mnt/.snapshots/one $mnt/.snapshots/two >$tmp_diff
+
+    #./bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
+    ./bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
+
+    rm $tmp_diff
+
+    if gum confirm
+        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two $mnt/.snapshots/one
+        sudo btrfs subvolume snapshot -r $mnt/ $mnt/.snapshots/one
+    else
+        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two
+    end
+end

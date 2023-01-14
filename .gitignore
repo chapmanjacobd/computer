@@ -475,7 +475,6 @@
 .config/fish/functions/fish-map.fish
 .config/fish/functions/fish_right_prompt.fish
 .config/fish/functions/fisher.fish
-.config/fish/functions/forganize.fish
 .config/fish/functions/fzf_configure_bindings.fish
 .config/fish/functions/gc.fish
 .config/fish/functions/gcp-resize.fish
