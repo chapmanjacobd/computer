@@ -27,6 +27,7 @@ perl
 powertop
 remove-retired-packages
 rpmconf
+sshuttle
 stress
 symlinks
 sysfsutils
