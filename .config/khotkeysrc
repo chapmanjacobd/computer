@@ -166,7 +166,7 @@ Type=SIMPLE_ACTION_DATA
 
 [Data_10_10]
 Comment=Comment
-Enabled=false
+Enabled=true
 Name=volup
 Type=SIMPLE_ACTION_DATA
 
@@ -174,7 +174,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_10Actions0]
-CommandURL=pactl set-sink-volume @DEFAULT_SINK@ +5%
+CommandURL=fish -c "vol +5"
 Type=COMMAND_URL
 
 [Data_10_10Conditions]
@@ -186,7 +186,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_10_10Triggers0]
-Key=
+Key=Alt+F
 Type=SHORTCUT
 Uuid={ff36a01f-1ecd-4cb8-ae00-386e4335d1d4}
 
@@ -212,7 +212,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_10_11Triggers0]
-Key=Alt+W
+Key=Ctrl+Alt+W
 Type=SHORTCUT
 Uuid={41168343-5cde-4ad9-90a1-c4117c18d0c9}
 
@@ -238,7 +238,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_10_12Triggers0]
-Key=Alt+F
+Key=Ctrl+Alt+F
 Type=SHORTCUT
 Uuid={1b8dbfb7-c706-47fa-a1cd-d3b7573abb3d}
 
@@ -634,7 +634,7 @@ Uuid={be507285-c9bb-4e39-ba25-1e0de76b6a10}
 
 [Data_10_9]
 Comment=Comment
-Enabled=false
+Enabled=true
 Name=voldown
 Type=SIMPLE_ACTION_DATA
 
@@ -642,7 +642,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_9Actions0]
-CommandURL=pactl set-sink-volume @DEFAULT_SINK@ -5%
+CommandURL=fish -c "vol -5"
 Type=COMMAND_URL
 
 [Data_10_9Conditions]
@@ -654,7 +654,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_10_9Triggers0]
-Key=
+Key=Alt+W
 Type=SHORTCUT
 Uuid={e4104bdd-fbf6-4567-aedb-e98eb5d14eee}
 
