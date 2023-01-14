@@ -39,4 +39,5 @@ sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
 #sudo dnf swap mesa-va-drivers.i686 mesa-va-drivers-freeworld.i686
 #sudo dnf swap mesa-vdpau-drivers.i686 mesa-vdpau-drivers-freeworld.i686
 
+sudo systemctl mask systemd-oomd
 sudo systemctl set-default multi-user.target
