@@ -7,6 +7,7 @@ feh
 ffmpeg-libs
 fftw-devel
 git-delta
+gmp-devel
 gsl-devel
 hddtemp
 https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
@@ -21,6 +22,7 @@ kitty
 kitty-terminfo
 krusader
 libcurl-devel
+libicu
 libicu-devel
 libmediainfo
 megatools
