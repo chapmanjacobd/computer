@@ -5,7 +5,9 @@ copyq
 exa
 feh
 ffmpeg-libs
+fftw-devel
 git-delta
+gsl-devel
 hddtemp
 https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
 https://github.com/charmbracelet/gum/releases/download/v0.8.0/gum_0.8.0_linux_amd64.rpm
@@ -17,6 +19,9 @@ keepassxc
 kitty
 kitty-terminfo
 krusader
+libcurl
+libcurl-devel
+libicu-devel
 libmediainfo
 megatools
 mesa-dri-drivers
@@ -25,6 +30,7 @@ mpv
 mpv-devel
 perl
 powertop
+proj-devel
 remove-retired-packages
 rpmconf
 rstudio
@@ -36,6 +42,8 @@ sysfsutils
 system-upgrade
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
+udunits2-devel
+unixODBC-devel
 util-linux
 vdpauinfo
 wine
