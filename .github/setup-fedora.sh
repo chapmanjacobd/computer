@@ -60,3 +60,4 @@ python -m pip install yt-dlp pipenv catt xklb
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
 cd ~ && restorecon -vR .
 #reboot
+R --slave -e 'update.packages()'
