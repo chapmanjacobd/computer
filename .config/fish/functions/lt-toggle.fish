@@ -1,6 +1,6 @@
 # Defined interactively
 function lt-toggle
-    if pgrep -f 'lb lt'
+    if pgrep -f 'lb listen'
         lb stop
     else
         if test $hostname = pakon
