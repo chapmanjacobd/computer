@@ -28,6 +28,7 @@ powertop
 remove-retired-packages
 rpmconf
 rstudio
+rstudio-desktop
 sshuttle
 stress
 symlinks
