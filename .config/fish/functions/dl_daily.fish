@@ -18,4 +18,5 @@ function dl_daily
 
     ~
     trash-empty 10 -f
+    lb download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 end
