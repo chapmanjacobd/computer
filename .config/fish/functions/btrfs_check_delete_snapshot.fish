@@ -1,6 +1,7 @@
 # Defined interactively
 function btrfs_check_delete_snapshot -a mnt
     if not string length --quiet $mnt
+        echo Please specify mount point as first arg
         return 1
     end
 
@@ -9,8 +10,8 @@ function btrfs_check_delete_snapshot -a mnt
     set tmp_diff (mktemp)
     sudo btrfs send --no-data -p $mnt/.snapshots/one $mnt/.snapshots/two >$tmp_diff
 
-    #./bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
-    ./bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
+    #~/bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
+    ~/bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
 
     rm $tmp_diff
 

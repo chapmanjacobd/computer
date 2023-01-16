@@ -174,7 +174,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_10Actions0]
-CommandURL=fish -c "vol +5"
+CommandURL=fish -c "vol +1"
 Type=COMMAND_URL
 
 [Data_10_10Conditions]
@@ -642,7 +642,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_9Actions0]
-CommandURL=fish -c "vol -5"
+CommandURL=fish -c "vol -1"
 Type=COMMAND_URL
 
 [Data_10_9Conditions]
