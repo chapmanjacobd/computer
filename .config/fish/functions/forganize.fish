@@ -1,7 +1,8 @@
 function forganize
     morganize
 
-    btrfs_check_delete_snapshot ~/d/
+    trash-size
+    trash-empty
 
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
     library christen -v ~/d/*
