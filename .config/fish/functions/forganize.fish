@@ -4,6 +4,8 @@ function forganize
     trash-size
     trash-empty
 
+    wt --db ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | string escape | xargs -P 20 -n 50 rm
+
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
     library christen -v ~/d/*
 
