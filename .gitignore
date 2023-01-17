@@ -1,3 +1,5 @@
+/.config/fish/functions/load_env_*
+/.config/fish/functions/load_env_prod.fish
 /.config/systemmonitorrc
 /.config/systemd/user/priv*
 /.config/mpv/socket
