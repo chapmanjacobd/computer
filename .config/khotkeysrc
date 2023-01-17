@@ -382,7 +382,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_18Actions0]
-CommandURL=fish -c wt
+CommandURL=fish -c "wt -d+9"
 Type=COMMAND_URL
 
 [Data_10_18Conditions]
@@ -408,7 +408,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_10_19Actions0]
-CommandURL=fish -c "wt -w subtitle_count=0 -OO"
+CommandURL=fish -c "wt -w subtitle_count=0 -OO -d+9"
 Type=COMMAND_URL
 
 [Data_10_19Conditions]
