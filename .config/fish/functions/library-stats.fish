@@ -4,7 +4,7 @@ function library-stats
         echo $db
         lb-dev wt $db -p a
         echo $db deleted
-        lb-dev wt $db -w is_deleted=1 -p a
+        lb-dev wt $db -w time_deleted'>'0 -p a
     end
 
     for db in ~/lb/63_Sounds.db ~/lb/audio.db
