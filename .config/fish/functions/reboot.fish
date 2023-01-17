@@ -1,7 +1,6 @@
 # Defined interactively
 function reboot
-    progress -wc ffmpeg
-    if test $status -ne 0
+    if not pgrep -fa ffmpeg
         sudo reboot
     end
 
