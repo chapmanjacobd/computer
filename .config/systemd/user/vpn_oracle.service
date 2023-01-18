@@ -1,0 +1,15 @@
+[Unit]
+Description=ShuttleOracleVPN
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10s
+ExecStart=/usr/bin/sshuttle --no-latency-control --dns -r oci -x 144.24.93.111 -x 192.168.0.0/16 0/0 ::/0
+
+[Install]
+WantedBy=default.target
