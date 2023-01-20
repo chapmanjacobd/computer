@@ -1,3 +1,5 @@
+/.config/mpv/history.log
+/.config/kdialogrc
 /.config/gtkrc-2.0
 /.config/fish/functions/load_env_*
 /.config/fish/functions/load_env_prod.fish
@@ -47,7 +49,6 @@
 /.config/Image\ Loungerc
 /.config/fish/functions/_fzf*
 /.config/fish/functions/_autopair*
-/.config/mpv/history.log
 /.config/mpv/watch_later/
 /.sqlite_history
 /.ssh/
@@ -76,7 +77,6 @@
 /.audacity-data/
 /.aws/
 /.bash_history
-/.bash_logout
 /.boto
 /.cache/
 /.cargo/
@@ -195,7 +195,6 @@
 /.config/kdenlive-layoutsrc
 /.config/kdenliverc
 /.config/kde.org/
-/.config/kdialogrc
 /.config/kdiff3rc
 /.config/KeePass/
 /.config/keepassx/
@@ -490,8 +489,6 @@
 .config/fish/functions/git-cat.fish
 .config/fish/functions/git.fish
 .config/fish/functions/gitMoveToNewBranch.fish
-.config/fish/functions/git_changelog.fish
-.config/fish/functions/git_log.fish
 .config/fish/functions/git_recent.fish
 .config/fish/functions/gitup.fish
 .config/fish/functions/gsave.fish
@@ -515,8 +512,6 @@
 .config/fish/functions/load_env_file.fish
 .config/fish/functions/load_env_prod.fish
 .config/fish/functions/load_env_qa.fish
-.config/fish/functions/log.fish
-.config/fish/functions/logNice.fish
 .config/fish/functions/makeAudioTolerable.fish
 .config/fish/functions/makeValidFilename.fish
 .config/fish/functions/mega.fish
