@@ -84,7 +84,7 @@ url-prefix("file://") {
         color: inherit !important;
     }
 
-    div[aria-label] {
+    video-voyager div[aria-label] {
         color: #000 !important;
         background: #cebdab !important;
     }
