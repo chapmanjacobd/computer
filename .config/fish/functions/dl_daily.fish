@@ -3,6 +3,7 @@ function dl_daily
     sed -i '$ d' .gitignore
     sed -i '$ d' j/.gitignore
 
+    catt volume 0 && cat volume 40
     pip install --upgrade gallery-dl
     for dfolder in 61_Photos_Unsorted 91_New_Art 95_Memes
         ~/d/$dfolder/
