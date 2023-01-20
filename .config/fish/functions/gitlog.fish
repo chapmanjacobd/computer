@@ -1,3 +1,3 @@
-function git_log
+function gitlog
     git log --oneline --decorate --all --graph --stat $argv
 end
