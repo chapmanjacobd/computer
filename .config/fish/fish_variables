@@ -52,6 +52,7 @@ SETUVAR _fish_abbr_hibernate:systemctl\x20hibernate
 SETUVAR _fish_abbr_iftop:sudo\x20iftop\x20\x2dn\x20\x2db\x20\x2dP\x20\x2dt\x20\x2do\x2040s\x20\x2dL\x204
 SETUVAR _fish_abbr_ipa:ip\x20a
 SETUVAR _fish_abbr_less:less\x20\x2dFSRXc
+SETUVAR _fish_abbr_lsdev:sudo\x20lshw\x20\x2dclass\x20disk\x20\x2dclass\x20tape\x20\x2dshort
 SETUVAR _fish_abbr_ltc:lt\x20\x2dc
 SETUVAR _fish_abbr_milky:projectM\x2djack
 SETUVAR _fish_abbr_mvl:mvl\x20\x2ds\x22\x22
