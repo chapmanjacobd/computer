@@ -1,5 +1,5 @@
 [Unit]
-Description=/usr/bin/fish -c dl_daily
+Description=/usr/bin/fish -c daily
 Requires=mnt-d.mount
 
 [Service]
@@ -8,4 +8,4 @@ RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 600
 ExecStart=
-ExecStart="/usr/bin/fish" "-c" "dl_daily"
+ExecStart="/usr/bin/fish" "-c" "daily"

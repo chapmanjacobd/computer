@@ -1,5 +1,5 @@
 [Unit]
-Description=/usr/bin/fish -c dl_weekly
+Description=/usr/bin/fish -c weekly
 
 [Timer]
 Persistent=yes

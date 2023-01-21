@@ -1,9 +1,0 @@
-[Unit]
-Description=/usr/bin/fish -c dl_weekly
-Requires=mnt-d.mount
-
-[Service]
-Type=simple
-RemainAfterExit=no
-ExecStart=
-ExecStart="/usr/bin/fish" "-c" "dl_weekly"

@@ -1,0 +1,9 @@
+[Unit]
+Description=/usr/bin/fish -c monthly
+Requires=mnt-d.mount
+
+[Service]
+Type=simple
+RemainAfterExit=no
+ExecStart=
+ExecStart="/usr/bin/fish" "-c" "monthly"
