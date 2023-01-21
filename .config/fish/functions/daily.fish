@@ -1,4 +1,4 @@
-function dl_daily
+function daily
     ~/
     sed -i '$ d' .gitignore
     sed -i '$ d' j/.gitignore

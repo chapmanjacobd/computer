@@ -1,4 +1,4 @@
-function dl_weekly
+function weekly
     #mrmusic
     #mrvideo
     #mrporn
