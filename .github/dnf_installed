@@ -36,6 +36,7 @@ powertop
 proj-devel
 python3-xattr
 qdirstat
+rclone
 remove-retired-packages
 rpmconf
 rstudio
