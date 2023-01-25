@@ -35,6 +35,7 @@ perl
 powertop
 proj-devel
 python3-xattr
+qdirstat
 remove-retired-packages
 rpmconf
 rstudio
