@@ -4,7 +4,8 @@ function trash-empty
     command trash-empty $argv
     sort --unique --ignore-case ~/.local/share/trashed.txt | sponge ~/.local/share/trashed.txt
     if gum confirm
-        btrfs_check_delete_snapshot ~/d/
-        # TODO: look into btsdu
+        for mnt in /mnt/d1 /mnt/d2
+            btrfs_check_delete_snapshot $mnt
+        end
     end
 end
