@@ -10,4 +10,8 @@ function morganize
     for f in ~/mc/tabs.txt
         sort --unique --stable --ignore-case --random-sort $f | sponge $f
     end
+
+    for f in (git --git-dir=/home/xk/j/.git/ ls-files | sed "s|^|/home/xk/j/|" | grep -i favorite)
+        s sorted "$f"
+    end
 end
