@@ -32,6 +32,7 @@ SETUVAR _fish_abbr_arpa:arp\x20\x2da
 SETUVAR _fish_abbr_asciiterm:termtosvg\x20\x2d\x2dscreen\x2dgeometry\x3d100x10\x20\x2d\x2dmin\x2dframe\x2dduration\x3d200\x20\x2d\x2dmax\x2dframe\x2dduration\x3d5000\x20\x2d\x2dtemplate\x3dsolarized_light
 SETUVAR _fish_abbr_bead:bat\x20\x2dr\x200\x3a10
 SETUVAR _fish_abbr_bsubvdel:sudo\x20btrfs\x20subvolume\x20delete\x20\x2d\x2dcommit\x2deach
+SETUVAR _fish_abbr_btdu:sudo\x20/home/xk/bin/btdu\x20\x2dx
 SETUVAR _fish_abbr_busage:sudo\x20btrfs\x20fi\x20usage
 SETUVAR _fish_abbr_clipboard:cb
 SETUVAR _fish_abbr_cup:docker\x20compose\x20\x2df\x20docker/docker\x2dcompose\x2eyaml\x20up
