@@ -1,7 +1,9 @@
 bottles
+btrfs-progs
 code
 codium
 copyq
+dub
 exa
 feh
 ffmpeg-libs
@@ -22,7 +24,7 @@ keepassxc
 kitty
 kitty-terminfo
 krusader
-libcurl-devel
+ldc
 libicu
 libicu-devel
 libmediainfo
@@ -31,6 +33,7 @@ mesa-dri-drivers
 mesa-vdpau-drivers
 mpv
 mpv-devel
+ncurses-devel
 perl
 powertop
 proj-devel
@@ -49,7 +52,6 @@ system-upgrade
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
 udunits2-devel
-unixODBC-devel
 util-linux
 vdpauinfo
 wine

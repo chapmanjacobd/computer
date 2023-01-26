@@ -5,5 +5,6 @@ function trash-empty
     sort --unique --ignore-case ~/.local/share/trashed.txt | sponge ~/.local/share/trashed.txt
     if gum confirm
         btrfs_check_delete_snapshot ~/d/
+        # TODO: look into btsdu
     end
 end

@@ -35,6 +35,7 @@ SETUVAR _fish_abbr_bsubvdel:sudo\x20btrfs\x20subvolume\x20delete\x20\x2d\x2dcomm
 SETUVAR _fish_abbr_busage:sudo\x20btrfs\x20fi\x20usage
 SETUVAR _fish_abbr_clipboard:cb
 SETUVAR _fish_abbr_cup:docker\x20compose\x20\x2df\x20docker/docker\x2dcompose\x2eyaml\x20up
+SETUVAR _fish_abbr_dc:cd
 SETUVAR _fish_abbr_dd:dd\x20status\x3dprogress\x20if\x3d\x20of\x3d
 SETUVAR _fish_abbr_df:df\x20\x2dh
 SETUVAR _fish_abbr_dmesg:dmesg\x20\x2d\x2dhuman\x20\x2d\x2dnopager\x20\x2d\x2ddecode\x20\x2d\x2dlevel\x20emerg\x2calert\x2ccrit\x2cerr\x2cwarn\x2cnotice\x2cinfo
@@ -71,6 +72,7 @@ SETUVAR _fish_abbr_sdi:dnfinstall
 SETUVAR _fish_abbr_sdu:sudo\x20dnf\x20update
 SETUVAR _fish_abbr_sed:sed\x20\x27s\x7c\x7c\x7c\x27
 SETUVAR _fish_abbr_size:wc\x20\x2dc\x20\x7c\x20numfmt\x20\x2d\x2dto\x3diec
+SETUVAR _fish_abbr_sl:ls
 SETUVAR _fish_abbr_sort:sort\x20\x2d\x2dunique\x20\x2d\x2dignore\x2dcase
 SETUVAR _fish_abbr_split:split\x20\x2dd\x20\x2dC\x2050MB
 SETUVAR _fish_abbr_sshh:ssh\x20pakon\x20\x2dt\x20tmux\x20new\x2dsession\x20\x2dA\x20\x2ds\x20phone
