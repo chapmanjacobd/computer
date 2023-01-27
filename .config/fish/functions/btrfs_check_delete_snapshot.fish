@@ -12,7 +12,7 @@ function btrfs_check_delete_snapshot -a mnt
 
     #~/bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
     ~/bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
-    btsdu -s $tmp_diff
+    # btsdu -s $tmp_diff
 
     rm $tmp_diff
 
