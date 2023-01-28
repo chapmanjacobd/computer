@@ -38,6 +38,8 @@ ncurses-devel
 perl
 powertop
 proj-devel
+python3-btrfs
+python3-ipdb
 python3-xattr
 qdirstat
 rclone
