@@ -19,7 +19,8 @@ UUID="F49AAAD59AAA93A0"                    /mnt/win                ntfs    defau
 
 UUID=2c6d54d3-9c99-4b3f-bfa6-8c0a791f7d6a  /mnt/d1                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 UUID=9779face-01a7-4884-9c52-5aff03d7c359  /mnt/d2                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
+UUID=6ac6c182-84bf-4fc6-a1fd-ba37b8b578a9  /mnt/d3                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 
-/mnt/d1:/mnt/d2                            /mnt/d                  mergerfs   defaults,fsname=mergerfs1,use_ino,allow_other,cache.files=partial,dropcacheonclose=true,cache.readdir=true,cache.entry=80,cache.attr=80,cache.statfs=16,func.getattr=newest,moveonenospc=true,minfreespace=40G,threads=15,category.create=pfrd   0 0
+/mnt/d1:/mnt/d2:/mnt/d3                    /mnt/d                  mergerfs   defaults,fsname=mergerfs1,use_ino,allow_other,cache.files=partial,dropcacheonclose=true,cache.readdir=true,cache.entry=80,cache.attr=80,cache.statfs=16,func.getattr=newest,moveonenospc=true,minfreespace=40G,threads=15,category.create=pfrd   0 0
 
 UUID=8da156d7-abd4-4c84-a2f0-8c17f43eb60c  /mnt/do                 btrfs   nofail,x-systemd.mount-timeout=999,compress-force=zstd:1,noatime,nodiratime,users,defaults     0 0
