@@ -1,3 +1,4 @@
+/.config/systemd/user/timers.target.wants/
 /.xsel.log
 /.dub/
 /.config/mpv/history.log
