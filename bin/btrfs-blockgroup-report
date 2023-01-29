@@ -131,7 +131,7 @@ def report_usage(args):
 
                     max_count = max(count for _group, count in grouped_stats.items())
                     for group, count in sorted(grouped_stats.items()):
-                        scaled_count = int(60 * count / max_count)
+                        scaled_count = int(60 * count / max_count) if max_count > 60 else count
                         print(
                             '\t' * 2,
                             f'  {str(group).rjust(3)}% packed',
