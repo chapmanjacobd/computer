@@ -129,13 +129,9 @@ def report_usage(args):
                         else:
                             grouped_stats[group] = 1
 
-                    min_count = min(count for _group, count in grouped_stats.items())
                     max_count = max(count for _group, count in grouped_stats.items())
                     for group, count in sorted(grouped_stats.items()):
-                        try:
-                            scaled_count = int(60 * (count - min_count) / (max_count - min_count))
-                        except ZeroDivisionError:
-                            scaled_count = 1
+                        scaled_count = int(60 * count / max_count)
                         print(
                             '\t' * 2,
                             f'  {str(group).rjust(3)}% packed',
