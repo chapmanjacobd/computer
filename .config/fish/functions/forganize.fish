@@ -11,8 +11,6 @@ function forganize
 
     ~/Downloads/ && fd -d1 -eEPUB -x mv "{}" ~/d/50_eBooks/
     ~/Downloads/ && fd -d1 -eHTML -x mv "{}" ~/d/53_Scrapbook_Web/
-    ~/Downloads/ && fd -d1 -eJPEG -x mv "{}" {.}.jpg
-    ~/Downloads/ && fd -d1 -eJPG -ePNG -eWEBP -x mv "{}" ~/d/61_Photos_Unsorted/
     ~/Downloads/ && fd -eZIP -eRAR -e7z -x bash -c 'unar "{}" && rm "{}"'
 
     set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_ClassicalComposers/ ~/d/85_Inspiration/
