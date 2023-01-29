@@ -117,9 +117,9 @@ def report_usage(args):
                     stats = chunk_stats[data_flag]
 
                     print('\t', data_flag)
-                    print('\t' * 2, 'Blockgroups at least partially on disk:', stats['count'])
                     print('\t' * 2, 'Data-device dependance:', pretty_size(stats['size_used']))
-                    print('\t' * 2, 'Approx. blockgroup percentage packed:')
+                    print('\t' * 2, 'Blockgroups at least partially on disk:', stats['count'])
+                    print('\t' * 2, 'Blockgroup packing:')
 
                     grouped_stats = {}
                     for percent in stats['percent_used']:
