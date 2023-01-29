@@ -1,4 +1,7 @@
 # Defined interactively
 function trash-size
-    du -hs /mnt/d/.Trash-1000
+    for f in ~/.local/share/Trash/ /mnt/d/.Trash/
+        echo $f
+        du -hs $f
+    end
 end

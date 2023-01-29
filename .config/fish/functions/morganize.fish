@@ -17,4 +17,5 @@ function morganize
 
     ~/Downloads/ && fd -d1 -eJPEG -x mv "{}" {.}.jpg
     ~/Downloads/ && fd -d1 -eJPG -ePNG -eWEBP -x mv "{}" ~/d/61_Photos_Unsorted/
+    cd -
 end
