@@ -1,6 +1,6 @@
 # Defined interactively
 function gitall
-    for g in /home/xk/.git/ /home/xk/j/.git/ /home/xk/mc/.git/ /home/xk/lb/.git/
-        git --git-dir=$g $argv
+    for g in /home/xk/ /home/xk/j/ /home/xk/mc/ /home/xk/lb/
+        git --git-dir=$g/.git/ --work-tree=$g $argv
     end
 end
