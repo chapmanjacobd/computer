@@ -10,5 +10,6 @@ function mergerfs_add_disk --argument dev label
     mount /mnt/$label
     sudo mergerfs.ctl -m /mnt/d add path /mnt/$label
     sudo mergerfs.ctl -m /mnt/d info
+    sudo mergerfs.mktrash /mnt/d
     df -h
 end
