@@ -1,3 +1,4 @@
+/.config/fish/functions/mega.fish
 /.config/systemd/user/timers.target.wants/
 /.xsel.log
 /.dub/
@@ -517,4 +518,3 @@
 .config/fish/functions/load_env_qa.fish
 .config/fish/functions/makeAudioTolerable.fish
 .config/fish/functions/makeValidFilename.fish
-.config/fish/functions/mega.fish
