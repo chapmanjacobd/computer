@@ -8,6 +8,7 @@ function mergerfs_add_disk --argument dev label
     sudo chown xk:xk /mnt/$label
     sudo systemctl daemon-reload
     mount /mnt/$label
+    sudo chown xk:xk /mnt/$label
     sudo mergerfs.ctl -m /mnt/d add path /mnt/$label
     sudo mergerfs.ctl -m /mnt/d info
     sudo mergerfs.mktrash /mnt/d
