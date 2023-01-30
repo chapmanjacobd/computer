@@ -118,7 +118,7 @@ def report_usage(args):
 
                     print('\t', data_flag)
                     print('\t' * 2, 'Data-device dependence:', pretty_size(stats['size_used']))
-                    print('\t' * 2, 'Total blockgroups:', stats['count'])
+                    print('\t' * 2, 'Blockgroups:', stats['count'])
                     print('\t' * 2, 'Blockgroup packing:')
 
                     grouped_stats = {}
