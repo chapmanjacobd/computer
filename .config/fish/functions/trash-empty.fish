@@ -4,7 +4,7 @@ function trash-empty
     command trash-empty $argv
     sort --unique --ignore-case ~/.local/share/trashed.txt | sponge ~/.local/share/trashed.txt
     if gum confirm 'Refresh snapshots?'
-        for mnt in /mnt/d1 /mnt/d2 /home
+        for mnt in /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /home
             btrfs_check_delete_snapshot $mnt
         end
     end
