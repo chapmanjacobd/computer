@@ -518,4 +518,3 @@
 .config/fish/functions/load_env_prod.fish
 .config/fish/functions/load_env_qa.fish
 .config/fish/functions/makeAudioTolerable.fish
-.config/fish/functions/makeValidFilename.fish
