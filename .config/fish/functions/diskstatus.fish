@@ -12,7 +12,7 @@ function diskstatus
         echo ---
         echo
     end
-    for dev in /dev/sd* /dev/nvme0n1
+    for dev in /dev/sd*
         echo $dev
         sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable'
     end
