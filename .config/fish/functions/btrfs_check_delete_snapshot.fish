@@ -12,9 +12,7 @@ function btrfs_check_delete_snapshot -a mnt
 
     #~/bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
     ~/bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
-    # btsdu -s $tmp_diff
-
-    rm $tmp_diff
+    echo sudo ~/.cargo/bin/btsdu -p $mnt/.snapshots/two $mnt/.snapshots/one
 
     if gum confirm
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two $mnt/.snapshots/one
@@ -22,4 +20,6 @@ function btrfs_check_delete_snapshot -a mnt
     else
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two
     end
+
+    rm $tmp_diff
 end
