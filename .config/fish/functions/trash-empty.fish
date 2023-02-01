@@ -1,7 +1,7 @@
 # Defined interactively
 function trash-empty
     if gum confirm --default=no 'Refresh snapshots?'
-        for mnt in /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /home
+        for mnt in $D_DISKS /home
             btrfs_check_delete_snapshot $mnt
         end
     end

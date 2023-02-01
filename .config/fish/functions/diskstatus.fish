@@ -1,6 +1,6 @@
 # Defined interactively
 function diskstatus
-    for mnt in / /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4
+    for mnt in / $D_DISKS
         echo
         echo MOUNTPOINT: $mnt
         echo ---
