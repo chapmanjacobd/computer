@@ -13,5 +13,6 @@ function mergerfs_add_disk --argument part label
     sudo mergerfs.ctl -m /mnt/d info
     sudo mergerfs.mktrash /mnt/d
     mkdir /mnt/$label/.snapshots
+    set --universal --append D_DISKS /mnt/$label
     df -h
 end
