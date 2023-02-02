@@ -515,4 +515,3 @@
 .config/fish/functions/line-count.fish
 .config/fish/functions/load_env_file.fish
 .config/fish/functions/load_env_prod.fish
-.config/fish/functions/load_env_qa.fish
