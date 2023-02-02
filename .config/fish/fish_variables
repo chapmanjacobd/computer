@@ -5,7 +5,7 @@ SETUVAR --export ANDROID_SDK_ROOT:/home/xk/bin/Android/Sdk/
 SETUVAR --export CARGO_NET_GIT_FETCH_WITH_CLI:true
 SETUVAR --export CLOUDSDK_PYTHON:python3\x2e10
 SETUVAR --export DISPLAY:0
-SETUVAR --export D_DISKS:/mnt/d1\x1e/mnt/d2\x1e/mnt/d3\x1e/mnt/d4\x1e/mnt/d5
+SETUVAR --export D_DISKS:/mnt/d1\x1e/mnt/d2\x1e/mnt/d3\x1e/mnt/d4\x1e/mnt/d5\x1e/mnt/d6\x1e/mnt/d7
 SETUVAR --export EDITOR:nano
 SETUVAR FZF_DEFAULT_OPTS:\x2d\x2dheight\x2040\x25
 SETUVAR FZF_DISABLE_KEYBINDINGS:0
