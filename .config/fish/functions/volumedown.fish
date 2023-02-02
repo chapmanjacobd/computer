@@ -1,6 +1,6 @@
 # Defined interactively
 function volumedown
-    if pgrep -f catt
+    if pgrep -f 'catt '
         catt volumedown 3
     else
         vol -3
