@@ -457,4 +457,5 @@
     "--line-length=120"
   ],
   "Lua.telemetry.enable": false,
+  "git.openRepositoryInParentFolders": "never",
 }
