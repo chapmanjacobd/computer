@@ -2,6 +2,7 @@
 function wipm
     git add .
     git --no-pager diff HEAD
+    git --no-pager diff HEAD | grep TODO
     git diff --stat HEAD
     echo
     git status
