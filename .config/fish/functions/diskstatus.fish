@@ -16,4 +16,5 @@ function diskstatus
         echo $dev
         sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable'
     end
+    lb scatter -m /mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4/:/mnt/d5:/mnt/d6:/mnt/d7 ~/lb/fs/scatter.db / -u
 end
