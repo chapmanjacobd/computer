@@ -512,6 +512,3 @@
 .config/fish/functions/lbformat.fish
 .config/fish/functions/lbtest.fish
 .config/fish/functions/lf.fish
-.config/fish/functions/line-count.fish
-.config/fish/functions/load_env_file.fish
-.config/fish/functions/load_env_prod.fish
