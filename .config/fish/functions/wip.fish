@@ -13,6 +13,7 @@ function wip
     git reset
     git add .
     git --no-pager diff HEAD
+    git --no-pager diff HEAD | grep TODO
     echo
     git diff --stat HEAD
     echo
