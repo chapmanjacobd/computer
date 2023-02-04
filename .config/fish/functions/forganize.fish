@@ -50,5 +50,4 @@ function forganize
 
     ~
     refreshLibrary
-    sudo btrfs fi balance start --bg -dusage=25 /mnt/d/
 end
