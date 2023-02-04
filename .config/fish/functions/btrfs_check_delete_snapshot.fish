@@ -15,8 +15,8 @@ function btrfs_check_delete_snapshot -a mnt
     echo sudo ~/.cargo/bin/btsdu -p $mnt/.snapshots/two $mnt/.snapshots/one
 
     if gum confirm --default=no 'Swap snapshots?'
-        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two $mnt/.snapshots/one
-        sudo btrfs subvolume snapshot -r $mnt/ $mnt/.snapshots/one
+        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
+        mv $mnt/.snapshots/two $mnt/.snapshots/one
     else
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two
     end
