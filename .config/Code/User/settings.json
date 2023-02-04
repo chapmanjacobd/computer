@@ -225,6 +225,7 @@
     "hstack",
     "iinfo",
     "iloc",
+    "inodes",
     "interdimensional",
     "ipdb",
     "janky",
