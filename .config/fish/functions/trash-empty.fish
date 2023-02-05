@@ -5,7 +5,7 @@ function trash-empty
             kitty fish -c "btrfs_check_delete_snapshot $mnt" &
         end
     end
-
+    wait
     trash-list | tee -a ~/.local/share/trashed.txt
     command trash-empty -f $argv
 end
