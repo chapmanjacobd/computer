@@ -53,6 +53,7 @@ SETUVAR _fish_abbr_gls:gitls
 SETUVAR _fish_abbr_gp:git\x20pull
 SETUVAR _fish_abbr_gr:git\x20reset
 SETUVAR _fish_abbr_grep:grep\x20\x2di
+SETUVAR _fish_abbr_grm:gitclear
 SETUVAR _fish_abbr_gs:git\x20status
 SETUVAR _fish_abbr_hibernate:systemctl\x20hibernate
 SETUVAR _fish_abbr_iftop:sudo\x20iftop\x20\x2dn\x20\x2db\x20\x2dP\x20\x2dt\x20\x2do\x2040s\x20\x2dL\x204
