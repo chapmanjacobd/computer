@@ -34,6 +34,9 @@ function forganize
         end
     end
 
+    ~/lb/
+    refreshLibrary
+
     ~/d/71_Mealtime_Videos/
     fd -epng -ejpg -egif -x mv {} ~/d/91_New_Art/unsorted/71_Mealtime_Videos/
 
@@ -47,7 +50,4 @@ function forganize
 
     ~/d/
     yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
-
-    ~
-    refreshLibrary
 end
