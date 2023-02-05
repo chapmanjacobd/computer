@@ -1,5 +1,5 @@
 function weekly
-    #mrmusic
+    mrmusic
     #mrvideo
     #mrporn
     #mrrelax
