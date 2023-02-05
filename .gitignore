@@ -510,4 +510,3 @@
 .config/fish/functions/lastconfigaccessed.fish
 .config/fish/functions/lb-dev.fish
 .config/fish/functions/lbformat.fish
-.config/fish/functions/lbtest.fish
