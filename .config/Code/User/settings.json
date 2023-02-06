@@ -310,6 +310,7 @@
     "tailwindcss",
     "tcgetpgrp",
     "threadpool",
+    "threadsafe",
     "tifs",
     "timespec",
     "Topo",
