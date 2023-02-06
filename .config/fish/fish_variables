@@ -48,6 +48,7 @@ SETUVAR _fish_abbr_funced:funced\x20\x2ds
 SETUVAR _fish_abbr_ga:git\x20add\x20\x2e
 SETUVAR _fish_abbr_gcl:gitclear
 SETUVAR _fish_abbr_gd:git\x20diff
+SETUVAR _fish_abbr_gitlog:git\x20log\x20\x2d\x2doneline\x20\x2d\x2ddecorate\x20\x2d\x2dall\x20\x2d\x2dgraph\x20\x2d\x2dstat
 SETUVAR _fish_abbr_gits:git\x20log\x20\x2dp\x20\x2dS
 SETUVAR _fish_abbr_gls:gitls
 SETUVAR _fish_abbr_gp:git\x20pull
