@@ -1,3 +1,4 @@
+/.dotnet
 /.config/zoom.conf
 /.config/fish/functions/mega.fish
 /.config/systemd/user/timers.target.wants/
