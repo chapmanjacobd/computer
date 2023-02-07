@@ -55,7 +55,12 @@
     "**/.DS_Store": true,
     "**/*.pyc": true,
     "**/__pycache__": true,
-    "**/node_modules": true
+    "**/node_modules": true,
+    "**/venv": true,
+    "**/htmlcov": true,
+    "**egg-info": true,
+    "**/functions": true,
+    "**/build": true,
   },
   "emmet.triggerExpansionOnTab": true,
   "emmet.includeLanguages": {
