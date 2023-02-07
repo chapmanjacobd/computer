@@ -1,4 +1,4 @@
 # Defined interactively
 function bytes
-    echo $argv | numfmt --to=iec
+    numfmt --to=iec $argv
 end
