@@ -508,4 +508,3 @@
 .config/fish/functions/kill-on-port.fish
 .config/fish/functions/la.fish
 .config/fish/functions/last-function-name.fish
-.config/fish/functions/lastconfigaccessed.fish
