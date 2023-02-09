@@ -1,3 +1,4 @@
 files:
+  buffer_size_bytes: 33554432
   json:
     max_line_size_bytes: 33554432
