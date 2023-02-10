@@ -1,3 +1,3 @@
 function la
-    ls -lahZt $argv
+    command ls -lahZt $argv
 end
