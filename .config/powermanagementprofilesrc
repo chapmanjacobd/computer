@@ -3,7 +3,7 @@ icon=battery-charging
 idleTime=1500
 
 [AC][DPMSControl]
-idleTime=99999
+idleTime=21600
 
 [AC][HandleButtonEvents]
 lidAction=0
@@ -20,7 +20,7 @@ idleTime=1500
 idleTime=1500
 
 [Activities][577840c9-b0bb-4255-bc13-d26fe06d710e]
-mode=SpecialBehavior
+mode=None
 
 [Activities][577840c9-b0bb-4255-bc13-d26fe06d710e][SpecialBehavior]
 noScreenManagement=true
@@ -34,18 +34,10 @@ suspendType=1
 [Battery]
 icon=battery-060
 
-[Battery][DPMSControl]
-idleTime=300
-
 [Battery][HandleButtonEvents]
-lidAction=0
-powerButtonAction=2
+lidAction=1
+powerButtonAction=8
 triggerLidActionWhenExternalMonitorPresent=false
-
-[Battery][SuspendSession]
-idleTime=600000
-suspendThenHibernate=false
-suspendType=2
 
 [DPMSControl]
 idleTime=1500
@@ -61,13 +53,13 @@ idleTime=60000
 
 [LowBattery][HandleButtonEvents]
 lidAction=0
-powerButtonAction=2
+powerButtonAction=0
 triggerLidActionWhenExternalMonitorPresent=false
 
 [LowBattery][SuspendSession]
 idleTime=420000
-suspendThenHibernate=true
-suspendType=2
+suspendThenHibernate=false
+suspendType=0
 
 [migration]
 kdedShortcutMigration=true
