@@ -1,6 +1,6 @@
 # Defined in /home/xk/.config/fish/functions/library-stats.fish @ line 2
 function library-stats
-    for db in ~/lb/61_Photos_Unsorted.db ~/lb/fs/tax.db ~/lb/video.db
+    for db in ~/lb/fs/61_Photos_Unsorted.db ~/lb/fs/tax.db ~/lb/video.db
         echo $db
         lb-dev wt $db -p a
         echo $db deleted
