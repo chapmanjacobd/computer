@@ -505,4 +505,3 @@
 .config/fish/functions/ip-addr.fish
 .config/fish/functions/isparent.fish
 .config/fish/functions/json-compress.fish
-.config/fish/functions/kill-on-port.fish
