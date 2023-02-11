@@ -55,4 +55,6 @@ function forganize
         lb fsadd --filesystem ~/lb/fs/d.db $m &
     end
     wait
+
+    cp ~/.local/share/fish/fish_history ~/d/00_Metadata/SECURE/
 end
