@@ -9,6 +9,8 @@ bind \e\[1\;5D backward-bigword
 bind \b backward-kill-bigword
 bind \cy redo
 
+source ~/.config/fish/functions/ls.fish
+
 source $__fish_config_dir/abbreviations
 
 function multicd
