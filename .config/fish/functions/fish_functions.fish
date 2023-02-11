@@ -1,5 +1,5 @@
 # Defined interactively
 function fish_functions
-    ~/.config/fish/
-    code .
+    code ~/.config/fish/
 end
+
