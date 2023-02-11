@@ -18,3 +18,8 @@ abbr --add dotdot --regex '^\.\.+$' --function multicd
 
 function last_history_item; echo $history[1]; end
 abbr -a !! --position anywhere --function last_history_item
+
+function _abbr_zip
+    echo zip -qr (datestamp).zip
+end
+abbr -a zip --function _abbr_zip

@@ -82,7 +82,7 @@ function fish_prompt --description 'Write out the prompt'
 
     set_color $color_host
     if test -n "$duration"
-        printf '%s ' (math -s 0 (date -d "1970-01-01 UTC $(date +%T)" +%s)'/60')
+        printf '%s ' (dayminute)
     else if set -q venv
         printf '(%s) ' $venv
     else
