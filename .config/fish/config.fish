@@ -1,5 +1,4 @@
 bass source /etc/profile
-source ~/.config/fish/functions/ls.fish
 
 set NPM_PACKAGES "$HOME/.npm-packages"
 set PATH $PATH $NPM_PACKAGES/bin
@@ -9,3 +8,13 @@ bind \e\[1\;5C forward-bigword
 bind \e\[1\;5D backward-bigword
 bind \b backward-kill-bigword
 bind \cy redo
+
+source abbreviations
+
+function multicd
+    echo cd (string repeat -n (math (string length -- $argv[1]) - 1) ../)
+end
+abbr --add dotdot --regex '^\.\.+$' --function multicd
+
+function last_history_item; echo $history[1]; end
+abbr -a !! --position anywhere --function last_history_item
