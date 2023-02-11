@@ -9,7 +9,7 @@ bind \e\[1\;5D backward-bigword
 bind \b backward-kill-bigword
 bind \cy redo
 
-source abbreviations
+source $__fish_config_dir/abbreviations
 
 function multicd
     echo cd (string repeat -n (math (string length -- $argv[1]) - 1) ../)
