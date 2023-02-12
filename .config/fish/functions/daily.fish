@@ -5,7 +5,7 @@ function daily
 
     catt volume 0 && cat volume 40
     pip install --upgrade gallery-dl
-    for dfolder in 61_Photos_Unsorted 91_New_Art 95_Memes
+    for dfolder in 61_Photos_Unsorted 91_New_Art
         ~/d/$dfolder/
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
     end
@@ -18,6 +18,6 @@ function daily
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
     ~
-    trash-empty 10 -f
+    command trash-empty 10 -f
     lb download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 end
