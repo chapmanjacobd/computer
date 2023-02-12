@@ -74,7 +74,7 @@ abbr -a -U -- yt.ogg yta
 abbr -a -U -- ytd 'lb dladd ~/lb/video.db'
 abbr -a -U -- ytd5 lb\ tubeadd\ --dl-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
 abbr -a -U -- ytda 'lb dladd ~/lb/audio.db'
-abbr -a -U -- ps ps -o etime,stat,command ww
 abbr -a -U -- gds git diff --staged
 abbr -a -U -- python ipython --pdb
 abbr -a -U -- rg rg -i -uuu --no-heading --no-line-number -j1
+abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
