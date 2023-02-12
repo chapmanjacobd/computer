@@ -16,6 +16,6 @@ function redditadd --argument reddit_db
         sqlite-utils upsert --pk path --alter --csv --detect-types $reddit_db media $subreddit.csv
     end
 
-    fd -S-300K -S+2B -tf . ~/github/xk/reddit_mining/links/ -x rm
-    fd -S+99MB -tf . ~/github/xk/reddit_mining/links/ -x rm
+    #fd -S-300K -S+2B -tf . ~/github/xk/reddit_mining/links/ -x rm
+    #fd -S+99MB -tf . ~/github/xk/reddit_mining/links/ -x rm
 end
