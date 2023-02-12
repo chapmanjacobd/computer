@@ -77,4 +77,4 @@ abbr -a -U -- ytda 'lb dladd ~/lb/audio.db'
 abbr -a -U -- ps ps -o etime,stat,command ww
 abbr -a -U -- gds git diff --staged
 abbr -a -U -- python ipython --pdb
-abbr -a -U -- rg rg -i
+abbr -a -U -- rg rg -i -uuu --no-heading --no-line-number -j1
