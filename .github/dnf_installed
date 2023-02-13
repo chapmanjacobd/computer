@@ -52,6 +52,7 @@ stress
 symlinks
 sysfsutils
 system-upgrade
+systemtap
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
 udunits2-devel
