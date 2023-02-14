@@ -47,6 +47,7 @@ remove-retired-packages
 rpmconf
 rstudio
 rstudio-desktop
+rtmpdump
 sshuttle
 stress
 symlinks
