@@ -1,5 +1,7 @@
 # Defined interactively
 function sitdown
+    pkill projectM-jack
+
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
         kscreen-doctor output.HDMI-A-0.disable output.DisplayPort-0.disable output.DVI-D-0.disable
         kscreen-doctor output.DisplayPort-0.enable

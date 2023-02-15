@@ -14,11 +14,11 @@ wmclassmatch=2
 
 [General]
 ColorScheme[$d]
-count=1
+count=2
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1
+rules=1,b2bf892e-248c-412c-891f-468f811a908e
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
@@ -29,6 +29,13 @@ Theme[$d]
 [KDE]
 ColorScheme[$d]
 widgetStyle[$d]
+
+[b2bf892e-248c-412c-891f-468f811a908e]
+Description=Settings for projectm-jack
+minimize=true
+minimizerule=3
+wmclass=projectm-jack
+wmclassmatch=1
 
 [cdea28e4-de1c-43f4-b161-4086aa4c7437]
 Description=phat_max
