@@ -78,3 +78,4 @@ abbr -a -U -- gds git diff --staged
 abbr -a -U -- python ipython --pdb
 abbr -a -U -- rg rg -i -uuu --no-heading --no-line-number -j1
 abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
+abbr -a -U -- icat kitty +kitten icat
