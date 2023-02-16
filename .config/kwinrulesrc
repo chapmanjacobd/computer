@@ -12,13 +12,20 @@ skiptaskbarrule=3
 wmclass=mpv
 wmclassmatch=2
 
+[2]
+Description=Settings for projectm-jack
+minimize=true
+minimizerule=3
+wmclass=projectm-jack
+wmclassmatch=1
+
 [General]
 ColorScheme[$d]
 count=2
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,b2bf892e-248c-412c-891f-468f811a908e
+rules=1,2
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
