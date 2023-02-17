@@ -9,6 +9,7 @@ exa
 feh
 ffmpeg-libs
 fftw-devel
+gdal
 git-delta
 gmp-devel
 gsl-devel
