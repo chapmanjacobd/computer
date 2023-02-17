@@ -14,7 +14,7 @@ source ~/.config/fish/functions/ls.fish
 source $__fish_config_dir/abbreviations
 
 function multicd
-    echo cd (string repeat -n (math (string length -- $argv[1]) - 1) ../)
+    echo (string repeat -n (math (string length -- $argv[1]) - 1) ../)
 end
 abbr --add dotdot --regex '^\.\.+$' --function multicd
 
