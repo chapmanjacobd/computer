@@ -11,4 +11,5 @@ function dla
     b lb download ~/lb/reddit/71_Mealtime_Videos.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/reddit/
     b lb download ~/lb/hackernews/hackernews_only_direct.tw.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/hn/
     b lb download ~/lb/fs/tax.db --safe --small --video --prefix /mnt/d/69_Taxes/
+    b lb download ~/lb/fs/61_Photos_Unsorted.db --safe --small --video --prefix /mnt/d/69_Taxes/reddit/
 end
