@@ -1,3 +1,4 @@
+/github/
 /.config/projectM/qprojectM.conf
 /.config/nushell/history.txt
 /.config/katevirc
@@ -123,7 +124,6 @@
 /.config/cni/
 /.config/Code/
 /.config/Code_Industry/
-/.config/com.github.babluboy.bookworm/
 /.config/composer/
 /.config/compton/
 /.config/.config/
@@ -162,8 +162,6 @@
 /.config/gh/
 /.config/ghb/
 /.config/GIMP/
-/.config/git/
-/.config/GitHub_Desktop/
 /.config/gmic/
 /.config/gnome-boxes/
 /.config/gnome-session/
@@ -382,8 +380,6 @@
 /.fltk/
 /.fonts/
 /.games/
-/.git/
-/github/
 /.gnome/
 /.gnupg/
 /.grass8/
@@ -442,7 +438,6 @@
 /bin/Clightd/
 /bin/ELAN_5.4/
 /bin/Ebay-Listing-Scraper/
-/bin/GitEye-2.2.0-linux.x86_64/
 /bin/GraphQLmap/
 /bin/Grid-Tiling-Kwin/
 /bin/LosslessCut-linux/
@@ -486,7 +481,6 @@
 /bin/bro
 /bin/brongerlight.sh
 /bin/btdu
-/bin/btdu_git/
 /bin/caprine-2.13.1-x86_64.AppImage
 /bin/cb
 /bin/cemu_1.26.2/
@@ -538,8 +532,6 @@
 /bin/gist_dl
 /bin/gist_dl_user
 /bin/gist_dl_user.py
-/bin/git-file-size-diff.sh
-/bin/git-quick-stats/
 /bin/googleassist.py
 /bin/gron
 /bin/gtest/
@@ -734,9 +726,4 @@
 .config/fish/functions/getWikipediaText.fish
 .config/fish/functions/getdev.fish
 .config/fish/functions/getsubtitles.fish
-.config/fish/functions/git-cat.fish
-.config/fish/functions/git.fish
-.config/fish/functions/gitMoveToNewBranch.fish
-.config/fish/functions/git_recent.fish
-.config/fish/functions/gitup.fish
 .config/fish/functions/gsave.fish

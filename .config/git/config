@@ -1,0 +1,41 @@
+[user]
+	name = Jacob Chapman
+	email = 7908073+chapmanjacobd@users.noreply.github.com
+[rerere]
+	enabled = true
+[core]
+    pager = delta --syntax-theme GitHub
+[interactive]
+    diffFilter = delta --color-only
+[color]
+	ui = auto
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = yellow
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[pull]
+	rebase = merges
+[rebase]
+	autoStash = true
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[credential]
+	helper = cache
+[help]
+	autocorrect = 30
+[difftool "vscode"]
+	cmd = code --wait --diff $LOCAL $REMOTE
+[url "git@github.com:"]
+	insteadOf = https://github.com/
