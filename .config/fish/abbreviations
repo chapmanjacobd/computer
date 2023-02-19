@@ -33,7 +33,6 @@ abbr -a -U -- ipa 'ip a'
 abbr -a -U -- lbdu 'lb du /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
 abbr -a -U -- less 'less -FSRXc'
 abbr -a -U -- lsdev 'sudo lshw -class disk -class tape -short'
-abbr -a -U -- ltc 'catt volume 0 && catt volume 55 && lt -c'
 abbr -a -U -- milky projectM-jack
 abbr -a -U -- mntd 'echo /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
 abbr -a -U -- mvl 'mvl -s""'
@@ -81,3 +80,4 @@ abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
 abbr -a -U -- icat kitty +kitten icat
 abbr -a -U -- str string
 abbr -a -U -- abbr abbrsave
+abbr -a -U -- ltc 'pkill catt && catt volume 0 && catt volume 55 && catt stop; lt -c'
