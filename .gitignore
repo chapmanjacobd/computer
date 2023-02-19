@@ -483,8 +483,6 @@
 /bin/bfs/
 /bin/bombadillo/
 /bin/bookworm/
-/bin/brightness
-/bin/brightness_increase.sh 100
 /bin/bro
 /bin/brongerlight.sh
 /bin/btdu
@@ -620,7 +618,6 @@
 /bin/rum/
 /bin/sc3-plugins/
 /bin/sent/
-/bin/set_brightness.sh
 /bin/shiftdelete.sh
 /bin/singlecopymaplink.sh
 /bin/sortfiletype.sh
