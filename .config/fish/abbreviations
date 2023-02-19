@@ -80,4 +80,4 @@ abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
 abbr -a -U -- icat kitty +kitten icat
 abbr -a -U -- str string
 abbr -a -U -- abbr abbrsave
-abbr -a -U -- ltc cr && lt -c
+abbr -a -U -- ltc 'cr && lt -c'
