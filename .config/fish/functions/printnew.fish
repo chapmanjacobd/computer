@@ -1,5 +1,5 @@
 # Defined interactively
-function repeatprintnew
+function printnew
     set prev (mktemp)
     set curr (mktemp)
     while $argv >$curr
