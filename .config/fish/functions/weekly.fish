@@ -1,4 +1,7 @@
 function weekly
+    trash ~/d/.stversions/*
+    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
+
     mrmusic
     #mrvideo
     #mrporn
@@ -16,6 +19,5 @@ function weekly
         gallery-dl --input-file ~/mc/$folder.txt
     end
 
-    trash ~/d/.stversions/*
     dbackups
 end
