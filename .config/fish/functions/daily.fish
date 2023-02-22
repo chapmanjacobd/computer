@@ -1,7 +1,9 @@
 function daily
     ~/
-    sed -i '$ d' .gitignore
-    sed -i '$ d' j/.gitignore
+    sed -i '$ d' ~/.gitignore
+    sed -i '$ d' ~/j/.gitignore
+
+    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
 
     catt volume 0 && cat volume 40
     pip install --upgrade gallery-dl
