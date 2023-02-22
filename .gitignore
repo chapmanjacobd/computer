@@ -726,4 +726,3 @@
 .config/fish/functions/genFileCSV.fish
 .config/fish/functions/getTabs.fish
 .config/fish/functions/getWikipediaText.fish
-.config/fish/functions/getdev.fish
