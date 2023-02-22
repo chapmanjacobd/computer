@@ -23,6 +23,7 @@ function funcsave --description 'Save the current definition of all specified fu
     for funcname in $argv
         if functions -q -- $funcname
             functions -- $funcname >$__fish_config_dir/functions/$funcname.fish
+            fish_indent -w $__fish_config_dir/functions/$funcname.fish
         else
             printf (_ "%s: Unknown function '%s'\n") funcsave $funcname
             set retval 1
