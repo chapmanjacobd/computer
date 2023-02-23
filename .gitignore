@@ -725,4 +725,3 @@
 .config/fish/functions/gcsweblink.fish
 .config/fish/functions/genFileCSV.fish
 .config/fish/functions/getTabs.fish
-.config/fish/functions/getWikipediaText.fish
