@@ -6,7 +6,7 @@ function wipm
     git diff --stat HEAD
     echo
     git status
-    if gum confirm
+    if gum confirm --default=no
         git commit -m "$argv"
         git pull
         git push

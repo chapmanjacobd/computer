@@ -18,7 +18,7 @@ function wip
     git diff --stat HEAD
     echo
     git status
-    if set -q _flag_yes; or gum confirm
+    if set -q _flag_yes; or gum confirm --default=no
         gitupdate .
         git pull
         git push
