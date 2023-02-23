@@ -5,7 +5,7 @@ set -Eeuox pipefail
 ssh-keygen -t ed25519 -q -N '' </dev/zero || true
 sudo visudo
 
-sudo cp ~/.github/etc/ssh/xk.conf /etc/ssh/sshd_config.d/
+sudo cp -a ~/.github/etc/. /etc/ && sudo restorecon -R /etc
 echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBCOUSX1aKXsPdKlBPcy6Gh2ijMH6PeBoE3URiyyWZs xk" >> ~/.ssh/authorized_keys
 sudo systemctl enable --now sshd
 sudo systemctl enable --now fstrim.timer
