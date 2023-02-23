@@ -5,5 +5,5 @@ function e
     sudo nano "$argv"
 
     mkdir -p (path dirname "$sp")
-    cp "$argv" "$sp"
+    sudo rsync --chown=(stat -c '%U:%G' (path dirname "$sp")) "$argv" "$sp"
 end
