@@ -5,8 +5,8 @@ function daily
 
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
 
-    catt volume 0 && cat volume 40
-    pip install --upgrade gallery-dl
+    catt volume 0 && catt volume 40
+    pip install --upgrade gallery-dl pychromecast
     for dfolder in 61_Photos_Unsorted 91_New_Art
         ~/d/$dfolder/
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
