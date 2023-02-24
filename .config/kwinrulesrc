@@ -14,8 +14,10 @@ wmclassmatch=2
 
 [2]
 Description=Settings for projectm-jack
-minimize=true
-minimizerule=3
+below=true
+belowrule=2
+skiptaskbar=true
+skiptaskbarrule=2
 wmclass=projectm-jack
 wmclassmatch=1
 
