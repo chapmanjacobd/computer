@@ -724,4 +724,3 @@
 .config/fish/functions/gcp-resize.fish
 .config/fish/functions/gcsweblink.fish
 .config/fish/functions/genFileCSV.fish
-.config/fish/functions/getTabs.fish
