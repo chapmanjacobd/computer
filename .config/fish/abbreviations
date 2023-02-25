@@ -85,3 +85,5 @@ abbr -a -U -- fsadd lb fsadd
 abbr -a -U -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -U -- gitc git checkout
 abbr -a -U -- gitb git checkout -b
+abbr -a -U -- gc git checkout
+abbr -a -U -- gclone git clone --depth=1
