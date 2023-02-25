@@ -83,3 +83,5 @@ abbr -a -U -- abbr abbrsave
 abbr -a -U -- ltc 'cr && lt -c'
 abbr -a -U -- fsadd lb fsadd
 abbr -a -U -- wtep wt -OOO --lower 12 --upper 25
+abbr -a -U -- gitc git checkout
+abbr -a -U -- gitb git checkout -b
