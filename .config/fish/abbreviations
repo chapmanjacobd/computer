@@ -87,3 +87,4 @@ abbr -a -U -- gitc git checkout
 abbr -a -U -- gitb git checkout -b
 abbr -a -U -- gc git checkout
 abbr -a -U -- gclone git clone --depth=1
+abbr -a -U -- curl curl -s
