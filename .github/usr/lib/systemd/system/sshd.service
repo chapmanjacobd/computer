@@ -13,7 +13,7 @@ KillMode=process
 Restart=on-failure
 RestartSec=42s
 MemoryMin=10M
-MemoryLow=200M
+MemoryLow=20M
 
 [Install]
 WantedBy=multi-user.target
