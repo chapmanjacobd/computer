@@ -59,7 +59,6 @@
     "**/venv": true,
     "**/htmlcov": true,
     "**egg-info": true,
-    "**/functions": true,
     "**/build": true,
   },
   "emmet.triggerExpansionOnTab": true,
