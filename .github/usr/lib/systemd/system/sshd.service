@@ -12,6 +12,7 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
 RestartSec=42s
+MemoryMin=10M
 MemoryLow=200M
 
 [Install]
