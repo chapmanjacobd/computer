@@ -4,9 +4,10 @@ function forganize
     #trash-size
     #trash-empty
 
-    wt ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | string escape | xargs -P 20 -n 50 rm
-
     library christen -v ~/d/*
+
+    refreshLibrary
+    wt ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | string escape | xargs -P 20 -n 50 rm
 
     ~/Downloads/ && fd -d1 -eEPUB -x mv "{}" ~/d/50_eBooks/
     ~/Downloads/ && fd -d1 -eHTML -x mv "{}" ~/d/53_Scrapbook_Web/
@@ -32,9 +33,6 @@ function forganize
             mv "$f" ~/d/63_Sounds/unsorted/
         end
     end
-
-    ~/lb/
-    refreshLibrary
 
     ~/d/71_Mealtime_Videos/
     fd -epng -ejpg -egif -x mv {} ~/d/91_New_Art/unsorted/71_Mealtime_Videos/
