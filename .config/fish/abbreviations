@@ -25,7 +25,6 @@ abbr -a -U -- gls gitls
 abbr -a -U -- gp 'git pull'
 abbr -a -U -- gr 'git reset'
 abbr -a -U -- grep 'grep -i'
-abbr -a -U -- grm gitclear
 abbr -a -U -- gs 'git status'
 abbr -a -U -- hibernate 'systemctl hibernate'
 abbr -a -U -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
@@ -88,3 +87,4 @@ abbr -a -U -- gitb git checkout -b
 abbr -a -U -- gc git checkout
 abbr -a -U -- gclone git clone --depth=1
 abbr -a -U -- curl curl -s
+abbr -a -U -- grm git reset --hard HEAD
