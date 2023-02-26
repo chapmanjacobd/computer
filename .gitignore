@@ -721,4 +721,3 @@
 .config/fish/functions/fisher.fish
 .config/fish/functions/fzf_configure_bindings.fish
 .config/fish/functions/gcp-resize.fish
-.config/fish/functions/gcsweblink.fish
