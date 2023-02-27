@@ -49,7 +49,7 @@ function forganize
     yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
 
     for m in /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7
-        lb fsadd --filesystem ~/lb/fs/d.db $m
+        lb fsadd --filesystem ~/lb/fs/d.db $m/*
     end
 
     cp ~/.local/share/fish/fish_history ~/d/00_Metadata/SECURE/
