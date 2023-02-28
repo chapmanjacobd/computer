@@ -1,1 +1,1 @@
-EARLYOOM_ARGS="-r 0 -m 6,4 -M 409600 --prefer '^(Web Content|Isolated Web Co)$' --avoid '^(dnf|packagekitd|systemd|systemd-logind|dbus-daemon|dbus-broker|cryptsetup)$'"
+EARLYOOM_ARGS="-r 0 -m 6,4 -M 409600 --prefer '^(Web Content|Isolated Web Co)$' --avoid '^(dnf|packagekitd|systemd|systemd-logind|dbus-daemon|dbus-broker|cryptsetup|sshd)$'"
