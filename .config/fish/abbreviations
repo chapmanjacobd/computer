@@ -88,3 +88,4 @@ abbr -a -U -- curl curl -s
 abbr -a -U -- grm git reset --hard HEAD
 abbr -a -U -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -U -- sys sudo systemctl
+abbr -a -U -- bootlogs journalctl -r -b -1
