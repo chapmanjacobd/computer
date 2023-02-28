@@ -54,7 +54,6 @@ abbr -a -U -- sl ls
 abbr -a -U -- sort 'sort --unique --ignore-case'
 abbr -a -U -- split 'split -d -C 50MB'
 abbr -a -U -- sshh 'ssh pakon -t tmux new-session -A -s phone'
-abbr -a -U -- sys systemctl
 abbr -a -U -- sze 'sudo zypper rm'
 abbr -a -U -- szi 'sudo zypper install --no-recommends'
 abbr -a -U -- szs 'sudo zypper search -s'
@@ -88,3 +87,4 @@ abbr -a -U -- gclone git clone --depth=1
 abbr -a -U -- curl curl -s
 abbr -a -U -- grm git reset --hard HEAD
 abbr -a -U -- rg rg -i --no-heading --no-line-number -j1
+abbr -a -U -- sys sudo systemctl

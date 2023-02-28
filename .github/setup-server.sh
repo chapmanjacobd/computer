@@ -41,3 +41,4 @@ sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
 sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
 sudo systemctl set-default multi-user.target
+sudo systemctl disable --now sysstat
