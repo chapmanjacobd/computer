@@ -16,6 +16,7 @@ function library-stats
         lb-dev lt $db -w play_count'>'0 -p a
     end
 
+    echo bigdirs
     for db in ~/lb/fs/61_Photos_Unsorted.db ~/lb/fs/tax.db ~/lb/video.db ~/lb/fs/63_Sounds.db ~/lb/audio.db
         echo $db
         lb-dev bigdirs $db -L 5
