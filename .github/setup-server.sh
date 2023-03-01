@@ -42,3 +42,4 @@ sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
 sudo systemctl set-default multi-user.target
 sudo systemctl disable --now sysstat
+sudo systemctl disable --now sysstat-collect.timer
