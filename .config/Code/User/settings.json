@@ -393,6 +393,7 @@
     "files.trimFinalNewlines": true
   },
   "workbench.enableExperiments": false,
+"search.followSymlinks": false,
   "workbench.settings.enableNaturalLanguageSearch": false,
   "update.mode": "none",
   "telemetry.telemetryLevel": "off",
