@@ -18,7 +18,6 @@ abbr -a -U -- fi 'sudo btrfs fi usage'
 abbr -a -U -- funced 'funced -s'
 abbr -a -U -- ga 'git add .'
 abbr -a -U -- gcl gitclear
-abbr -a -U -- gd 'git diff'
 abbr -a -U -- gitlog 'git log --oneline --decorate --all --graph --stat'
 abbr -a -U -- gits 'git log -p -S'
 abbr -a -U -- gls gitls
@@ -71,7 +70,6 @@ abbr -a -U -- yt.ogg yta
 abbr -a -U -- ytd 'lb dladd ~/lb/video.db'
 abbr -a -U -- ytd5 lb\ tubeadd\ --dl-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
 abbr -a -U -- ytda 'lb dladd ~/lb/audio.db'
-abbr -a -U -- gds git diff --staged
 abbr -a -U -- python ipython --pdb
 abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
 abbr -a -U -- icat kitty +kitten icat
@@ -89,3 +87,5 @@ abbr -a -U -- grm git reset --hard HEAD
 abbr -a -U -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -U -- sys sudo systemctl
 abbr -a -U -- bootlogs journalctl -r -b -1
+abbr -a -U -- gd 'git diff; git status'
+abbr -a -U -- gds 'git diff --staged; git status'
