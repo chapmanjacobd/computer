@@ -4,7 +4,6 @@
 sudo systemctl set-default graphical.target
 source "${BASH_SOURCE%/vscode_extensions.sh}"
 
-sudo dnf install https://download.nomachine.com/download/8.2/Linux/nomachine_8.2.3_4_x86_64.rpm
 chmod 0600 ~/.nx/config/authorized.crt
 echo "EnableUPnP none" | sudo tee -a /usr/NX/etc/server.cfg
 echo "NXKeyBasedUsePAM 0" | sudo tee -a /usr/NX/etc/server.cfg
