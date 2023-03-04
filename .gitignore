@@ -645,7 +645,6 @@
 /bin/unhtml.c
 /bin/unrarsrc/
 /bin/unwrap.pl
-/bin/usb-reset.sh
 /bin/utils.py
 /bin/validate_cloud_optimized_geotiff.py
 /bin/verboseSSH
