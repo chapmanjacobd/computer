@@ -34,6 +34,9 @@ function forganize
         end
     end
 
+    fd . ~/d/71_Mealtime_Videos/ -tf | parallel organize_audio_in_video {}
+    fd . ~/d/75_MovieQueue/ -tf | parallel organize_audio_in_video {}
+
     ~/d/71_Mealtime_Videos/
     fd -epng -ejpg -egif -x mv {} ~/d/91_New_Art/unsorted/71_Mealtime_Videos/
 
