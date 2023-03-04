@@ -89,3 +89,5 @@ abbr -a -U -- sys sudo systemctl
 abbr -a -U -- bootlogs journalctl -r -b -1
 abbr -a -U -- gd 'git diff; git status'
 abbr -a -U -- gds 'git diff --staged; git status'
+abbr -a -U -- usbreset sudo /home/xk/bin/usb-reset.sh
+abbr -a -U -- resetusb sudo /home/xk/bin/usb-reset.sh
