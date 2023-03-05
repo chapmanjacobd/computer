@@ -14,9 +14,9 @@ Default config:
 --]]
 -- ------ config -------
 local start_keys_enabled = false  -- if true then choose the up/down keys wisely
-local key_toggle_bindings = 'D'  -- enable/disable drcbox key bindings
-local key_toggle_drcbox = 'd'  -- enable/disable drcbox
-local key_reset_drcbox = 'alt+ctrl+d'
+local key_toggle_bindings = 'alt+shift+d'  -- enable/disable drcbox key bindings
+local key_toggle_drcbox = 'alt+d'  -- enable/disable drcbox
+local key_reset_drcbox = 'alt+ctrl+shift+d'
 
 local options = {
   {keys = {'2', 'w'}, option = {'framelen',     1, 10, 8000,  500,  500 } },
