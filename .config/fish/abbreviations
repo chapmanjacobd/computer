@@ -91,3 +91,5 @@ abbr -a -U -- gd 'git diff; git status'
 abbr -a -U -- gds 'git diff --staged; git status'
 abbr -a -U -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -U -- resetusb sudo /home/xk/bin/usb-reset.sh
+abbr -a -U -- kv keepvid
+abbr -a -U -- ka keepaud
