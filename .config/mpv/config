@@ -26,7 +26,6 @@ osd-border-size=1
 
 screenshot-directory=~/d/90_Now_Viewing/
 screenshot-template=mpv-%F-%wH%wM_%wS.%wT
-screenshot-sw=yes
 
 save-position-on-quit
 watch-later-options-remove=pause,mute,fullscreen
