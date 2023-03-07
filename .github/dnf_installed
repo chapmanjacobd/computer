@@ -43,6 +43,7 @@ mpv-devel
 ncurses-devel
 perl
 powertop
+progress
 proj-devel
 python3-btrfs
 python3-ipdb
