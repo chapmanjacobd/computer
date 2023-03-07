@@ -93,3 +93,4 @@ abbr -a -U -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -U -- resetusb sudo /home/xk/bin/usb-reset.sh
 abbr -a -U -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -U -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
+abbr -a -U -- tl truncatelines 1
