@@ -706,9 +706,3 @@
 .config/fish/functions/duration.fish
 .config/fish/functions/fasd_cd.fish
 .config/fish/functions/fcd.fish
-.config/fish/functions/fdupe.fish
-.config/fish/functions/file-exists.fish
-.config/fish/functions/fileSuffix.fish
-.config/fish/functions/file_ext.fish
-.config/fish/functions/files.fish
-.config/fish/functions/filesDeep.fish
