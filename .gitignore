@@ -702,7 +702,3 @@
 .config/fish/functions/docker-cleanup.fish
 .config/fish/functions/dpCML.fish
 .config/fish/functions/dpcp.fish
-.config/fish/functions/dupcode.fish
-.config/fish/functions/duration.fish
-.config/fish/functions/fasd_cd.fish
-.config/fish/functions/fcd.fish
