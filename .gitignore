@@ -712,4 +712,3 @@
 .config/fish/functions/file_ext.fish
 .config/fish/functions/files.fish
 .config/fish/functions/filesDeep.fish
-.config/fish/functions/filterByGenre.fish
