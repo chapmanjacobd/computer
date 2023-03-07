@@ -1,5 +1,4 @@
 # Defined interactively
-function dupcode
-
-    sort **py | uniq --count | sort --unique --ignore-case
+function duplines
+    fd . $argv -x cat | asc
 end
