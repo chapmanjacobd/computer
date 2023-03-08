@@ -700,4 +700,3 @@
 .config/fish/functions/deleteSong.fish
 .config/fish/functions/devmode.fish
 .config/fish/functions/docker-cleanup.fish
-.config/fish/functions/dpCML.fish
