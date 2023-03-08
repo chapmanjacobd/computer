@@ -62,7 +62,6 @@ abbr -a -U -- td tempdir
 abbr -a -U -- tee 'tee -a'
 abbr -a -U -- timers 'systemctl --user list-timers --all --no-pager | head -n -2'
 abbr -a -U -- tmux 'tmux new-session -A -s phone'
-abbr -a -U -- wget 'wget --content-disposition --trust-server-names'
 abbr -a -U -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -U -- wts 'wt -p -u duration -s'
 abbr -a -U -- xpaste 'xclip -selection clipboard -o'
@@ -94,3 +93,4 @@ abbr -a -U -- resetusb sudo /home/xk/bin/usb-reset.sh
 abbr -a -U -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -U -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -U -- tl truncatelines 1
+abbr -a -U -- wget wget --content-disposition --no-verbose --no-clobber --trust-server-names
