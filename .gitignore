@@ -1,3 +1,4 @@
+/.config/kdeconnect/
 /.config/discoverrc
 /bin/qgis_scripts/__pycache__/
 /.local/data/
@@ -199,7 +200,6 @@
 /.config/kcminputrc
 /.config/kconf_updaterc
 /.config/KDE/
-/.config/kdeconnect/
 /.config/kded_device_automounterrc
 /.config/kdedefaults/
 /.config/kdeglobals
@@ -689,9 +689,6 @@
 .config/fish/functions/coln.fish
 .config/fish/functions/config.fish
 .config/fish/functions/confirm.fish
-.config/fish/functions/connectbak.fish
-.config/fish/functions/connectpgsql.fish
-.config/fish/functions/connectpgsql5433.fish
 .config/fish/functions/crontab.fish
 .config/fish/functions/csv.fish
 .config/fish/functions/csv_grep.fish
