@@ -51,6 +51,4 @@ function forganize
     for m in /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7
         lb fsadd --filesystem ~/lb/fs/d.db $m/*
     end
-
-    cp ~/.local/share/fish/fish_history ~/d/00_Metadata/SECURE/
 end
