@@ -696,4 +696,3 @@
 .config/fish/functions/csv_grep.fish
 .config/fish/functions/default.fish
 .config/fish/functions/defaultset.fish
-.config/fish/functions/deleteSong.fish
