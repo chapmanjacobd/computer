@@ -33,6 +33,8 @@ flatpak install flathub org.freedesktop.Platform.ffmpeg-full
 
 sudo dnf install $(cat ~/.github/dnf_installed)
 
+sudo rm /etc/profile.d/which2.sh
+
 sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
 sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
 #sudo dnf swap mesa-va-drivers.i686 mesa-va-drivers-freeworld.i686

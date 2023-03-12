@@ -1,4 +1,4 @@
-#bass source /etc/profile
+bass source /etc/profile
 
 set NPM_PACKAGES "$HOME/.npm-packages"
 set PATH $PATH $NPM_PACKAGES/bin
