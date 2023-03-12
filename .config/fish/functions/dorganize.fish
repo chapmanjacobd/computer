@@ -1,5 +1,5 @@
 # Defined via `source`
-function forganize_d03
+function dorganize
     ~/d/03_Downloads/ && fd -eZIP -eRAR -e7z -x bash -c 'unar "{}" && rm "{}"'
 
     ~/d/03_Downloads/ && fd -d1 -eEPUB -x mv "{}" ~/d/50_eBooks/

@@ -1,6 +1,6 @@
 function forganize
     morganize
-    forganize_d03
+    dorganize
 
     #trash-size
     #trash-empty
