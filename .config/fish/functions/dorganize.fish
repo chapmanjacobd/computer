@@ -11,4 +11,5 @@ function dorganize
     fd -d1 -eJPG -ePNG -eWEBP -x mv "{}" ~/d/61_Photos_Unsorted/
 
 	remove_empty_directories
+	ls
 end
