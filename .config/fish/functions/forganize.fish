@@ -1,5 +1,6 @@
 function forganize
     morganize
+    forganize_d03
 
     #trash-size
     #trash-empty
@@ -8,10 +9,6 @@ function forganize
 
     refreshLibrary
     wt ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | string escape | xargs -P 20 -n 50 rm
-
-    ~/Downloads/ && fd -d1 -eEPUB -x mv "{}" ~/d/50_eBooks/
-    ~/Downloads/ && fd -d1 -eHTML -x mv "{}" ~/d/53_Scrapbook_Web/
-    ~/Downloads/ && fd -eZIP -eRAR -e7z -x bash -c 'unar "{}" && rm "{}"'
 
     set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_ClassicalComposers/ ~/d/85_Inspiration/
     set photo_dirs ~/d/61_Photos_Unsorted/ ~/d/96_Weird_History/ ~/d/94_Cool/ ~/d/93_BG/ ~/d/91_New_Art/ ~/d/98_Me/ ~/d/99_Art/

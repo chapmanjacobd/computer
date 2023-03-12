@@ -1,3 +1,4 @@
+# Defined in /home/xk/.config/fish/functions/morganize.fish @ line 1
 function morganize
     for f in ~/.config/fish/functions/*.fish
         fish_indent -w $f
@@ -14,8 +15,4 @@ function morganize
     for f in (git --git-dir=/home/xk/j/.git/ ls-files | sed "s|^|/home/xk/j/|" | grep -i favorite)
         s sorted "$f"
     end
-
-    ~/Downloads/ && fd -d1 -eJPEG -x mv "{}" {.}.jpg
-    ~/Downloads/ && fd -d1 -eJPG -ePNG -eWEBP -x mv "{}" ~/d/61_Photos_Unsorted/
-    cd -
 end
