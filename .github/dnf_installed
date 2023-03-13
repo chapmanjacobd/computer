@@ -13,6 +13,7 @@ feh
 ffmpeg-libs
 fftw-devel
 gdal
+gdal-devel
 gh
 git-delta
 gmp-devel
