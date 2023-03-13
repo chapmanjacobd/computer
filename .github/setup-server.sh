@@ -34,6 +34,7 @@ flatpak install flathub org.freedesktop.Platform.ffmpeg-full
 sudo dnf install $(cat ~/.github/dnf_installed)
 
 sudo usermod -aG docker xk
+mkdir -p ~/.docker/cli-plugins/
 curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
 chmod +x ~/.docker/cli-plugins/docker-compose
 
