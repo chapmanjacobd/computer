@@ -459,7 +459,7 @@
   },
   "isort.args": [
     "--profile",
-    "black",
+    "google",
     "--line-length=120"
   ],
   "python.sortImports.args": [
