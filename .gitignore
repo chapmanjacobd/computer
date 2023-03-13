@@ -694,4 +694,3 @@
 .config/fish/functions/crontab.fish
 .config/fish/functions/csv.fish
 .config/fish/functions/csv_grep.fish
-.config/fish/functions/default.fish
