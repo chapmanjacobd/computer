@@ -5,6 +5,6 @@ function nextSongDelete
     else if pgrep -f 'mpv .*/6'
         lb-dev next --delete
     else
-        ssh pakon lb next --delete
+        ssh pulse15 lb next --delete
     end
 end
