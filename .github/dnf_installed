@@ -39,6 +39,7 @@ libmediainfo
 megatools
 mesa-dri-drivers
 mesa-vdpau-drivers
+moby-engine-fish-completion
 mpv
 mpv-devel
 ncurses-devel
