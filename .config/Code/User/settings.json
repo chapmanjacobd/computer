@@ -295,9 +295,12 @@
     "reproject",
     "Reprojecting",
     "resultset",
+    "retile",
+    "retiled",
     "rmlint",
     "rowid",
     "rowspan",
+    "scandir",
     "scodec",
     "screeninfo",
     "secretmanager",
@@ -469,4 +472,5 @@
   ],
   "Lua.telemetry.enable": false,
   "git.openRepositoryInParentFolders": "never",
+  "window.zoomLevel": 1,
 }
