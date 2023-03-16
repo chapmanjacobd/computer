@@ -1,6 +1,7 @@
 # Defined interactively
 function vnc
     if contains pakon $argv
+        ssh -fNT -R localhost:7070:localhost:22 pakon
         ssh xk@pakon -f -L 4102:localhost:4000 sleep 20 &
         sleep 2
         /usr/NX/bin/nxplayer --session ~/.ssh/ssh_pakon.nxs
