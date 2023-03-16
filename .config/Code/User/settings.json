@@ -465,11 +465,6 @@
     "google",
     "--line-length=120"
   ],
-  "python.sortImports.args": [
-    "--profile",
-    "black",
-    "--line-length=120"
-  ],
   "Lua.telemetry.enable": false,
   "git.openRepositoryInParentFolders": "never",
   "window.zoomLevel": 1,
