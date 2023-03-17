@@ -95,3 +95,4 @@ abbr -a -U -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | 
 abbr -a -U -- tl truncatelines 1
 abbr -a -U -- wget wget --content-disposition --no-verbose --no-clobber --trust-server-names
 abbr -a -U -- suspend sudo systemctl suspend
+abbr -a -U -- vnp-partial sshuttle --dns -HNvr pakon
