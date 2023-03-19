@@ -1,5 +1,0 @@
-"xdotool mousedown 1"
-  b:49+1
-"xdotool mouseup 1"
-  b:49+Release+1
-
