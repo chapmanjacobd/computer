@@ -1,4 +1,4 @@
 # Defined interactively
 function duplines
-    fd . $argv -x cat | string trim | asc
+    fd -tf . $argv -x cat | string trim | asc
 end
