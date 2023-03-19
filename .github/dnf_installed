@@ -30,6 +30,7 @@ hw-probe
 iftop
 java-latest-openjdk-devel
 kdeplasma-addons
+kdiff3
 keepassxc
 kitty
 kitty-terminfo
@@ -39,6 +40,7 @@ libicu
 libicu-devel
 libmediainfo
 megatools
+meld
 mesa-dri-drivers
 mesa-vdpau-drivers
 moby-engine-fish-completion
