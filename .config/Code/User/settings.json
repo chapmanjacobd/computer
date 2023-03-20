@@ -468,4 +468,7 @@
   "Lua.telemetry.enable": false,
   "git.openRepositoryInParentFolders": "never",
   "window.zoomLevel": 1,
+"yaml.schemas":{
+"/home/xk/.local/yaml/argo.json":"*.yaml"
+}
 }
