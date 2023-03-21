@@ -1,15 +1,14 @@
 #!/usr/bin/python
 
-import argparse
-import shelve
+import argparse, shelve
+from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('database', help='The name of the shelve database file to check')
     args = parser.parse_args()
 
-    db = shelve.open(args.database, 'r')
-
+    db = shelve.open(str(Path(args.database).resolve()), 'r')
     for key, value in db.items():
         print(f'{key}: {value}')
 
