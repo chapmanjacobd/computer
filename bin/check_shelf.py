@@ -11,7 +11,7 @@ def main():
     db = shelve.open(args.database, 'r')
 
     for key, value in db.items():
-        print(f'Key: {key}, Value: {value}')
+        print(f'{key}: {value}')
 
     db.close()
 
