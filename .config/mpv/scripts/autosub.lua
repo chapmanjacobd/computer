@@ -30,4 +30,4 @@ function load_sub_fn()
   end
 end
 
-mp.add_key_binding("alt+j", "auto_load_subs", load_sub_fn)
+mp.add_key_binding("ctrl+j", "auto_load_subs", load_sub_fn)
