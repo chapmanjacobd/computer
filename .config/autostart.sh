@@ -1,3 +1,4 @@
+#!/bin/fish
 kde-inhibit --colorCorrect sleep 0.1
 xset -r 108
 xset -r 135
