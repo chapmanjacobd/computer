@@ -46,6 +46,7 @@ mesa-vdpau-drivers
 moby-engine-fish-completion
 mpv
 mpv-devel
+mpv-mpris
 ncurses-devel
 perl
 powertop
