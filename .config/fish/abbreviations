@@ -97,3 +97,4 @@ abbr -a -U -- wget wget --content-disposition --no-verbose --no-clobber --trust-
 abbr -a -U -- suspend sudo systemctl suspend
 abbr -a -U -- vpn-partial sshuttle --dns -HNvr pakon
 abbr -a -U -- hexdump hexdump -C
+abbr -a -U -- gdh git diff HEAD^
