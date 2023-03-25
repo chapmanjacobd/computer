@@ -683,4 +683,3 @@
 .config/fish/functions/bq_fetch_dataset_schema.fish
 .config/fish/functions/capitalize.fish
 .config/fish/functions/castmusic.fish
-.config/fish/functions/catNPMpackage.fish
