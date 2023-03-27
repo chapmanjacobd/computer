@@ -682,4 +682,3 @@
 .config/fish/functions/bigdpi.fish
 .config/fish/functions/blockdomain.fish
 .config/fish/functions/bq_fetch_dataset_schema.fish
-.config/fish/functions/capitalize.fish
