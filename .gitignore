@@ -681,4 +681,3 @@
 .config/fish/functions/bdfr-links.fish
 .config/fish/functions/bigdpi.fish
 .config/fish/functions/blockdomain.fish
-.config/fish/functions/bq_fetch_dataset_schema.fish
