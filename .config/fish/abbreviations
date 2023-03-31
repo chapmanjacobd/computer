@@ -79,7 +79,6 @@ abbr -a -U -- fsadd lb fsadd
 abbr -a -U -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -U -- gitc git checkout
 abbr -a -U -- gitb git checkout -b
-abbr -a -U -- gc git checkout
 abbr -a -U -- gclone git clone --depth=1
 abbr -a -U -- curl curl -s
 abbr -a -U -- grm git reset --hard HEAD
@@ -99,3 +98,4 @@ abbr -a -U -- vpn-partial sshuttle --dns -HNvr pakon
 abbr -a -U -- hexdump hexdump -C
 abbr -a -U -- gdh git diff HEAD^
 abbr -a -U -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
+abbr -a -U -- gcd git checkout
