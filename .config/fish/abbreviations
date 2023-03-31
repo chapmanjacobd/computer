@@ -98,3 +98,4 @@ abbr -a -U -- suspend sudo systemctl suspend
 abbr -a -U -- vpn-partial sshuttle --dns -HNvr pakon
 abbr -a -U -- hexdump hexdump -C
 abbr -a -U -- gdh git diff HEAD^
+abbr -a -U -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
