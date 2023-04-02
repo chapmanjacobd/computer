@@ -59,3 +59,4 @@ python -m pip install yt-dlp pipenv catt xklb
 cd ~ && restorecon -vR .
 #reboot
 R --slave -e 'update.packages()'
+sudo dnf copr enable cboxdoerfer/fsearch
