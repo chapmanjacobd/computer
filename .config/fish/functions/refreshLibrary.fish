@@ -1,9 +1,9 @@
 # Defined interactively
 function refreshLibrary
     ~/lb/
-    b lb fsupdate video.db
-    b lb fsupdate fs/tax.db
-    b lb fsupdate audio.db
-    b lb fsupdate fs/63_Sounds.db
+    for db in video.db fs/tax.db audio.db fs/63_Sounds.db
+        lb fsupdate $db
+        b sqlite-utils rebuild-fts $db media
+    end
     wait
 end
