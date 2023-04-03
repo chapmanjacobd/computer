@@ -12,7 +12,6 @@ function load_sub_fn(langs)
     path = path:gsub("[%-_ ]*%[[%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_]%](%.%w%w%w%w?)$", '%1')
     print(path)
 
-    -- Subtitles
     t = { args = { "subliminal", "--opensubtitles", "xk3", "idiZQc2kVyvsQk8!", "download", "-s", "-f" } }
     for i = 1, #langs do
       table.insert(t.args, "-l")
@@ -39,4 +38,4 @@ function load_sub_fn(langs)
 end
 
 mp.add_key_binding("ctrl+j", "auto_load_subs_en", load_sub_fn({"en"}))
-mp.add_key_binding("ctrl+alt+j", "auto_load_subs_zh", load_sub_fn({"zt", "ze", "zh"}))
+mp.add_key_binding("ctrl+alt+j", "auto_load_subs_zh", load_sub_fn({"zh"})) -- "zt", "ze",
