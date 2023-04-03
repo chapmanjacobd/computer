@@ -7,5 +7,6 @@ function relmv
         set relpath (string sub -s $trim_len "$abspath")
         set target_dir (path normalize (dirname "$dest/$relpath"))
         echo mv "$abspath" "$target_dir/"
+        #mv "$abspath" "$target_dir/"
     end
 end
