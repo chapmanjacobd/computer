@@ -12,7 +12,7 @@ function load_sub_fn(langs)
     path = path:gsub("[%-_ ]*%[[%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_][%w%-_]%](%.%w%w%w%w?)$", '%1')
     print(path)
 
-    t = { args = { "subliminal", "--opensubtitles", "xk3", "idiZQc2kVyvsQk8!", "download", "-s", "-f" } }
+    t = { args = { "subliminal", "--opensubtitles", "xk3", "idiZQc2kVyvsQk8!", "download", "-f" } }
     for i = 1, #langs do
       table.insert(t.args, "-l")
       table.insert(t.args, langs[i])
