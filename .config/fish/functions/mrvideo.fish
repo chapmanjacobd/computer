@@ -1,5 +1,5 @@
 function mrvideo
-    rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/d/70_Now_Watching/keep/ ~/d/77_Library/
+    rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/d/70_Now_Watching/Keep/ ~/d/77_Library/
 
     lb relmv (
         lb watch ~/lb/video.db -E /70_Now_Watching/ --local-only --lower 6 --upper 30 -p bf | shuf  | head -n 2
