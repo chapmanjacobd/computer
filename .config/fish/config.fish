@@ -25,3 +25,6 @@ function _abbr_zip
     echo zip -qr (datestamp).zip
 end
 abbr -a zip --function _abbr_zip
+
+abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
+
