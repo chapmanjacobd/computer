@@ -1,102 +1,102 @@
-abbr -a -U -- ? '~/'
-abbr -a -U -- arpa 'arp -a'
-abbr -a -U -- asciiterm 'termtosvg --screen-geometry=100x10 --min-frame-duration=200 --max-frame-duration=5000 --template=solarized_light'
-abbr -a -U -- bead 'bat -r 0:10'
-abbr -a -U -- bsubvdel 'sudo btrfs subvolume delete --commit-each'
-abbr -a -U -- btdu 'sudo /home/xk/bin/btdu -x'
-abbr -a -U -- busage 'sudo btrfs fi usage'
-abbr -a -U -- clipboard cb
-abbr -a -U -- cup 'docker compose -f docker/docker-compose.yaml up'
-abbr -a -U -- dc cd
-abbr -a -U -- dd 'dd status=progress if= of='
-abbr -a -U -- df 'df -h'
-abbr -a -U -- dmesg 'dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice,info'
-abbr -a -U -- erm '-pfd | string escape | xargs -P 20 -n 50 rm'
-abbr -a -U -- fdh fd\ --hidden\ --exclude\ \'.git\'
-abbr -a -U -- fdwatch 'fd -x fish -c "mpvonce {}"'
-abbr -a -U -- fi 'sudo btrfs fi usage'
-abbr -a -U -- funced 'funced -s'
-abbr -a -U -- ga 'git add .'
-abbr -a -U -- gcl gitclear
-abbr -a -U -- gitlog 'git log --oneline --decorate --all --graph --stat'
-abbr -a -U -- gits 'git log -p -S'
-abbr -a -U -- gls gitls
-abbr -a -U -- gp 'git pull'
-abbr -a -U -- gr 'git reset'
-abbr -a -U -- grep 'grep -i'
-abbr -a -U -- gs 'git status'
-abbr -a -U -- hibernate 'systemctl hibernate'
-abbr -a -U -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
-abbr -a -U -- ipa 'ip a'
-abbr -a -U -- lbdu 'lb du /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
-abbr -a -U -- less 'less -FSRXc'
-abbr -a -U -- lsdev 'sudo lshw -class disk -class tape -short'
-abbr -a -U -- milky projectM-jack
-abbr -a -U -- mntd 'echo /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
-abbr -a -U -- mvl 'mvl -s""'
-abbr -a -U -- ncdu 'NO_COLOR=1 ncdu'
-abbr -a -U -- nicotine 'flatpak run org.nicotine_plus.Nicotine'
-abbr -a -U -- p 'pipenv shell'
-abbr -a -U -- pgrep 'pgrep -fa'
-abbr -a -U -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'
-abbr -a -U -- q exit
-abbr -a -U -- rm trash-put
-abbr -a -U -- rmove 'rsync -a --info=progress2 --no-inc-recursive --remove-source-files --backup-dir (date "+%d.%m.%Y")'
-abbr -a -U -- rmv 'rclone move --delete-empty-src-dirs'
-abbr -a -U -- rsync 'rsync -auh --info=progress2 --no-inc-recursive'
-abbr -a -U -- sde dnferase
-abbr -a -U -- sdi dnfinstall
-abbr -a -U -- sdu 'sudo dnf update'
-abbr -a -U -- sed sed\ \'s\|\|\|\'
-abbr -a -U -- size 'wc -c | numfmt --to=iec'
-abbr -a -U -- sl ls
-abbr -a -U -- sort 'sort --unique --ignore-case'
-abbr -a -U -- split 'split -d -C 50MB'
-abbr -a -U -- sshh 'ssh pakon -t tmux new-session -A -s phone'
-abbr -a -U -- sze 'sudo zypper rm'
-abbr -a -U -- szi 'sudo zypper install --no-recommends'
-abbr -a -U -- szs 'sudo zypper search -s'
-abbr -a -U -- szu 'sudo zypper dup'
-abbr -a -U -- ta 'lb tabsadd --frequency quarterly --category misc ~/lb/tabs.db'
-abbr -a -U -- td tempdir
-abbr -a -U -- tee 'tee -a'
-abbr -a -U -- timers 'systemctl --user list-timers --all --no-pager | head -n -2'
-abbr -a -U -- tmux 'tmux new-session -A -s phone'
-abbr -a -U -- wtns 'wt -w subtitle_count=0 -OO'
-abbr -a -U -- wts 'wt -p -u duration -s'
-abbr -a -U -- xpaste 'xclip -selection clipboard -o'
-abbr -a -U -- yt.ogg yta
-abbr -a -U -- ytd 'lb dladd ~/lb/video.db'
-abbr -a -U -- ytd5 lb\ tubeadd\ --dl-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
-abbr -a -U -- ytda 'lb dladd ~/lb/audio.db'
-abbr -a -U -- python ipython --pdb
-abbr -a -U -- ps ps -o 'etime,%cpu,command' ww
-abbr -a -U -- icat kitty +kitten icat
-abbr -a -U -- str string
-abbr -a -U -- abbr abbrsave
-abbr -a -U -- ltc 'cr && lt -c'
-abbr -a -U -- fsadd lb fsadd
-abbr -a -U -- wtep wt -OOO --lower 12 --upper 25
-abbr -a -U -- gitc git checkout
-abbr -a -U -- gitb git checkout -b
-abbr -a -U -- gclone git clone --depth=1
-abbr -a -U -- curl curl -s
-abbr -a -U -- grm git reset --hard HEAD
-abbr -a -U -- rg rg -i --no-heading --no-line-number -j1
-abbr -a -U -- sys sudo systemctl
-abbr -a -U -- bootlogs journalctl -r -b -1
-abbr -a -U -- gd 'git diff; git status'
-abbr -a -U -- gds 'git diff --staged; git status'
-abbr -a -U -- usbreset sudo /home/xk/bin/usb-reset.sh
-abbr -a -U -- resetusb sudo /home/xk/bin/usb-reset.sh
-abbr -a -U -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
-abbr -a -U -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
-abbr -a -U -- tl truncatelines 1
-abbr -a -U -- wget wget --content-disposition --no-verbose --no-clobber --trust-server-names
-abbr -a -U -- suspend sudo systemctl suspend
-abbr -a -U -- vpn-partial sshuttle --dns -HNvr pakon
-abbr -a -U -- hexdump hexdump -C
-abbr -a -U -- gdh git diff HEAD^
-abbr -a -U -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
-abbr -a -U -- gcd git checkout
-abbr -a -U -- relmv lb relmv
+abbr -a -- ? '~/'
+abbr -a -- arpa 'arp -a'
+abbr -a -- asciiterm 'termtosvg --screen-geometry=100x10 --min-frame-duration=200 --max-frame-duration=5000 --template=solarized_light'
+abbr -a -- bead 'bat -r 0:10'
+abbr -a -- bsubvdel 'sudo btrfs subvolume delete --commit-each'
+abbr -a -- btdu 'sudo /home/xk/bin/btdu -x'
+abbr -a -- busage 'sudo btrfs fi usage'
+abbr -a -- clipboard cb
+abbr -a -- cup 'docker compose -f docker/docker-compose.yaml up'
+abbr -a -- dc cd
+abbr -a -- dd 'dd status=progress if= of='
+abbr -a -- df 'df -h'
+abbr -a -- dmesg 'dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice,info'
+abbr -a -- erm '-pfd | string escape | xargs -P 20 -n 50 rm'
+abbr -a -- fdh fd\ --hidden\ --exclude\ \'.git\'
+abbr -a -- fdwatch 'fd -x fish -c "mpvonce {}"'
+abbr -a -- fi 'sudo btrfs fi usage'
+abbr -a -- funced 'funced -s'
+abbr -a -- ga 'git add .'
+abbr -a -- gcl gitclear
+abbr -a -- gitlog 'git log --oneline --decorate --all --graph --stat'
+abbr -a -- gits 'git log -p -S'
+abbr -a -- gls gitls
+abbr -a -- gp 'git pull'
+abbr -a -- gr 'git reset'
+abbr -a -- grep 'grep -i'
+abbr -a -- gs 'git status'
+abbr -a -- hibernate 'systemctl hibernate'
+abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
+abbr -a -- ipa 'ip a'
+abbr -a -- lbdu 'lb du /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
+abbr -a -- less 'less -FSRXc'
+abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
+abbr -a -- milky projectM-jack
+abbr -a -- mntd 'echo /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
+abbr -a -- mvl 'mvl -s""'
+abbr -a -- ncdu 'NO_COLOR=1 ncdu'
+abbr -a -- nicotine 'flatpak run org.nicotine_plus.Nicotine'
+abbr -a -- p 'pipenv shell'
+abbr -a -- pgrep 'pgrep -fa'
+abbr -a -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'
+abbr -a -- q exit
+abbr -a -- rm trash-put
+abbr -a -- rmove 'rsync -a --info=progress2 --no-inc-recursive --remove-source-files --backup-dir (date "+%d.%m.%Y")'
+abbr -a -- rmv 'rclone move --delete-empty-src-dirs'
+abbr -a -- rsync 'rsync -auh --info=progress2 --no-inc-recursive'
+abbr -a -- sde dnferase
+abbr -a -- sdi dnfinstall
+abbr -a -- sdu 'sudo dnf update'
+abbr -a -- sed sed\ \'s\|\|\|\'
+abbr -a -- size 'wc -c | numfmt --to=iec'
+abbr -a -- sl ls
+abbr -a -- sort 'sort --unique --ignore-case'
+abbr -a -- split 'split -d -C 50MB'
+abbr -a -- sshh 'ssh pakon -t tmux new-session -A -s phone'
+abbr -a -- sze 'sudo zypper rm'
+abbr -a -- szi 'sudo zypper install --no-recommends'
+abbr -a -- szs 'sudo zypper search -s'
+abbr -a -- szu 'sudo zypper dup'
+abbr -a -- ta 'lb tabsadd --frequency quarterly --category misc ~/lb/tabs.db'
+abbr -a -- td tempdir
+abbr -a -- tee 'tee -a'
+abbr -a -- timers 'systemctl --user list-timers --all --no-pager | head -n -2'
+abbr -a -- tmux 'tmux new-session -A -s phone'
+abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
+abbr -a -- wts 'wt -p -u duration -s'
+abbr -a -- xpaste 'xclip -selection clipboard -o'
+abbr -a -- yt.ogg yta
+abbr -a -- ytd 'lb dladd ~/lb/video.db'
+abbr -a -- ytd5 lb\ tubeadd\ --dl-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
+abbr -a -- ytda 'lb dladd ~/lb/audio.db'
+abbr -a -- python ipython --pdb
+abbr -a -- ps ps -o 'etime,%cpu,command' ww
+abbr -a -- icat kitty +kitten icat
+abbr -a -- str string
+abbr -a -- abbr abbrsave
+abbr -a -- ltc 'cr && lt -c'
+abbr -a -- fsadd lb fsadd
+abbr -a -- wtep wt -OOO --lower 12 --upper 25
+abbr -a -- gitc git checkout
+abbr -a -- gitb git checkout -b
+abbr -a -- gclone git clone --depth=1
+abbr -a -- curl curl -s
+abbr -a -- grm git reset --hard HEAD
+abbr -a -- rg rg -i --no-heading --no-line-number -j1
+abbr -a -- sys sudo systemctl
+abbr -a -- bootlogs journalctl -r -b -1
+abbr -a -- gd 'git diff; git status'
+abbr -a -- gds 'git diff --staged; git status'
+abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
+abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
+abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
+abbr -a -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
+abbr -a -- tl truncatelines 1
+abbr -a -- wget wget --content-disposition --no-verbose --no-clobber --trust-server-names
+abbr -a -- suspend sudo systemctl suspend
+abbr -a -- vpn-partial sshuttle --dns -HNvr pakon
+abbr -a -- hexdump hexdump -C
+abbr -a -- gdh git diff HEAD^
+abbr -a -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
+abbr -a -- gcd git checkout
+abbr -a -- relmv lb relmv
