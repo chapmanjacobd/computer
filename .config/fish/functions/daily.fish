@@ -4,7 +4,7 @@ function daily
     sed -i '$ d' ~/j/.gitignore
 
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
-    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files /mnt/d/70_Now_Watching/Keep/. /mnt/d/77_Library/
+    lb relmv /mnt/d/70_Now_Watching/Keep/* /mnt/d/77_Library/
 
     catt volume 0 && catt volume 40
     pip install --upgrade gallery-dl pychromecast
