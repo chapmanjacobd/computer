@@ -100,3 +100,5 @@ abbr -a -- gdh git diff HEAD^
 abbr -a -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
 abbr -a -- gcd git checkout
 abbr -a -- relmv lb relmv
+abbr -a -- pi pipinstall
+abbr -a -- ci cargoinstall
