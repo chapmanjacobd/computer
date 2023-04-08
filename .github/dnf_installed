@@ -58,6 +58,7 @@ proj-devel
 python-devel
 python3-btrfs
 python3-ipdb
+python3-tkinter
 python3-xattr
 qdirstat
 qgis
@@ -76,6 +77,7 @@ system-upgrade
 systemtap
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
+trash-cli
 udunits2-devel
 util-linux
 vdpauinfo
