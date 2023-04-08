@@ -7,7 +7,6 @@ daff
 datasette
 gallery-dl
 gdal
-gdal==3.5.2
 geopandas
 google-cloud-batch
 google-cloud-bigquery
