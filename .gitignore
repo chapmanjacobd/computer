@@ -674,4 +674,3 @@
 .config/fish/conf.d/
 .config/fish/functions/12hrCSVto24hr.fish
 .config/fish/functions/activate.fish
-.config/fish/functions/allowMove.fish
