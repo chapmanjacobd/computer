@@ -1,3 +1,3 @@
-function file-exists --argument file
-    test -e $file
+function file-exists
+    test -e $argv
 end
