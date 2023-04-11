@@ -672,4 +672,3 @@
 /bin/yt_channel_playlist.pl
 /bin/zonal_stats.py
 .config/fish/conf.d/
-.config/fish/functions/12hrCSVto24hr.fish
