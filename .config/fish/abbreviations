@@ -102,3 +102,4 @@ abbr -a -- gcd git checkout
 abbr -a -- relmv lb relmv
 abbr -a -- pi pipinstall
 abbr -a -- ci cargoinstall
+abbr -a -- gitfetch 'find . -maxdepth 8 -type d -name .git | xargs  -P8 -I{} git -C {}/../ fetch --all'
