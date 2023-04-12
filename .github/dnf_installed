@@ -51,6 +51,7 @@ mpv
 mpv-devel
 mpv-mpris
 ncurses-devel
+nomacs
 perl
 powertop
 progress
