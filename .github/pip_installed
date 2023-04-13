@@ -23,6 +23,8 @@ klara
 line_profiler
 lux
 mnamer
+parquet-cli
+parquet-tools
 Pillow
 pipx
 poetry
