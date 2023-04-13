@@ -95,6 +95,7 @@ def main():
     )
     parser.add_argument("--start-row", "--skiprows", type=int, default=None)
     parser.add_argument("--end-row", "--nrows", type=int, default=None)
+    parser.add_argument("--repl", "-r", action='store_true')
     args = parser.parse_args()
     for file_path in args.file_paths:
         print('##', file_path)
@@ -104,6 +105,8 @@ def main():
             nrows=args.end_row,
             skiprows=args.start_row,
         )
+        if args.repl:
+            breakpoint()
         eda(df)
 
 
