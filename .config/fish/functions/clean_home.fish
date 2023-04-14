@@ -1,9 +1,10 @@
 # Defined interactively
 function clean_home
     ~/
-    rmdir *
-    trash-put .config/ksmserverrc .xsession-errors
-    trash-put *.desktop
+    rmdir * 2> /dev/null
+    trash-put .config/ksmserverrc .xsession-errors 2> /dev/null
+    fd -d1 -tf -eDESKTOP -x rm 
+
     git add .
     git pull
     git reset
