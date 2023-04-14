@@ -103,3 +103,4 @@ abbr -a -- pi pipinstall
 abbr -a -- ci cargoinstall
 abbr -a -- gitfetch 'find . -maxdepth 8 -type d -name .git | xargs  -P8 -I{} git -C {}/../ fetch --all'
 abbr -a -- sshh ssh\ pakon\ -t\ tmux\ new-session\ -A\ -s\ phone\ \"\'fish\ -c\ clean_home\;\ exec\ fish\'\"
+abbr -a -- wt wt -OOO -r
