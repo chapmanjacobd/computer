@@ -5,6 +5,7 @@ catt
 cython
 daff
 datasette
+fsspec
 gallery-dl
 gdal
 geopandas
