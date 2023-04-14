@@ -13,3 +13,4 @@
 /gcloud/logs/
 /plasmaConfSaver/
 /systemd/user/*wants/
+/mpv/history.log
