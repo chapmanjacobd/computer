@@ -52,7 +52,6 @@ abbr -a -- size 'wc -c | numfmt --to=iec'
 abbr -a -- sl ls
 abbr -a -- sort 'sort --unique --ignore-case'
 abbr -a -- split 'split -d -C 50MB'
-abbr -a -- sshh 'ssh pakon -t tmux new-session -A -s phone'
 abbr -a -- sze 'sudo zypper rm'
 abbr -a -- szi 'sudo zypper install --no-recommends'
 abbr -a -- szs 'sudo zypper search -s'
@@ -103,4 +102,4 @@ abbr -a -- relmv lb relmv
 abbr -a -- pi pipinstall
 abbr -a -- ci cargoinstall
 abbr -a -- gitfetch 'find . -maxdepth 8 -type d -name .git | xargs  -P8 -I{} git -C {}/../ fetch --all'
-abbr -a -- sshh ssh pakon -t tmux new-session -A -s phone \'fish\ -c\ clean_home\;\ exec\ fish\'
+abbr -a -- sshh ssh pakon -t tmux new-session -A -s phone '"fish -c clean_home; exec fish"'
