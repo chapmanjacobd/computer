@@ -53,6 +53,7 @@ mpv-mpris
 ncurses-devel
 nomacs
 perl
+perl-Image-ExifTool
 powertop
 progress
 proj-devel
