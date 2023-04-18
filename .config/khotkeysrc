@@ -148,7 +148,7 @@ Type=ACTION_DATA_GROUP
 
 [Data_10]
 Comment=Comment
-DataCount=19
+DataCount=20
 Enabled=true
 Name=layer2
 SystemGroup=0
@@ -450,6 +450,32 @@ Comment=Comment
 Enabled=true
 Name=up
 Type=SIMPLE_ACTION_DATA
+
+[Data_10_20]
+Comment=move window to small area
+Enabled=true
+Name=paste terminal
+Type=SIMPLE_ACTION_DATA
+
+[Data_10_20Actions]
+ActionsCount=1
+
+[Data_10_20Actions0]
+CommandURL=wmctrl -r :ACTIVE: -e 0,560,700,920,88
+Type=COMMAND_URL
+
+[Data_10_20Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_10_20Triggers]
+Comment=Simple_action
+TriggersCount=1
+
+[Data_10_20Triggers0]
+Key=Meta+V
+Type=SHORTCUT
+Uuid={21118049-3012-45f3-b48c-85ce72c7d1c9}
 
 [Data_10_2Actions]
 ActionsCount=1
