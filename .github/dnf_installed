@@ -51,6 +51,7 @@ mpv
 mpv-devel
 mpv-mpris
 ncurses-devel
+netsniff-ng
 nomacs
 perl
 perl-Image-ExifTool
