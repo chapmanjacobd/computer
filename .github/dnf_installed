@@ -61,6 +61,7 @@ proj-devel
 python-devel
 python3-btrfs
 python3-ipdb
+python3-qgis
 python3-tkinter
 python3-xattr
 qdirstat
