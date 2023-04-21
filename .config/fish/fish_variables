@@ -16,7 +16,7 @@ SETUVAR --export HOST_IP:172\x2e25\x2e48\x2e1
 SETUVAR --export LD_PRELOAD:/home/xk/bin/libstderred\x2eso
 SETUVAR --export MPV_SOCKET:/home/xk/\x2econfig/mpv/socket
 SETUVAR --export NUMEXPR_NUM_THREADS:4
-SETUVAR --export OMP_NUM_THREADS:2
+SETUVAR --export OMP_NUM_THREADS:16
 SETUVAR --export OPENSSL_CONF:/etc/ssl
 SETUVAR --export PIPENV_VERBOSITY:\x2d1
 SETUVAR --export PSQLRC:/pg/psqlrc
