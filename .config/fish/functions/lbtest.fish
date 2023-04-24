@@ -2,5 +2,5 @@
 function lbtest
     trash-put tests/data/*.db*
     pytest $argv
-    and pylint **/*.py
+    and ruff check . --show-source
 end
