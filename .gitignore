@@ -1,3 +1,4 @@
+/bin/utils.py
 /.local/lib64/
 /.openai-api-key.txt
 /.config/powermanagementprofilesrc
@@ -655,4 +656,3 @@
 /bin/unhtml.c
 /bin/unrarsrc/
 /bin/unwrap.pl
-/bin/utils.py
