@@ -1,5 +1,5 @@
 {
-  "blacklist": "*://tubitv.com/*\n*://www.vudu.com/*\n*://*.fushaar.video/*\n*://*.vbox7.com/*\n*://*.mubi.com/*\n*://*.imovie.uno/*\n*://*.letterboxd.com/*\n*://*.medinahealth.org/*\n*://*.zee5.com/*\n*://*.hmong.es/*\n*://*.yandex.com.tr/*\n*://*.treeoflife.co.jp/*\n*://*.mcuprime.com/*\n*://*.plex.tv/*\n*://*.windowsonworlds.com/*\n*://*.wordpress.com/*\n*://*.skyperfectv.co.jp/*\n*://*.tumgir.com/*\n*://*.ipknk.ru/*\n*://*.eiga.com/*\n*://*.tistory.com/*\n*://*.videomarket.jp/*\n*://*.yahoo.co.jp/*\n*://*.promotionmusicnews.com/*\n*://*.unext.jp/*\n*://*.rakuten.co.jp/*\n*://*.megavideos.online/*\n*://*.friday.tw/*\n*://*.catchplay.com/*\n*://*.apple.com/*\n*://*.iq.com/*\n*://*.cine21.com/*\n*://*.filmaffinity.com/*\n*://*.hollywoodreporter.com/*\n*://*.litv.tv/*\n*://*.myvideo.net.tw/*\n*://*.wartasidik.com/*\n*://*.topgunmavericki.com/*\n*://*.2nt.com/*\n*://*.middle-edge.jp/*\n*://*.otosection.com/*\n*://*.nerdist.com/*\n*://*.freegreatmovies.com/*\n*://*.tretesmovie.com/*\n*://*.rakuten.tv/*\n*://*.alexanderstreet.com/*\n*://*.tumpik.com/*\n*://*.fulltv.nl/*\n*://*.netflix.com/*\n*://*.blu-ray.com/*\n*://*.tumbex.com/*\n*://*.medinahealth.org/*",
+  "blacklist": "*://tubitv.com/*\n*://www.vudu.com/*\n*://*.fushaar.video/*\n*://*.vbox7.com/*\n*://*.mubi.com/*\n*://*.imovie.uno/*\n*://*.letterboxd.com/*\n*://*.medinahealth.org/*\n*://*.zee5.com/*\n*://*.hmong.es/*\n*://*.yandex.com.tr/*\n*://*.treeoflife.co.jp/*\n*://*.mcuprime.com/*\n*://*.plex.tv/*\n*://*.windowsonworlds.com/*\n*://*.wordpress.com/*\n*://*.skyperfectv.co.jp/*\n*://*.tumgir.com/*\n*://*.ipknk.ru/*\n*://*.eiga.com/*\n*://*.tistory.com/*\n*://*.videomarket.jp/*\n*://*.yahoo.co.jp/*\n*://*.promotionmusicnews.com/*\n*://*.unext.jp/*\n*://*.rakuten.co.jp/*\n*://*.megavideos.online/*\n*://*.friday.tw/*\n*://*.catchplay.com/*\n*://*.apple.com/*\n*://*.iq.com/*\n*://*.cine21.com/*\n*://*.filmaffinity.com/*\n*://*.hollywoodreporter.com/*\n*://*.litv.tv/*\n*://*.myvideo.net.tw/*\n*://*.wartasidik.com/*\n*://*.topgunmavericki.com/*\n*://*.2nt.com/*\n*://*.middle-edge.jp/*\n*://*.otosection.com/*\n*://*.nerdist.com/*\n*://*.freegreatmovies.com/*\n*://*.tretesmovie.com/*\n*://*.rakuten.tv/*\n*://*.alexanderstreet.com/*\n*://*.tumpik.com/*\n*://*.fulltv.nl/*\n*://*.netflix.com/*\n*://*.blu-ray.com/*\n*://*.tumbex.com/*\n*://*.medinahealth.org/*\n*://*.fsharetv.co/*\n*://*.programiz.com/*\n*://*.globo.com/*",
   "blockWholeSite": true,
   "skipBlockDialog": false,
   "hideBlockLinks": false,
@@ -39,5 +39,5 @@
     }
   ],
   "updateInterval": 1440,
-  "version": "8.2.5"
+  "version": "8.3.0"
 }
