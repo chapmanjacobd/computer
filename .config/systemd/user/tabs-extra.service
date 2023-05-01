@@ -1,7 +1,6 @@
 [Unit]
 Description=/usr/bin/fish -c opentabs /home/xk/mc/tabs.txt
 Requires=xdg-desktop-autostart.target
-Requires=firefox.service
 
 [Service]
 Type=simple

@@ -1,7 +1,6 @@
 [Unit]
 Description=/usr/bin/fish -c lb tabs /home/xk/lb/tabs.db
 Requires=xdg-desktop-autostart.target
-Requires=firefox.service
 
 [Service]
 Type=simple
