@@ -26,7 +26,7 @@
   "python.venvPath": "${workspaceFolder}/.venv/bin/python",
   "python.pythonPath": ".venv/bin/python",
   "editor.cursorStyle": "block",
-  "editor.guides.bracketPairs": false,
+  "editor.guides.bracketPairs": true,
   "editor.autoIndent": "none",
   "files.encoding": "utf8",
   "files.insertFinalNewline": true,
