@@ -3,11 +3,11 @@ function sitdown
     pkill projectM-jack
 
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.DisplayPort-0.enable output.DisplayPort-0.mode.1920x1080@60
+        kscreen-doctor output.DisplayPort-0.enable output.DisplayPort-0.mode.3440x1440@160
         kscreen-doctor output.HDMI-A-0.disable output.DVI-D-0.disable
     end
     if grep -qEi "(DP-1)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.DP-1.enable output.DP-1.mode.1920x1080@60
+        kscreen-doctor output.DP-1.enable output.DP-1.mode.3440x1440@160
         kscreen-doctor output.HDMI-1.disable output.DVI-D-0.disable
     end
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
