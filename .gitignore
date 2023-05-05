@@ -1,3 +1,4 @@
+/.config/fish/functions/load_bborie_build_envs.fish
 /.config/plasmaparc
 /bin/utils.py
 /.local/lib64/

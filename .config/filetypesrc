@@ -1,3 +1,4 @@
 [EmbedSettings]
+embed-image/tiff=false
 embed-user-extension/fgb=false
 embed-video/quicktime=false
