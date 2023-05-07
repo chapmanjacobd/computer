@@ -477,5 +477,7 @@
   "yaml.schemas":{
     "/home/xk/.local/yaml/argo.json":"*workflow.yaml"
   },
-  "window.zoomLevel": -2
+  "[sql]": {
+    "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
+  }
 }
