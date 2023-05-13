@@ -99,6 +99,7 @@ wmctrl
 xbindkeys
 xcalib
 xclip
+xdg-desktop-portal-kde
 xdotool
 xinput
 xorg-x11-drv-amdgpu
