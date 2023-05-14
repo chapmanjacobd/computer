@@ -15,7 +15,7 @@ function trash-empty
 
     if gum confirm --default=no 'Refresh snapshots?'
         for mnt in $argv
-            kitty fish -c "btrfs_check_delete_snapshot $mnt" &
+            kitty fish -c "sleep (random_thousanths 0 5000); btrfs_check_delete_snapshot $mnt" &
         end
         wait
     end
