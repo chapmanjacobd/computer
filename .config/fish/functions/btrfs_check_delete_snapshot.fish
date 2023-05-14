@@ -16,7 +16,7 @@ function btrfs_check_delete_snapshot -a mnt
 
     if gum confirm --default=no 'Swap snapshots?'
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
-        mv $mnt/.snapshots/two $mnt/.snapshots/one
+        command mv $mnt/.snapshots/two $mnt/.snapshots/one
     else
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/two
     end
