@@ -1,5 +1,10 @@
 # Defined interactively
 function trash-empty
+    if test -z "$args"
+       echo Error! No mount points passed as args
+       return 1
+    end
+
     trash-size
     trash-list | tee -a ~/.local/share/trashed.txt
 
