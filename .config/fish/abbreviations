@@ -106,3 +106,4 @@ abbr -a -- sshh ssh\ pakon\ -t\ tmux\ new-session\ -A\ -s\ phone\ \"\'fish\ -c\ 
 abbr -a -- dragondrop dragondrop --on-top --all-compact
 abbr -a -- taxes wt\ --db\ \~/lb/fs/tax.db\ --action\ ask_move_or_delete\ --keep-dir\ /home/xk/d/69_Taxes_Keep/\ -u\ \'ntile\(100\)\ over\ \(order\ by\ size\)\ desc,\ duration\'\ -l\ inf\ \ --duration-from-size\ +1450\ --keep-cmd\ \'fish\ -c\ ffsmall_delete\'
 abbr -a -- expand string\ split\ \'\ \'
+abbr -a -- wt wt -O
