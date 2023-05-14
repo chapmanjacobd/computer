@@ -10,7 +10,7 @@ function trash-empty
     end
 
     if gum confirm --default=no 'Empty trash?'
-        command trash-empty -f $argv
+        command trash-empty -f
     end
 
     if gum confirm --default=no 'Refresh snapshots?'
