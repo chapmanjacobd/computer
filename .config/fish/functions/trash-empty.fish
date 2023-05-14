@@ -1,6 +1,6 @@
 # Defined interactively
 function trash-empty
-    if test -z "$args"
+    if test -z "$argv"
        echo Error! No mount points passed as args
        return 1
     end
