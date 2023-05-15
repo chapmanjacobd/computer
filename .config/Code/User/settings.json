@@ -479,5 +479,6 @@
   },
   "[sql]": {
     "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
-  }
+  },
+  "security.workspace.trust.untrustedFiles": "newWindow"
 }
