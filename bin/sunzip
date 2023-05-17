@@ -1,0 +1,22 @@
+#!/bin/bash
+    if [ $# -ne 1 ] || ! [ -f "$1" ]
+    then
+        printf '%s\n' "Expected a filename as the first (and only) argument. Aborting."
+        return 1
+    fi
+
+    extract_dir="."
+
+    # Strip the leading and trailing information about the zip file (leaving
+    # only the lines with filenames), then check to make sure *all* filenames
+    # contain a /.
+    # If any file doesn't contain a / (i.e. is not located in a directory or is
+    # a directory itself), exit with a failure code to trigger creating a new
+    # directory for the extraction.
+    if ! unzip -l "$1" | tail -n +4 | head -n -2 | awk 'BEGIN {lastprefix = ""} {if (match($4, /[^/]+/)) {prefix=substr($4, RSTART, RLENGTH); if (lastprefix != "" && prefix != lastprefix) {exit 1}; lastprefix=prefix}}'
+    then
+        extract_dir="${1%.zip}"
+    fi
+
+    unzip -d "$extract_dir" "$1"
+
