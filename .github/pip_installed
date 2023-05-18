@@ -28,6 +28,7 @@ mnamer
 outrun
 parquet-cli
 parquet-tools
+pdm
 Pillow
 pipx
 praw
