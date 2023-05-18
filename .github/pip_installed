@@ -30,7 +30,6 @@ parquet-cli
 parquet-tools
 Pillow
 pipx
-poetry
 praw
 pur
 pyarrow
