@@ -25,6 +25,7 @@ klara
 line_profiler
 lux
 mnamer
+outrun
 parquet-cli
 parquet-tools
 Pillow
