@@ -75,6 +75,7 @@ rclone
 remove-retired-packages
 rmlint
 rpmconf
+rr
 rstudio
 rstudio-desktop
 rtmpdump
