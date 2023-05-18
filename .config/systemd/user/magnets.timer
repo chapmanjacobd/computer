@@ -1,0 +1,10 @@
+[Unit]
+Description='On daily run magnets'
+
+[Timer]
+Persistent=yes
+OnCalendar=daily
+
+[Install]
+WantedBy=timers.target
+
