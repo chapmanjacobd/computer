@@ -21,8 +21,8 @@ function daily
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
     ~
-    command trash-empty 10 -f
-    lb download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
-
     sync_history
+    # command trash-empty 10 -f    
+    lb download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
+    ~/d/69_Taxes_Keep/ && ffsmallpar
 end
