@@ -1,3 +1,6 @@
+/*.mp4
+/.parallel/semaphores/
+/.parallel/tmp/
 /.node_history
 /.config/fish/functions/load_bborie_build_envs.fish
 /.config/plasmaparc
@@ -432,7 +435,6 @@
 /.npm/
 /.nx/
 /.openjfx/
-/.parallel/
 /.pdbhistory
 /.pki/
 /.psql_history
