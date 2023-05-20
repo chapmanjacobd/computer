@@ -2,9 +2,12 @@
 local cfg = {
     default_state = true,
     seek_mode_default = false,
-    min_skip_interval = 3,
-    lead_out = 3,
-    max_nonskip_interval = 4,
+    min_skip_interval = 5,
+    max_idle_interval = 3,
+    lead_start = -2,
+    ramp_up_duration = 3,
+    ramp_down_duration = 3,
+    lead_end = 2,
     speed_skip_speed = 2.74,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
@@ -57,7 +60,7 @@ end
 -- to the end of the demuxer cache until a line is found.
 
 function end_seek_skip(next_sub_begin)
-    mp.set_property_number("time-pos", next_sub_begin - cfg.lead_out)
+    mp.set_property_number("time-pos", next_sub_begin - cfg.lead_start)
     -- print('end_seek_skip end_skip')
     end_skip()
 end
@@ -100,28 +103,66 @@ function start_seek_skip()
 end
 
 -- SPEED SKIP (mostly) --
--- Speed skip works by simply speeding up playback between the end of the last line
--- (+lead in) until the start of the next one (-lead out).
--- If the start of the next line is not known, playback is sped up and it's checked
--- on each tick (i.e. change of time-pos) if the next line has been loaded.
-
 local initial_speed = mp.get_property_number("speed")
 local initial_video_sync = mp.get_property("video-sync")
+
+local is_ramping = false
+function gradual_speed_ramp(target_speed, duration)
+    if is_ramping then
+        -- print('already ramping')
+        return
+    end
+    is_ramping = true
+
+    local start_speed = mp.get_property_number("speed")
+    local end_speed = target_speed
+
+    if target_speed == start_speed then
+        -- print('target equal start speed')
+        is_ramping = false
+        return
+    end
+
+    -- print('starting timer')
+    local start_time = mp.get_time()
+    speed_ramp_timer = mp.add_periodic_timer(0.2, function()
+        local elapsed_time = mp.get_time() - start_time
+        local progress = elapsed_time / duration
+        local current_speed
+
+        if target_speed > start_speed then
+            -- print('ramping up')
+            current_speed = start_speed + ((target_speed - start_speed) * progress)
+        else
+            -- print('ramping down')
+            current_speed = start_speed - ((start_speed - target_speed) * progress)
+        end
+
+        -- print(progress)
+        if progress < 1 then
+            mp.set_property_number("speed", current_speed)
+        else
+            speed_ramp_timer:kill()
+            mp.set_property_number("speed", target_speed)
+            -- print('---')
+            is_ramping = false
+        end
+    end)
+end
+
 local start_idle = nil
 function handle_tick(_, time_pos)
     -- time_pos might be nil after the file changes
     if time_pos == nil then return end
 
-    if not sped_up and last_sub_end ~= nil and time_pos > last_sub_end then
+    if not sped_up and last_sub_end ~= nil and (time_pos >= last_sub_end - cfg.lead_end) then
+        -- print('time_pos > last_sub_end')
         if seek_skip then
             start_seek_skip()
         else
-            initial_speed = mp.get_property_number("speed")
-            -- Setting video-sync to desync and then audio prevents audio issues
-            -- after resetting speed back to its initial value.
-            initial_video_sync = mp.get_property("video-sync")
-            mp.set_property("video-sync", "desync")
-            mp.set_property_number("speed", cfg.speed_skip_speed)
+            -- mp.set_property("video-sync", "desync")
+            -- mp.set_property_number("speed", cfg.speed_skip_speed)
+            gradual_speed_ramp(cfg.speed_skip_speed, cfg.ramp_up_duration)
             sped_up = true
         end
     elseif next_sub_start == nil then
@@ -130,7 +171,7 @@ function handle_tick(_, time_pos)
         if next_delay ~= nil then
             next_sub_start = time_pos + next_delay
         end
-    elseif sped_up and time_pos > next_sub_start - cfg.lead_out then
+    elseif sped_up and time_pos > next_sub_start - cfg.lead_start then
         -- print('handle_tick end_skip')
         end_skip()
     elseif not sped_up and not seek_skip then
@@ -139,7 +180,7 @@ function handle_tick(_, time_pos)
         end
         elapsed_idle = time_pos - start_idle
         -- print('elapsed_idle', elapsed_idle)
-        if cfg.max_nonskip_interval < elapsed_idle then
+        if elapsed_idle > cfg.max_idle_interval then
             -- subtitle hasn't changed for n seconds so we speed up
             -- print('idle skip')
             last_sub_end = time_pos
@@ -159,6 +200,8 @@ function end_skip()
     skipping = false
     sped_up = false
     mp.set_property_number("speed", initial_speed)
+    -- gradual_speed_ramp(initial_speed, cfg.ramp_down_duration)
+    mp.set_property("video-sync", "desync")
     mp.set_property("video-sync", "audio")
     mp.set_property("video-sync", initial_video_sync)
     last_sub_end, next_sub_start = nil, nil
