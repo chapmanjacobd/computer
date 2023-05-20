@@ -3,9 +3,9 @@ local cfg = {
     default_state = true,
     seek_mode_default = false,
     min_skip_interval = 3,
+    lead_out = 3,
     max_nonskip_interval = 4,
-    speed_skip_speed = 2.5,
-    lead_out = 1,
+    speed_skip_speed = 2.74,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
 }
@@ -71,8 +71,7 @@ seek_skip_timer = mp.add_periodic_timer(128, function()
         local next_delay = calc_next_delay()
         if next_delay == nil then
             -- if no line found, seek to end of demuxer cache (potentially unstable!)
-            local cache_duration = mp.get_property_number(
-                                       "demuxer-cache-duration")
+            local cache_duration = mp.get_property_number("demuxer-cache-duration")
             local seek_time = cache_duration or 1
             mp.set_property_number("time-pos", time_pos + seek_time)
             seek_skip_timer:resume()
