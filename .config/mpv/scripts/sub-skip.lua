@@ -3,7 +3,8 @@ local cfg = {
     default_state = true,
     seek_mode_default = false,
     min_skip_interval = 3,
-    lead_out = 3,
+    lead_start = 2,
+    lead_end = 3,
     max_nonskip_interval = 4,
     speed_skip_speed = 2.74,
     speed_skip_speed_delta = 0.1,
@@ -57,7 +58,7 @@ end
 -- to the end of the demuxer cache until a line is found.
 
 function end_seek_skip(next_sub_begin)
-    mp.set_property_number("time-pos", next_sub_begin - cfg.lead_out)
+    mp.set_property_number("time-pos", next_sub_begin - cfg.lead_start)
     -- print('end_seek_skip end_skip')
     end_skip()
 end
@@ -112,7 +113,7 @@ function handle_tick(_, time_pos)
     -- time_pos might be nil after the file changes
     if time_pos == nil then return end
 
-    if not sped_up and last_sub_end ~= nil and time_pos > last_sub_end then
+    if not sped_up and last_sub_end ~= nil and (time_pos >= last_sub_end - cfg.lead_end) then
         if seek_skip then
             start_seek_skip()
         else
@@ -130,7 +131,7 @@ function handle_tick(_, time_pos)
         if next_delay ~= nil then
             next_sub_start = time_pos + next_delay
         end
-    elseif sped_up and time_pos > next_sub_start - cfg.lead_out then
+    elseif sped_up and time_pos > next_sub_start - cfg.lead_start then
         -- print('handle_tick end_skip')
         end_skip()
     elseif not sped_up and not seek_skip then
