@@ -4,6 +4,7 @@ update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-vir
 [1]
 Description=ignore mpv alt-tab
 fsplevel=3
+fsplevelrule=2
 skiptaskbar=true
 skiptaskbarrule=3
 wmclass=mpv
