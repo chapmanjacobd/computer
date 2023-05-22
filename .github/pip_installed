@@ -5,6 +5,7 @@ catt
 cython
 daff
 datasette
+frogmouth
 fsspec
 gallery-dl
 gcsfs
