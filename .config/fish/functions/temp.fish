@@ -1,4 +1,4 @@
 function temp
     sensors
-    hddtemp
+    hddtemp -w
 end
