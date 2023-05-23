@@ -3,3 +3,4 @@
 .env
 rmlint.sh
 rmlint.json
+docker-compose.yaml
