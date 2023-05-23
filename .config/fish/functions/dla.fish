@@ -11,6 +11,7 @@ function dla
     maxmem10b lb download ~/lb/video.db --video --small --prefix /mnt/d/71_Mealtime_Videos/
     maxmem10b lb download ~/lb/reddit/71_Mealtime_Videos.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/reddit/
     maxmem10b lb download ~/lb/reddit/96_Weird_History.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/reddit/weird_history/
+    maxmem10b lb download ~/lb/reddit/95_Memes.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/reddit/memes/
     wait
     maxmem10b lb download ~/lb/hackernews/hackernews_only_direct.tw.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/hn/
     maxmem10b lb download ~/lb/fs/tax.db -L 1000 --safe --small --video --prefix /mnt/d/69_Taxes/
