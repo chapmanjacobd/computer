@@ -45,6 +45,7 @@ rich
 ruff
 scalene
 screeninfo
+spacy
 sqlite-utils
 srsly
 sshuttle
