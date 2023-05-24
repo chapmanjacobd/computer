@@ -6,11 +6,6 @@ Copyright 2020 Paul B Mahol
 License: public domain
 
 Needs mpv with very recent FFmpeg build.
-
-Default config:
-- Enter/exit drcbox keys mode: ctrl+n
-- Toggle dynaudnorm without changing its values: ctrl+N (ctrl+shift+n)
-- Reset dynaudnorm values: alt+ctrl+n
 --]]
 -- ------ config -------
 local start_keys_enabled = false  -- if true then choose the up/down keys wisely
