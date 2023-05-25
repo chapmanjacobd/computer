@@ -396,7 +396,6 @@
 /.docker/
 /.eclipse/
 /.electron/
-/.esmtp_queue/
 /.fltk/
 /.fonts/
 /.games/
