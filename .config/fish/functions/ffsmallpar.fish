@@ -1,5 +1,10 @@
 # Defined interactively
 function ffsmallpar
+    if pgrep parallel
+        echo "Parallel already running..."
+        return 1
+    end
+
     set tmpfile (mktemp)
     fd -S+200MB | grep -v .small. >$tmpfile
 
