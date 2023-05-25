@@ -11,7 +11,7 @@ function magnets
         end
 
         cat ~/.local/magnets | xargs tixati
-        true >~/.local/magnets
+        and true >~/.local/magnets
 
         if not test $tixati_is_running -eq 0
             sleep 5
