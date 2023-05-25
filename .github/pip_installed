@@ -45,6 +45,7 @@ rich
 ruff
 scalene
 screeninfo
+sklearn
 spacy
 sqlite-utils
 srsly
