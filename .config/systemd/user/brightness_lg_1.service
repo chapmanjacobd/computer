@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 07:00:00 run setLGBrightness 10'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 600
+ExecStart='/usr/bin/fish' '-c' 'setLGBrightness 10'
+

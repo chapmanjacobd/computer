@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 07:00:00 run setLGBrightness 10'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 07:00:00
+
+[Install]
+WantedBy=timers.target
+
