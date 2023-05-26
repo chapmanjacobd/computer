@@ -2,6 +2,8 @@ function forganize
     morganize
     dorganize
 
+    lb clustersort ~/mc/tabs.txt ~/mc/tabs.txt
+
     #trash-size
     #trash-empty
 
