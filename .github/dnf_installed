@@ -36,6 +36,7 @@ hw-probe
 hyperfine
 iftop
 java-latest-openjdk-devel
+kcolorchooser
 kdeplasma-addons
 kdiff3
 keepassxc
