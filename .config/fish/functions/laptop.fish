@@ -1,0 +1,6 @@
+# Defined interactively
+function laptop
+    sudo xrandr --newmode "1920x1038_60.00" 165.25 1920 2040 2240 2560 1038 1041 1051 1077 -hsync +vsync
+    sudo xrandr --addmode HDMI-A-0 "1920x1038_60.00"
+    xrandr --output HDMI-A-0 --mode "1920x1038_60.00"
+end
