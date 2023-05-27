@@ -2,7 +2,7 @@ function forganize
     morganize
     dorganize
 
-    lb clustersort ~/mc/tabs.txt ~/mc/tabs.txt
+    lb clustersort ~/mc/tabs ~/mc/tabs
 
     #trash-size
     #trash-empty
