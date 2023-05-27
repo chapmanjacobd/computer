@@ -60,6 +60,7 @@
     "**/.DS_Store": true,
     "**/*.pyc": true,
     "**/__pycache__": true,
+    "**/__pypackages__": true,
     "**/node_modules": true,
     "**/venv": true,
     "**/htmlcov": true,
