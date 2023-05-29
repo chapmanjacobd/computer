@@ -1,7 +1,7 @@
 function mrrelax
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/d/64_Relaxation/keep/ ~/d/62_Photos_Keep/
 
-    fd --max-results=50 -tf . ~/d/61_Photos_Unsorted/ -0 | xargs -0 -I{} mv "{}" ~/d/64_Relaxation/
+    fd --max-results=500 -tf . ~/d/61_Photos_Unsorted/ -0 | xargs -0 -I{} mv "{}" ~/d/64_Relaxation/
 
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --files-from=(
         lt --db ~/lb/63_Sounds.db -s /mnt/d/64_Relaxation/ -p f --moved /mnt/d/64_Relaxation/ /mnt/d/ | psub
