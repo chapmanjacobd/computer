@@ -22,8 +22,8 @@ function daily
 
     ~
     sync_history
-    # command trash-empty 10 -f    
-    lb download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
+    # command trash-empty 10 -f
+    lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 
     if not pgrep ffmpeg >/dev/null
         ~/d/69_Taxes_Keep/ && ffsmallpar
