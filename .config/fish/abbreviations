@@ -84,7 +84,6 @@ abbr -a -- grm git reset --hard HEAD
 abbr -a -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -- sys sudo systemctl
 abbr -a -- bootlogs journalctl -r -b -1
-abbr -a -- gd 'git diff; git status'
 abbr -a -- gds 'git diff --staged; git status'
 abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
@@ -108,3 +107,4 @@ abbr -a -- expand string\ split\ \'\ \'
 abbr -a -- wt wt -O
 abbr -a -- ch clean_home
 abbr -a -- taxes 'wt --db ~/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ -u duration -l inf --start 10% --gui --duration-from-size +600'
+abbr -a -- gd 'git diff; git status; git diff --stat'
