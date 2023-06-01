@@ -1,3 +1,4 @@
+/.ipython/profile_default/history.sqlite
 /*.mp4
 /.parallel/semaphores/
 /.parallel/tmp/
@@ -403,7 +404,6 @@
 /.gnupg/
 /.grass8/
 /.gsutil/
-/.ipython/
 /.java/
 /.jkiss-lm/
 /.jobs/
