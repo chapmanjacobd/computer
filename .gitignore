@@ -620,4 +620,3 @@
 /bin/rclone-cron.sh
 /bin/rclone.log
 /bin/restclient
-/bin/rmlint/
