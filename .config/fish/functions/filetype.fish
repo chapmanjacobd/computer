@@ -1,7 +1,7 @@
-# Defined via `source`
-function file
+# Defined interactively
+function filetype
     if isatty stdin
-        command file $argv
+        file -b $argv
     else
         xargs -I FILE file -b FILE $argv
     end
