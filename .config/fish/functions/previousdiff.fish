@@ -7,7 +7,7 @@ function previousdiff --argument name
     cat /dev/stdin > $current_output
 
     if test -e $previous_output
-        delta --syntax-theme GitHub --max-line-length 1024 --no-pager $argv[2] $previous_output $current_output
+        delta --syntax-theme GitHub --max-line-length 1024 --pager no $argv[2] $previous_output $current_output
     end
     mv $current_output $previous_output
 end
