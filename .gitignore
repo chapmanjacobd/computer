@@ -619,4 +619,3 @@
 /bin/qmk/
 /bin/rclone-cron.sh
 /bin/rclone.log
-/bin/restclient
