@@ -8,6 +8,6 @@ function dlunsafe
     maxmem10b lbdl ~/lb/reddit/96_Weird_History.db --video --small --prefix ~/d/71_Mealtime_Videos/reddit/weird_history/ $argv
     wait
     maxmem10b lbdl ~/lb/hackernews/hackernews_only_direct.tw.db --video --small --prefix ~/d/71_Mealtime_Videos/hn/ $argv
-    maxmem10b lbdl ~/lb/fs/tax.db -L 1000 --small --video --prefix /mnt/d/69_Taxes/ $argv
-    maxmem10b lbdl ~/lb/fs/61_Photos_Unsorted.db -L 1000 --small --video --prefix /mnt/d/69_Taxes/reddit/ $argv
+    maxmem10b lbdl ~/lb/fs/tax.db --small --video --prefix /mnt/d/69_Taxes/ $argv
+    maxmem10b lbdl ~/lb/fs/61_Photos_Unsorted.db --small --video --prefix /mnt/d/69_Taxes/reddit/ $argv
 end
