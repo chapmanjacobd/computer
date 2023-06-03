@@ -14,7 +14,7 @@ function dla
     maxmem10b lbdl ~/lb/reddit/95_Memes.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/reddit/memes/
     wait
     maxmem10b lbdl ~/lb/hackernews/hackernews_only_direct.tw.db --video --small --safe --prefix ~/d/71_Mealtime_Videos/hn/
-    maxmem10b lbdl ~/lb/fs/tax.db -L 1000 --safe --small --video --prefix /mnt/d/69_Taxes/
-    maxmem10b lbdl ~/lb/fs/61_Photos_Unsorted.db -L 1000 --safe --small --video --prefix /mnt/d/69_Taxes/reddit/
+    maxmem10b lbdl ~/lb/fs/tax.db --safe --small --video --prefix /mnt/d/69_Taxes/
+    maxmem10b lbdl ~/lb/fs/61_Photos_Unsorted.db --safe --small --video --prefix /mnt/d/69_Taxes/reddit/
     wait
 end
