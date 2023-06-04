@@ -105,7 +105,7 @@ abbr -a -- dragondrop dragondrop --on-top --all-compact
 abbr -a -- expand string\ split\ \'\ \'
 abbr -a -- wt wt -O
 abbr -a -- ch clean_home
-abbr -a -- taxes 'wt --db ~/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ -u duration -l inf --start 10% --gui --duration-from-size +600'
 abbr -a -- gd 'git diff; git status; git diff --stat'
 abbr -a -- ytda 'lb dladd ~/lb/audio.db'
 abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
+abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui -C --prefetch 4 -L 20 --duration-from-size +500 -u duration desc
