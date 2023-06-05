@@ -14,6 +14,7 @@ from rich import inspect
 from rich.logging import RichHandler
 
 pd.set_option('display.max_rows', 100)
+pd.set_option('display.float_format', '{:.3f}'.format)
 
 def argparse_log():
     parser = argparse.ArgumentParser(add_help=False)
