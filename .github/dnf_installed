@@ -102,6 +102,7 @@ wine
 wmctrl
 xbindkeys
 xcalib
+xcb-util-cursor
 xclip
 xdg-desktop-portal-kde
 xdotool
