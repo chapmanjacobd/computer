@@ -109,3 +109,4 @@ abbr -a -- ytda 'lb dladd ~/lb/audio.db'
 abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- wt wt -P pw
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui -C --prefetch 4 -u duration desc -L 200 --duration-from-size +400
+abbr -a -- ct cattrash
