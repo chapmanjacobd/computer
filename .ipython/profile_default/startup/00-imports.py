@@ -10,7 +10,8 @@ import pandas as pd
 import numpy as np
 from IPython.core import ultratb
 from IPython.terminal.debugger import TerminalPdb
-from rich import inspect
+from rich import inspect, print
+from pprint import pprint
 from rich.logging import RichHandler
 
 pd.set_option('display.max_rows', 100)
