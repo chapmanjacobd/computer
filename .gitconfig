@@ -7,7 +7,7 @@
 [push]
 	default = current
 [core]
-	pager = delta --syntax-theme GitHub --max-line-length 1024
+	pager = delta --syntax-theme GitHub --max-line-length 1024 --keep-plus-minus-markers
 	excludesfile = /home/xk/.gitignore_global
 	preloadindex = true
 	fscache = true
@@ -21,6 +21,7 @@
 	indentHeuristic = true
 	tool = delta
 	difftool = delta
+    colormoved = zebra
 [color]
 	ui = auto
 [color "diff-highlight"]
