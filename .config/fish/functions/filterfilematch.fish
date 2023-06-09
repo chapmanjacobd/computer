@@ -1,5 +1,7 @@
 # Defined interactively
 function filterfilematch --argument file word
+    set word (string replace \/ \\\/ -- (string escape --style=regex "$word"))
+
     set count (grep -c "$word" "$file")
     echo $count
 
