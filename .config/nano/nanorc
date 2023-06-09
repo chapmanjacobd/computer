@@ -30,15 +30,15 @@ bind ^/ comment main
 bind ^A mark main
 bind ^C copy main
 bind ^E execute main
-bind ^f whereis all main
-bind ^H exit help
+bind ^f whereis all
 bind ^h replace main
-bind ^L refresh main
+bind ^l location all
+bind ^i refresh main
 bind ^O insert main
 bind ^R replace main
 bind ^s savefile main
 bind ^T gotoline main
-bind ^w exit main
+bind ^w exit all
 bind ^x cut main
 bind ^y redo main
 bind ^z undo main
