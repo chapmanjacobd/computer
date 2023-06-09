@@ -4,7 +4,7 @@ function filterfilematch --argument file word
     echo $count
 
     if test -n "$word" -a $count -eq 1
-        sed -n "1,/$word/p" "$file"
+        #sed -n "1,/$word/p" "$file"
         sed -n "/$word/",'$p' "$file" | sponge "$file"
     end
 end
