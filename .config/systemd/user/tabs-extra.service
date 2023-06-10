@@ -1,5 +1,5 @@
 [Unit]
-Description=/usr/bin/fish -c opentabs /home/xk/mc/tabs.txt
+Description=/usr/bin/fish -c opentabs /home/xk/mc/tabs
 Requires=xdg-desktop-autostart.target
 
 [Service]
@@ -7,4 +7,4 @@ Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
 ExecStart=
-ExecStart="/usr/bin/fish" "-c" "opentabs /home/xk/mc/tabs.txt"
+ExecStart="/usr/bin/fish" "-c" "opentabs -n 10 /home/xk/mc/tabs"
