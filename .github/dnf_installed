@@ -62,6 +62,7 @@ netsniff-ng
 nomacs
 perl
 perl-Image-ExifTool
+pg_top
 powertop
 progress
 proj-devel

@@ -1,4 +1,3 @@
-/bin/phantomjs
 /.config/fish/functions/load_build_env.fish
 /bin/gpt4all/
 /.ipython/profile_default/history.sqlite
@@ -609,4 +608,3 @@
 /bin/pact
 /bin/parafly-r2013-01-21/
 /bin/pastecsv.awk
-/bin/pg_top
