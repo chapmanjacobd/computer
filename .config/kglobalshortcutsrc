@@ -30,7 +30,7 @@ display=Display\tMeta+P,Display\tMeta+P,Switch Display
 
 [khotkeys]
 _k_friendly_name=Custom Shortcuts Service
-{04499276-4bec-4152-99f0-a1a7a1b36bd9}=none,none,screenshot
+{04499276-4bec-4152-99f0-a1a7a1b36bd9}=,none,screenshot
 {0a07c0cc-4b9a-4bd9-8255-44ff13bfb5cb}=Meta+E,none,krusader
 {0fc599ce-d47b-4013-943b-e257f3343e38}=Alt+N,none,down
 {10cbc737-de14-4f4f-96ca-8b72487bc2df}=Alt+4,none,caststop
