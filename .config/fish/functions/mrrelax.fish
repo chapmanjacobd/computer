@@ -4,11 +4,11 @@ function mrrelax
     fd --max-results=500 -tf . ~/d/61_Photos_Unsorted/ -0 | xargs -0 -I{} mv "{}" ~/d/64_Relaxation/
 
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --files-from=(
-        lt --db ~/lb/63_Sounds.db -s /mnt/d/64_Relaxation/ -p f --moved /mnt/d/64_Relaxation/ /mnt/d/ | psub
+        lt --db ~/lb/fs/63_Sounds.db -s /mnt/d/64_Relaxation/ -p f --moved /mnt/d/64_Relaxation/ /mnt/d/ | psub
     ) /mnt/d/64_Relaxation/ /mnt/d/
 
     rsync -a --remove-source-files --files-from=(
-        lt --db ~/lb/63_Sounds.db -L 24 -p wf --moved /mnt/d/ /mnt/d/64_Relaxation/ | psub
+        lt --db ~/lb/fs/63_Sounds.db -L 24 -p wf --moved /mnt/d/ /mnt/d/64_Relaxation/ | psub
     ) /mnt/d/ /mnt/d/64_Relaxation/
 
     lb fsadd --video ~/lb/fs/tax.db /mnt/d/64_Relaxation/
