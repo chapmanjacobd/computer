@@ -83,7 +83,6 @@ abbr -a -- grm git reset --hard HEAD
 abbr -a -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -- sys sudo systemctl
 abbr -a -- bootlogs journalctl -r -b -1
-abbr -a -- gds 'git diff --staged; git status'
 abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
 abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
@@ -112,3 +111,4 @@ abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --kee
 abbr -a -- ct cattrash
 abbr -a -- py python
 abbr -a -- ipy ipython --pdb
+abbr -a -- gds 'git diff --staged; git status; git diff --staged --stat'
