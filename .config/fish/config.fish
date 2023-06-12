@@ -1,3 +1,5 @@
+status job-control full
+
 bass source /etc/profile
 
 set NPM_PACKAGES "$HOME/.npm-packages"
