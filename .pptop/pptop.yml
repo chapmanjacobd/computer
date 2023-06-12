@@ -1,0 +1,94 @@
+inject-method: native
+console:
+  json-mode: true
+display:
+  colors: true # 256 - force 256 colors
+  glyphs: true
+keys:
+  filter:
+    - f
+    - "/"
+  select: ENTER
+  back:
+    - ESC
+    - q
+  ready: CTRL_L
+  reinject: J
+  interval: I
+  console: "`"
+  show-console: CTRL_O
+  delete:
+    - KEY_BACKSPACE
+    - KEY_DC
+  pause: p
+  cursor-toggle: Z
+  sort-col-next:
+    - kRIT3
+    - "}"
+  sort-col-prev:
+    - kLFT3
+    - "{"
+  sort-normal: kDN3
+  sort-reverse: kUP3
+  sort-toggle: "|"
+  left: KEY_LEFT
+  right: KEY_RIGHT
+  up: KEY_UP
+  down: KEY_DOWN
+  hshift-left:
+    - kLFT5
+    - "["
+  hshift-right:
+    - kRIT5
+    - "]"
+  page-up:
+    - KEY_PPAGE
+    - CTRL_B
+  page-down:
+    - KEY_NPAGE
+    - CTRL_F
+  home: KEY_HOME
+  end: KEY_END
+  quit: KEY_F(10)
+  reload: " "
+  reset: CTRL_X
+plugins:
+  plugin_selector:
+    default: true
+    shortcut: KEY_F(2)
+  script_runner:
+    shortcut: KEY_F(3)
+    config:
+      script_dir: ~/.pptop/scripts
+  vars:
+    shortcut: KEY_F(4)
+    interval: 0.5
+    config:
+      list: ~/.pptop/vars.list
+  yappi:
+    shortcut: KEY_F(5)
+    #filter: lib/python
+    cursor: false
+  help:
+    shortcut: KEY_F(1)
+  open_files:
+    shortcut: KEY_F(6)
+  threads:
+    shortcut: KEY_F(7)
+  asyncio:
+    shortcut: KEY_F(8)
+    config:
+      list: ~/.pptop/asyncio_loops.list
+  log:
+    shortcut: KEY_F(9)
+    autostart: true
+    cursor: false
+  malloc:
+    shortcut: KEY_F(11)
+    cursor: false
+  neotasker:
+    shortcut: KEY_F(12)
+  env:
+    shortcut: KEY_F(33) # C-F9
+  last_exception:
+    shortcut: CTRL_E
