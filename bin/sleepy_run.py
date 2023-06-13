@@ -20,10 +20,11 @@ def sleep_proc(args, process):
 def sleepy_run(args):
     process = subprocess.Popen(args.program)
 
+    if args.start_paused:
+        sleep_proc(args, process)
+
     while True:
         if process.poll() is None:
-            sleep_proc(args, process)
-
             if process.stdout:
                 for line in process.stdout:
                     if args.error_message in line:
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run a program and pause it when a specific error message is encountered."
     )
+    parser.add_argument("--start-paused",  action='store_true')
     parser.add_argument("--time", "-t", default=10 * 60, type=int, help="Seconds to sleep for")
 
     parser.add_argument("error_message", help="Error message to monitor for")
