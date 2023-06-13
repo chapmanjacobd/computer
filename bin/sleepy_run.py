@@ -43,7 +43,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run a program and pause it when a specific error message is encountered."
     )
-    parser.add_argument("--time", "-t", default=10 * 60, help="Seconds to sleep for")
+    parser.add_argument("--time", "-t", default=10 * 60, type=int, help="Seconds to sleep for")
 
     parser.add_argument("error_message", help="Error message to monitor for")
     parser.add_argument("program", nargs="+", help="Program command and arguments")
