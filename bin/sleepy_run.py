@@ -21,7 +21,7 @@ def sleep_proc(args, process):
 def sleepy_run(args):
     process = subprocess.Popen(args.program, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    while True:
+    while process.poll() is None:
         line = process.stdout.readline()
         if line is None:
             break
