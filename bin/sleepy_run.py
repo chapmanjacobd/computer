@@ -43,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.trigger:
-        args.trigger = ['429 Too Many Requests', 'Bad Request']
+        args.trigger = ['429 Too Many Requests', 'Bad Request', 'Rate limit']
     args.trigger = [s.encode() for s in args.trigger]
 
     sleepy_run(args)
