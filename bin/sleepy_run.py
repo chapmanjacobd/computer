@@ -2,6 +2,7 @@
 # ~/bin/sleepy_run.py "429 Too Many Requests" yes 429 Too Many Requests
 
 import argparse
+import sys
 import signal
 import subprocess
 import time
@@ -18,33 +19,21 @@ def sleep_proc(args, process):
 
 
 def sleepy_run(args):
-    process = subprocess.Popen(args.program)
-
-    if args.start_paused:
-        sleep_proc(args, process)
+    process = subprocess.Popen(args.program, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     while True:
-        if process.poll() is None:
-            if process.stdout:
-                for line in process.stdout:
-                    if args.error_message in line:
-                        sleep_proc(args, process)
-            if process.stderr:
-                for line in process.stderr:
-                    if args.error_message in line:
-                        sleep_proc(args, process)
-
-        else:
-            print("Program exited")
+        line = process.stdout.readline()
+        if line is None:
             break
-        time.sleep(1)
 
+        sys.stdout.buffer.write(line)
+        if args.error_message.encode() in line:
+            sleep_proc(args, process)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run a program and pause it when a specific error message is encountered."
     )
-    parser.add_argument("--start-paused",  action='store_true')
     parser.add_argument("--time", "-t", default=10 * 60, type=int, help="Seconds to sleep for")
 
     parser.add_argument("error_message", help="Error message to monitor for")
