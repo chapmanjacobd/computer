@@ -32,6 +32,7 @@ def sleepy_run(args):
                 sleep_proc(args, process)
                 break
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run a program and pause it when a specific error message is encountered."
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.trigger:
-        args.trigger=['429 Too Many Requests', 'Bad Request']
+        args.trigger = ['429 Too Many Requests', 'Bad Request']
     args.trigger = [s.encode() for s in args.trigger]
 
     sleepy_run(args)
