@@ -13,6 +13,7 @@ dnf-plugin-system-upgrade
 dub
 earlyoom
 exa
+fatrace
 feh
 ffmpeg-libs
 fftw-devel
