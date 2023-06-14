@@ -1,4 +1,4 @@
 # Defined interactively
-function dedup
+function dedupe
     awk '!seen[$0]++'
 end
