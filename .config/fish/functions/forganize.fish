@@ -2,7 +2,7 @@ function forganize
     morganize
     dorganize
 
-    lb clustersort ~/mc/tabs ~/mc/tabs
+    sort --unique ~/mc/tabs | lb clustersort | sponge ~/mc/tabs
 
     #trash-size
     #trash-empty
