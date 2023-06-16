@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# ~/bin/sleepy_run.py "429 Too Many Requests" yes 429 Too Many Requests
+# ~/bin/sleepy_run.py --trigger "429 Too Many Requests" yes 429 Too Many Requests
 
 import argparse
 import sys
@@ -37,8 +37,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run a program and pause it when a specific error message is encountered."
     )
-    parser.add_argument("--time", "-t", default=10 * 60, type=int, help="Seconds to sleep for")
-    parser.add_argument("--trigger", action='append', help="Error message to monitor for")
+    parser.add_argument("--time", "-T", default=10 * 60, type=int, help="Seconds to sleep for")
+    parser.add_argument("--trigger", "-t", action='append', help="Error message to monitor for")
     parser.add_argument("program", nargs="+", help="Program command and arguments")
     args = parser.parse_args()
 
