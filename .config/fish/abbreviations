@@ -66,7 +66,6 @@ abbr -a -- wts 'wt -p -u duration -s'
 abbr -a -- xpaste 'xclip -selection clipboard -o'
 abbr -a -- yt.ogg yta
 abbr -a -- ytd 'lb dladd ~/lb/video.db'
-abbr -a -- ytd5 lb\ tubeadd\ --dl-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
 abbr -a -- python ipython --pdb
 abbr -a -- ps ps -o 'etime,%cpu,command' ww
 abbr -a -- icat kitty +kitten icat
@@ -113,3 +112,4 @@ abbr -a -- ipy ipython --pdb
 abbr -a -- gds 'git diff --staged; git status; git diff --staged --stat'
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui --prefetch 4 -u duration desc -L 200 --duration-from-size +300
 abbr -a -- sql sqlite --no-headers --raw-lines
+abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
