@@ -11,7 +11,6 @@ abbr -a -- dc cd
 abbr -a -- dd 'dd status=progress if= of='
 abbr -a -- df 'df -h'
 abbr -a -- dmesg 'dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice,info'
-abbr -a -- erm '-pfd | string escape | xargs -P 20 -n 50 rm'
 abbr -a -- fdh fd\ --hidden\ --exclude\ \'.git\'
 abbr -a -- fdwatch 'fd -x fish -c "mpvonce {}"'
 abbr -a -- fi 'sudo btrfs fi usage'
@@ -112,3 +111,4 @@ abbr -a -- gds 'git diff --staged; git status; git diff --staged --stat'
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui --prefetch 4 -u duration desc -L 200 --duration-from-size +300
 abbr -a -- sql sqlite --no-headers --raw-lines
 abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
+abbr -a -- erm xargs -P 20 '-I{}' rm '{}'
