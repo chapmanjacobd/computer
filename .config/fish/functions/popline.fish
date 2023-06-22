@@ -1,5 +1,5 @@
 # Defined interactively
-function linepop
+function popline
     tail -n 1 "$argv"
     sed -i '$ d' "$argv"
 end
