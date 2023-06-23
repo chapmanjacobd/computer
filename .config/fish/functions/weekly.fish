@@ -10,7 +10,7 @@ function weekly
     pip install --upgrade yt-dlp gallery-dl praw xklb
 
     tubeupdate
-    dla
+    #dla
     wait
 
     for folder in 61_Photos_Unsorted
