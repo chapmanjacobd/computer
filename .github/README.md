@@ -1,8 +1,10 @@
 # computer
 
-If you wanna know how I use the computer you might want to check out these other repos also:
+if you wanna be my lover you gotta get with my friends:
 
-- [move lines of text](https://gist.github.com/chapmanjacobd/c7c3af1d2d39ca55346349fffa2e5fd5)
+- [cb](https://github.com/niedzielski/cb)
+- [move lines of text](https://github.com/chapmanjacobd/computer/blob/main/.config/fish/functions/mvl.fish)
+- [filter file](https://github.com/chapmanjacobd/computer/blob/main/.config/fish/functions/filterfile.fish)
 - [phone](https://github.com/chapmanjacobd/phone)
 
 ## Setup
