@@ -16,5 +16,5 @@ function diskstatus
         echo $dev
         sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable'
     end
-    lb du /mnt/d{1,2,3,4,5,6,7}
+    lb mu /mnt/d{1,2,3,4,5,6,7}
 end

@@ -27,7 +27,7 @@ abbr -a -- gs 'git status'
 abbr -a -- hibernate 'systemctl hibernate'
 abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
 abbr -a -- ipa 'ip a'
-abbr -a -- lbdu 'lb du /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
+abbr -a -- lbmu 'lb mu /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7'
 abbr -a -- less 'less -FSRXc'
 abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
