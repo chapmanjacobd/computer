@@ -1,5 +1,6 @@
 atop
 bat
+blas-devel
 bottles
 btrfs-progs
 cargo
@@ -47,6 +48,7 @@ kitty-terminfo
 kruler
 krusader
 ksnip
+lapack-devel
 ldc
 libicu
 libicu-devel
