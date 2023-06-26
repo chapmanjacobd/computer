@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 03:15:00 run catt -d Xylo and Orchestra set_default'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 03:15:00
+
+[Install]
+WantedBy=timers.target
+

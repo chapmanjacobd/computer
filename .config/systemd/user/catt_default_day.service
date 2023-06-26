@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 03:15:00 run catt -d Xylo and Orchestra set_default'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 600
+ExecStart='/usr/bin/fish' '-c' 'catt -d Xylo and Orchestra set_default'
+

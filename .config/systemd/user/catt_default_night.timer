@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 21:15:00 run catt -d Bedroom pair set_default'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 21:15:00
+
+[Install]
+WantedBy=timers.target
+
