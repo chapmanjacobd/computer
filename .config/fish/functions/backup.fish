@@ -1,5 +1,14 @@
-# Defined interactively
+# Defined via `source`
 function backup --argument source
     set target (string trim --right --chars=/ "$source")
-    cp -r --reflink=auto "$source" $target.bak
+    set backup_suffix ".bak"
+    set backup_number 0
+
+    while test -e "$target$backup_suffix$backup_number"
+        set backup_number (math $backup_number + 1)
+    end
+
+    set backup_target "$target$backup_suffix$backup_number"
+
+    cp -r --reflink=auto "$source" "$backup_target"
 end
