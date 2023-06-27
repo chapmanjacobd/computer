@@ -39,6 +39,7 @@ PyExifTool
 pylint
 pympler
 pytest-icdiff
+python-dateutil
 python_mpv_jsonipc
 pyupgrade
 radian
