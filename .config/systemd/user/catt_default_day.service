@@ -1,10 +1,10 @@
 [Unit]
-Description='On *-*-* 03:15:00 run catt -d Xylo and Orchestra set_default'
+Description='On *-*-* 03:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Xylo and Orchestra"'
 
 [Service]
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 600
-ExecStart='/usr/bin/fish' '-c' 'catt -d Xylo and Orchestra set_default'
+ExecStart='/usr/bin/fish' '-c' 'git config --file=/home/xk/.config/catt/catt.cfg options.device "Xylo and Orchestra"'
 

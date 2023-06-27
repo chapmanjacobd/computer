@@ -1,5 +1,5 @@
 [Unit]
-Description='On *-*-* 03:15:00 run catt -d Xylo and Orchestra set_default'
+Description='On *-*-* 03:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Xylo and Orchestra"'
 
 [Timer]
 Persistent=yes
