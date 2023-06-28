@@ -1,10 +1,8 @@
 # Defined interactively
 function dla
-    maxmem10b lbdl ~/lb/yt/podcasts.tl.db --audio --prefix ~/d/82_Audiobooks/
     maxmem10b lbdl ~/lb/reddit/63_Sounds.db --audio --safe --prefix ~/d/63_Sounds/reddit/
     maxmem10b lbdl ~/lb/reddit/81_New_Music.db --audio --safe --prefix ~/d/81_New_Music/reddit/
     wait
-    maxmem10b lbdl ~/lb/yt/classical_music.tl.db --audio --prefix ~/d/83_ClassicalComposers/yt/
     maxmem10b lbdl ~/lb/reddit/83_ClassicalComposers.db --audio --safe --prefix ~/d/83_ClassicalComposers/reddit/
     maxmem10b lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
     wait

@@ -1,10 +1,6 @@
 function dlstatus
     echo audio.db
     lb-dev ds ~/lb/audio.db
-    echo yt/podcasts.tl.db
-    lb-dev ds ~/lb/yt/podcasts.tl.db
-    echo yt/classical_music.tl.db
-    lb-dev ds ~/lb/yt/classical_music.tl.db
 
     echo reddit/63_Sounds.db
     lb-dev ds ~/lb/reddit/63_Sounds.db --safe
