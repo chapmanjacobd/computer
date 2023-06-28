@@ -1,10 +1,10 @@
 [Unit]
-Description='On *-*-* 03:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Xylo and Orchestra"'
+Description='On *-*-* 03:15:00 run cr'
 
 [Service]
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 600
-ExecStart='/usr/bin/fish' '-c' 'git config --file=/home/xk/.config/catt/catt.cfg options.device "Xylo and Orchestra"'
+ExecStart='/usr/bin/fish' '-c' 'cr'
 
