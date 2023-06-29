@@ -13,7 +13,8 @@ function daily
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
     end
 
-    for db in ~/lb/reddit/*.db
+    ~/lb/
+    for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_ClassicalComposers.db reddit/95_Memes.db reddit/96_Weird_History.db
         lb redditupdate $db --lookback 2
     end
 
@@ -27,10 +28,4 @@ function daily
     if not pgrep ffmpeg >/dev/null
         ~/d/69_Taxes_Keep/ && ffsmallpar
     end
-
-    lb mergedbs --pk path --only-target-columns --ignore -t media ~/lb/audio.db ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_ClassicalComposers.db
-    lb mergedbs --pk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db
-    lb mergedbs --pk path --only-target-columns --ignore -t media ~/lb/fs/63_Sounds.db ~/lb/reddit/63_Sounds.db
-    lb mergedbs --pk path --only-target-columns --ignore -t media ~/lb/fs/tax.db ~/lb/reddit/69_Taxes.db
-    lb mergedbs --pk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
 end
