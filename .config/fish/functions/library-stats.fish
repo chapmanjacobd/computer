@@ -1,6 +1,6 @@
 # Defined in /home/xk/.config/fish/functions/library-stats.fish @ line 2
 function library-stats
-    for db in ~/lb/fs/61_Photos_Unsorted.db ~/lb/fs/tax.db ~/lb/video.db
+    for db in ~/lb/fs/tax.db ~/lb/video.db
         echo $db
         lb-dev wt $db -p a
         echo $db deleted
@@ -17,7 +17,7 @@ function library-stats
     end
 
     echo bigdirs
-    for db in ~/lb/fs/61_Photos_Unsorted.db ~/lb/fs/tax.db ~/lb/video.db ~/lb/fs/63_Sounds.db ~/lb/audio.db
+    for db in ~/lb/fs/tax.db ~/lb/video.db ~/lb/fs/63_Sounds.db ~/lb/audio.db
         echo $db
         lb-dev bigdirs $db -L 5
     end
