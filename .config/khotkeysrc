@@ -1396,7 +1396,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_5_4Actions0]
-CommandURL=fish -c brightnessup
+CommandURL=fish -c brightness_lg_up
 Type=COMMAND_URL
 
 [Data_5_4Conditions]
@@ -1422,7 +1422,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_5_5Actions0]
-CommandURL=fish -c brightnessdown
+CommandURL=fish -c brightness_lg_down
 Type=COMMAND_URL
 
 [Data_5_5Conditions]
