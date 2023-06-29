@@ -1,5 +1,5 @@
-# Defined in /home/xk/.config/fish/functions/match-one-head.fish @ line 2
-function match-one-head --argument file word
+# Defined in /home/xk/.config/fish/functions/match-trunc-head.fish @ line 2
+function match-trunc-head --argument file word
     set word (string replace \/ \\\/ -- (string escape --style=regex "$word"))
 
     set count (grep -c "$word" "$file")
