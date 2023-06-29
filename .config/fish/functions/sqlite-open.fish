@@ -1,4 +1,6 @@
 # Defined interactively
 function sqlite-open
-    dbeaver-ce -con 'driver=SQLite|database='(path resolve $argv)
+    for f in $argv
+        dbeaver-ce -con 'driver=SQLite|database='(path resolve $f)
+    end
 end
