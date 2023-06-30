@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# usage source1 .. sourceN dest
+
+length=$(($#-1))
+sources=${@:1:$length}
+DEST=$(readlink -f ${!#})
+for SRC in $sources; do
+    pushd "$SRC";
+    # Only one scan - we only need folders with files
+    find . -type f | while read FILE ; do
+        DIRNAME=`dirname "$FILE"`
+        # Create the lowest level directory at once
+        if [ ! -d "$DEST/$DIRNAME" ] ; then
+            mkdir -v "$DEST/$DIRNAME"
+        fi
+        mv -v "$FILE" "$DEST/$FILE"
+    done
+    # Remove the directories no longer needed
+    find . -type -d | sort -r | xargs -i rmdir "{}"
+    popd
+done
