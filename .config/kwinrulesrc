@@ -11,12 +11,12 @@ wmclass=mpv
 wmclassmatch=2
 
 [2]
-Description=Settings for projectm-jack
+Description=Settings for projectM-pulseaudio
 below=true
 belowrule=2
 skiptaskbar=true
 skiptaskbarrule=2
-wmclass=projectm-jack
+wmclass=projectM-pulseaudio
 wmclassmatch=1
 
 [General]
