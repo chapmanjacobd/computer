@@ -113,3 +113,4 @@ abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'
 abbr -a -- erm xargs -P 20 '-I{}' rm '{}'
 abbr -a -- gstat git diff --stat
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui --prefetch 4 -u duration desc --duration-from-size +200
+abbr -a -- soulseek nicotine
