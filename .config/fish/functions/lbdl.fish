@@ -1,4 +1,4 @@
 # Defined interactively
 function lbdl
-    library download --subs --auto-subs $argv
+    repeat library download --subs --auto-subs $argv
 end
