@@ -25,6 +25,7 @@ keyrings.google-artifactregistry-auth
 klara
 line_profiler
 lux
+memray
 mnamer
 outrun
 parquet-cli
