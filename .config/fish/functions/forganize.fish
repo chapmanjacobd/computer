@@ -12,7 +12,7 @@ function forganize
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
     refreshLibrary
-    wt ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | xargs -P 20 -n 50 rm
+    wt ~/fs/tax.db -l inf --local-media-only -d-0.7 -pfd | xargs -P 20 -n 50 rm {}
 
     set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_ClassicalComposers/ ~/d/85_Inspiration/
     set photo_dirs ~/d/61_Photos_Unsorted/ ~/d/96_Weird_History/ ~/d/94_Cool/ ~/d/93_BG/ ~/d/91_New_Art/ ~/d/98_Me/ ~/d/99_Art/
