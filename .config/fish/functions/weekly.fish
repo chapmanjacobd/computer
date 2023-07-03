@@ -3,8 +3,8 @@ function weekly
 
     mrmusic
     #mrvideo
-    #mrporn
-    #mrrelax
+    mrporn
+    mrrelax
     morganize
 
     pip install --upgrade yt-dlp gallery-dl praw xklb

@@ -58,3 +58,5 @@
 	date = relative-local
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[safe]
+	bareRepository = explicit
