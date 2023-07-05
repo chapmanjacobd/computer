@@ -1,9 +1,9 @@
 [Unit]
-Description='On *-*-* 03:15:00 run cr'
+Description='On *-*-* 06:15:00 run cr'
 
 [Timer]
 Persistent=yes
-OnCalendar=*-*-* 03:15:00
+OnCalendar=*-*-* 06:15:00
 
 [Install]
 WantedBy=timers.target
