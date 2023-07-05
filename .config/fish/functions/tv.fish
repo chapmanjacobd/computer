@@ -13,5 +13,6 @@ function tv
     #breaktimer disable && pkill breaktimer
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     ~/.config/autostart.sh &
-    pkill projectM-pulseaudio && projectM-pulseaudio &
+    pkill -9 projectM-pulseau
+    projectM-pulseaudio &
 end

@@ -1,6 +1,7 @@
 # Defined interactively
 function sitdown
     pkill projectM-jack
+    pkill -9 projectM-pulsea
 
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
         kscreen-doctor output.DisplayPort-0.enable output.DisplayPort-0.mode.3440x1440@160
