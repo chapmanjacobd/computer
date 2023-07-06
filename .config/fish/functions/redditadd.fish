@@ -8,9 +8,9 @@ function redditadd --argument reddit_db
 
     for subreddit in $argv[2..-1]
         if not test -e "$subreddit.csv"
-            echo "octosql -o csv \"select path,score,'https://old.reddit.com/r/$subreddit/' as playlist_path from `../reddit_links.parquet` where lower(playlist_path) = '$subreddit' order by score desc \" > $subreddit.csv"
+            echo "octosql -o csv \"select path,score,'$subreddit' as subreddit from `../reddit_links.parquet` where lower(playlist_path) = '$subreddit' order by score desc \" > $subreddit.csv"
         end
-    end | parallel -j8
+    end | parallel -j2
 
     for subreddit in $argv[2..-1]
         sqlite-utils upsert --pk path --pk playlist_path --alter --csv --detect-types $reddit_db media $subreddit.csv
