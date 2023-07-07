@@ -30,6 +30,7 @@ gsl-devel
 gwenview
 hddtemp
 hexyl
+(wget --content-disposition --no-verbose --no-clobber --trust-server-names https://www.cyberpower.com/eu/en/File/GetFileSampleByType?fileId=SU-18070001-07&fileType=Download%20Center&fileSubType=FileOriginal)
 https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
 https://download.nomachine.com/download/8.4/Linux/nomachine_8.4.2_1_x86_64.rpm
 https://github.com/charmbracelet/gum/releases/download/v0.8.0/gum_0.8.0_linux_amd64.rpm
