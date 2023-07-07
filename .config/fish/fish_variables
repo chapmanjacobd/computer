@@ -20,7 +20,7 @@ SETUVAR --export OMP_NUM_THREADS:16
 SETUVAR --export OPENSSL_CONF:/etc/ssl
 SETUVAR --export PIPENV_VERBOSITY:\x2d1
 SETUVAR --export PSQLRC:/pg/psqlrc
-SETUVAR --export PYTHONBREAKPOINT:ipdb\x2eset_trace
+SETUVAR --export PYTHONBREAKPOINT:IPython\x2eterminal\x2edebugger\x2eset_trace
 SETUVAR --export PYTHONIOENCODING:utf\x2d8
 SETUVAR ZO_CMD:zo
 SETUVAR Z_CMD:z
