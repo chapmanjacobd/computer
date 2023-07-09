@@ -32,6 +32,8 @@ def sleepy_run(args):
                 sleep_proc(args, process)
                 break
 
+    sys.exit(process.wait())
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

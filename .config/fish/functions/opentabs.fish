@@ -19,10 +19,10 @@ function opentabs
     set tabs (head -n $qty $file)
     for tab in $tabs
         if test http = (string sub --length 4 "$tab")
-            firefox "$tab" >/dev/null &
+            firefox --new-tab "$tab" >/dev/null &
         else
             for p in $pre
-                firefox "$p$tab" >/dev/null &
+                firefox --new-tab "$p$tab" >/dev/null &
             end
         end
         if test $qty -gt 10
