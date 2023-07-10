@@ -39,13 +39,14 @@ def sleepy_run(args):
         sys.stdout.buffer.write(line)
         for b in args.trigger:
             if b in line:
-                if args.action == 'sleep':
+                if args.action == Actions.sleep:
                     sleep_proc(args, process)
-                elif args.action == 'signal':
+                elif args.action == Actions.signal:
                     signal_proc(args, process)
                 break
 
-    sys.exit(process.wait())
+    if args.action == Actions.sleep or args.raise_killed_signal:
+        sys.exit(process.wait())
 
 
 if __name__ == "__main__":
@@ -65,6 +66,7 @@ if __name__ == "__main__":
         "--signal", "-s", default="SIGTERM", help="Exit signal to send (for signal action; default SIGTERM)"
     )
 
+    parser.add_argument("--raise-killed-signal", action='store_true', help="Set to raise the expected non-zero signal")
     parser.add_argument("--trigger", "-t", action='append', help="Error message to monitor for")
     parser.add_argument("program", nargs="+", help="Program command and arguments")
     args = parser.parse_args()
