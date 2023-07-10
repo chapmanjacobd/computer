@@ -29,5 +29,5 @@ function weekly
         gallery-dl --input-file ~/mc/$folder.txt
     end
 
-    # dbackups
+    dbackups
 end
