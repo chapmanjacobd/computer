@@ -41,6 +41,8 @@ def sleepy_run(args):
             if b in line:
                 if args.action == 'sleep':
                     sleep_proc(args, process)
+                elif args.action == 'signal':
+                    signal_proc(args, process)
                 break
 
     sys.exit(process.wait())
