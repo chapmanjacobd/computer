@@ -8,10 +8,6 @@ function daily
 
     catt volume 0 && catt volume 40
     pip install --upgrade gallery-dl pychromecast
-    for dfolder in 61_Photos_Unsorted 91_New_Art 95_Memes
-        ~/d/$dfolder/
-        gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
-    end
 
     ~/lb/
     for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_ClassicalComposers.db reddit/95_Memes.db reddit/96_Weird_History.db
