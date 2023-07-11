@@ -2,7 +2,7 @@
 update_info=kxkb_variants.upd:split-variants,kxkb.upd:remove-empty-lists,kxkb.upd:add-back-resetoptions
 
 [Layout]
-DisplayNames=
+LayoutList=us
 LayoutLoopCount=-1
 Model=pc101
 Options=caps:backspace,lv3:ralt_alt
@@ -12,3 +12,4 @@ ShowLabel=true
 ShowLayoutIndicator=true
 ShowSingle=false
 Use=true
+VariantList=colemak_dh

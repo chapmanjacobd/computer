@@ -4,6 +4,7 @@ switch-to-activity-577840c9-b0bb-4255-bc13-d26fe06d710e=none,none,Switch to acti
 switch-to-activity-b728f431-9358-46d0-afed-14023185ca9e=none,none,Switch to activity "Default"
 
 [KDE Keyboard Layout Switcher]
+Switch keyboard layout to\s=none,none,Switch keyboard layout to\s
 Switch keyboard layout to English (Colemak)=none,none,Switch keyboard layout to English (Colemak)
 Switch keyboard layout to English (Colemak-DH ISO)=none,none,Switch keyboard layout to English (Colemak-DH ISO)
 Switch keyboard layout to English (Colemak-DH)=none,none,Switch keyboard layout to English (Colemak-DH)
@@ -30,7 +31,6 @@ display=Display\tMeta+P,Display\tMeta+P,Switch Display
 
 [khotkeys]
 _k_friendly_name=Custom Shortcuts Service
-{04499276-4bec-4152-99f0-a1a7a1b36bd9}=,none,screenshot
 {0a07c0cc-4b9a-4bd9-8255-44ff13bfb5cb}=Meta+E,none,krusader
 {0fc599ce-d47b-4013-943b-e257f3343e38}=Alt+N,none,down
 {10cbc737-de14-4f4f-96ca-8b72487bc2df}=Alt+4,none,caststop
@@ -57,7 +57,6 @@ _k_friendly_name=Custom Shortcuts Service
 {c08c3f78-574a-4334-9f37-261dfe820d2f}=none,none,up
 {c1b25ca7-7394-46bc-bdbb-cbe44d6110c4}=Ctrl+Alt+[,none,speedreset
 {c1b32653-c74c-458a-b0f4-20ecd471ca31}=Alt+PgDown,none,xcalib
-{d03619b6-9b3c-48cc-9d9c-a2aadb485550}=none,none,Search
 {d5ac8674-44ea-4280-98f8-2fbe2c1c2ee0}=Alt+PgUp,none,xcalib-clear
 {e4104bdd-fbf6-4567-aedb-e98eb5d14eee}=Alt+W,none,voldown
 {e556ea94-e5b6-4a86-a0c3-1d8e1e901360}=Alt+P,none,listen-toggle
