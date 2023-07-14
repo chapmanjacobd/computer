@@ -5,5 +5,6 @@ function sync_history
 
     cp ~/.local/share/fish/fish_history ~/d/00_Metadata/SECURE/
 
-    # count ~/.local/share/z/data.sync-conflict* >/dev/null; and cat ~/.local/share/z/data.sync-conflict* >>~/.local/share/z/data; and trash-put ~/.local/share/z/data.sync-conflict*
+    # copyq ?
+    fd -HI sync-conflict -x rm
 end
