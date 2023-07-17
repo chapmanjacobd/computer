@@ -573,4 +573,3 @@
 /bin/libkqueue/
 /bin/libmodule/
 /bin/libpolyfill.so
-/bin/libtest_stderred.so
