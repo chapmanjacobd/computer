@@ -48,6 +48,7 @@ rich
 ruff
 scalene
 screeninfo
+shell-functools
 sklearn
 spacy
 sqlite-utils
