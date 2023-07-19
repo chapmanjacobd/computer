@@ -570,4 +570,3 @@
 /bin/kubectl
 /bin/lein
 /bin/lf.sh
-/bin/libkqueue/
