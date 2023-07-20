@@ -7,10 +7,11 @@ function cine
     for tab in $tabs
         echo $tab
         if test http = (string sub --length 4 "$tab")
-            firefox "$tab" >/dev/null &
+            firefox --new-tab "$tab" >/dev/null &
         else
-            firefox -url "https://www.google.com/search?q=$tab" -url "https://1337x.to/search/$tab/1/" >/dev/null &
+            firefox --new-window "https://www.google.com/search?q=$tab" >/dev/null
             sleep 0.5
+            firefox --new-tab "https://1337x.to/search/$tab/1/" >/dev/null &
         end
     end
     wait
