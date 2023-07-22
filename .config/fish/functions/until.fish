@@ -1,5 +1,5 @@
 # Defined interactively
-function repeal
+function until
     while not fish -c (string join -- ' ' (string escape -- $argv))
         and :
     end

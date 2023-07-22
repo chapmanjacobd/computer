@@ -117,3 +117,4 @@ abbr -a -- soulseek nicotine
 abbr -a -- memray memray run --live
 abbr -a --set-cursor -- strace 'strace -p (pgrep -n %)'
 abbr -a -- gc gclone
+abbr -a -- repeal until
