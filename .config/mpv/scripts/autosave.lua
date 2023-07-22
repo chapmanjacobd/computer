@@ -23,7 +23,7 @@ local function init()
     return
   end
 
-  if mp.get_property_number("duration") < 420 then
+  if mp.get_property_number("duration", 0) < 420 then
     return
   end
 
