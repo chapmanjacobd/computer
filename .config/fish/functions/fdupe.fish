@@ -15,6 +15,9 @@ function fdupe
         end
     end
 
+    ~/d/61_Photos_Unsorted/
+    cbird -i.algos 1 -update
+
     ~/d/69_Taxes/
     rmlint --match-extension --progress --xattr --keep-all-tagged ~/d/69_Taxes/ // ~/d/69_Taxes_Keep/
     bash rmlint.sh -d && rm rmlint.json
