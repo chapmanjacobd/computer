@@ -18,8 +18,8 @@ function fdupe
     for dir in $photo_dirs
         $dir/
         cbird -i.algos 1 -update
-        yes | cbird -dups -first -select-result -nuke
-        # yes | cbird -p.dht 1 -similar -first -select-result -nuke
+        yes | cbird -dups -sort resolution -chop -select-result -nuke
+        # yes | cbird -p.dht 1 -similar -sort resolution -chop -select-result -nuke
     end
 
     ~/d/69_Taxes/
