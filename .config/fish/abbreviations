@@ -118,3 +118,5 @@ abbr -a -- memray memray run --live
 abbr -a --set-cursor -- strace 'strace -p (pgrep -n %)'
 abbr -a -- gc gclone
 abbr -a -- repeal until
+abbr -a -- mbytes bcal
+abbr -a -- bytes bcal
