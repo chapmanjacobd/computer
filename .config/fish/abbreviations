@@ -120,3 +120,4 @@ abbr -a -- gc gclone
 abbr -a -- repeal until
 abbr -a -- mbytes bcal
 abbr -a -- bytes bcal
+abbr -a -- lsofhome 'lsof /home/ | sort -k 7 -u --human-numeric-sort'
