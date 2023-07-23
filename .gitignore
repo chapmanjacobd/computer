@@ -1,3 +1,4 @@
+/.siege/
 /.local/cbird/
 /.config/cbird.ini
 /.config/fish/functions/load_build_env.fish
