@@ -5,7 +5,7 @@ local options = require 'mp.options'
 
 local o = {
     ducksecs = 1, -- lol
-    duckratio = 0.65
+    duckratio = 0.80
 }
 options.read_options(o)
 
