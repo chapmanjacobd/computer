@@ -62,6 +62,7 @@ textract
 tqdm
 unzip-http
 vulture
+waybackpy
 wheel
 xklb
 yt-dlp
