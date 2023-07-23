@@ -1,5 +1,6 @@
 # Defined via `source`
 function ffsmallpar_cleanup
+    ~/d/69_Taxes_Keep/
     for f in (cat ~/ffsmallpar_errors.txt)
         set mkv (echo $f | path change-extension small.mkv )
 
