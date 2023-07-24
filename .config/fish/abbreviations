@@ -122,3 +122,4 @@ abbr -a -- mbytes bcal
 abbr -a -- bytes bcal
 abbr -a -- lsofhome 'lsof /home/ | sort -k 7 -u --human-numeric-sort'
 abbr -a -- traceroute mtr
+abbr -a -- wtv random-eval /home/xk/watch
