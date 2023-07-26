@@ -9,6 +9,8 @@ function lbrelease --argument oldver newver
 
     lbformat
     python readme.py >README.md
+    git reset tests/cassettes/
+    git restore tests/cassettes/
     if wipm $newver
         git tag -a v$newver && git push --tags
         pip install --upgrade pip pdm
