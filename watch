@@ -1,2 +1,8 @@
 wt Mohanagar -O
 wt 'Mary Hartman' -O
+wt -u same-duration same-title
+wt -u same-time_uploaded same-view_count
+wt -P o
+wt -P p
+wt -r
+wt -P pw
