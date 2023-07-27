@@ -402,5 +402,6 @@
   "workbench.statusBar.visible": true,
   "material-icon-theme.saturation": 0,
   "window.zoomLevel": 1,
-  "search.useIgnoreFiles": false
+  "search.useIgnoreFiles": false,
+  "git.openRepositoryInParentFolders": "never"
 }
