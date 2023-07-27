@@ -28,6 +28,11 @@ function _abbr_zip
 end
 abbr -a zip --function _abbr_zip
 
+function _abbr_parallel
+    echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log
+end
+abbr -a parallel --function _abbr_parallel
+
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
 zoxide init fish | source
