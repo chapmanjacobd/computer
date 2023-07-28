@@ -29,7 +29,7 @@ end
 abbr -a zip --function _abbr_zip
 
 function _abbr_parallel
-    echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --resume --shuf
+    echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed
 end
 abbr -a parallel --function _abbr_parallel
 
