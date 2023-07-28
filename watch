@@ -4,6 +4,6 @@ wt -u same-duration same-title
 wt -u same-time_uploaded same-view_count
 wt -P o
 wt -P p
-wt -r
+wt -r --local-media-only
 wt -P pw
 wt -O Peep Show S02E
