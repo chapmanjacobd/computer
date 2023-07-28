@@ -28,7 +28,12 @@ def extract_groups(content):
 
 def extract_paths_and_sizes(group_content):
     paths_and_sizes = []
-    for match in group_content.split("\n"):
+    groups = group_content.split("\n")
+    if len(groups) < 2:
+        return
+    for match in groups:
+        if match == '':
+            continue
         size_str = match.split(" - ")[1]
         size_value, size_unit = float(size_str.split()[0]), size_str.split()[1]
         if size_unit == "GiB":
@@ -50,12 +55,24 @@ def launch_mpv_compare(left_side, right_side):
     mpv_width = display_width // 2
 
     left_mpv_process = subprocess.Popen(
-        ["mpv", left_side, f"--geometry={mpv_width}x{monitors[0].height}+0+0"],
+        [
+            "mpv",
+            left_side,
+            f"--geometry={mpv_width}x{monitors[0].height}+0+0",
+            '--no-save-position-on-quit',
+            '--no-resume-playback',
+        ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     right_mpv_process = subprocess.Popen(
-        ["mpv", right_side, f"--geometry={mpv_width}x{monitors[0].height}+{mpv_width}+0"],
+        [
+            "mpv",
+            right_side,
+            f"--geometry={mpv_width}x{monitors[0].height}+{mpv_width}+0",
+            '--no-save-position-on-quit',
+            '--no-resume-playback',
+        ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -79,6 +96,8 @@ def group_and_delete(groups):
             continue
 
         group = extract_paths_and_sizes(group_content)
+        if group is None:
+            continue
         group.sort(key=lambda x: x["size_mb"], reverse=True)
         largest_path = group[0]["path"]
 
