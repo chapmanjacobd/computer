@@ -1,7 +1,6 @@
 function daily
     ~/
-    sed -i '$ d' ~/.gitignore
-    sed -i '$ d' ~/j/.gitignore
+    popline ~/.gitignore
 
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:.local/Downloads/. ~/d/75_MovieQueue/
     lb relmv /mnt/d/70_Now_Watching/Keep/* /mnt/d/77_Library/
