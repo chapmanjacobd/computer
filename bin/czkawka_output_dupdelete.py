@@ -104,6 +104,7 @@ def group_and_delete(groups):
         if os.path.exists(largest_path):
             print(largest_path)
 
+            delete_largest_path = False
             for d in group[1:]:
                 path = d["path"]
                 if os.path.exists(path):
@@ -136,15 +137,17 @@ def group_and_delete(groups):
                                 print(f"{path}: Deleted")
                                 break
                             elif user_input in ("d"):
-                                os.remove(largest_path)
-                                print(f"{largest_path}: Deleted")
                                 os.remove(path)
                                 print(f"{path}: Deleted")
+                                delete_largest_path = True
                                 break
                             else:
                                 print("Invalid input. Please type 'y', 'n', or nothing and enter")
                 else:
                     print(f"{path}: not found")
+            if delete_largest_path:
+                os.remove(largest_path)
+                print(f"{largest_path}: Deleted")
         else:
             print(f"Original not found: {largest_path}")
 

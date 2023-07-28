@@ -14,11 +14,12 @@
     }
   },
   "terminal.integrated.defaultProfile.linux": "fish",
-"python.terminal.launchArgs": [
-    "-m",
-    "IPython",
-    "--no-autoindent",
-],
+  "python.terminal.launchArgs": [
+      "-m",
+      "IPython",
+      "--no-autoindent",
+  ],
+    // "editor.inlayHints.enabled": "off",
   "editor.tabSize": 4,
   "editor.copyWithSyntaxHighlighting": false,
   "python.terminal.activateEnvironment": true,
@@ -26,7 +27,8 @@
   "python.venvPath": "${workspaceFolder}/.venv/bin/python",
   "python.pythonPath": ".venv/bin/python",
   "editor.cursorStyle": "block",
-  "editor.guides.bracketPairs": true,
+  "editor.guides.bracketPairs": false,
+  "editor.bracketPairColorization": true,
   "editor.autoIndent": "none",
   "files.encoding": "utf8",
   "files.insertFinalNewline": true,
@@ -439,16 +441,13 @@
   "sql.format.enable": false,
   "editor.guides.indentation": false,
   "diffEditor.wordWrap": "off",
-  "blockman.n04ColorComboPreset": "Classic Light (Solid colors)",
   "blockman.n32BlackListOfFileFormats": "plaintext, markdown, sql, json, jinja-sql",
   "blockman.n05CustomColorOfDepth0": "none",
-  "blockman.n20CustomColorOfDepth0Border": "none",
   "blockman.n06CustomColorOfDepth1": "hsla(207, 20%, 91%,40%)",
   "blockman.n07CustomColorOfDepth2": "hsla(207, 20%, 91%,50%)",
   "blockman.n08CustomColorOfDepth3": "hsla(207, 20%, 91%,60%)",
   "blockman.n09CustomColorOfDepth4": "hsla(207, 20%, 91%,70%)",
   "blockman.n10CustomColorOfDepth5": "hsla(207, 20%, 91%,80%)",
-  "blockman.n16EnableFocus": false,
   "bracket-pair-colorizer-2.depreciation-notice": false,
   "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
@@ -490,5 +489,9 @@
   "[sql]": {
     "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
   },
-  "security.workspace.trust.untrustedFiles": "newWindow"
+  "security.workspace.trust.untrustedFiles": "newWindow",
+  "blockman.n20CustomColorOfDepth0Border": "none",
+  "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
+  "blockman.n16EnableFocus": false,
+  "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old"
 }
