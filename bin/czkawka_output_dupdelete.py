@@ -3,12 +3,12 @@
 import argparse
 import difflib
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from screeninfo import get_monitors
 
@@ -62,12 +62,13 @@ def truncate_file_before_match(filename, match_string):
     if len(matching_lines) == 1:
         line_index = matching_lines[0]
         with open(filename, 'w') as file:
-            file.write("".join(lines[line_index -1:]))
+            file.write("".join(lines[line_index - 1 :]))
         print(f"File truncated before the line containing: '{match_string}'")
     elif len(matching_lines) == 0:
         print(f"Match not found in the file: '{match_string}'")
     else:
         print(f"Multiple matches found in the file for: '{match_string}'")
+
 
 def launch_mpv_compare(left_side, right_side):
     # Get the size of the first connected display
