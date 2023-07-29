@@ -3,6 +3,7 @@
 import argparse
 import difflib
 import os
+from pathlib import Path
 import re
 import subprocess
 import time
@@ -112,7 +113,7 @@ def group_and_delete(groups):
                         None, os.path.basename(largest_path), os.path.basename(path)
                     ).ratio()
                     if similar_ratio > 0.7:
-                        os.remove(path)
+                        Path(path).unlink(missing_ok=True)
                         print(f"{path}: Deleted")
                     else:
                         print(path)
@@ -128,16 +129,16 @@ def group_and_delete(groups):
                             if user_input in ("k", "b", "both"):
                                 break
                             elif user_input in ("l", "left", ""):
-                                os.remove(path)
+                                Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 break
                             elif user_input in ("r", "right", ""):
                                 largest_path, path = path, largest_path
-                                os.remove(path)
+                                Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 break
                             elif user_input in ("d"):
-                                os.remove(path)
+                                Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 delete_largest_path = True
                                 break
@@ -146,7 +147,7 @@ def group_and_delete(groups):
                 else:
                     print(f"{path}: not found")
             if delete_largest_path:
-                os.remove(largest_path)
+                Path(largest_path).unlink(missing_ok=True)
                 print(f"{largest_path}: Deleted")
         else:
             print(f"Original not found: {largest_path}")
