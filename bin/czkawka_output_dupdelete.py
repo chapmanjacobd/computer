@@ -5,13 +5,22 @@ import difflib
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
+import sys
 import time
 
 from screeninfo import get_monitors
 
 
 def read_file(file_path):
+    backup_filename = file_path + ".bak"
+    if not os.path.exists(backup_filename):
+        try:
+            shutil.copy2(file_path, backup_filename)
+        except Exception as e:
+            print(f"Failed to create backup file: {e}")
+
     with open(file_path, "r") as file:
         content = file.read()
     return content
@@ -44,6 +53,21 @@ def extract_paths_and_sizes(group_content):
         paths_and_sizes.append({"path": match.split(" - ")[0], "size_mb": size_value})
     return paths_and_sizes
 
+
+def truncate_file_before_match(filename, match_string):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    matching_lines = [i for i, line in enumerate(lines) if match_string in line]
+
+    if len(matching_lines) == 1:
+        line_index = matching_lines[0]
+        with open(filename, 'w') as file:
+            file.write("".join(lines[line_index -1:]))
+        print(f"File truncated before the line containing: '{match_string}'")
+    elif len(matching_lines) == 0:
+        print(f"Match not found in the file: '{match_string}'")
+    else:
+        print(f"Multiple matches found in the file for: '{match_string}'")
 
 def launch_mpv_compare(left_side, right_side):
     # Get the size of the first connected display
@@ -91,7 +115,7 @@ def launch_mpv_compare(left_side, right_side):
         right_mpv_process.terminate()
 
 
-def group_and_delete(groups):
+def group_and_delete(args, groups):
     for group_content in groups:
         if group_content == "":
             continue
@@ -142,6 +166,11 @@ def group_and_delete(groups):
                                 print(f"{path}: Deleted")
                                 delete_largest_path = True
                                 break
+                            elif user_input in ("q"):
+                                truncate_file_before_match(args.file_path, largest_path)
+                                if delete_largest_path:
+                                    Path(largest_path).unlink(missing_ok=True)
+                                sys.exit(0)
                             else:
                                 print("Invalid input. Please type 'y', 'n', or nothing and enter")
                 else:
@@ -160,7 +189,6 @@ if __name__ == "__main__":
     parser.add_argument("file_path", help="Path to the text file containing the file list.")
     args = parser.parse_args()
 
-    file_path = args.file_path
-    content = read_file(file_path)
+    content = read_file(args.file_path)
     groups = extract_groups(content)
-    group_and_delete(groups)
+    group_and_delete(args, groups)
