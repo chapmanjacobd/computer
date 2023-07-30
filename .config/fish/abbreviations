@@ -128,3 +128,4 @@ abbr -a -- ldd readelf -d
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
 abbr -a -- gitadded 'git diff --name-status  main | grep ^A'
 abbr -a -- gitdeleted 'git diff --name-status  main | grep ^D'
+abbr -a -- timecalc2 insect
