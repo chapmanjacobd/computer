@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from IPython.core import ultratb
 from IPython.terminal.debugger import TerminalPdb
-from rich import inspect, print
+from rich import inspect, print as rprint
 from pprint import pprint
 from rich.logging import RichHandler
 

@@ -137,7 +137,7 @@ def group_and_delete(args, groups):
                     similar_ratio = difflib.SequenceMatcher(
                         None, os.path.basename(largest_path), os.path.basename(path)
                     ).ratio()
-                    if similar_ratio > 0.7:
+                    if similar_ratio > 0.7 or any(s in largest_path and s in path for s in ['Goldmines_Bollywood']):
                         Path(path).unlink(missing_ok=True)
                         print(f"{path}: Deleted")
                     else:
