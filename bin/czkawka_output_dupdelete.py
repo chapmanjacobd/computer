@@ -44,13 +44,13 @@ def extract_paths_and_sizes(group_content):
     for match in groups:
         if match == '':
             continue
-        size_str = match.split(" - ")[1]
+        size_str = match.split(" - ")[-1]
         size_value, size_unit = float(size_str.split()[0]), size_str.split()[1]
         if size_unit == "GiB":
             size_value *= 1024
         elif size_unit == "KiB":
             size_value /= 1024
-        paths_and_sizes.append({"path": match.split(" - ")[0], "size_mb": size_value})
+        paths_and_sizes.append({"path": ' - '.join(match.split(" - ")[:-1]), "size_mb": size_value})
     return paths_and_sizes
 
 
@@ -64,6 +64,7 @@ def truncate_file_before_match(filename, match_string):
         with open(filename, 'w') as file:
             file.write("".join(lines[line_index - 1 :]))
         print(f"File truncated before the line containing: '{match_string}'")
+        print(f"{len(lines[line_index - 1 :])} left to check")
     elif len(matching_lines) == 0:
         print(f"Match not found in the file: '{match_string}'")
     else:
@@ -142,27 +143,30 @@ def group_and_delete(args, groups):
                         print(f"{path}: Deleted")
                     else:
                         print(path)
-                        launch_mpv_compare(largest_path, path)
+                        if not any([args.all_keep, args.all_left,args.all_right,args.all_delete]):
+                            launch_mpv_compare(largest_path, path)
                         while True:
-                            user_input = (
-                                input(
-                                    "Names are pretty different. Keep which files? (l Left/r Right/k Keep both/d Delete both) [default: l]: "
+                            user_input=''
+                            if not any([args.all_keep, args.all_left,args.all_right,args.all_delete]):
+                                user_input = (
+                                    input(
+                                        "Names are pretty different. Keep which files? (l Left/r Right/k Keep both/d Delete both) [default: l]: "
+                                    )
+                                    .strip()
+                                    .lower()
                                 )
-                                .strip()
-                                .lower()
-                            )
-                            if user_input in ("k", "b", "both"):
+                            if args.all_keep or user_input in ("k", "b", "both"):
                                 break
-                            elif user_input in ("l", "left", ""):
+                            elif args.all_left or user_input in ("l", "left", ""):
                                 Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 break
-                            elif user_input in ("r", "right", ""):
+                            elif args.all_right or user_input in ("r", "right", ""):
                                 largest_path, path = path, largest_path
                                 Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 break
-                            elif user_input in ("d"):
+                            elif args.all_delete or user_input in ("d"):
                                 Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 delete_largest_path = True
@@ -188,6 +192,10 @@ def group_and_delete(args, groups):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Cleanup duplicate files based on their sizes.")
     parser.add_argument("file_path", help="Path to the text file containing the file list.")
+    parser.add_argument("--all-keep", action='store_true')
+    parser.add_argument("--all-left", action='store_true')
+    parser.add_argument("--all-right", action='store_true')
+    parser.add_argument("--all-delete", action='store_true')
     args = parser.parse_args()
 
     content = read_file(args.file_path)
