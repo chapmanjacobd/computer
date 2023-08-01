@@ -311,7 +311,7 @@
   "python.envFile": "${workspaceFolder}/.env",
   "python.formatting.blackArgs": ["--line-length=120"],
   "python.formatting.provider": "black",
-  "python.languageServer": "Pylance",
+  "python.languageServer": "Jedi",
   "python.linting.enabled": true,
   "python.linting.flake8Args": [
     "--max-line-length=120",
