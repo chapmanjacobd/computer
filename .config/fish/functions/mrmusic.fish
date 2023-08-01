@@ -6,6 +6,6 @@ function mrmusic
     ) /mnt/d/80_Now_Listening/
 
     lb relmv (
-        lb listen ~/lb/audio.db -E /80_Now_Listening/ --local-only --lower 4 --upper 16 -p bf | shuf | head -n 8
+        lb listen ~/lb/audio.db -E /80_Now_Listening/ --local --lower 4 --upper 16 -p bf | shuf | head -n 8
     ) /mnt/d/80_Now_Listening/
 end
