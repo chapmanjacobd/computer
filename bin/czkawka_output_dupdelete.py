@@ -36,6 +36,26 @@ def extract_groups(content):
     return groups
 
 
+def extract_info(line):
+    # Regular expressions for image style and video style
+    image_pattern = r'^(.+) - (\d+x\d+) - (\d+\.\d+) ([KMG]iB) - .+$'
+    video_pattern = r'^(.+) - (\d+\.\d+) ([KMG]iB)$'
+
+    # Check if the line matches the image style pattern
+    image_match = re.match(image_pattern, line)
+    if image_match:
+        path, resolution, size_value, size_unit = image_match.groups()
+        return path.strip(), float(size_value), size_unit
+
+    # Check if the line matches the video style pattern
+    video_match = re.match(video_pattern, line)
+    if video_match:
+        path, size_value, size_unit = video_match.groups()
+        return path.strip(), float(size_value), size_unit
+
+    raise ValueError('Could not detect file style')
+
+
 def extract_paths_and_sizes(group_content):
     paths_and_sizes = []
     groups = group_content.split("\n")
@@ -44,13 +64,13 @@ def extract_paths_and_sizes(group_content):
     for match in groups:
         if match == '':
             continue
-        size_str = match.split(" - ")[-1]
-        size_value, size_unit = float(size_str.split()[0]), size_str.split()[1]
+
+        path, size_value, size_unit = extract_info(match)
         if size_unit == "GiB":
             size_value *= 1024
         elif size_unit == "KiB":
             size_value /= 1024
-        paths_and_sizes.append({"path": ' - '.join(match.split(" - ")[:-1]), "size_mb": size_value})
+        paths_and_sizes.append({"path": path, "size_mb": size_value})
     return paths_and_sizes
 
 
@@ -88,6 +108,7 @@ def launch_mpv_compare(left_side, right_side):
             f"--geometry={mpv_width}x{monitors[0].height}+0+0",
             '--save-position-on-quit=no',
             '--no-resume-playback',
+            '--image-display-duration=inf',
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -99,6 +120,7 @@ def launch_mpv_compare(left_side, right_side):
             f"--geometry={mpv_width}x{monitors[0].height}+{mpv_width}+0",
             '--save-position-on-quit=no',
             '--no-resume-playback',
+            '--image-display-duration=inf',
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
