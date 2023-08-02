@@ -71,6 +71,7 @@ ncurses-devel
 netsniff-ng
 nomacs
 perl
+perl-CPAN
 perl-Image-ExifTool
 pg_top
 powertop
