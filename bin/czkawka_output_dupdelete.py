@@ -38,8 +38,8 @@ def extract_groups(content):
 
 def extract_info(line):
     # Regular expressions for image style and video style
-    image_pattern = r'^(.+) - (\d+x\d+) - (\d+\.\d+) ([KMG]iB) - .+$'
-    video_pattern = r'^(.+) - (\d+\.\d+) ([KMG]iB)$'
+    image_pattern = r'^(.+) - (\d+x\d+) - (\d+(?:\.\d+)?|\d+) ([KMG]iB) - .+$'
+    video_pattern = r'^(.+) - (\d+(?:\.\d+)?|\d+) ([KMG]iB)$'
 
     # Check if the line matches the image style pattern
     image_match = re.match(image_pattern, line)
