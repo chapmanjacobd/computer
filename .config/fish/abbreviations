@@ -127,4 +127,4 @@ abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --kee
 abbr -a -- ldd readelf -d
 abbr -a -- timecalc2 insect
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
-abbr -a -- iotop sudo iotop -q -u xk -P -a
+abbr -a -- iotop sudo iotop -q -u xk -P -a -n1
