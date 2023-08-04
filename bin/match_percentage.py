@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 
 def grep_file(file_path, search_term):

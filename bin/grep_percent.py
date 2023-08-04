@@ -1,5 +1,6 @@
+#!/usr/bin/python
+
 import sys
-import os
 
 def get_total_lines(file_path):
     try:
