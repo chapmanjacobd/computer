@@ -121,7 +121,6 @@ abbr -a -- mbytes bcal
 abbr -a -- bytes bcal
 abbr -a -- lsofhome 'lsof /home/ | sort -k 7 -u --human-numeric-sort'
 abbr -a -- traceroute mtr
-abbr -a -- wtv random-eval /home/xk/watch
 abbr -a -- re random-eval
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui --prefetch 4 -u duration desc, size desc --duration-from-size +180
 abbr -a -- ldd readelf -d

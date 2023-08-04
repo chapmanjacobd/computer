@@ -33,6 +33,11 @@ function _abbr_parallel
 end
 abbr -a parallel --function _abbr_parallel
 
+function _abbr_wtv
+    echo (shuf -n 1 ~/watch)
+end
+abbr -a wtv --function _abbr_wtv
+
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
 zoxide init fish | source
