@@ -117,6 +117,7 @@ util-linux
 vdpauinfo
 wine
 wmctrl
+xautomation
 xbindkeys
 xcalib
 xcb-util-cursor
