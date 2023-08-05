@@ -75,6 +75,7 @@ perl
 perl-CPAN
 perl-Image-ExifTool
 pg_top
+playerctl
 powertop
 progress
 proj-devel
