@@ -12,6 +12,7 @@ from pathlib import Path
 
 from screeninfo import get_monitors
 
+NEWLINE='\n'
 
 def read_file(file_path):
     backup_filename = file_path + ".bak"
@@ -84,7 +85,7 @@ def truncate_file_before_match(filename, match_string):
         with open(filename, 'w') as file:
             file.write("".join(lines[line_index - 1 :]))
         print(f"File truncated before the line containing: '{match_string}'")
-        print(f"{len(lines[line_index - 1 :])} left to check")
+        print(f"{sum(1 for s in lines[line_index - 1 :] if s == NEWLINE) - 2} left to check")
     elif len(matching_lines) == 0:
         print(f"Match not found in the file: '{match_string}'")
     else:
