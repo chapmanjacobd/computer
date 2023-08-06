@@ -7,3 +7,6 @@ wt -P p
 wt -r --local-media-only
 wt -P pw
 wt -O Peep Show S03E
+wt -u "ntile(1000) over (order by size) desc"
+wt -u "ntile(10000) over (order by size/duration) desc"
+wt -u "ntile(100) over (order by size) desc, duration desc"
