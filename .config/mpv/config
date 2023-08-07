@@ -30,7 +30,7 @@ screenshot-directory=~/d/90_Now_Viewing/
 screenshot-template=mpv-%F-%wH%wM_%wS.%wT
 
 save-position-on-quit
-watch-later-options-remove=pause,mute,fullscreen
+watch-later-options=vid,aid,sid,volume,start,speed,sub-visibility
 write-filename-in-watch-later-config
 
 alang=ja,jp,jpn,kr,krn,cn,ch,de,deu,ger,eng,en,enUS,en-US,English
