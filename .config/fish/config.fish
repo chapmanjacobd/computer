@@ -34,7 +34,7 @@ end
 abbr -a parallel --function _abbr_parallel
 
 function _abbr_wtv
-    echo (shuf -n 1 ~/watch)
+    echo (cat ~/watch | strip | shuf -n 1)
 end
 abbr -a wtv --function _abbr_wtv
 
