@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+
+import sys
+from subprocess import call
+import json
+import os
+import requests
+import random
+
+
+
+def download_gists(gists: list):
+    for gist in gists:
+        call(["git", "clone", gist["git_pull_url"]])
+
+        #  name of the first file in the gist
+        new_folder_name = sorted(list(gist.get("files", {}).keys()))[0].split(".")[0]
+
+        os.rename(gist["id"], new_folder_name)
+
+        description_file = os.path.join(new_folder_name, "description.txt")
+        with open(description_file, "w") as f:
+            f.write(f"{gist['description']}\n")
+
+
+def visit_pages(user: str):
+    next_page = True
+    page = 1
+    while next_page:
+        url = f"https://api.github.com/users/{user}/gists?page={page}"
+        r = requests.get(url)
+
+        if not len(r.json()):
+            next_page = False
+        else:
+            page += 1
+
+        download_gists(r.json())
+
+
+user = sys.argv[1]
+visit_pages(user)

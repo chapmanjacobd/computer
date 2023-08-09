@@ -9,7 +9,7 @@ function daily
     pip install --upgrade gallery-dl pychromecast
 
     ~/lb/
-    for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_ClassicalComposers.db reddit/95_Memes.db reddit/96_Weird_History.db
+    for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_ClassicalComposers.db
         lb redditupdate $db --lookback 2
     end
 
