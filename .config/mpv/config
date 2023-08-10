@@ -14,9 +14,7 @@ audio-display=no
 scale=ewa_lanczos
 dscale=ewa_lanczos
 linear-downscaling=no
-temporal-dither=yes
 deband=no
-interpolation=yes
 tscale=oversample
 
 input-ipc-server=~/.config/mpv/socket
