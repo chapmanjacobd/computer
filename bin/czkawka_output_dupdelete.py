@@ -180,7 +180,7 @@ def group_and_delete(args, groups):
                                 Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
                                 break
-                            elif args.all_right or user_input in ("r", "right", ""):
+                            elif args.all_right or user_input in ("r", "right"):
                                 largest_path, path = path, largest_path
                                 Path(path).unlink(missing_ok=True)
                                 print(f"{path}: Deleted")
