@@ -12,7 +12,17 @@ from pathlib import Path
 
 from screeninfo import get_monitors
 
-NEWLINE='\n'
+
+MPV_OPTIONS = [
+    '--save-position-on-quit=no',
+    '--no-resume-playback',
+    '--image-display-duration=inf',
+    '--script-opts=osc-visibility=always',
+    '--start=10%',
+]
+
+NEWLINE = '\n'
+
 
 def read_file(file_path):
     backup_filename = file_path + ".bak"
@@ -103,26 +113,12 @@ def launch_mpv_compare(left_side, right_side):
     mpv_width = display_width // 2
 
     left_mpv_process = subprocess.Popen(
-        [
-            "mpv",
-            left_side,
-            f"--geometry={mpv_width}x{monitors[0].height}+0+0",
-            '--save-position-on-quit=no',
-            '--no-resume-playback',
-            '--image-display-duration=inf',
-        ],
+        ["mpv", left_side, f"--geometry={mpv_width}x{monitors[0].height}+0+0", *MPV_OPTIONS],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     right_mpv_process = subprocess.Popen(
-        [
-            "mpv",
-            right_side,
-            f"--geometry={mpv_width}x{monitors[0].height}+{mpv_width}+0",
-            '--save-position-on-quit=no',
-            '--no-resume-playback',
-            '--image-display-duration=inf',
-        ],
+        ["mpv", right_side, f"--geometry={mpv_width}x{monitors[0].height}+{mpv_width}+0", *MPV_OPTIONS],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -166,11 +162,11 @@ def group_and_delete(args, groups):
                         print(f"{path}: Deleted")
                     else:
                         print(path)
-                        if not any([args.all_keep, args.all_left,args.all_right,args.all_delete]):
+                        if not any([args.all_keep, args.all_left, args.all_right, args.all_delete]):
                             launch_mpv_compare(largest_path, path)
                         while True:
-                            user_input=''
-                            if not any([args.all_keep, args.all_left,args.all_right,args.all_delete]):
+                            user_input = ''
+                            if not any([args.all_keep, args.all_left, args.all_right, args.all_delete]):
                                 user_input = (
                                     input(
                                         "Names are pretty different. Keep which files? (l Left/r Right/k Keep both/d Delete both) [default: l]: "
