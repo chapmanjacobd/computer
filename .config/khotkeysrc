@@ -136,7 +136,7 @@ ForegroundPositive[$d]
 ForegroundVisited[$d]
 
 [Data]
-DataCount=5
+DataCount=6
 
 [Data_1]
 Comment=KMenuEdit Global Shortcuts
@@ -798,7 +798,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_4_14Triggers0]
-Key=Alt+]
+Key=
 Type=SHORTCUT
 Uuid={4e65ea70-60ac-4eaa-a704-413d55aad127}
 
@@ -824,7 +824,7 @@ Comment=Simple_action
 TriggersCount=1
 
 [Data_4_15Triggers0]
-Key=Alt+[
+Key=
 Type=SHORTCUT
 Uuid={5f7de456-6402-45b0-b87a-6de60c92c306}
 
@@ -1437,6 +1437,70 @@ TriggersCount=1
 Key=Alt+C
 Type=SHORTCUT
 Uuid={1d365a43-7110-414a-bf4c-96d827781374}
+
+[Data_6]
+Comment=Comment
+DataCount=2
+Enabled=true
+Name=keymouse
+SystemGroup=0
+Type=ACTION_DATA_GROUP
+
+[Data_6Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_6_1]
+Comment=Comment
+Enabled=true
+Name=mouseleft
+Type=SIMPLE_ACTION_DATA
+
+[Data_6_1Actions]
+ActionsCount=1
+
+[Data_6_1Actions0]
+CommandURL=fish -c mouseleft
+Type=COMMAND_URL
+
+[Data_6_1Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_6_1Triggers]
+Comment=Simple_action
+TriggersCount=1
+
+[Data_6_1Triggers0]
+Key=Alt+[
+Type=SHORTCUT
+Uuid={d65b2674-7ac9-461c-b9fa-dfc42a404fef}
+
+[Data_6_2]
+Comment=Comment
+Enabled=true
+Name=mouseright
+Type=SIMPLE_ACTION_DATA
+
+[Data_6_2Actions]
+ActionsCount=1
+
+[Data_6_2Actions0]
+CommandURL=fish -c mouseright
+Type=COMMAND_URL
+
+[Data_6_2Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_6_2Triggers]
+Comment=Simple_action
+TriggersCount=1
+
+[Data_6_2Triggers0]
+Key=Alt+]
+Type=SHORTCUT
+Uuid={fce73a4b-fbfd-4e55-8619-0658d40b9b20}
 
 [DirSelect Dialog]
 DirSelectDialog Size[$d]

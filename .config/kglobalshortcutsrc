@@ -38,9 +38,9 @@ _k_friendly_name=Custom Shortcuts Service
 {1d365a43-7110-414a-bf4c-96d827781374}=Alt+C,none,brightnessdown
 {21118049-3012-45f3-b48c-85ce72c7d1c9}=Meta+V,none,paste terminal
 {41168343-5cde-4ad9-90a1-c4117c18d0c9}=Ctrl+Alt+W,none,castvoldown
-{4e65ea70-60ac-4eaa-a704-413d55aad127}=Alt+],none,speedup
+{4e65ea70-60ac-4eaa-a704-413d55aad127}=,none,speedup
 {56f62e05-51ca-4865-97e4-fc85a17f20ab}=Ctrl+Alt+P,none,watch no subtitle
-{5f7de456-6402-45b0-b87a-6de60c92c306}=Alt+[,none,speeddown
+{5f7de456-6402-45b0-b87a-6de60c92c306}=,none,speeddown
 {63f4d3ee-9e43-41ce-9f7b-bf86f709deb6}=none,none,videoDelete
 {6b5114b9-b799-4d0f-ab5d-41cc7102511e}=Ctrl+Alt+Shift+P,none,watch
 {6fc30b85-3a95-4c52-ab97-1bfd539a05c4}=Alt+T,none,nextDelete
@@ -58,9 +58,11 @@ _k_friendly_name=Custom Shortcuts Service
 {c1b25ca7-7394-46bc-bdbb-cbe44d6110c4}=Ctrl+Alt+[,none,speedreset
 {c1b32653-c74c-458a-b0f4-20ecd471ca31}=Alt+PgDown,none,xcalib
 {d5ac8674-44ea-4280-98f8-2fbe2c1c2ee0}=Alt+PgUp,none,xcalib-clear
+{d65b2674-7ac9-461c-b9fa-dfc42a404fef}=Alt+[,none,mouseleft
 {e4104bdd-fbf6-4567-aedb-e98eb5d14eee}=Alt+W,none,voldown
 {e556ea94-e5b6-4a86-a0c3-1d8e1e901360}=Alt+P,none,listen-toggle
 {e8d8a547-830e-4b0f-a512-9f93a2225cad}=Meta+F,none,krusader
+{fce73a4b-fbfd-4e55-8619-0658d40b9b20}=Alt+],none,mouseright
 {ff36a01f-1ecd-4cb8-ae00-386e4335d1d4}=Alt+F,none,volup
 
 [kmix]
