@@ -74,7 +74,6 @@ abbr -a -- fsadd lb fsadd
 abbr -a -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
-abbr -a -- gclone git clone --depth=1
 abbr -a -- curl curl -s
 abbr -a -- grm git reset --hard HEAD
 abbr -a -- rg rg -i --no-heading --no-line-number -j1
