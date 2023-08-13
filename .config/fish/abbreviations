@@ -127,3 +127,4 @@ abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x
 abbr -a -- iotop 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- firefox systemctl --user start firefox
+abbr -a -- syss systemctl --user status
