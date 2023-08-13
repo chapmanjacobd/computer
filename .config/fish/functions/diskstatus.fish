@@ -14,7 +14,7 @@ function diskstatus
     end
     for dev in /dev/sd*
         echo $dev
-        sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Current_Pending_Sector|Offline_Uncorrectable'
+        sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Reallocated_Event_Count|Current_Pending_Sector|Offline_Uncorrectable'
     end
     lb mu /mnt/d{1,2,3,4,5,6,7}
 end
