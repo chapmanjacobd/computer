@@ -126,3 +126,4 @@ abbr -a -- timecalc2 insect
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
 abbr -a -- iotop 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
+abbr -a -- firefox systemctl --user start firefox
