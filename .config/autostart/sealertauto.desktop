@@ -1,0 +1,11 @@
+[Desktop Entry]
+Comment=View & interpret SELinux denials
+Encoding=UTF-8
+Exec=/usr/bin/seapplet
+Hidden=true
+Icon=setroubleshoot_icon
+Name=SELinux Troubleshooter
+StartupNotify=false
+Type=Application
+X-GNOME-Autostart-enabled=false
+X-KDE-autostart-after=panel
