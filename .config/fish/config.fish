@@ -3,7 +3,6 @@ status job-control full
 bass source /etc/profile
 
 set NPM_PACKAGES "$HOME/.npm-packages"
-set PATH $PATH $NPM_PACKAGES/bin
 fzf_configure_bindings --variables
 
 bind \e\[1\;5C forward-bigword
