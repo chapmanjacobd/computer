@@ -37,6 +37,11 @@ function _abbr_wtv
 end
 abbr -a wtv --function _abbr_wtv
 
+function _abbr_ltv
+    echo (cat ~/listen | strip | shuf -n 1)
+end
+abbr -a ltv --function _abbr_ltv
+
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
 zoxide init fish | source
