@@ -18,6 +18,7 @@ function daily
     ~
     sync_history
     # command trash-empty 10 -f
+    library tildes ~/d/30_Computing/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
     lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 
     if not pgrep ffmpeg >/dev/null
