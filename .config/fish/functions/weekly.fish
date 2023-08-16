@@ -13,6 +13,10 @@ function weekly
     #dla
     wait
 
+    ~/d/30_Computing/
+    reddit-user-to-sqlite user BuonaparteII
+    lb mergedbs --pk id ~/d/30_Computing/BuonaparteII.db reddit.db
+
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/audio.db ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_ClassicalComposers.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/63_Sounds.db ~/lb/reddit/63_Sounds.db
