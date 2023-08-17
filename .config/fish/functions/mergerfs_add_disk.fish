@@ -1,6 +1,6 @@
 # Defined interactively
 function mergerfs_add_disk --argument part label
-    sudo mkfs.btrfs -R free-space-tree -m dup -d single $part -L $label # ie. d1
+    sudo mkfs.btrfs -m dup -d single $part -L $label # ie. d1
     kitty fish -c fstab
     sudo btrfs inspect-internal dump-super -f $part | sudo tee /mnt/superblocks/$label
 
