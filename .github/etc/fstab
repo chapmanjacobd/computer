@@ -24,5 +24,8 @@ UUID=36971ca5-ca2b-454c-b5f0-008c69df0401  /mnt/d4                 btrfs   defau
 UUID=1aa58ff5-3d27-4660-a344-6e13058db12b  /mnt/d5                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 UUID=cad21fd5-09e2-4971-8b6e-513149a69ee5  /mnt/d6                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 UUID=24c52e4d-82bd-4a03-8d67-cb86d6101f2e  /mnt/d7                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
+UUID=73de9464-09c5-4f68-8797-81b7308c446f  /mnt/d8                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
+UUID=37a53dfa-d5d9-497f-89ad-196881db1d9e  /mnt/d9                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 
-/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7   /mnt/d   mergerfs   defaults,fsname=mergerfs1,cache.files=partial,dropcacheonclose=true,cache.readdir=true,cache.entry=80,cache.attr=80,cache.statfs=16,func.getattr=newest,moveonenospc=true,minfreespace=40G,threads=15,category.create=pfrd,readahead=1024   0 0
+# /mnt/d1 d3
+/mnt/d2:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,cache.files=partial,dropcacheonclose=true,cache.readdir=true,cache.entry=80,cache.attr=80,cache.statfs=16,func.getattr=newest,moveonenospc=true,minfreespace=40G,threads=15,category.create=pfrd,readahead=1024   0 0
