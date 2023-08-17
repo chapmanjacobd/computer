@@ -17,10 +17,10 @@ function weekly
     reddit-user-to-sqlite user BuonaparteII
     for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from comments' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|' | tr / '#')
         set comment_id (string split '#' -f2 $title)
-        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from comments where permalink like '%$comment_id%'" > $title.md
+        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from comments where permalink like '%$comment_id%'" >$title.md
     end
     for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from posts' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|')
-        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" > $title.md
+        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
     end
     fd -S-12b -tf -x rm
     lb mergedbs --pk id ~/d/30_Computing/BuonaparteII.db ~/d/30_Computing/reddit.db

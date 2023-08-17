@@ -1,6 +1,6 @@
 # Defined interactively
 function diskstatus
-    for mnt in / /mnt/d1 /mnt/d2 /mnt/d3 /mnt/d4 /mnt/d5 /mnt/d6 /mnt/d7
+    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9}
         echo
         echo MOUNTPOINT: $mnt
         echo ---
@@ -12,9 +12,9 @@ function diskstatus
         echo ---
         echo
     end
-    for dev in /dev/sd*
-        echo $dev
-        sudo smartctl -A $dev | grep -E 'Reallocated_Sector_Ct|Reallocated_Event_Count|Current_Pending_Sector|Offline_Uncorrectable'
-    end
-    lb mu /mnt/d{1,2,3,4,5,6,7}
+
+    smartls Power_On_Hours Power_Cycle_Count Load_Cycle_Count
+    smartls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
+
+    lb mu /mnt/d{1,2,3,4,5,6,7,8,9}
 end
