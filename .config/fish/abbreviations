@@ -75,7 +75,6 @@ abbr -a -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
 abbr -a -- curl curl -s
-abbr -a -- grm git reset --hard HEAD
 abbr -a -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -- sys sudo systemctl
 abbr -a -- bootlogs journalctl -r -b -1
@@ -128,3 +127,4 @@ abbr -a -- iotop 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- firefox systemctl --user start firefox
 abbr -a -- syss journalctl --user -xn 999999 -u
+abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
