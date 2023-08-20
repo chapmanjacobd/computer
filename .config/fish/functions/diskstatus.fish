@@ -13,7 +13,7 @@ function diskstatus
         echo
     end
 
-    smartls Power_On_Hours Power_Cycle_Count Load_Cycle_Count
+    smartls Power_On_Hours Power_Cycle_Count Load_Cycle_Count UDMA_CRC_Error_Count
     smartls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
 
     lb mu /mnt/d{1,2,3,4,5,6,7,8,9}
