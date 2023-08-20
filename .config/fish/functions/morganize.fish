@@ -8,7 +8,7 @@ function morganize
         sort --unique --stable --ignore-case $f | sed '/^$/d' | sponge $f
     end
 
-    for f in (git --git-dir=/home/xk/j/.git/ ls-files | sed "s|^|/home/xk/j/|" | grep -i favorite) (fd -elist . ~/j/)
+    for f in (fd -elist . ~/j/)
         s sorted "$f"
     end
 end
