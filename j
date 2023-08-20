@@ -1,1 +1,0 @@
-/home/xk/d/00_Metadata/journal/
