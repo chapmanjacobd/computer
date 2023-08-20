@@ -1,5 +1,5 @@
 # Defined via `source`
-function e
+function edit
     set sp (path normalize ~/.github/"$argv")
 
     sudo nano "$argv"
