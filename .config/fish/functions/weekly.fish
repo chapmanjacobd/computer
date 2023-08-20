@@ -13,7 +13,7 @@ function weekly
     #dla
     wait
 
-    ~/j/computing/
+    ~/j/social/
     reddit-user-to-sqlite user BuonaparteII
     for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from comments' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|' | tr / '#')
         set comment_id (string split '#' -f2 $title)
