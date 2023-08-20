@@ -128,3 +128,4 @@ abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- firefox systemctl --user start firefox
 abbr -a -- syss journalctl --user -xn 999999 -u
 abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
+abbr -a -- gitrm git rm --cached
