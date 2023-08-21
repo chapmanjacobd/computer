@@ -9,4 +9,5 @@ function keepvid
     cp "$argv[1]" ~/d/77_Library/
     ffsmall "$HOME/d/77_Library/$f" $argv[2..-1]
     and /bin/rm "$argv[1]" "$HOME/d/77_Library/$f"
+    ln -s "$HOME/d/77_Library/$f" "$argv[1]"
 end
