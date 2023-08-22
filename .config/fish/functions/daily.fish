@@ -24,7 +24,7 @@ function daily
     for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/tildes.db 'select path from media' | sed 's|.*\(/\)||' | strip)
         sqlite --no-headers --raw-lines ~/d/30_Computing/tildes.db "select text from media where path like '%$title'" >$title.html
     end
-    fd -S-200b -tf -x rm
+    fd -S-12b -tf -x rm
 
     lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 
