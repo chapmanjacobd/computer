@@ -2,6 +2,9 @@
 function magnets
     rmdir ~/.local/Downloads/*** 2>/dev/null
 
+    combine ~/.local/magnets not ~/.local/magnets_history | sponge ~/.local/magnets
+    cat ~/.local/magnets >> ~/.local/magnets_history
+
     if test $DISPLAY = ':1001'
         pgrep tixati >/dev/null
         set tixati_is_running $status
