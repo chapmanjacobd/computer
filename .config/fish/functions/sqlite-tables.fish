@@ -1,4 +1,9 @@
 # Defined interactively
 function sqlite-tables
-    sqlite-utils tables --tsv $argv | tail -n +2
+    for table in (sqlite-utils tables --tsv $argv | tail -n +2)
+        if not string match -q '*_fts_*' $table; and not string match -q '*_fts' $table; and not string match -q sqlite_stat1 $table
+            echo $table
+        end
+    end
+
 end
