@@ -29,6 +29,7 @@ function weekly
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/63_Sounds.db ~/lb/reddit/63_Sounds.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/tax.db ~/lb/reddit/69_Taxes.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/91_New_Art.db ~/lb/reddit/91_New_Art.db
 
     ~/lb/
     for db in reddit/61_Photos_Unsorted.db
