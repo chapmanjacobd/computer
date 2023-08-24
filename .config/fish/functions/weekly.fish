@@ -42,5 +42,11 @@ function weekly
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
     end
 
+    for db in (fd -HI -edb -E tests -E examples -E reddit)
+        set tmp_bak ~/.jobs/(path basename $db)
+        sqlite3 "$db" ".backup '$tmp_bak'"
+        mv "$tmp_bak" /home/xk/d/23_LinkMining/
+    end
+
     dbackups
 end
