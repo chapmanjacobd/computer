@@ -1,13 +1,7 @@
-function dlstatus
-    echo audio.db
-    lb-dev ds ~/lb/audio.db
-    echo
-
-    echo video.db
-    lb-dev ds ~/lb/video.db
-    echo
-
-    echo fs/tax.db
-    lb-dev ds ~/lb/fs/tax.db
-    echo
+# Defined interactively
+function dlstatus --argument db
+    lb wt -w time_downloaded\>(timestamp 24 hours ago) -pa $db
+    lb ds $db
+    lb history --freqency weekly $db downloaded
+    # lsodl
 end
