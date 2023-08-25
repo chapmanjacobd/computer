@@ -1,4 +1,4 @@
 # Defined interactively
-function gsgdal
+function gsgdalinfo
     gdalinfo (string replace gs:// /vsigs/ -- $argv)
 end
