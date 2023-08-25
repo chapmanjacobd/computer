@@ -44,7 +44,7 @@ function weekly
 
     for db in (fd -HI -edb -E tests -E examples -E reddit)
         set tmp_bak ~/.jobs/(path basename $db)
-        sqlite3 "$db" ".backup '$tmp_bak'"
+        sqlite3 "$db" ".backup '$tmp_bak'"  # alternatively use VACUUM main INTO
         mv "$tmp_bak" /home/xk/d/23_LinkMining/
     end
 
