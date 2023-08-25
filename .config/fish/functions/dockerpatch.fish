@@ -1,6 +1,6 @@
-# Defined interactively
+# Defined via `source`
 function dockerpatch
-    docker run -it -v (pwd):/pwd $argv[1] /bin/bash
+    docker run -it -v (pwd):/wd $argv[1] /bin/bash
 
     set container_id (docker container ls -lq)
     docker commit $container_id $argv[2]
