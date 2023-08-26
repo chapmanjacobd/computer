@@ -14,7 +14,11 @@ data = json.load(args.file)
 
 rows = []
 for item in data:
-  pods = item["status"]["nodes"].values()
+  pods = []
+  try:
+    pods = item["status"]["nodes"].values()
+  except KeyError:
+    pass
 
   last_succeeded_pod = None
   try:
