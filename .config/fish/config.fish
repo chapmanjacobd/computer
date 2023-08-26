@@ -27,6 +27,11 @@ function _abbr_zip
 end
 abbr -a zip --function _abbr_zip
 
+function _abbr_cbargs
+    echo (cb | string join ' ' | string replace '⏎' '')
+end
+abbr -a cbargs --function _abbr_cbargs
+
 function _abbr_parallel
     echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed
 end
