@@ -41,6 +41,7 @@ for item in data:
     rows.append(
         {
             "Name": item["metadata"]["name"],
+            "Status": item["metadata"]["status"],
             "Progress": item["status"]["progress"],
             "Started At": item["status"]["startedAt"],
             "Last Succeeded Pod": last_succeeded_pod["displayName"] + " - " + last_succeeded_pod["templateName"],
