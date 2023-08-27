@@ -493,5 +493,6 @@
   "blockman.n20CustomColorOfDepth0Border": "none",
   "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
   "blockman.n16EnableFocus": false,
-  "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old"
+  "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
+  "python.defaultInterpreterPath": "/usr/bin/python"
 }
