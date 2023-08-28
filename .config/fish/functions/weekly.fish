@@ -13,8 +13,9 @@ function weekly
     #dla
     wait
 
-    ~/j/social/
+    ~/d/30_Computing/
     reddit-user-to-sqlite user BuonaparteII
+    ~/j/social/
     for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from comments' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|' | tr / '#')
         set comment_id (string split '#' -f2 $title)
         sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from comments where permalink like '%$comment_id%'" >$title.md
