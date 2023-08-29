@@ -8,7 +8,7 @@ function mvl --description 'move lines'
 
     if set -q _flag_help
         echo "Move lines of text from one file to another"
-        echo "example: mvl -s'you are my crush' oedipus.txt jocasta.txt"
+        echo "example: mvl -s'baz' foo.txt bar.txt"
         return 0
     end
 
