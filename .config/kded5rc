@@ -19,10 +19,16 @@ autoload=true
 [Module-device_automounter]
 autoload=true
 
+[Module-dnssdwatcher]
+autoload=true
+
 [Module-freespacenotifier]
 autoload=true
 
 [Module-gtkconfig]
+autoload=true
+
+[Module-inotify]
 autoload=true
 
 [Module-kded_accounts]
@@ -34,6 +40,9 @@ autoload=false
 [Module-kded_dnssdwatcher]
 autoload=true
 
+[Module-kded_touchpad]
+autoload=true
+
 [Module-keyboard]
 autoload=true
 
@@ -41,7 +50,7 @@ autoload=true
 autoload=true
 
 [Module-kscreen]
-autoload=true
+autoload=false
 
 [Module-ksysguard]
 autoload=true
@@ -58,6 +67,12 @@ autoload=true
 [Module-networkstatus]
 autoload=true
 
+[Module-plasma_accentcolor_service]
+autoload=true
+
+[Module-plasmavault]
+autoload=true
+
 [Module-printmanager]
 autoload=true
 
@@ -65,6 +80,9 @@ autoload=true
 autoload=true
 
 [Module-remotenotifier]
+autoload=true
+
+[Module-smart]
 autoload=true
 
 [Module-smbwatcher]
