@@ -5,6 +5,7 @@ catt
 cython
 daff
 datasette
+filprofiler
 frogmouth
 fsspec
 gallery-dl
