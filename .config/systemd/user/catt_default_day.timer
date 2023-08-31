@@ -7,4 +7,3 @@ OnCalendar=*-*-* 06:15:00
 
 [Install]
 WantedBy=timers.target
-

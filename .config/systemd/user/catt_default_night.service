@@ -5,6 +5,4 @@ Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
-ExecStartPre=/bin/sleep 600
 ExecStart='/usr/bin/fish' '-c' 'git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom pair"'
-
