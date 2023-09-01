@@ -4,6 +4,7 @@ function sync_history
     count ~/.local/share/fish/fish_history.sync-conflict-* >/dev/null; and trash-put ~/.local/share/fish/fish_history.sync-conflict-*
 
     cp ~/.local/share/fish/fish_history ~/d/00_Metadata/SECURE/
+    count ~/d/00_Metadata/SECURE/fish_history.sync-conflict-* >/dev/null; and trash-put ~/d/00_Metadata/SECURE/fish_history.sync-conflict-*
 
     # copyq ?
     fd -HI sync-conflict -x rm
