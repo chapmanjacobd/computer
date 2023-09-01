@@ -7,7 +7,7 @@ function forganize
     #trash-size
     #trash-empty
 
-    library christen -v ~/d/*
+    library christen -r ~/d/*
 
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
