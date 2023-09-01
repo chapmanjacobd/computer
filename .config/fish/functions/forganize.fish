@@ -7,7 +7,9 @@ function forganize
     #trash-size
     #trash-empty
 
-    library christen -r ~/d/*
+    for m in /mnt/d{1,2,3,4,5,6,7,8,9}/*
+        echo library christen -r "$m" -v
+    end | parallel --shuf
 
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
