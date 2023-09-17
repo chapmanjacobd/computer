@@ -1,2 +1,10 @@
+[General]
+ttsVoice=Sindarin+grandma
+
 [PageView]
+BackgroundColor=185,167,149
 MouseMode=TextSelect
+UseCustomBackgroundColor=true
+
+[Reviews]
+QuickAnnotationTools=<tool name="Yellow Highlighter" type="highlight" default="true" id="1"><engine color="#ffff00" type="TextSelector"><annotation color="#ffffff00" type="Highlight"/></engine><shortcut>1</shortcut></tool>,<tool name="Green Highlighter" type="highlight" default="true" id="2"><engine color="#00ff00" type="TextSelector"><annotation color="#ff00ff00" type="Highlight"/></engine><shortcut>2</shortcut></tool>,<tool type="underline" id="3"><engine color="#ff0000" type="TextSelector"><annotation color="#ffff0000" type="Underline"/></engine><shortcut>3</shortcut></tool>,<tool name="Insert Text" type="typewriter" default="true" id="4"><engine block="true" type="PickPoint"><annotation color="#00ffffff" textColor="#000000" width="0" type="Typewriter"/></engine><shortcut>4</shortcut></tool>,<tool type="note-inline" id="5"><engine color="#ffff00" block="true" hoverIcon="tool-note-inline" type="PickPoint"><annotation color="#ffffff00" textColor="#ff000000" type="FreeText"/></engine><shortcut>5</shortcut></tool>,<tool type="note-linked" id="6"><engine color="#ffff00" hoverIcon="tool-note" type="PickPoint"><annotation color="#ffffff00" type="Text" icon="Note"/></engine><shortcut>6</shortcut></tool>
