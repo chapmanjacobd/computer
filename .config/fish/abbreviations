@@ -131,3 +131,4 @@ abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
 abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cbfile
+abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
