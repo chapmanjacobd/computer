@@ -132,3 +132,4 @@ abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cbfile
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
+abbr -a -- inotify kde-inotify-survey
