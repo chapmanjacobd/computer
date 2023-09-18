@@ -13,7 +13,7 @@ function forganize
 
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
-    refreshLibrary
+    lb-refresh
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/69_Taxes_Keep/ -pf | xargs -P 20 -I{} rm {}
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
