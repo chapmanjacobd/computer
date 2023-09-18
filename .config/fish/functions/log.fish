@@ -1,3 +1,3 @@
-function log
-    journalctl --since "5 minutes ago" $argv | grep -v -E 'postfix|Firewall|pam|syncthing|ddcutil' | less -FSRXc
+function log -w journalctl
+    journalctl --no-hostname --reverse $argv | grep -v -E 'postfix|Firewall|pam|libva|kioslave|ddcutil' | less -FSRXc
 end

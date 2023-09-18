@@ -58,7 +58,7 @@ abbr -a -- szu 'sudo zypper dup'
 abbr -a -- ta 'lb tabsadd --frequency quarterly --category misc ~/lb/tabs.db'
 abbr -a -- td tempdir
 abbr -a -- tee 'tee -a'
-abbr -a -- timers 'systemctl --user list-timers --all --no-pager | head -n -2'
+abbr -a -- timers 'systemctl --user list-timers --all --no-pager --no-legend'
 abbr -a -- tmux 'tmux new-session -A -s phone'
 abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -- wts 'wt -p -u duration -s'
@@ -126,10 +126,10 @@ abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x
 abbr -a -- iotop 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- firefox systemctl --user start firefox
-abbr -a -- syss journalctl --user -xn 999999 -u
 abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
 abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cbfile
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- inotify kde-inotify-survey
+abbr -a -- syss timer-status
