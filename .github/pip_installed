@@ -17,6 +17,7 @@ google-cloud-bigquery
 google-cloud-secret-manager
 google-cloud-storage
 humanize
+ics
 ipdb
 ipython
 isort
