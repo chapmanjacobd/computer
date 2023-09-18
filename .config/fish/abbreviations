@@ -133,3 +133,4 @@ abbr -a -- cbf cbfile
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- inotify kde-inotify-survey
 abbr -a -- syss timer-status
+abbr -a -- dl eval-shuf-repeat
