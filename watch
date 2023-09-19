@@ -14,5 +14,5 @@ wt -u "ntile(10000) over (order by size/duration) desc"
 wt -u same-duration same-title
 wt -u same-time_uploaded same-view_count
 wt Mohanagar -O
-wt ~/d/75_MovieQueue/from_backup/ -d-30 -O
+wt ~/d/75_Moviequeue/from_backup/ -d-30 -O
 wt 70_Now_Watching
