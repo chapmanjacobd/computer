@@ -1,0 +1,14 @@
+[Unit]
+Description=pakon tunnel
+After=network.target network-online.target NetworkManager-wait-online.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -fNT -R localhost:7070:localhost:22 pakon
+KillMode=process
+Restart=always
+RestartSec=5
+SyslogIdentifier=autossh@pakon
+
+[Install]
+WantedBy=default.target

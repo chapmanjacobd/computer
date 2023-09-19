@@ -11,7 +11,7 @@ Description='On $cal run $cmd'
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
-ExecStartPre=/bin/sleep 600
+ExecStartPre=/bin/sleep 100
 ExecStart='/usr/bin/fish' '-c' '$cmd'
 " >~/.config/systemd/user/$unit.service
 
@@ -26,6 +26,7 @@ OnCalendar=$cal
 WantedBy=timers.target
 " >~/.config/systemd/user/$unit.timer
 
+    touch ~/.local/share/systemd/timers/stamp*$unit*.timer
     systemctl --user daemon-reload
     systemctl --user enable --now $unit.timer
     systemctl --user list-timers --no-pager --all
