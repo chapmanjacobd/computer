@@ -10,7 +10,8 @@ function weekly
     pip install --upgrade yt-dlp gallery-dl praw xklb
 
     tubeupdate
-    #dla
+    eval-shuf-repeat ~/.jobs/dl_video.sh
+    eval-shuf-repeat ~/.jobs/dl_audio.sh
     wait
 
     ~/d/30_Computing/
