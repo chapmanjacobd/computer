@@ -10,13 +10,13 @@ function fdupe
     czkawka_output_dupdelete.py ~/Downloads/61_Photos_Unsorted_dupes --all-left
 
     set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_ClassicalComposers/ ~/d/85_Inspiration/
-    for dir in $photo_dirs
+    for dir in $audio_dirs
         $dir/
         czkawka music -d (pwd) >~/Downloads/(path basename $dir)_dupes
     end
 
     set video_dirs ~/d/69_Taxes/ ~/d/71_Mealtime_Videos ~/d/72_Education ~/d/73_Entertainment ~/d/75_Moviequeue ~/d/76_CityVideos
-    for dir in $photo_dirs
+    for dir in $video_dirs
         $dir/
         czkawka video -d (pwd) >~/Downloads/(path basename $dir)_dupes
     end
