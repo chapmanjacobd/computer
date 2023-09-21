@@ -62,6 +62,7 @@ starlette
 subliminal
 tables
 textract
+torrentool
 tqdm
 unzip-http
 vcrpy
