@@ -51,3 +51,6 @@ sudo systemctl set-default multi-user.target
 sudo systemctl disable --now sysstat
 sudo systemctl disable --now sysstat-collect.timer
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd
+
