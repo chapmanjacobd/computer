@@ -47,6 +47,7 @@ pytest-icdiff
 python-dateutil
 python_mpv_jsonipc
 pyupgrade
+pyvirtualdisplay
 radian
 rich
 ruff
