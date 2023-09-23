@@ -20,13 +20,22 @@ skiptaskbarrule=2
 wmclass=projectM-pulseaudio
 wmclassmatch=1
 
+[3]
+Description=Settings for firefox
+minimize=true
+minimizerule=3
+position=0,0
+positionrule=3
+wmclass=firefox
+wmclassmatch=1
+
 [General]
 ColorScheme[$d]
 count=2
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2
+rules=1,2,3
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
