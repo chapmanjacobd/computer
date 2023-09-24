@@ -31,7 +31,7 @@ wmclassmatch=1
 
 [General]
 ColorScheme[$d]
-count=2
+count=3
 fixed[$d]
 font[$d]
 menuFont[$d]
