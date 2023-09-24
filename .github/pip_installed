@@ -39,6 +39,7 @@ pipdeptree
 pipx
 praw
 pur
+puremagic
 pyarrow
 PyExifTool
 pylint
