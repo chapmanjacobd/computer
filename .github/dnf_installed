@@ -130,6 +130,7 @@ xdg-desktop-portal-kde
 xdotool
 xinput
 xorg-x11-drv-amdgpu
+xorg-x11-server-Xvfb
 xournal
 xset
 yank

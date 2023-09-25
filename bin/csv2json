@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for file in $@; do python -c "import csv,json,fileinput; print(json.dumps(list(csv.reader(fileinput.input()))))" "$file" 1> "${file%%csv}json";
+
+done;
