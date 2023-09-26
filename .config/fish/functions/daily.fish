@@ -3,9 +3,7 @@ function daily
     popline ~/.gitignore
     popline ~/j/.gitignore
 
-    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:d/_tixati/ ~/d/75_Moviequeue/from_backup/
-    fd '^[a-zA-Z]{3,}-[0-9]{3,5}' -x mv {} /mnt/d/69_Taxes/onejav/
-    fd '[a-zA-Z]{3,5}-?[0-9]{3}' -x mv {} /mnt/d/69_Taxes/onejav/
+    copy_to_pakon
 
     lb relmv /mnt/d/70_Now_Watching/Keep/* /mnt/d/77_Library/
 
