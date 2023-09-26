@@ -4,7 +4,7 @@ function dorganize
 
     fd -eZIP -eRAR -e7z -x bash -c 'unar "{}" && rm "{}"'
 
-    fd -d1 -eEPUB -edjvu -x mv "{}" ~/d/50_eBooks/
+    fd -d1 -eEPUB -edjvu -x mv "{}" ~/d/50_Ebooks/
     fd -d1 -eHTML -ePDF -x mv "{}" ~/d/53_Scrapbook_Web/
 
     fd -d1 -eJPEG -x mv "{}" {.}.jpg
