@@ -125,7 +125,7 @@ local SCRIPT_NAME = "mpv-splice"
 
 local splice_options = {
 	tmp_location = "/tmp/XXXX",
-	output_location = '/mnt/d/79_Cinemagraph/Clips/mpv' or mp.get_property("working-directory")
+	output_location = '/mnt/d/79_Cinemagraph/clips/mpv' or mp.get_property("working-directory")
 }
 opt.read_options(splice_options, SCRIPT_NAME)
 
