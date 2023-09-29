@@ -16,7 +16,6 @@ function trash-empty
 
     if gum confirm --default=no 'Empty trash?'
         command trash-empty -f
-    end
 
     # if gum confirm --default=no 'Refresh snapshots?'
         for mnt in $argv
@@ -25,6 +24,6 @@ function trash-empty
         end
         wait
     # end
-
+    end
 
 end
