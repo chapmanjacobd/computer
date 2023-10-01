@@ -3,7 +3,7 @@ Description=/usr/bin/fish -c weekly
 
 [Timer]
 Persistent=yes
-OnCalendar=weekly
+OnCalendar=Sun *-*-8..30
 RandomizedDelaySec=1h 30min
 
 [Install]
