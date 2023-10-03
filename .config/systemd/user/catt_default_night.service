@@ -1,8 +1,8 @@
 [Unit]
-Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom pair"'
+Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom"'
 
 [Service]
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
-ExecStart='/usr/bin/fish' '-c' 'git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom pair"'
+ExecStart='/usr/bin/fish' '-c' 'git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom"'

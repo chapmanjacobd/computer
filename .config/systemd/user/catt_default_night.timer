@@ -1,5 +1,5 @@
 [Unit]
-Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom pair"'
+Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom"'
 
 [Timer]
 Persistent=yes
