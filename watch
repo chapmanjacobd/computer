@@ -2,7 +2,7 @@
 wt 'Mary Hartman' S01 -u path
 wt -d+4h -P pt
 wt -l inf -r -B --folder-size=-100Gi --folder-size=+12Gi
-wt -O Peep Show S07E
+wt Peep Show -OOO
 wt -P fo
 wt -P o
 wt -P pt
