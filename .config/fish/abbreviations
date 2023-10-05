@@ -137,3 +137,4 @@ abbr -a -- re eval-random
 abbr -a -- random-eval eval-random
 abbr -a -- er eval-random
 abbr -a -- refreshLibrary lb-refresh
+abbr -a -- abspath lsdir
