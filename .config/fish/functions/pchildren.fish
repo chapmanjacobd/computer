@@ -1,4 +1,4 @@
 # Defined interactively
 function pchildren
-    pstree -la (pgrep -n $argv)
+    pstree -lap (pgrep -n $argv)
 end
