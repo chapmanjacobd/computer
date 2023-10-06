@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import argparse
+import re
+
 
 def grep_file(file_path, search_term):
     try:
@@ -21,6 +23,16 @@ def grep_file(file_path, search_term):
     except FileNotFoundError:
         print("Error: File not found.")
 
+
+def print_matches(file_path, search_term):
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+        total_lines = len(lines)
+        for i, line in enumerate(lines):
+            if re.search(search_term, line):
+                print('\t'.join([f"L{i+1} / {total_lines}", f"{round((i+1)/total_lines*100, 2)}%", line.strip()]))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Search for a term in a file and print the percentage of occurrences.")
     parser.add_argument("file_path", help="Path to the file to search.")
@@ -28,4 +40,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    print_matches(args.file_path, args.search_term)
     grep_file(args.file_path, args.search_term)
