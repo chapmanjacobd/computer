@@ -9,3 +9,5 @@ echo keyup Alt_L | xte
 echo keyup Alt_R | xte
 echo keyup Super_L | xte
 echo keyup Super_R | xte
+xset r on
+
