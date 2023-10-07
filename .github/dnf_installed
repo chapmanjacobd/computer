@@ -7,6 +7,7 @@ blas-devel
 bottles
 btrfs-progs
 cargo
+cheat
 chromium
 code
 codium
@@ -114,6 +115,7 @@ systemtap
 tesseract
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
+tldr
 translate-shell
 trash-cli
 udunits2-devel
