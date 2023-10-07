@@ -1,6 +1,6 @@
 # Defined via `source`
 function manual
-    cheat $argv
+    cheat $argv | cat
     tldr $argv
     if confirm 'Open full manual?'
         man $argv
