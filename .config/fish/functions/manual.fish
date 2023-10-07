@@ -1,7 +1,7 @@
-# Defined interactively
+# Defined via `source`
 function manual
-    tldr $argv
     cheat $argv
+    tldr $argv
     if confirm 'Open full manual?'
         man $argv
     end
