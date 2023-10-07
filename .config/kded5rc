@@ -11,10 +11,10 @@ autoload=false
 autoload=false
 
 [Module-colorcorrectlocationupdater]
-autoload=true
+autoload=false
 
 [Module-colord]
-autoload=true
+autoload=false
 
 [Module-device_automounter]
 autoload=true
