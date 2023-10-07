@@ -139,3 +139,4 @@ abbr -a -- er eval-random
 abbr -a -- refreshLibrary lb-refresh
 abbr -a -- abspath lsdir
 abbr -a -- mv-ln mvln
+abbr -a -- man manual
