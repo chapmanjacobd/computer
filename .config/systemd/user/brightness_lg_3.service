@@ -1,10 +1,10 @@
 [Unit]
-Description='On *-*-* 19:25:00 run setLGBrightness 1'
+Description='On *-*-* 19:25:00 run brightness_lg_set 1'
 
 [Service]
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 600
-ExecStart='/usr/bin/fish' '-c' 'setLGBrightness 1'
+ExecStart='/usr/bin/fish' '-c' 'brightness_lg_set 1'
 

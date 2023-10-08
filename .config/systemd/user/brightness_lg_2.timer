@@ -1,5 +1,5 @@
 [Unit]
-Description='On *-*-* 11:00:00 run setLGBrightness 30'
+Description='On *-*-* 11:00:00 run brightness_lg_set 30'
 
 [Timer]
 Persistent=yes
