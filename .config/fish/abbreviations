@@ -104,7 +104,6 @@ abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
 abbr -a -- py python
 abbr -a -- ipy ipython --pdb
-abbr -a -- gds 'git diff --staged; git status; git diff --staged --stat'
 abbr -a -- sql sqlite --no-headers --raw-lines
 abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/video.db
 abbr -a -- erm xargs -P 20 '-I{}' rm '{}'
@@ -140,3 +139,4 @@ abbr -a -- refreshLibrary lb-refresh
 abbr -a -- abspath lsdir
 abbr -a -- mv-ln mvln
 abbr -a -- man manual
+abbr -a -- gds 'git diff --staged; git status --untracked-files; git diff --staged --stat'
