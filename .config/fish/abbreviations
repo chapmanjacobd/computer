@@ -98,7 +98,6 @@ abbr -a -- sshh ssh\ pakon\ -t\ tmux\ new-session\ -A\ -s\ phone\ \"\'fish\ -c\ 
 abbr -a -- dragondrop dragondrop --on-top --all-compact
 abbr -a -- expand string\ split\ \'\ \'
 abbr -a -- ch clean_home
-abbr -a -- gd 'git diff; git status; git diff --stat'
 abbr -a -- ytda 'lb dladd ~/lb/audio.db'
 abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
@@ -139,4 +138,5 @@ abbr -a -- refreshLibrary lb-refresh
 abbr -a -- abspath lsdir
 abbr -a -- mv-ln mvln
 abbr -a -- man manual
-abbr -a -- gds 'git diff --staged; git status --untracked-files; git diff --staged --stat'
+abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
+abbr -a -- gd 'git diff; git diff --stat'
