@@ -141,3 +141,4 @@ abbr -a -- man manual
 abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
 abbr -a -- gd 'git diff; git diff --stat'
 abbr -a -- mod_up clear_mod_keys.sh
+abbr -a -- tmpdir mkcdtemp
