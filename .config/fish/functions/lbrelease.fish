@@ -8,7 +8,7 @@ function lbrelease --argument oldver newver
     rg db.execute
 
     lbformat
-    python readme.py >README.md
+    python .github/readme.py > .github/README.md
     git reset tests/cassettes/
     git restore tests/cassettes/
     if wipm $newver
