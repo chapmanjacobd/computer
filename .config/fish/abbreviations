@@ -143,3 +143,4 @@ abbr -a -- mod_up clear_mod_keys.sh
 abbr -a -- tmpdir mkcdtemp
 abbr -a -- ytda 'lb dladd ~/lb/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
+abbr -a -- ytdn 'ytdn (cb)'
