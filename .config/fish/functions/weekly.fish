@@ -1,4 +1,5 @@
 function weekly
+    dbackups
     trash ~/d/.stversions/*
 
     mrmusic
@@ -8,10 +9,6 @@ function weekly
     morganize
 
     pip install --upgrade yt-dlp gallery-dl praw xklb
-
-    eval-shuf-repeat ~/.jobs/dl_video.sh
-    eval-shuf-repeat ~/.jobs/dl_audio.sh
-    wait
 
     ~/d/30_Computing/
     reddit-user-to-sqlite user BuonaparteII
@@ -32,6 +29,9 @@ function weekly
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/tax.db ~/lb/reddit/69_Taxes.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/91_New_Art.db ~/lb/reddit/91_New_Art.db
 
+    eval-shuf-repeat ~/.jobs/dl_video.sh
+    eval-shuf-repeat ~/.jobs/dl_audio.sh
+
     ~/lb/
     for db in reddit/61_Photos_Unsorted.db
         lb redditupdate $db --lookback 8
@@ -43,11 +43,4 @@ function weekly
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -20 | psub)
     end
 
-    for db in (fd -HI -edb -E tests -E examples -E reddit)
-        set tmp_bak ~/.jobs/(path basename $db)
-        sqlite3 "$db" ".backup '$tmp_bak'" # alternatively use VACUUM main INTO
-        mv "$tmp_bak" /home/xk/d/23_LinkMining/
-    end
-
-    dbackups
 end
