@@ -53,6 +53,7 @@ pyvirtualdisplay
 radian
 rich
 ruff
+s3fs
 scalene
 screeninfo
 sklearn
@@ -75,4 +76,3 @@ wheel
 xklb
 xxhash
 yt-dlp
-s3fs
