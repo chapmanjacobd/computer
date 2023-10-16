@@ -144,3 +144,4 @@ abbr -a -- tmpdir mkcdtemp
 abbr -a -- ytda 'lb dladd ~/lb/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
+abbr -a -- trashrestore trash-restore-d
