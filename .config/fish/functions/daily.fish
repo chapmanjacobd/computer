@@ -30,8 +30,5 @@ function daily
     tubeupdate
     lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 
-    ~
-    if not pgrep ffmpeg >/dev/null
-        ~/d/69_Taxes_Keep/ && ffsmallpar
-    end
+    ~/d/69_Taxes_Keep/ && ffsmallpar
 end
