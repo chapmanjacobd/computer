@@ -1,6 +1,7 @@
 (wgetfilename rpm https://www.cyberpower.com/eu/en/File/GetFileSampleByType?fileId=SU-18070001-07&fileType=Download%20Center&fileSubType=FileOriginal)
 ack
 atop
+awscli
 bat
 bcal
 blas-devel
