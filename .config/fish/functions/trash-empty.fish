@@ -15,15 +15,17 @@ function trash-empty
     # end
 
     if gum confirm --default=no 'Empty trash?'
-        command trash-empty -f
-
-        # if gum confirm --default=no 'Refresh snapshots?'
         for mnt in $argv
-            btrfs_nocheck_delete_snapshot $mnt
-            #kitty fish -c "sleep (random_thousanths 0 5000); btrfs_check_delete_snapshot $mnt" &
+            sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one &
         end
         wait
-        # end
+
+        command trash-empty -f
+
+        for mnt in $argv
+            sudo btrfs subvolume snapshot -r $mnt $mnt/.snapshots/one &
+        end
+        wait
     end
 
 end
