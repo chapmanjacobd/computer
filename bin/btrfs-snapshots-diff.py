@@ -37,20 +37,19 @@ Copyright (c) 2016-2021 Jean-Denis Girard <jd.girard@sysnux.pf>
 © SysNux http://www.sysnux.pf/
 '''
 
-import time
 import argparse
 import subprocess
-from os import unlink
-from sys import exit, stderr  # pylint: disable=redefined-builtin
-from struct import unpack
+import time
 from collections import OrderedDict
+from os import unlink
+from struct import unpack
+from sys import exit, stderr  # pylint: disable=redefined-builtin
 
 printerr = stderr.write
 
 
 class BtrfsStream:
-    ''' Btrfs send stream representation
-    '''
+    '''Btrfs send stream representation'''
 
     # From btrfs/send.h
     send_cmds = 'BTRFS_SEND_C_UNSPEC BTRFS_SEND_C_SUBVOL BTRFS_SEND_C_SNAPSHOT BTRFS_SEND_C_MKFILE BTRFS_SEND_C_MKDIR BTRFS_SEND_C_MKNOD BTRFS_SEND_C_MKFIFO BTRFS_SEND_C_MKSOCK BTRFS_SEND_C_SYMLINK BTRFS_SEND_C_RENAME BTRFS_SEND_C_LINK BTRFS_SEND_C_UNLINK BTRFS_SEND_C_RMDIR BTRFS_SEND_C_SET_XATTR BTRFS_SEND_C_REMOVE_XATTR BTRFS_SEND_C_WRITE BTRFS_SEND_C_CLONE BTRFS_SEND_C_TRUNCATE BTRFS_SEND_C_CHMOD BTRFS_SEND_C_CHOWN BTRFS_SEND_C_UTIMES BTRFS_SEND_C_END BTRFS_SEND_C_UPDATE_EXTENT'.split()
@@ -94,27 +93,21 @@ class BtrfsStream:
         attr, l_attr = unpack('<HH', self.stream[index : index + self.l_tlv])
         if self.send_attrs[attr] != attr_type:
             raise ValueError(f'Unexpected attribute {self.send_attrs[attr]}')
-        ret = unpack(
-            f'<{l_attr}B', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr]
-        )
+        ret = unpack(f'<{l_attr}B', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr])
         return index + self.l_tlv + l_attr, ret
 
     def _tlv_get_string(self, attr_type, index):
         attr, l_attr = unpack('<HH', self.stream[index : index + self.l_tlv])
         if self.send_attrs[attr] != attr_type:
             raise ValueError(f'Unexpected attribute {self.send_attrs[attr]}')
-        (ret,) = unpack(
-            f'<{l_attr}s', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr]
-        )
+        (ret,) = unpack(f'<{l_attr}s', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr])
         return index + self.l_tlv + l_attr, ret.decode('utf8')
 
     def _tlv_get_u64(self, attr_type, index):
         attr, l_attr = unpack('<HH', self.stream[index : index + self.l_tlv])
         if self.send_attrs[attr] != attr_type:
             raise ValueError(f'Unexpected attribute {self.send_attrs[attr]}')
-        (ret,) = unpack(
-            '<Q', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr]
-        )
+        (ret,) = unpack('<Q', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr])
         return index + self.l_tlv + l_attr, ret
 
     def _tlv_get_uuid(self, attr_type, index):
@@ -131,14 +124,11 @@ class BtrfsStream:
         attr, l_attr = unpack('<HH', self.stream[index : index + self.l_tlv])
         if self.send_attrs[attr] != attr_type:
             raise ValueError(f'Unexpected attribute {self.send_attrs[attr]}')
-        sec, nanos = unpack(
-            '<QL', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr]
-        )
+        sec, nanos = unpack('<QL', self.stream[index + self.l_tlv : index + self.l_tlv + l_attr])
         return index + self.l_tlv + l_attr, float(sec) + nanos * 1e-9
 
     def decode(self, bogus=True):
-        ''' Decodes commands + attributes from send stream
-        '''
+        '''Decodes commands + attributes from send stream'''
         offset = 17
         cmd_ref = 0
         # List of commands sequentially decoded
@@ -165,35 +155,23 @@ class BtrfsStream:
                     # Add bogus renamed_from command on destination to keep track
                     # of what happened
                     paths.setdefault(path_to, []).append(cmd_ref)
-                    commands.append(
-                        {'command': 'renamed_from', 'path': path, 'path_to': path_to}
-                    )
+                    commands.append({'command': 'renamed_from', 'path': path, 'path_to': path_to})
                     cmd_ref += 1
                 paths.setdefault(path, []).append(cmd_ref)
-                commands.append(
-                    {'command': cmd_short, 'path': path, 'path_to': path_to}
-                )
+                commands.append({'command': cmd_short, 'path': path, 'path_to': path_to})
 
             elif command == 'BTRFS_SEND_C_SYMLINK':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
                 offset2, ino = self._tlv_get_u64('BTRFS_SEND_A_INO', offset2)
-                offset2, path_link = self._tlv_get_string(
-                    'BTRFS_SEND_A_PATH_LINK', offset2
-                )
+                offset2, path_link = self._tlv_get_string('BTRFS_SEND_A_PATH_LINK', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
-                commands.append(
-                    {'command': cmd_short, 'path_link': path_link, 'inode': ino}
-                )
+                commands.append({'command': cmd_short, 'path_link': path_link, 'inode': ino})
 
             elif command == 'BTRFS_SEND_C_LINK':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, path_link = self._tlv_get_string(
-                    'BTRFS_SEND_A_PATH_LINK', offset2
-                )
+                offset2, path_link = self._tlv_get_string('BTRFS_SEND_A_PATH_LINK', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
-                commands.append(
-                    {'command': cmd_short, 'path': path, 'path_link': path_link}
-                )
+                commands.append({'command': cmd_short, 'path': path, 'path_link': path_link})
 
             elif command == 'BTRFS_SEND_C_UTIMES':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
@@ -211,10 +189,7 @@ class BtrfsStream:
                     }
                 )
 
-            elif (
-                command
-                in 'BTRFS_SEND_C_MKFILE BTRFS_SEND_C_MKDIR BTRFS_SEND_C_UNLINK BTRFS_SEND_C_RMDIR'.split()
-            ):
+            elif command in 'BTRFS_SEND_C_MKFILE BTRFS_SEND_C_MKDIR BTRFS_SEND_C_UNLINK BTRFS_SEND_C_RMDIR'.split():
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append({'command': cmd_short, 'path': path})
@@ -225,9 +200,7 @@ class BtrfsStream:
                 offset2, rdev = self._tlv_get_u64('BTRFS_SEND_A_RDEV', offset2)
                 offset2, mode = self._tlv_get_u64('BTRFS_SEND_A_MODE', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
-                commands.append(
-                    {'command': cmd_short, 'ino': ino, 'path': path, 'rdev': rdev}
-                )
+                commands.append({'command': cmd_short, 'ino': ino, 'path': path, 'rdev': rdev})
 
             elif command == 'BTRFS_SEND_C_TRUNCATE':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
@@ -239,12 +212,8 @@ class BtrfsStream:
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
                 offset2, uuid = self._tlv_get_uuid('BTRFS_SEND_A_UUID', offset2)
                 offset2, ctransid = self._tlv_get_u64('BTRFS_SEND_A_CTRANSID', offset2)
-                offset2, clone_uuid = self._tlv_get_uuid(
-                    'BTRFS_SEND_A_CLONE_UUID', offset2
-                )
-                offset2, clone_ctransid = self._tlv_get_u64(
-                    'BTRFS_SEND_A_CLONE_CTRANSID', offset2
-                )
+                offset2, clone_uuid = self._tlv_get_uuid('BTRFS_SEND_A_CLONE_UUID', offset2)
+                offset2, clone_ctransid = self._tlv_get_u64('BTRFS_SEND_A_CLONE_CTRANSID', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append(
                     {
@@ -275,15 +244,11 @@ class BtrfsStream:
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
                 offset2, mode = self._tlv_get_u64('BTRFS_SEND_A_MODE', offset2)
                 offset2, rdev = self._tlv_get_u64('BTRFS_SEND_A_RDEV', offset2)
-                commands.append(
-                    {'command': cmd_short, 'path': path, 'mode': mode, 'rdev': rdev}
-                )
+                commands.append({'command': cmd_short, 'path': path, 'mode': mode, 'rdev': rdev})
 
             elif command == 'BTRFS_SEND_C_SET_XATTR':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, xattr_name = self._tlv_get_string(
-                    'BTRFS_SEND_A_XATTR_NAME', offset2
-                )
+                offset2, xattr_name = self._tlv_get_string('BTRFS_SEND_A_XATTR_NAME', offset2)
                 offset2, xattr_data = self._tlv_get('BTRFS_SEND_A_XATTR_DATA', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append(
@@ -297,19 +262,13 @@ class BtrfsStream:
 
             elif command == 'BTRFS_SEND_C_REMOVE_XATTR':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, xattr_name = self._tlv_get_string(
-                    'BTRFS_SEND_A_XATTR_NAME', offset2
-                )
+                offset2, xattr_name = self._tlv_get_string('BTRFS_SEND_A_XATTR_NAME', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
-                commands.append(
-                    {'command': cmd_short, 'path': path, 'xattr_name': xattr_name}
-                )
+                commands.append({'command': cmd_short, 'path': path, 'xattr_name': xattr_name})
 
             elif command == 'BTRFS_SEND_C_WRITE':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, file_offset = self._tlv_get_u64(
-                    'BTRFS_SEND_A_FILE_OFFSET', offset2
-                )
+                offset2, file_offset = self._tlv_get_u64('BTRFS_SEND_A_FILE_OFFSET', offset2)
                 offset2, data = self._tlv_get('BTRFS_SEND_A_DATA', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append(
@@ -323,24 +282,12 @@ class BtrfsStream:
 
             elif command == 'BTRFS_SEND_C_CLONE':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, file_offset = self._tlv_get_u64(
-                    'BTRFS_SEND_A_FILE_OFFSET', offset2
-                )
-                offset2, clone_len = self._tlv_get_u64(
-                    'BTRFS_SEND_A_CLONE_LEN', offset2
-                )
-                offset2, clone_uuid = self._tlv_get_uuid(
-                    'BTRFS_SEND_A_CLONE_UUID', offset2
-                )
-                offset2, clone_transid = self._tlv_get_u64(
-                    'BTRFS_SEND_A_CLONE_TRANSID', offset2
-                )
-                offset2, clone_path = self._tlv_get_string(
-                    'BTRFS_SEND_A_CLONE_PATH', offset
-                )  # BTRFS_SEND_A_CLONE8PATH
-                offset2, clone_offset = self._tlv_get_u64(
-                    'BTRFS_SEND_A_CLONE_OFFSET', offset2
-                )
+                offset2, file_offset = self._tlv_get_u64('BTRFS_SEND_A_FILE_OFFSET', offset2)
+                offset2, clone_len = self._tlv_get_u64('BTRFS_SEND_A_CLONE_LEN', offset2)
+                offset2, clone_uuid = self._tlv_get_uuid('BTRFS_SEND_A_CLONE_UUID', offset2)
+                offset2, clone_transid = self._tlv_get_u64('BTRFS_SEND_A_CLONE_TRANSID', offset2)
+                offset2, clone_path = self._tlv_get_string('BTRFS_SEND_A_CLONE_PATH', offset)  # BTRFS_SEND_A_CLONE8PATH
+                offset2, clone_offset = self._tlv_get_u64('BTRFS_SEND_A_CLONE_OFFSET', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append(
                     {
@@ -377,9 +324,7 @@ class BtrfsStream:
 
             elif command == 'BTRFS_SEND_C_UPDATE_EXTENT':
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
-                offset2, file_offset = self._tlv_get_u64(
-                    'BTRFS_SEND_A_FILE_OFFSET', offset2
-                )
+                offset2, file_offset = self._tlv_get_u64('BTRFS_SEND_A_FILE_OFFSET', offset2)
                 offset2, size = self._tlv_get_u64('BTRFS_SEND_A_SIZE', offset2)
                 paths.setdefault(path, []).append(cmd_ref)
                 commands.append(
@@ -415,7 +360,7 @@ class BtrfsStream:
 
 
 def time_str(epoch):
-    ''' Epoch => string
+    '''Epoch => string
     1610391575.9802792 => '2021/01/11 08:59:35' '''
     return time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(epoch))
 
@@ -437,8 +382,7 @@ def print_by_paths(paths, commands, filter, csv):
                 commands[actions[0]]['command'] in ('mkfile', 'mkdir', 'symlink')
                 and commands[actions[1]]['command'] == 'rename'
             ) and not (
-                commands[actions[0]]['command'] == ('renamed_from')
-                and commands[actions[1]]['command'] == 'rmdir'
+                commands[actions[0]]['command'] == ('renamed_from') and commands[actions[1]]['command'] == 'rmdir'
             ):
                 print(f'{path}\n\t{actions} {"=" * 20}')
             continue
@@ -456,10 +400,7 @@ def print_by_paths(paths, commands, filter, csv):
             cmd_short = cmd['command']
 
             if prev_action == 'update_extent' and cmd_short != 'update_extent':
-                print_actions.append(
-                    'update extents %d -> %d'
-                    % (extents[0][0], extents[-1][0] + extents[-1][1])
-                )
+                print_actions.append('update extents %d -> %d' % (extents[0][0], extents[-1][0] + extents[-1][1]))
 
             if cmd_short == 'renamed_from':
                 if filter and re_tmp.match(cmd_short):
@@ -490,9 +431,7 @@ def print_by_paths(paths, commands, filter, csv):
                 print_actions.append(f'link to "{cmd["path_link"]}"')
 
             elif cmd_short == 'symlink':
-                print_actions.append(
-                    f'symlink to "{cmd["path_link"]}" (inode {cmd["inode"]})'
-                )
+                print_actions.append(f'symlink to "{cmd["path_link"]}" (inode {cmd["inode"]})')
 
             elif cmd_short in ('unlink', 'mkfile', 'mkdir', 'mkfifo'):
                 print_actions.append(cmd_short)
@@ -505,9 +444,7 @@ def print_by_paths(paths, commands, filter, csv):
                     # Print only last utimes
                     del print_actions[-1]
                 print_actions.append(
-                    f'times a={time_str(cmd["atime"])} '
-                    f'm={time_str(cmd["mtime"])} '
-                    f'c={time_str(cmd["ctime"])}'
+                    f'times a={time_str(cmd["atime"])} ' f'm={time_str(cmd["mtime"])} ' f'c={time_str(cmd["ctime"])}'
                 )
 
             elif cmd_short == 'snapshot':
@@ -520,9 +457,7 @@ def print_by_paths(paths, commands, filter, csv):
 
             elif cmd_short == 'write':
                 print_actions.append('write: from %d' % cmd[1])
-                print_actions.append(
-                    'data: \n' + ''.join([chr(c) for c in cmd[2]])
-                )  # convert bytes to string
+                print_actions.append('data: \n' + ''.join([chr(c) for c in cmd[2]]))  # convert bytes to string
 
             else:
                 print_actions.append('%s, %s %s' % (action, cmd, '-' * 20))
@@ -532,8 +467,7 @@ def print_by_paths(paths, commands, filter, csv):
                 sep = ';'
                 esc_sep = '\\' + sep
                 print(
-                    f'{path.replace(sep, esc_sep)}{sep}'
-                    f'{sep.join([a.replace(sep, esc_sep) for a in print_actions])}'
+                    f'{path.replace(sep, esc_sep)}{sep}' f'{sep.join([a.replace(sep, esc_sep) for a in print_actions])}'
                 )
             else:
                 print(f'\n{path}')
@@ -542,18 +476,12 @@ def print_by_paths(paths, commands, filter, csv):
 
 
 def main():
-    ''' Main ! '''
+    '''Main !'''
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Display differences between 2 Btrfs snapshots"
-    )
-    parser.add_argument(
-        '-p', '--parent', help='parent snapshot (must exists and be readonly)'
-    )
-    parser.add_argument(
-        '-c', '--child', help='child snapshot (will be created if it does not exist)'
-    )
+    parser = argparse.ArgumentParser(description="Display differences between 2 Btrfs snapshots")
+    parser.add_argument('-p', '--parent', help='parent snapshot (must exists and be readonly)')
+    parser.add_argument('-c', '--child', help='child snapshot (will be created if it does not exist)')
     parser.add_argument('-f', '--file', help="diff file")
     parser.add_argument(
         '-t',
@@ -561,16 +489,10 @@ def main():
         action='store_true',
         help='does not display temporary files, nor all time modifications (just latest)',
     )
-    parser.add_argument(
-        '-a', '--by_path', action='store_true', help='Group commands by path'
-    )
+    parser.add_argument('-a', '--by_path', action='store_true', help='Group commands by path')
     parser.add_argument('-s', '--csv', action='store_true', help='CSV output')
-    parser.add_argument(
-        '-j', '--json', action='store_true', help='JSON output (commands only)'
-    )
-    parser.add_argument(
-        '--pretty', action='store_true', help=argparse.SUPPRESS
-    )
+    parser.add_argument('-j', '--json', action='store_true', help='JSON output (commands only)')
+    parser.add_argument('--pretty', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument(
         '-b',
         '--bogus',
@@ -639,10 +561,11 @@ def main():
 
     elif args.json:
         import json  # pylint: disable=import-outside-toplevel
+
         if args.pretty:
             print(json.dumps(commands, indent=2))
         else:
-            print(json.dumps(commands))            
+            print(json.dumps(commands))
 
     else:
         printerr('No output!\n')

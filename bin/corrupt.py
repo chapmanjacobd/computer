@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # https://github.com/joshsegall/corrupt
 
-import sys
-import random
 import argparse
+import random
 import string
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -52,7 +52,7 @@ for chunk_start in range(0, len(data)):
         nextn += random.randint(0, 2 * args.n * 8)
 
     if args.truncate is not None and len(output_data) > args.truncate:
-        output_data = output_data[:args.truncate]
+        output_data = output_data[: args.truncate]
         break
 
 random.seed()

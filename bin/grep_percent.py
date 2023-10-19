@@ -2,6 +2,7 @@
 
 import sys
 
+
 def get_total_lines(file_path):
     try:
         with open(file_path) as f:
@@ -13,9 +14,11 @@ def get_total_lines(file_path):
             print("Error: The specified argument is neither an integer nor a valid file path.")
             sys.exit(1)
 
+
 def convert_to_percentage(total_lines, line_number):
     percentage = (line_number / total_lines) * 100
     return f"{percentage:.2f}%"
+
 
 def main():
     if len(sys.argv) != 2:
@@ -32,6 +35,7 @@ def main():
             print(line.split(':', 1)[1], end='')
         except ValueError:
             print(line, end='')
+
 
 if __name__ == "__main__":
     main()

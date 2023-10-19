@@ -1,8 +1,9 @@
+import argparse
 import os
 import shutil
 from pathlib import Path
+
 from torrentool.api import Torrent
-import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')

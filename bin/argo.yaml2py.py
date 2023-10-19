@@ -1,9 +1,10 @@
 #!/usr/bin/python
 import argparse
-import yaml
 from pathlib import Path
-from rich import print
+
+import yaml
 from hera.workflows.models import Workflow
+from rich import print
 
 
 def main():

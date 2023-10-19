@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
-import argparse, shelve
+import argparse
+import shelve
 from pathlib import Path
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -13,6 +15,7 @@ def main():
         print(f'{key}: {value}')
 
     db.close()
+
 
 if __name__ == '__main__':
     main()

@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import argparse
-import yaml
 from pathlib import Path
 from pprint import pprint
+
+import yaml
 
 
 def main():

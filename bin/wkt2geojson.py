@@ -1,7 +1,8 @@
 #!/usr/bin/python3
-import geopandas as gpd
-import sys
 import argparse
+import sys
+
+import geopandas as gpd
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--s_srs', '-s_srs', default='EPSG:4326', help='SRS of source vector')

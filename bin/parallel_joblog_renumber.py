@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import sys
 import argparse
+import sys
 
 
 def pipe_lines(x) -> None:

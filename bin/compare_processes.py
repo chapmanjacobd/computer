@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor
 import difflib
 import subprocess
+from concurrent.futures import ProcessPoolExecutor
+
 from rich import print
 
 parser = argparse.ArgumentParser()
@@ -14,7 +15,7 @@ args = parser.parse_args()
 def get_proc_info(pid):
     return {
         'pid': pid,
-        'ltrace': subprocess.run(['timeout', '10s','ltrace', '-fcp', str(pid)], capture_output=True).stderr.decode(),
+        'ltrace': subprocess.run(['timeout', '10s', 'ltrace', '-fcp', str(pid)], capture_output=True).stderr.decode(),
     }
 
 
