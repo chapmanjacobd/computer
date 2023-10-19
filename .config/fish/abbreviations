@@ -146,3 +146,4 @@ abbr -a -- ytdn 'ytdn (cb)'
 abbr -a -- trashrestore trash-restore-d
 abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/video.db (cb)'
+abbr -a -- osq osqueryi
