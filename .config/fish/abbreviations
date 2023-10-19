@@ -64,7 +64,6 @@ abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -- wts 'wt -p -u duration -s'
 abbr -a -- xpaste 'xclip -selection clipboard -o'
 abbr -a -- yt.ogg yta
-abbr -a -- ytd 'lb dladd ~/lb/video.db'
 abbr -a -- python ipython --pdb
 abbr -a -- icat kitty +kitten icat
 abbr -a -- str string
@@ -146,3 +145,4 @@ abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
 abbr -a -- trashrestore trash-restore-d
 abbr -a -- file 'file -bi'
+abbr -a -- ytd 'lb dladd ~/lb/video.db (cb)'
