@@ -33,7 +33,7 @@ end
 abbr -a cbargs --function _abbr_cbargs
 
 function _abbr_parallel
-    echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed
+    echo parallel --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed --timeout 800%
 end
 abbr -a parallel --function _abbr_parallel
 
