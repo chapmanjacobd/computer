@@ -4,4 +4,4 @@ Description='On *-*-* 06:15:00 run cr'
 [Service]
 Type=simple
 RemainAfterExit=no
-ExecStart='/usr/bin/fish' '-c' 'cr'
+ExecStart=/usr/bin/fish -c 'cr'
