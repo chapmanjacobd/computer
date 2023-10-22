@@ -35,19 +35,18 @@ network.port_random.set = no
 dht.mode.set = disable
 protocol.pex.set = no
 
-# TODO: yes
-trackers.use_udp.set = no
+trackers.use_udp.set = yes
 
 
 ## Peer settings
 throttle.max_uploads.set = 65
 throttle.max_uploads.global.set = 250
 
-throttle.min_peers.normal.set = 1
-throttle.max_peers.normal.set = 60
-throttle.min_peers.seed.set = 1
-throttle.max_peers.seed.set = 80
-trackers.numwant.set = 80
+throttle.min_peers.normal.set = 39
+throttle.max_peers.normal.set = 40
+throttle.min_peers.seed.set = -1
+throttle.max_peers.seed.set = -1
+trackers.numwant.set = 40
 
 protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
 
