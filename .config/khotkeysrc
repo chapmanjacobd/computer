@@ -1227,7 +1227,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_4_7Actions0]
-CommandURL=echo 'cycle pause' | socat - /tmp/mpv_socket; catt play_toggle
+CommandURL=lb pause
 Type=COMMAND_URL
 
 [Data_4_7Conditions]
