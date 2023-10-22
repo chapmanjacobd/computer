@@ -15,5 +15,5 @@ function tv
     vol 40
     ~/.config/autostart.sh &
     pkill -9 projectM-pulseau
-    projectM-pulseaudio &
+    # projectM-pulseaudio &
 end
