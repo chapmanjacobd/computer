@@ -35,7 +35,8 @@ network.port_random.set = no
 dht.mode.set = disable
 protocol.pex.set = no
 
-trackers.use_udp.set = no   # TODO: yes
+# TODO: yes
+trackers.use_udp.set = no
 
 
 ## Peer settings
