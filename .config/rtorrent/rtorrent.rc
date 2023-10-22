@@ -42,7 +42,7 @@ trackers.use_udp.set = yes
 throttle.max_uploads.set = 65
 throttle.max_uploads.global.set = 250
 
-throttle.max_downloads.set = 20
+throttle.max_downloads.set = 19
 
 throttle.min_peers.normal.set = 39
 throttle.max_peers.normal.set = 40
