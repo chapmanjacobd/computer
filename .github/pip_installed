@@ -2,6 +2,7 @@ aiohttp
 black
 brotab
 catt
+charset-normalizer
 cython
 daff
 datasette
