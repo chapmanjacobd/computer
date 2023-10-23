@@ -12,7 +12,7 @@ function tv
     keepscreenon && xset s off
     #breaktimer disable && pkill breaktimer
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
-    vol 40
+    vol 65
     ~/.config/autostart.sh &
     pkill -9 projectM-pulseau
     # projectM-pulseaudio &
