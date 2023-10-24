@@ -18,9 +18,9 @@ function trash-empty
         for mnt in $argv
             sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one &
         end
-        wait
 
         command trash-empty -f
+        wait
 
         for mnt in $argv
             sudo btrfs subvolume snapshot -r $mnt $mnt/.snapshots/one &
