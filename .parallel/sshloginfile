@@ -1,3 +1,3 @@
-backup
-pulse15
 :
+ssh -o LogLevel=quiet backup
+ssh -o LogLevel=quiet pulse15
