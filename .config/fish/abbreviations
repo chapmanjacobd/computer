@@ -9,7 +9,6 @@ abbr -a -- clipboard cb
 abbr -a -- cup 'docker compose -f docker/docker-compose.yaml up'
 abbr -a -- dc cd
 abbr -a -- dd 'dd status=progress if= of='
-abbr -a -- df 'df -h'
 abbr -a -- dmesg 'dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice,info'
 abbr -a -- fdh fd\ --hidden\ --exclude\ \'.git\'
 abbr -a -- fdwatch 'fd -x fish -c "mpvonce {}"'
@@ -147,3 +146,4 @@ abbr -a -- trashrestore trash-restore-d
 abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/video.db (cb)'
 abbr -a -- osq osqueryi
+abbr -a -- df 'df -h | sort --human-numeric-sort -k2'
