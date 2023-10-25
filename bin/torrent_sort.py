@@ -15,7 +15,8 @@ def check_torrents(torrent_folder: Path, files_folder: Path):
         no_files_exist = True
         all_files_exist = True
         for f in torrent.files:
-            if (files_folder / f.name).exists():
+            p = (files_folder / f.name)
+            if p.exists() and p.stat().st_size > 0:
                 no_files_exist = False
             else:
                 all_files_exist = False
