@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 from pathlib import Path
 
 from torrentool.api import Torrent
