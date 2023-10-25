@@ -8,28 +8,30 @@ from pathlib import Path
 from torrentool.api import Torrent
 
 
-def check_torrents(torrent_folder, files_folder):
-    for torrent_file in os.listdir(torrent_folder):
-        torrent = Torrent.from_file(os.path.join(torrent_folder, torrent_file))
+def check_torrents(torrent_folder: Path, files_folder: Path):
+    for torrent_file in torrent_folder.glob('*.torrent'):
+        torrent = Torrent.from_file(torrent_file)
 
+        no_files_exist = True
         all_files_exist = True
         for f in torrent.files:
-            if not os.path.exists(os.path.join(files_folder, f.name)):
+            if (files_folder / f.name).exists():
+                no_files_exist = False
+            else:
                 all_files_exist = False
-                break
 
         if all_files_exist:
-            dest = Path(torrent_folder / '..' / 'complete')
+            dest = torrent_folder / '..' / 'complete'
             dest.mkdir(exist_ok=True)
-            shutil.move(torrent_file, dest / torrent_file)
-        elif any(os.path.exists(os.path.join(files_folder, f.name)) for f in torrent.files):
-            dest = Path(torrent_folder / '..' / 'partial')
+            shutil.move(torrent_file, dest / torrent_file.name)
+        elif no_files_exist:
+            dest = torrent_folder / '..' / 'new'
             dest.mkdir(exist_ok=True)
-            shutil.move(torrent_file, dest / torrent_file)
+            shutil.move(torrent_file, dest / torrent_file.name)
         else:
-            dest = Path(torrent_folder / '..' / 'new')
+            dest = torrent_folder / '..' / 'partial'
             dest.mkdir(exist_ok=True)
-            shutil.move(torrent_file, dest / torrent_file)
+            shutil.move(torrent_file, dest / torrent_file.name)
 
 
 if __name__ == '__main__':
@@ -38,4 +40,6 @@ if __name__ == '__main__':
     parser.add_argument('files_folder', help='Folder containing downloaded files')
     args = parser.parse_args()
 
-    check_torrents(args.torrent_folder, args.files_folder)
+    torrent_folder = Path(args.torrent_folder)
+    files_folder = Path(args.files_folder)
+    check_torrents(torrent_folder, files_folder)
