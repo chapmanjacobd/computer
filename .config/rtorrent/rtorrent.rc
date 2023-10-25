@@ -105,6 +105,16 @@ schedule2 = watch_load, 11, 10, ((load.verbose, (cat, (cfg.watch), "load/*.torre
 ## Add & download straight away
 schedule2 = watch_start, 10, 10, ((load.start_verbose, (cat, (cfg.watch), "start/*.torrent")))
 
+# start, stop when metadata file moved
+schedule2 = tied_directory, 10, 10, start_tied=
+schedule2 = untied_directory, 10, 10, stop_untied=
+
+# insert a new method to determine the basename of a given metadata file
+#system.method.insert = d.get_loaded_basename,string|simple,"execute_capture=bash,-c,\"echo -n \$(basename \\\"$1\\\")\",cleanbase,$d.get_loaded_file="
+# insert another method to concatenate the final destination directory with the basename
+#system.method.insert = d.get_meta_path,simple,"cat=/var/torrent/meta/,$d.get_loaded_basename="
+# finally, move the .torrent, and update the tied_to_file to reference the new path
+#system.method.set_key = event.download.inserted_new,move_loaded,"execute=mv,-u,$d.get_loaded_file=,$d.get_meta_path=;d.set_tied_to_file=$d.get_meta_path="
 
 # example: stop at ratio 2.00 with at least 200 MB uploaded, or else ratio 3.00
 # schedule = ratio,60,60,"stop_on_ratio=200,200M,300"
