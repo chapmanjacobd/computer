@@ -14,20 +14,20 @@ def check_torrents(torrent_folder, files_folder):
 
         all_files_exist = True
         for f in torrent.files:
-            if not os.path.exists(os.path.join(files_folder, f.path)):
+            if not os.path.exists(os.path.join(files_folder, f.name)):
                 all_files_exist = False
                 break
 
         if all_files_exist:
-            dest = Path(args.files_folder / '..' / 'complete')
+            dest = Path(torrent_folder / '..' / 'complete')
             dest.mkdir(exist_ok=True)
             shutil.move(torrent_file, dest / torrent_file)
-        elif any(os.path.exists(os.path.join(files_folder, f.path)) for f in torrent.files):
-            dest = Path(args.files_folder / '..' / 'partial')
+        elif any(os.path.exists(os.path.join(files_folder, f.name)) for f in torrent.files):
+            dest = Path(torrent_folder / '..' / 'partial')
             dest.mkdir(exist_ok=True)
             shutil.move(torrent_file, dest / torrent_file)
         else:
-            dest = Path(args.files_folder / '..' / 'new')
+            dest = Path(torrent_folder / '..' / 'new')
             dest.mkdir(exist_ok=True)
             shutil.move(torrent_file, dest / torrent_file)
 
