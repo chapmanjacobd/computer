@@ -22,7 +22,7 @@ function ffsmallpar
         end
     end
 
-    ssh backup  fd -eMKV -eMP4 -d1 -x trash
+    ssh backup fd -eMKV -eMP4 -d1 -x trash
     ssh pulse15 fd -eMKV -eMP4 -d1 -x trash
 
     clear_lock_file ffsmallpar
