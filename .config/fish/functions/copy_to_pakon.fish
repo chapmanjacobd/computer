@@ -3,7 +3,7 @@ function copy_to_pakon
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files backup:d/_tixati/ ~/d/75_Moviequeue/from_backup/
 
     stickysync_backup ~/d/00_Metadata/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/82_Audiobooks/rtorrent/
-    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/start/
+    rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
 
     # ~/d/75_Moviequeue/from_backup/
     # fd '[a-zA-Z]{2,5}-?[0-9]{3}' -x mv {} /mnt/d/69_Taxes/onejav/
