@@ -1,32 +1,39 @@
 #!/usr/bin/python3
 
 import argparse
-import os
 import shutil
+from pathlib import Path
 
+import humanize
 from torrentool.api import Torrent
 
 
-def sort_and_move_torrents(torrent_folder, num_to_move):
+def sort_and_move_torrents(args):
+    torrent_folder = Path(args.torrent_folder)
+
     torrent_data = []
-    for torrent_file in os.listdir(torrent_folder):
-        torrent = Torrent.from_file(os.path.join(torrent_folder, torrent_file))
+    for torrent_file in torrent_folder.glob('*.torrent'):
+        torrent = Torrent.from_file(torrent_file)
         total_size = sum(f.length for f in torrent.files)
         torrent_data.append((torrent_file, total_size))
 
-    sorted_torrents = sorted(torrent_data, key=lambda x: x[1])
+    sorted_torrents = sorted(torrent_data, key=lambda x: x[1], reverse=args.reverse)
 
-    for i in range(min(num_to_move, len(sorted_torrents))):
-        torrent_file, _ = sorted_torrents[i]
-        source_path = os.path.join(torrent_folder, torrent_file)
-        destination_path = os.path.join(source_path, '..', 'start', torrent_file)
-        shutil.move(source_path, destination_path)
+    for torrent_file, size in sorted_torrents[: args.n]:
+        destination_path = torrent_folder / '..' / 'start' / torrent_file.name
+
+        if args.dry_run:
+            print('mv', torrent_file, ' ', destination_path, '# ', humanize.naturalsize(size, binary=True))
+        else:
+            shutil.move(torrent_file, destination_path)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('torrent_folder', help='Folder containing torrent files')
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
+    parser.add_argument('--reverse', '-r', action='store_true')
+    parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
 
-    sort_and_move_torrents(args.torrent_folder, args.n)
+    sort_and_move_torrents(args)
