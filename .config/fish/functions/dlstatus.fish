@@ -3,6 +3,7 @@ function dlstatus
     for db in $argv
         echo $db
         lb ds $db
+        echo
     end
 
     # for db in $argv
