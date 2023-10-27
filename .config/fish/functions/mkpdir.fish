@@ -1,4 +1,4 @@
 # Defined interactively
 function mkpdir
-    mkdir -p (path dirname $argv)
+    mkdir (path dirname $argv)
 end

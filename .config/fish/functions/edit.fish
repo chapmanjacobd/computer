@@ -4,6 +4,6 @@ function edit
 
     sudo nano "$argv"
 
-    mkdir -p (path dirname "$sp")
+    mkdir (path dirname "$sp")
     sudo rsync --chown=(stat -c '%U:%G' (path dirname "$sp")) "$argv" "$sp"
 end
