@@ -69,6 +69,7 @@ libicu
 libicu-devel
 libmediainfo
 libyaml-devel
+lshw
 lynis
 megatools
 meld
