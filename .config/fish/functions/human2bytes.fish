@@ -1,0 +1,8 @@
+# Defined interactively
+function human2bytes
+    if test (count $argv) -eq 0
+        python -c "import sys; from xklb.utils import nums; [print(nums.human_to_bytes(l)) for l in sys.stdin]"
+    else
+        python -c "from xklb.utils import nums; print(nums.human_to_bytes('$argv'))"
+    end
+end
