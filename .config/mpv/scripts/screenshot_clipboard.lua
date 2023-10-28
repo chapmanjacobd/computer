@@ -44,9 +44,8 @@ end
 local function clipshot(arg)
     return function()
         mp.commandv('screenshot-to-file', file, arg)
-        mp.command_native_async({'run', unpack(cmd)}, function(suc, _, err)
-            mp.osd_message(suc and 'Copied screenshot to clipboard' or err, 1)
-        end)
+        mp.command_native({'run', unpack(cmd)})
+        mp.osd_message('Copied screenshot to clipboard', 1)
     end
 end
 
