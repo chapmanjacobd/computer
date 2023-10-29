@@ -6,7 +6,7 @@ function daily
     ~/.local/bin/mam_upload_credit.sh
     copy_to_pakon
 
-    lb relmv /mnt/d/70_Now_Watching/Keep/* /mnt/d/77_Library/
+    lb relmv /mnt/d/70_Now_Watching/keep/* /mnt/d/77_Library/
 
     catt volume 0 && catt volume 40
     pip install --upgrade gallery-dl pychromecast
