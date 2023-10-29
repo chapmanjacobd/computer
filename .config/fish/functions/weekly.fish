@@ -29,8 +29,8 @@ function weekly
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/tax.db ~/lb/reddit/69_Taxes.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/91_New_Art.db ~/lb/reddit/91_New_Art.db
 
-    yes | lb merge-online-local ~/lb/video.db
-    yes | lb merge-online-local ~/lb/audio.db
+    lb merge-online-local ~/lb/video.db --yes
+    lb merge-online-local ~/lb/audio.db --yes
 
     eval-shuf-repeat ~/.jobs/dl_video.sh
     eval-shuf-repeat ~/.jobs/dl_audio.sh
