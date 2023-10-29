@@ -1,19 +1,25 @@
 #!/usr/bin/python3
 import sys
 import difflib
-from typing import List
+from typing import Dict, List
 
-prev_lines: List[str] = []
+groups: Dict[str, List[str]] = {}
 for curr in sys.stdin:
     curr = curr.strip()
 
     is_duplicate = False
-    for prev in prev_lines:
+    for prev in groups.keys():
         if difflib.SequenceMatcher(None, curr, prev).ratio() > 0.73:
-            print(prev)
-            print(curr)
+            groups[prev].append(curr)
             is_duplicate = True
             break
 
     if not is_duplicate:
-        prev_lines.append(curr)
+        groups[curr] = []
+
+for key, group in groups.items():
+    if len(group) >= 1:
+        print(key)
+        for dupe in group:
+            print(dupe)
+        print()
