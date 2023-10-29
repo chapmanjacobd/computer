@@ -9,7 +9,7 @@ for curr in sys.stdin:
 
     is_duplicate = False
     for prev in prev_lines:
-        if difflib.SequenceMatcher(None, curr, prev).ratio() > 0.8:
+        if difflib.SequenceMatcher(None, curr, prev).ratio() > 0.73:
             print(prev)
             print(curr)
             is_duplicate = True
