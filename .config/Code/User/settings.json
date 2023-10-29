@@ -422,7 +422,6 @@
   "sqltools.useNodeRuntime": true,
   "cSpell.enabled": true,
   "python.showStartPage": false,
-  "python.analysis.typeCheckingMode": "basic",
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": [
     "--line-length=120 --skip-string-normalization"
@@ -494,5 +493,7 @@
   "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
   "blockman.n16EnableFocus": false,
   "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
-  "python.defaultInterpreterPath": "/usr/bin/python"
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.analysis.typeCheckingMode":"strict",
+  "python.analysis.userFileIndexingLimit": -1
 }

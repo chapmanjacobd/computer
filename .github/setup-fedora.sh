@@ -2,7 +2,6 @@
 
 #source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
-source "${BASH_SOURCE%/vscode_extensions.sh}"
 
 chmod 0600 ~/.nx/config/authorized.crt
 echo "EnableUPnP none" | sudo tee -a /usr/NX/etc/server.cfg
@@ -26,6 +25,8 @@ sudo dnf install -y lame\* --exclude=lame-devel
 
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+
+cat "${BASH_SOURCE%/vscode_extensions.txt}" | xargs -I{} -n1 code --install-extension {} --force
 
 sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo << EOM
 [google-cloud-sdk]
