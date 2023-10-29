@@ -6,6 +6,8 @@ from typing import Dict, List
 groups: Dict[str, List[str]] = {}
 for curr in sys.stdin:
     curr = curr.strip()
+    if not curr or curr in ["'", '"']:
+        continue
 
     is_duplicate = False
     for prev in groups.keys():
