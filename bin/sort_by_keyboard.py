@@ -2,6 +2,7 @@
 
 import sys
 
+# fmt: off
 key_order = [
     'esc', 'f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','del',
     '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'bs',
@@ -12,6 +13,8 @@ key_order = [
     'space', 'left', 'up', 'down', 'right', 'home','pgup','pgdwn','pgdn','end',
     'prev', 'play', 'playpause', 'next', 'stop'
 ]
+# fmt: on
+
 
 def key_index(key):
     try:
@@ -20,8 +23,10 @@ def key_index(key):
         # Return a value larger than any valid index for unknown keys
         return len(key_order)
 
+
 def rw_io(fn):
     sys.stdout.writelines(fn(sys.stdin.readlines()))
+
 
 def sorter(line):
     s = line.split(' ')[0]
@@ -31,5 +36,6 @@ def sorter(line):
             s = '+'
 
     return key_index(s)
+
 
 rw_io(lambda lines: sorted(lines, key=sorter))
