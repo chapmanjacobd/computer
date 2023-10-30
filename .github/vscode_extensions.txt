@@ -48,5 +48,3 @@ streetsidesoftware.code-spell-checker
 tushortz.python-extended-snippets
 Tyriar.sort-lines
 usernamehw.errorlens
-VisualStudioExptTeam.intellicode-api-usage-examples
-VisualStudioExptTeam.vscodeintellicode
