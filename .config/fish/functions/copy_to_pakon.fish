@@ -4,7 +4,7 @@ function copy_to_pakon
 
     stickysync_backup ~/d/00_Metadata/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/82_Audiobooks/rtorrent/
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
-    # ssh backup torrent_promote.py .local/data/rtorrent/watch/vip_bbc/ --reverse -n 50
+    ssh backup torrent_promote.py .local/data/rtorrent/watch/vip_bbc/ --reverse -n 50
 
     # ~/d/75_Moviequeue/from_backup/
     # fd '[a-zA-Z]{2,5}-?[0-9]{3}' -x mv {} /mnt/d/69_Taxes/onejav/
