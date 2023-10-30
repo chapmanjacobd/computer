@@ -35,6 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
     parser.add_argument('paths', nargs='*')
-    args = parser.parse_args()
+    args = parser.parse_intermixed_args()
 
     sort_and_move_torrents(args)
