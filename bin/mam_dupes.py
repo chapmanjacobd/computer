@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import re
-import shlex
 import sys
 from typing import List
 
@@ -21,5 +20,5 @@ for file in files:
                 reverse=True,
             )
             for f in current_group[1:]:
-                print(shlex.quote(f))
+                print(f)
         current_group = []
