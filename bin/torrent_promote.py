@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
-    parser.add_argument('paths')
+    parser.add_argument('paths', nargs='*')
     args = parser.parse_args()
 
     sort_and_move_torrents(args)
