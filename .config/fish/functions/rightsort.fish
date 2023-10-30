@@ -1,4 +1,4 @@
 # Defined interactively
-function revsort
+function rightsort
     rev | sort --ignore-case | rev
 end
