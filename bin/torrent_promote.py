@@ -12,7 +12,7 @@ def sort_and_move_torrents(args):
     torrent_folder = Path(args.torrent_folder)
 
     torrent_data = []
-    for torrent_file in torrent_folder.glob('*.torrent'):
+    for torrent_file in args.paths or torrent_folder.glob('*.torrent'):
         torrent = Torrent.from_file(torrent_file)
         total_size = sum(f.length for f in torrent.files)
         torrent_data.append((torrent_file, total_size))
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
+    parser.add_argument('paths')
     args = parser.parse_args()
 
     sort_and_move_torrents(args)
