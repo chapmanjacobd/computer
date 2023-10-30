@@ -403,5 +403,6 @@
   "material-icon-theme.saturation": 0,
   "window.zoomLevel": 1,
   "search.useIgnoreFiles": false,
-  "git.openRepositoryInParentFolders": "never"
+  "git.openRepositoryInParentFolders": "never",
+  "editor.multiCursorLimit": 12000
 }
