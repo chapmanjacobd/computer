@@ -2,8 +2,8 @@
 ---@field name string
 ---@field type string
 local o = {
-    name = 'mpv-screenshot.jpg',
-    type = 'jpeg' -- defaults to jpeg
+    name = 'mpv-screenshot.png',
+    type = 'png' -- https://github.com/astrand/xclip/issues/110
 }
 require('mp.options').read_options(o, 'clipshot')
 
