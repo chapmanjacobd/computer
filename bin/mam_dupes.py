@@ -21,5 +21,5 @@ for file in files:
                 reverse=True,
             )
             for f in current_group[1:]:
-                print(f"rm {shlex.quote(f)}")
+                print(shlex.quote(f))
         current_group = []
