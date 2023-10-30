@@ -12,7 +12,7 @@ def sort_and_move_torrents(args):
     torrent_folder = Path(args.torrent_folder)
 
     torrent_data = []
-    for torrent_file in args.paths or torrent_folder.glob('*.torrent'):
+    for torrent_file in (Path(s) for s in args.paths) or torrent_folder.glob('*.torrent'):
         torrent = Torrent.from_file(torrent_file)
         total_size = sum(f.length for f in torrent.files)
         torrent_data.append((torrent_file, total_size))
