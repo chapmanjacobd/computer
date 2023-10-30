@@ -4,6 +4,8 @@ import shlex
 import sys
 from typing import List
 
+# cb | library cluster-sort --near-duplicates --print-groups | jq -r 'map(select(.grouped_paths | length >= 2)) | .[] | .grouped_paths | "\n" + join("\n")'
+
 files = sys.stdin.readlines() + ['']
 
 current_group: List[str] = []
