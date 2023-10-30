@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
+import random
 import string
 import sys
-import pynput
-import random
 import threading
-import numpy as np
 import time
+
+import numpy as np
+import pynput
 
 
 class sim_keyboard(threading.Thread):
@@ -54,6 +55,6 @@ class sim_keyboard(threading.Thread):
             time.sleep(np.random.normal(loc=0.05, scale=0.01))
 
 
-keyboard_thread = sim_keyboard('\n'.join(sys.stdin.readlines()).replace("    ","\t"))
+keyboard_thread = sim_keyboard('\n'.join(sys.stdin.readlines()).replace("    ", "\t"))
 keyboard_thread.start()
 keyboard_thread.join()

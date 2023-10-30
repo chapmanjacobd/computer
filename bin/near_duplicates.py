@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-import sys
 import difflib
+import sys
 from typing import Dict, List
 
 groups: Dict[str, List[str]] = {}

@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-import sys
 import argparse
+import sys
+import urllib.parse
+
 import requests
 from bs4 import BeautifulSoup
-import urllib.parse
 
 
 class ArgsOrStdin(argparse.Action):
