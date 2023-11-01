@@ -12,6 +12,8 @@ parser.add_argument('paths', nargs='+')
 args = parser.parse_args()
 
 for path in args.paths:
+    path = str(Path(path).resolve())
+
     ffprobe_cmd = ['ffprobe', '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', path]
     result = subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     info = json.loads(result.stdout)
@@ -19,6 +21,7 @@ for path in args.paths:
     channels = info['streams'][0]['channels']
     bitrate = int(info['format']['bit_rate'])
     source_rate = int(info['streams'][0]['sample_rate'])
+    duration = int(info['format']['duration'])
 
     assert bitrate > 0
     assert channels > 0
@@ -45,9 +48,12 @@ for path in args.paths:
     ff_opts.extend([f"-ar {opus_rate}"])
 
     new_path = str(Path(path).with_suffix('.opus'))
-    cmd = f'ffmpeg -nostdin -hide_banner -loglevel warning -y -i {shlex.quote(path)} -c:a libopus {" ".join(ff_opts)} -vbr constrained -filter:a loudnorm=i=-18:lra=17 {shlex.quote(new_path)}'
 
+    cmd = f'ffmpeg -nostdin -hide_banner -loglevel warning -y -i {shlex.quote(path)} -c:a libopus {" ".join(ff_opts)} -vbr constrained -filter:a loudnorm=i=-18:lra=17 {shlex.quote(new_path)}'
     subprocess.check_call(cmd, shell=True)
 
-    # Remove original
-    os.remove(path)
+    os.remove(path)  # Remove original
+
+    if 'audiobook' not in path and duration > 2200:
+        cmd = f"split_by_silence.sh {shlex.quote(new_path)} {shlex.quote(str(Path(new_path).with_suffix('.%03d.opus')))}"
+        subprocess.run(cmd, shell=True)

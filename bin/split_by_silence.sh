@@ -42,5 +42,4 @@ fi
 
 echo "Splitting points are $SPLITS"
 
-ffmpeg -v warning -i "$IN" -c copy -map 0 -f segment -segment_times "$SPLITS" "$OUT"
-rm "$IN"
+ffmpeg -v warning -i "$IN" -c copy -map 0 -f segment -segment_times "$SPLITS" "$OUT" && rm "$IN"
