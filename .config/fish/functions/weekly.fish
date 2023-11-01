@@ -8,6 +8,8 @@ function weekly
     mrrelax
     morganize
 
+    mam_update
+
     pip install --upgrade yt-dlp gallery-dl praw xklb
 
     ~/d/30_Computing/
