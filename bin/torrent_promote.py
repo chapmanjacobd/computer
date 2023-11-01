@@ -32,7 +32,8 @@ def sort_and_move_torrents(args):
         if args.dry_run:
             print('mv', torrent_file, ' ', destination_path, '# ', humanize.naturalsize(size, binary=True))
         else:
-            shutil.move(torrent_file, destination_path)
+            output_path = shutil.move(torrent_file, destination_path)
+            print(destination_path)
 
 
 if __name__ == '__main__':
