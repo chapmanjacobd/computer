@@ -6,10 +6,13 @@ function copy_to_pakon
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
 
     set max 50
-    for dir in new/ vip_new/ vip_bbc/ nonvip_new/ bbc_nonfree/ lowseeds_small/
+    for dir in new/ vip_new/ vip_bbc/
         set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir --reverse -n $max | count)
         set max (math $max-$filled)
-        echo $dir $filled $max
+    end
+    for dir in nonvip_new/ bbc_nonfree/ lowseeds_small/
+        set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir -n $max | count)
+        set max (math $max-$filled)
     end
     ssh backup 'systemctl --user stop vpn_oracle.service; sleep (minutes 45); systemctl --user restart vpn_oracle.service'
 end
