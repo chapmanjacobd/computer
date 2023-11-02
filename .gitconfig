@@ -22,6 +22,9 @@
 	tool = delta
 	difftool = delta
     colormoved = zebra
+[diff "sqlite3"]
+    binary = true
+    textconv = "echo .dump | sqlite3"
 [color]
 	ui = auto
 [color "diff-highlight"]
