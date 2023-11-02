@@ -390,7 +390,7 @@
       "source.organizeImports": false
     },
   },
-  "workbench.editor.showTabs": false,
+  "workbench.editor.showTabs": "single",
   "headwind.runOnSave": false,
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"

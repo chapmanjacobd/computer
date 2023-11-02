@@ -1,0 +1,12 @@
+# Defined interactively
+function smartlba
+    for dev in (smartls Total_LBAs_Written | tail -n +2 | cut -f1)
+        echo $dev
+
+        set ss (sudo blockdev --getss $dev)
+        for att in Total_LBAs_Written Total_LBAs_Read
+            set val (sudo smartctl -a $dev | grep $att | awk '{print $10}')
+            printf "%s\t%s\n" $att (echo "$val*$ss" | bc)
+        end | numfmt --to=iec --invalid ignore --field=2
+    end
+end
