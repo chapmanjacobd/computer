@@ -5,6 +5,8 @@ function copy_to_pakon
     stickysync_backup ~/d/00_Metadata/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/82_Audiobooks/rtorrent/
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
 
+    ~/.local/bin/mam_upload_credit.sh
+
     set max 50
     for dir in new/ vip_new/ vip_bbc/
         set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir --reverse -n $max | count)
