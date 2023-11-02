@@ -1,5 +1,5 @@
 # Defined interactively
 function ytdan
     ~/d/81_New_Music/
-    yta $argv
+    yta --reject-title '' $argv
 end
