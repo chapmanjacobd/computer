@@ -148,3 +148,4 @@ abbr -a -- ytd 'lb dladd ~/lb/video.db (cb)'
 abbr -a -- osq osqueryi
 abbr -a -- df 'df -h | sort --human-numeric-sort -k2'
 abbr -a -- revsort rightsort
+abbr -a -- pstree 'pstree -a -p'
