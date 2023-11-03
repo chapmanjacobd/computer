@@ -28,7 +28,7 @@ function daily
     fd -S-12b -tf -x rm
 
     tubeupdate
-    lbdl ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
+    library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 
     ~/d/69_Taxes_Keep/ && ffsmallpar
 end
