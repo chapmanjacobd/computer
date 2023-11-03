@@ -31,6 +31,7 @@ line_profiler
 lux
 memray
 mnamer
+nbformat
 outrun
 parquet-cli
 parquet-tools
