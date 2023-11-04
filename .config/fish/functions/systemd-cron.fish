@@ -26,7 +26,7 @@ OnCalendar=$cal
 WantedBy=timers.target
 " >~/.config/systemd/user/$unit.timer
 
-    touch ~/.local/share/systemd/timers/stamp*$unit*.timer
+    touch ~/.local/share/systemd/timers/stamp-$unit.timer
     systemctl --user daemon-reload
     systemctl --user enable --now $unit.timer
     systemctl --user list-timers --no-pager --all

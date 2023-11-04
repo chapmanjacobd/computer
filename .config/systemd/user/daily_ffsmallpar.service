@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 23:15:00 run ~/d/69_Taxes_Keep/ && ffsmallpar'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 100
+ExecStart='/usr/bin/fish' '-c' '~/d/69_Taxes_Keep/ && ffsmallpar'
+

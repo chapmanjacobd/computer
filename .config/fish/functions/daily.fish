@@ -29,6 +29,4 @@ function daily
 
     tubeupdate
     library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
-
-    ~/d/69_Taxes_Keep/ && ffsmallpar
 end

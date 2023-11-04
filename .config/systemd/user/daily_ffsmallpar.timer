@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 23:15:00 run ~/d/69_Taxes_Keep/ && ffsmallpar'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 23:15:00
+
+[Install]
+WantedBy=timers.target
+
