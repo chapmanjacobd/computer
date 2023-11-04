@@ -3,7 +3,7 @@ function daily
     popline ~/.gitignore
     popline ~/j/.gitignore
 
-    copy_to_pakon
+    with_lock copy_to_pakon
 
     lb relmv /mnt/d/70_Now_Watching/keep/* /mnt/d/77_Library/
 
