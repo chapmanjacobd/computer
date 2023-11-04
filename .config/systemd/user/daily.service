@@ -6,6 +6,6 @@ Requires=mnt-d.mount
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
-ExecStartPre=/bin/sleep 600
+ExecStartPre=/bin/sleep 100
 ExecStart=
 ExecStart="/usr/bin/fish" "-c" "daily"

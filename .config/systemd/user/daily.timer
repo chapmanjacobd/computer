@@ -4,7 +4,7 @@ Description=/usr/bin/fish -c daily
 [Timer]
 Persistent=yes
 OnCalendar=daily
-RandomizedDelaySec=1h
+RandomizedDelaySec=15m
 
 [Install]
 WantedBy=timers.target
