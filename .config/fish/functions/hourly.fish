@@ -2,9 +2,11 @@
 function hourly
     rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
 
+    load_env_mam
     ~/.local/bin/mam_upload_credit.sh
 
-    set max 0
+    ~/lb/
+    set max (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)
     for dir in new/ vip_new/ vip_bbc/
         set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir --reverse -n $max | count)
         set max (math $max-$filled)
