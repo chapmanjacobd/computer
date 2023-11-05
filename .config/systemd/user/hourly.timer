@@ -1,0 +1,10 @@
+[Unit]
+Description='On hourly run fish -c hourly'
+
+[Timer]
+Persistent=yes
+OnCalendar=hourly
+
+[Install]
+WantedBy=timers.target
+

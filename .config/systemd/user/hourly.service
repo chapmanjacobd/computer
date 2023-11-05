@@ -1,0 +1,10 @@
+[Unit]
+Description='On hourly run hourly'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 10
+ExecStart='/usr/bin/fish' '-c' 'hourly'
+
