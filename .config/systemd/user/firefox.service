@@ -1,8 +1,8 @@
 [Unit]
-Description=/usr/bin/firefox
+Description=firefox
 
 [Service]
 Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
-ExecStart="/usr/bin/firefox"
+ExecStart="/home/xk/.local/bin/firefox/firefox"
