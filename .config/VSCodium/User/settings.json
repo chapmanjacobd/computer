@@ -391,7 +391,7 @@
     "statusBar.foreground": "#000000"
   },
   "workbench.colorTheme": "Visual Studio Light",
-  "workbench.editor.showTabs": false,
+  "workbench.editor.showTabs": "single",
   "workbench.editorAssociations": {
     "*.ipynb": "jupyter.notebook.ipynb"
   },
