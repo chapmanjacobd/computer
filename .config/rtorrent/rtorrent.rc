@@ -63,6 +63,7 @@ network.max_open_sockets.set = 999
 network.receive_buffer.size.set = 4M
 network.send_buffer.size.set    = 12M
 pieces.preload.type = 1
+pieces.hash.on_completion.set = no
 
 ## Memory resource usage (increase if you have a large number of items loaded,
 ## and/or the available resources to spend)
