@@ -34,6 +34,8 @@ function weekly
     lb merge-online-local ~/lb/video.db --yes
     lb merge-online-local ~/lb/audio.db --yes
 
+    tubeupdate
+
     eval-shuf-repeat ~/.jobs/dl_video.sh
     eval-shuf-repeat ~/.jobs/dl_audio.sh
 

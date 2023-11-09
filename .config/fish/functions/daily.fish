@@ -27,6 +27,5 @@ function daily
     end
     fd -S-12b -tf -x rm
 
-    tubeupdate
     library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
 end
