@@ -1,4 +1,4 @@
 # Defined interactively
-function pcontinue
+function presume
     kill -CONT $argv
 end
