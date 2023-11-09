@@ -14,6 +14,7 @@
 	autocrlf = false
 	eol = lf
 	logallrefupdates = true
+	attributesfile = /home/xk/.gitattributes_global
 [interactive]
 	diffFilter = delta --color-only
 [diff]
