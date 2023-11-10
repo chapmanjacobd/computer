@@ -4,4 +4,4 @@ Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.
 [Service]
 Type=simple
 RemainAfterExit=no
-ExecStart=/usr/bin/git config --file=/home/xk/.config/catt/catt.cfg options.device "Bedroom"
+ExecStart=/usr/bin/git config --file=/home/xk/.config/catt/catt.cfg options.device Bedroom
