@@ -47,6 +47,15 @@ function _abbr_ltv
 end
 abbr -a ltv --function _abbr_ltv
 
+function _abbr_ltc
+    if grep Bedroom ~/.config/catt/catt.cfg
+        echo 'cr && lt -c -t Bedroom'
+    else
+        echo 'cr && lt -c'
+    end
+end
+abbr -a ltc --function _abbr_ltc
+
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
 zoxide init fish | source

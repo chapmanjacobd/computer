@@ -67,7 +67,6 @@ abbr -a -- python ipython --pdb
 abbr -a -- icat kitty +kitten icat
 abbr -a -- str string
 abbr -a -- abbr abbrsave
-abbr -a -- ltc 'cr && lt -c'
 abbr -a -- fsadd lb fsadd
 abbr -a -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -- gitc git checkout
