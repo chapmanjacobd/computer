@@ -1,4 +1,4 @@
 # Defined interactively
 function openfiles
-    sudo fatrace -f C | grep -vE '[CWO] /$|(deleted)'
+    sudo fatrace -f C $argv | grep -vE '[CWO] /$|(deleted)'
 end
