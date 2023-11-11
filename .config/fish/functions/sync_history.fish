@@ -7,5 +7,5 @@ function sync_history
     count ~/d/00_Metadata/secure/fish_history.sync-conflict-* >/dev/null; and trash-put ~/d/00_Metadata/secure/fish_history.sync-conflict-*
 
     # copyq ?
-    fd -HI sync-conflict -x rm
+    # fd -HI sync-conflict -x rm
 end
