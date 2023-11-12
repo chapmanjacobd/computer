@@ -21,7 +21,7 @@ for path in args.paths:
     channels = info['streams'][0]['channels']
     bitrate = int(info['format']['bit_rate'])
     source_rate = int(info['streams'][0]['sample_rate'])
-    duration = int(info['format']['duration'])
+    duration = float(info['format']['duration'])
 
     assert bitrate > 0
     assert channels > 0
