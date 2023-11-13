@@ -14,7 +14,7 @@ function dbackups
     rsync -ah --files-from=(lb lt ~/lb/audio.db -w 'play_count > 0' -pf | sed 's|/mnt/d/||' | psub) /mnt/d/ backup:/mnt/d/
 
     set dfolder 69_Taxes_Keep
-    rsync -ah --info=progress2 --no-inc-recursive --delete --delete-before /mnt/d/$dfolder/\*.small.\* backup:/mnt/d/$dfolder/
+    rsync -ah --info=progress2 --no-inc-recursive --delete --delete-before /mnt/d/$dfolder/*.small.* backup:/mnt/d/$dfolder/
 
     # ssh backup sudo systemctl poweroff
 end
