@@ -2,10 +2,14 @@
 function snapshot_restore
     set snapshot_folder $argv[1]
 
-    if test -e $snapshot_folder
+    if test -d $snapshot_folder
         set folder (path basename (pwd))
-        trash-put ../$folder
-        cp -r $snapshot_folder/ ../$folder/
-        # btrfs subvolume snapshot $snapshot_folder $folder
+
+        rm -rf ../$folder
+        cp --reflink=auto -r $snapshot_folder ../$folder
+        # btrfs subvolume snapshot $snapshot_folder ../$folder
     end
+
+    cd (pwd)
 end
+ 
