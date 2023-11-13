@@ -151,3 +151,4 @@ abbr -a -- pstree 'pstree -a -p'
 abbr -a -- pcontinue presume
 abbr -a -- lsgpu lsgpu -p
 abbr -a -- restore_snapshot snapshot_restore
+abbr -a -- mv rclone move
