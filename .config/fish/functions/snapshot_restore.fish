@@ -10,6 +10,6 @@ function snapshot_restore
         # btrfs subvolume snapshot $snapshot_folder ../$folder
     end
 
-    cd (pwd)
+    cd ../$folder
 end
  
