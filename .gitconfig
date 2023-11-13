@@ -64,3 +64,5 @@
 	insteadOf = https://github.com/
 [safe]
 	bareRepository = explicit
+[alias]
+	history = log --follow -p --
