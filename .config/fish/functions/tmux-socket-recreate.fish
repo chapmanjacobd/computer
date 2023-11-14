@@ -1,4 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function tmux-socket-recreate
-    kill -SIGUSR1 (pgrep tmux)
+    pkill -SIGUSR1 tmux
 end
