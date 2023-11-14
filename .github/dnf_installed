@@ -94,6 +94,7 @@ progress
 proj-devel
 python-devel
 python3-btrfs
+python3-devel
 python3-ipdb
 python3-qgis
 python3-tkinter
