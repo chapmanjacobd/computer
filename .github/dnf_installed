@@ -69,6 +69,7 @@ libcec
 libicu
 libicu-devel
 libmediainfo
+libnatpmp
 libyaml-devel
 lshw
 lynis
