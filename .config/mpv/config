@@ -11,17 +11,17 @@ autofit=50%x40%
 quiet=yes
 audio-display=no
 
-scale=ewa_lanczos
-dscale=ewa_lanczos
-linear-downscaling=no
+#scale=ewa_lanczos
+#dscale=ewa_lanczos
+#linear-downscaling=no
 deband=no
 tscale=oversample
 
 input-ipc-server=~/.config/mpv/socket
 ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
 
-vo=gpu
-hwdec=auto-copy
+#vo=gpu
+#hwdec=auto-copy
 video-sync=display-resample
 
 osd-font="Noto Sans"
