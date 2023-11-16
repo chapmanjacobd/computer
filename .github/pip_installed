@@ -57,8 +57,9 @@ rich
 ruff
 s3fs
 scalene
-screeninfo
 scikit-learn
+screeninfo
+selenium
 sqlite-utils
 srsly
 sshuttle
