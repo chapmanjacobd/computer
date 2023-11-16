@@ -19,6 +19,7 @@ SETUVAR --export NUMEXPR_MAX_THREADS:12
 SETUVAR --export NUMEXPR_NUM_THREADS:4
 SETUVAR --export OMP_NUM_THREADS:16
 SETUVAR --export OPENSSL_CONF:/etc/ssl
+SETUVAR --export PASTEL_COLOR_MODE:24bit
 SETUVAR --export PIPENV_VERBOSITY:\x2d1
 SETUVAR --export PSQLRC:/pg/psqlrc
 SETUVAR --export PYTHONBREAKPOINT:IPython\x2eterminal\x2edebugger\x2eset_trace
