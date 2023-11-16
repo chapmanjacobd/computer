@@ -1,4 +1,4 @@
 # Defined interactively
-function run
+function run -w setsid
     setsid -f $argv
 end
