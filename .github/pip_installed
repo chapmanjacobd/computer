@@ -58,8 +58,7 @@ ruff
 s3fs
 scalene
 screeninfo
-sklearn
-spacy
+scikit-learn
 sqlite-utils
 srsly
 sshuttle
