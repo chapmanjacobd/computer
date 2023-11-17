@@ -1,14 +1,9 @@
-
-#
 # /etc/fstab
-# Created by anaconda on Sun Jun  5 18:39:35 2022
-#
-# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
-# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
 #
 # After editing this file, run 'systemctl daemon-reload' to update systemd
 # units generated from this file.
 #
+
 UUID=b601306a-a3b5-4600-a221-e687fff9e2c3  /                       btrfs   subvol=root,compress=zstd:1 0 0
 UUID=5f787b5a-f4ef-4428-ad34-c7d2c75c2801  /boot                   ext4    defaults	  1 2
 UUID=FDA6-3907                             /boot/efi               vfat    umask=0077,shortname=winnt 0 2
@@ -28,5 +23,8 @@ UUID=73de9464-09c5-4f68-8797-81b7308c446f  /mnt/d8                 btrfs   defau
 UUID=37a53dfa-d5d9-497f-89ad-196881db1d9e  /mnt/d9                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 
 /mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.writeback=true,security_capability=false,cache.readdir=true,func.readdir=cosr:8,cache.entry=120,cache.attr=120,cache.statfs=60,func.getattr=newest,moveonenospc=true,minfreespace=20G,threads=32,category.create=pfrd,readahead=1024   0 0
+
+# To update mergerfs: sudo mount /mnt/d
+# Check running version: sudo mergerfs.ctl -m /mnt/d info
 
 /home/xk/j/  /mnt/d/00_Metadata/journal/ none defaults,bind 0 0
