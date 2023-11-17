@@ -17,8 +17,6 @@ if [ -z "$OUT" ]; then
     exit 1
 fi
 
-echo "Determining split points..." >& 2
-
 SPLITS=$(
     ffmpeg  -v warning -i "$IN" -af silencedetect="$SD_PARAMS",ametadata=mode=print:file=-:key=lavfi.silence_start -vn -sn  -f s16le  -y /dev/null \
     | grep lavfi.silence_start= \
@@ -36,10 +34,10 @@ SPLITS=$(
 )
 
 if [[ "$SPLITS" != *","* ]]; then
-  echo "No splits"
   exit 0
 fi
 
-echo "Splitting points are $SPLITS"
+echo "$IN"
+echo "Splitting points: $SPLITS"
 
 ffmpeg -v warning -i "$IN" -c copy -map 0 -f segment -segment_times "$SPLITS" "$OUT" && rm "$IN"
