@@ -8,7 +8,7 @@ function daily
     lb relmv /mnt/d/70_Now_Watching/keep/* /mnt/d/77_Library/
 
     catt volume 0 && catt volume 40
-    pip install --upgrade gallery-dl pychromecast
+    pip install --upgrade pychromecast
 
     ~/lb/
     for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_Classical_Composers.db
