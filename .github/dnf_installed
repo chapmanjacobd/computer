@@ -3,6 +3,7 @@
 ack
 atop
 awscli
+bash
 bat
 bcal
 blas-devel
@@ -16,6 +17,7 @@ chromium
 code
 codium
 copyq
+coreutils
 darktable
 ddcutil
 digikam
@@ -23,6 +25,7 @@ dnf-plugin-system-upgrade
 dnf-utils
 dub
 earlyoom
+edk2-tools
 eza
 fatrace
 feh
@@ -33,10 +36,12 @@ fsearch
 gamemode
 gdal
 gdal-devel
+genisoimage
 gh
 gimp
 git-delta
 gmp-devel
+grep
 gsl-devel
 gwenview
 hddtemp
@@ -53,6 +58,7 @@ hw-probe
 hyperfine
 iftop
 java-latest-openjdk-devel
+jq
 kcolorchooser
 kdeplasma-addons
 kdiff3
@@ -71,6 +77,7 @@ libicu-devel
 libmediainfo
 libnatpmp
 libyaml-devel
+lsb
 lshw
 lynis
 megatools
@@ -90,9 +97,11 @@ perl-Image-ExifTool
 pg_top
 playerctl
 powertop
+procps
 progress
 proj-devel
 python-devel
+python3
 python3-btrfs
 python3-devel
 python3-ipdb
@@ -101,6 +110,7 @@ python3-tkinter
 python3-xattr
 python3.9
 qdirstat
+qemu
 qgis
 rclone
 remove-retired-packages
@@ -114,11 +124,14 @@ rtmpdump
 rtorrent
 scrot
 sddm-x11
+sed
 siege
+spice-gtk-tools
 sqlite-tools
 sshuttle
 strace
 stress
+swtpm
 symlinks
 sysfsutils
 system-upgrade
@@ -130,9 +143,12 @@ tldr
 translate-shell
 trash-cli
 udunits2-devel
+unzip
+usbutils
 util-linux
 vdpauinfo
 vmtouch
+wget
 wine
 wmctrl
 xautomation
@@ -141,11 +157,13 @@ xcalib
 xcb-util-cursor
 xclip
 xdg-desktop-portal-kde
+xdg-user-dirs
 xdotool
 xinput
 xorg-x11-drv-amdgpu
 xorg-x11-server-Xvfb
 xournal
+xrandr
 xset
 yank
 zoxide
