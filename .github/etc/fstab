@@ -27,6 +27,6 @@ UUID=24c52e4d-82bd-4a03-8d67-cb86d6101f2e  /mnt/d7                 btrfs   defau
 UUID=73de9464-09c5-4f68-8797-81b7308c446f  /mnt/d8                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 UUID=37a53dfa-d5d9-497f-89ad-196881db1d9e  /mnt/d9                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999   0 0
 
-/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.readdir=true,cache.entry=80,cache.attr=80,cache.statfs=16,func.getattr=newest,moveonenospc=true,minfreespace=40G,threads=15,category.create=pfrd,readahead=1024   0 0
+/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.writeback=true,security_capability=false,cache.readdir=true,func.readdir=cosr:8,cache.entry=120,cache.attr=120,cache.statfs=60,func.getattr=newest,moveonenospc=true,minfreespace=20G,threads=32,category.create=pfrd,readahead=1024   0 0
 
 /home/xk/j/  /mnt/d/00_Metadata/journal/ none defaults,bind 0 0
