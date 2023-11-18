@@ -1,4 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function ffa_delete
-    ffsmall $argv; and trash-put "$argv[1]"
+    ffa $argv; and trash-put "$argv[1]"
 end
