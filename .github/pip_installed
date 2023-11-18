@@ -53,6 +53,7 @@ python_mpv_jsonipc
 pyupgrade
 pyvirtualdisplay
 radian
+reddit-user-to-sqlite
 rich
 ruff
 s3fs
