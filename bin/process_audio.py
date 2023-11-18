@@ -29,7 +29,6 @@ for path in args.paths:
 
     ff_opts: List[str] = []
     if channels == 1:
-        opus_channels = '1'
         ff_opts.extend(['-ac 1'])
     else:
         ff_opts.extend(['-ac 2'])
@@ -54,6 +53,6 @@ for path in args.paths:
 
     os.remove(path)  # Remove original
 
-    if 'audiobook' not in path and duration > 2200:
+    if duration > 2200:
         cmd = f"split_by_silence.sh {shlex.quote(new_path)} {shlex.quote(str(Path(new_path).with_suffix('.%03d.opus')))}"
         subprocess.run(cmd, shell=True)
