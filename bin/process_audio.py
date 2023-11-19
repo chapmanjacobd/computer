@@ -16,7 +16,7 @@ for path in args.paths:
 
     try:
         ffprobe_cmd = ['ffprobe', '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', path]
-        result = subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         info = json.loads(result.stdout)
 
         audio_stream = next((stream for stream in info['streams'] if stream['codec_type'] == 'audio'), None)
