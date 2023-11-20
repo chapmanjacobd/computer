@@ -27,7 +27,7 @@ def curl(curl_cmd):
     return downloaded_file
 
 
-@tenacity.retry(wait=tenacity.wait_exponential(multiplier=3, min=30, max=900))
+@tenacity.retry(wait=tenacity.wait_exponential(multiplier=3, min=30, max=900), stop=tenacity.stop_after_attempt(5))
 def curl_with_filetype(curl_cmd, expected_type):
     downloaded_file = curl(' '.join(curl_cmd))
 
