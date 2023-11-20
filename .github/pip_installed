@@ -69,6 +69,7 @@ ssort
 starlette
 subliminal
 tables
+tenacity
 textract
 torrentool
 tqdm
