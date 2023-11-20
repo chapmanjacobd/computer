@@ -33,7 +33,8 @@ def curl_with_filetype(curl_cmd, expected_type):
 
     output = subprocess.check_output(['file', '-bi', downloaded_file])
     if expected_type not in output.decode('utf-8'):
-        raise Exception("File type does not match")
+        print("File type does not match. Retrying", curl_cmd[-1])
+        raise RuntimeError
 
     return downloaded_file
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         successful_download = curl_with_filetype(args.curl_cmd, args.file_type)
     except Exception as e:
         print(args.curl_cmd)
-        print(e)
+        print('Ran out of retries')
         raise SystemExit(1)
     else:
         if args.move:
