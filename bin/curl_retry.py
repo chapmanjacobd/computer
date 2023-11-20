@@ -49,6 +49,7 @@ if __name__ == '__main__':
     try:
         successful_download = curl_with_filetype(args.curl_cmd, args.file_type)
     except Exception as e:
+        print(args.curl_cmd)
         print(e)
         raise SystemExit(1)
     else:
