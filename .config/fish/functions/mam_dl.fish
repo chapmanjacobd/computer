@@ -2,7 +2,7 @@
 function mam_dl
     load_env_mam
     ~/Downloads/
-    for id in (cb | sed 's|https://www.myanonamouse.net/t/||')
+    for id in (cb | grep -i '.net/t/' | sed 's|https://www.myanonamouse.net/t/||')
         curl -OJs -b mam_id=$MAM_COOKIE https://www.myanonamouse.net/tor/download.php?tid=$id
     end
 end
