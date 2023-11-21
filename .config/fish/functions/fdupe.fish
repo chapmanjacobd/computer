@@ -15,7 +15,7 @@ function fdupe
         czkawka music -d (pwd) >~/Downloads/(path basename $dir)_dupes
     end
 
-    set video_dirs ~/d/69_Taxes/ ~/d/71_Mealtime_Videos ~/d/72_Education ~/d/73_Entertainment ~/d/75_Moviequeue ~/d/76_CityVideos
+    set video_dirs ~/d/69_Taxes/ ~/d/71_Mealtime_Videos ~/d/72_Education ~/d/73_Entertainment ~/d/75_Moviequeue
     for dir in $video_dirs
         $dir/
         czkawka video -d (pwd) >~/Downloads/(path basename $dir)_dupes
