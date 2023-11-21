@@ -48,7 +48,7 @@ end
 abbr -a ltv --function _abbr_ltv
 
 function _abbr_ltc
-    if grep Bedroom ~/.config/catt/catt.cfg
+    if grep Bedroom ~/.config/catt/catt.cfg >/dev/null
         echo 'cr && lt -c -t Bedroom'
     else
         echo 'cr && lt -c'
