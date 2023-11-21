@@ -16,7 +16,7 @@ function lbrelease --argument oldver newver
         pip install --upgrade pip pdm
         pdm lock --group :all
         sleep 400
-        python3.11 -m pip install --upgrade xklb
-        python3.11 -m pip install --upgrade xklb
+        python -m pip install --upgrade xklb
+        python -m pip install --upgrade xklb
     end
 end

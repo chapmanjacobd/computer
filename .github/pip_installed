@@ -46,6 +46,7 @@ pyarrow
 pycln
 PyExifTool
 pylint
+pymcdm
 pympler
 pytest-icdiff
 python-dateutil
