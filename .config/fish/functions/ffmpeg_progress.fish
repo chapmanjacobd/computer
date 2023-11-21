@@ -1,4 +1,6 @@
 # Defined interactively
 function ffmpeg_progress
-    watch progress -wc ffmpeg
+    for pid in (pgrep ffmpeg)
+        progress -p $pid
+    end
 end
