@@ -14,9 +14,7 @@ args = parser.parse_args()
 with open(args.filepath) as fp:
     soup = BeautifulSoup(fp, 'html.parser')
 
-table = soup.find('table')
-
-for row in table.find_all('tr'):
+for row in soup.find_all('tr'):
     match = args.search_str in str(row)
     if match and args.invert_match:
         continue
