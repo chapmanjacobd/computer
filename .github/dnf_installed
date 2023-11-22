@@ -91,6 +91,7 @@ mpv-mpris
 ncurses-devel
 netsniff-ng
 nomacs
+ocrmypdf
 perl
 perl-CPAN
 perl-Image-ExifTool
