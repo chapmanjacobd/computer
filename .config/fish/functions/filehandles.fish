@@ -1,4 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function filehandles
-    sudo lsof / | coln 1 | asc
+    sudo lsof (mountpoints) | coln 1 | asc
 end
