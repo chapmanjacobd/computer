@@ -6,5 +6,4 @@ function coln
     else if test $col -lt 0
         awk 'NF && NF'$col' { print ( $(NF'$col') ) }'
     end
-    awk '{print $(NF)}'
 end
