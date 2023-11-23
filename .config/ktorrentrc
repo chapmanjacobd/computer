@@ -1,0 +1,10 @@
+[MainWindow]
+3440x1440 screen: Window-Maximized=true
+State=AAAA/wAAAAD9AAAAAAAAB/gAAAUBAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAIAAAAWAG0AYQBpAG4AVABvAG8AbABCAGEAcgEAAAAA/////wAAAAAAAAAAAAAAHgBUAG8AcgByAGUAbgB0AHMAVABvAG8AbABCAGEAcgEAAAKS/////wAAAAAAAAAA
+ToolBarsMovable=Disabled
+
+[downloads]
+dhtSupport=true
+networkInterface=All interfaces
+tempDir=/home/xk/.local/share/ktorrent/
+utpEnabled=true
