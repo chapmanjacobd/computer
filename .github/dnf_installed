@@ -92,6 +92,7 @@ mupdf
 ncurses-devel
 netsniff-ng
 nomacs
+ocaml
 ocrmypdf
 perl
 perl-CPAN
