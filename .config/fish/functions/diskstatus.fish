@@ -1,6 +1,6 @@
 # Defined interactively
 function diskstatus
-    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9}
+    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9,10}
         echo
         echo MOUNTPOINT: $mnt
         echo ---
@@ -8,7 +8,7 @@ function diskstatus
         echo
     end
 
-    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9}
+    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9,10}
         sudo btrfs device stats $mnt
     end
 
@@ -19,11 +19,11 @@ function diskstatus
     smartls Power_On_Hours Power_Cycle_Count Load_Cycle_Count UDMA_CRC_Error_Count
     smartls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
 
-    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9}
+    for mnt in / /mnt/d{1,2,3,4,5,6,7,8,9,10}
         if not sudo btrfs scrub status $mnt | grep -q 'no errors'
             sudo btrfs scrub status $mnt
         end
     end
 
-    lb mu /mnt/d{1,2,3,4,5,6,7,8,9}
+    lb mu /mnt/d{1,2,3,4,5,6,7,8,9,10}
 end
