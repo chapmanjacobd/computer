@@ -65,7 +65,6 @@ class BtrfsStream:
     l_tlv = 4
 
     def __init__(self, stream_file, delete=False):
-
         # Read send stream
         try:
             with open(stream_file, 'rb') as f_stream:
@@ -138,7 +137,6 @@ class BtrfsStream:
         paths = OrderedDict()
 
         while True:
-
             # 3rd field is CRC, not used here
             l_cmd, cmd, _ = unpack('<IHI', self.stream[offset : offset + self.l_head])
             try:
@@ -367,7 +365,6 @@ def time_str(epoch):
 
 
 def print_by_paths(paths, commands, filter, csv):
-
     # Temporary files / dirs / links... created by btrfs send: they are later
     # renamed to definitive files / dirs / links...
     if filter:
@@ -376,7 +373,6 @@ def print_by_paths(paths, commands, filter, csv):
         re_tmp = re.compile(r'o\d+-\d+-0$')
 
     for path, actions in paths.items():
-
         if filter and re_tmp.match(path):
             # Don't display files created temporarily and later renamed
             if not (
@@ -396,7 +392,6 @@ def print_by_paths(paths, commands, filter, csv):
         print_actions = []
 
         for action in actions:
-
             cmd = commands[action]
             cmd_short = cmd['command']
 

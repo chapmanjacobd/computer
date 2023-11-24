@@ -41,7 +41,7 @@ def curl_with_filetype(curl_cmd, expected_type):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--file-type","--filetype", help="Expected file type")
+    parser.add_argument("--file-type", "--filetype", help="Expected file type")
     parser.add_argument("--move", help="Path to move file to on success")
 
     parser.add_argument("curl_cmd", nargs='+', help="Curl command to run")

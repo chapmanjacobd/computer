@@ -1,12 +1,14 @@
 #!/usr/bin/python3
-import sys
+import argparse
 import os
 import random
-import argparse
+import sys
 from typing import Dict, List
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--files', nargs='?', type=int, const=1, help='Print N random files per directory instead of directories')
+parser.add_argument(
+    '--files', nargs='?', type=int, const=1, help='Print N random files per directory instead of directories'
+)
 args = parser.parse_args()
 
 files_per_dir: Dict[str, List[str]] = {}
