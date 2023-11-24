@@ -1,11 +1,17 @@
 #!/usr/bin/python3
 import argparse
 import subprocess
+import sys
 import time
 
 
 def get_command_output(command):
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+    error = result.stderr.strip()
+    if error:
+        print(error, file=sys.stderr)
+
     return result.stdout.strip()
 
 
