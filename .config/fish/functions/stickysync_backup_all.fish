@@ -4,7 +4,6 @@ function stickysync_backup_all --argument historyfile from to
     combine (ssh backup "cd $from && fd -S+1b" | psub) not $historyfile >$new_files
     cat $new_files | while read line
         rsync -r --files-from=(echo $line | psub) backup:$from $to
-        and echo $line >>$historyfile
         or echo failed $line
     end
 end
