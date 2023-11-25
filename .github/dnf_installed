@@ -108,6 +108,7 @@ python3
 python3-btrfs
 python3-devel
 python3-ipdb
+python3-pyicu
 python3-qgis
 python3-tkinter
 python3-xattr
