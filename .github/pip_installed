@@ -45,6 +45,7 @@ puremagic
 pyarrow
 pycln
 PyExifTool
+pyicu
 pylint
 pymcdm
 pympler
