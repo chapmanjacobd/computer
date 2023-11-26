@@ -151,3 +151,4 @@ abbr -a -- lsgpu lsgpu -p
 abbr -a -- restore_snapshot snapshot_restore
 abbr -a -- skipworktree 'git update-index --skip-worktree --'
 abbr -a -- unskipworktree 'git update-index --no-skip-worktree --'
+abbr -a -- getTabs cut10
