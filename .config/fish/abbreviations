@@ -108,8 +108,6 @@ abbr -a -- memray memray run --live
 abbr -a --set-cursor -- strace 'strace -p (pgrep -n %)'
 abbr -a -- gc gclone
 abbr -a -- repeal until
-abbr -a -- mbytes bcal
-abbr -a -- bytes bcal
 abbr -a -- lsofhome 'lsof /home/ | sort -k 7 -u --human-numeric-sort'
 abbr -a -- traceroute mtr
 abbr -a -- taxes wt --db /home/xk/lb/fs/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/69_Taxes_Keep/ --start '10%' --gui --prefetch 4 -u duration desc, size desc --duration-from-size +180
