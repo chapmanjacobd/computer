@@ -55,6 +55,7 @@ python_mpv_jsonipc
 pyupgrade
 pyvirtualdisplay
 radian
+rarfile
 reddit-user-to-sqlite
 rich
 ruff
