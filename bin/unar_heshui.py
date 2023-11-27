@@ -35,7 +35,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             files[os.path.splitext(f.filename)[1]].append((f.filename, f.mtime))
 
         if len(files.keys()) == 0:
-            log.error('No files found in:', input_path)
+            log.error('No files found in: %s', input_path)
         elif len(files.keys()) == 1:
             for ext, files_arr in files.items():
                 for member, mtime in files_arr:
@@ -43,7 +43,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     if not args.dry_run:
                         rf.extract(member, output_prefix)
         else:
-            log.debug('Directory structure not recognized: %s', files)
+            log.error('Directory structure not recognized: %s', files)
 
 
 
