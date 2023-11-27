@@ -11,7 +11,6 @@ parser.add_argument('--folders', '--dirs', action='store_true', help='Only print
 args = parser.parse_args()
 
 files_per_dir: Dict[str, List[str]] = {}
-
 for line in sys.stdin:
     line = line.strip()
     dir_name = os.path.dirname(line)
