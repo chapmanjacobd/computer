@@ -1,0 +1,25 @@
+
+#
+# /etc/fstab
+# Created by anaconda on Mon Dec 12 07:45:59 2022
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+UUID=ec7341f2-0522-4c2b-9e9a-4f7d15baafd5 /                       btrfs   subvol=root00,compress=zstd:1 0 0
+UUID=ea7c7b30-7ddf-4307-a195-b68693d1f54b /boot                   ext4    defaults        1 2
+UUID=1CA2-79D0          /boot/efi               vfat    umask=0077,shortname=winnt 0 2
+UUID=ec7341f2-0522-4c2b-9e9a-4f7d15baafd5 /home                   btrfs   subvol=home00,compress=zstd:1 0 0
+UUID=9c8df640-a931-41a9-b951-cab7b43b43f4 none                    swap    defaults        0 0
+
+UUID=541f8cbf-ea99-428c-b916-11286b222efb /mnt/d1    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
+UUID=4a0d117c-8fd6-4f6a-ac99-1031cba15f5e /mnt/d2    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
+UUID=07bf21dc-f94a-4b46-b502-d5ac52b9a786 /mnt/d3    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
+UUID=cd79952e-4e94-4b33-b70c-ab6b4e167a61 /mnt/d4    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
+
+/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4   /mnt/d   mergerfs
+defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.writeback=true,security_capability=false,cache.readdir=true,func.readdir=cosr:8,cache.entry=120,cache.attr=120,cache.statfs=
+60,func.getattr=newest,moveonenospc=true,minfreespace=20G,threads=32,category.create=pfrd,readahead=1024   0 0
