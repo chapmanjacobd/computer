@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import os
-from collections import defaultdict
+from collections import Counter
 from pathlib import Path
 from xklb.utils import objects
 from xklb.utils.log_utils import log
@@ -21,48 +21,57 @@ def parse_args() -> argparse.Namespace:
 
 
 def check_archive(args, input_path: Path, output_prefix: Path):
-    files = defaultdict(list)
+    count_extracted = 0
     with rarfile.RarFile(input_path, errors='strict') as rf:
         rf.setpassword('heshui')
 
+        files = []
         for f in rf.infolist():
             if f.file_size == 0:
                 if not f.filename.endswith(os.sep):
-                    log.warning('Ignoring non-directory zero size file:', f.filename)
+                    log.warning('Ignoring non-directory zero size file: %s', f.filename)
                 continue
-            elif f.filename.endswith(('.txt', '.pdf', '.html', '.jpg', '.png', '.bmp')):
+            elif f.filename.lower().endswith(('.txt', '.pdf', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u')):
                 continue
 
-            files[os.path.splitext(f.filename)[1]].append(f.filename)
+            files.append(f.filename)
 
-        if len(files.keys()) == 0:
+        files, nested_archives = [s for s in files if not s.endswith(('.exe', '.rar'))], [s for s in files if s.endswith(('.exe', '.rar'))]
+        if nested_archives:
+            log.error('nested archives: %s', nested_archives)
+
+        extensions = Counter(Path(s).suffix.lower() for s in files)
+
+        if len(files) == 0:
             log.error('No files found in: %s', input_path)
-        elif len(files.keys()) == 1:
-            for ext, files_arr in files.items():
-                for member, mtime in files_arr:
-                    log.debug('One type of extension (%s): %s', ext, member)
-                    if not args.dry_run:
-                        rf.extract(member, output_prefix)
-        elif len(files.keys()) == 2:
-            fist_ext, second_ext = files.keys()
+        elif len(extensions) == 1:
+            for member in files:
+                log.debug('One type of extension: %s', member)
+                if not args.dry_run:
+                    rf.extract(member, output_prefix)
+                count_extracted += 1
+        elif len(extensions) == 2:
+            fist_ext, second_ext = extensions
 
             low_q_ext, high_q_ext = None, None
-            if len(files[fist_ext]) != len(files[second_ext]):
-                log.error('Mismatched %s and %s: %s', fist_ext, second_ext, files)
-            elif set(files.keys()) == {'.mp3', '.wav'}:
+            if len([s for s in files if s.endswith(fist_ext)]) != len([s for s in files if s.endswith(second_ext)]):
+                log.error('Mismatched extensions %s: %s', extensions, files)
+            elif set(extensions) == {'.mp3', '.wav'}:
                 low_q_ext, high_q_ext = '.mp3', '.wav'
-            elif set(files.keys()) == {'.mp3', '.flac'}:
+            elif set(extensions) == {'.mp3', '.flac'}:
                 low_q_ext, high_q_ext = '.mp3', '.flac'
             else:
-                log.error('Two extension structure not recognized: %s', files)
+                log.error('Two extension structure %s not recognized: %s', extensions, files)
 
             if low_q_ext and high_q_ext:
-                for member in files[high_q_ext]:
+                for member in [s for s in files if s.endswith(high_q_ext)]:
                     log.debug('%s and %s: %s', low_q_ext, high_q_ext, member)
                     if not args.dry_run:
                         rf.extract(member, output_prefix)
+                    count_extracted += 1
         else:
             log.error('Directory structure not recognized: %s', files)
+    return count_extracted
 
 
 if __name__ == "__main__":
@@ -72,13 +81,23 @@ if __name__ == "__main__":
     output_prefix = src.parent / (src.parent.name + '_out')
     output_prefix.mkdir(exist_ok=args.dry_run)
 
+    count_skipped=0
+    count_processed=0
+    count_files=0
     for input_path in src.rglob('*'):
         if input_path.is_file():
             try:
-                check_archive(args, input_path, output_prefix)
+                ar_extracted = check_archive(args, input_path, output_prefix)
+                if ar_extracted > 0:
+                    count_processed += 1
+                    count_files += check_archive(args, input_path, output_prefix)
+                else:
+                    count_skipped += 1
             except (rarfile.BadRarFile, rarfile.NotRarFile):
-                log.info('Corrupt file:', input_path)
+                log.info('Corrupt file: %s', input_path)
             except rarfile.NeedFirstVolume:
-                log.debug('NeedFirstVolume', input_path)
+                log.debug('NeedFirstVolume: %s', input_path)
             except Exception as e:
                 log.exception(input_path)
+
+    print('Skipped:',  count_processed, 'Processed:',  count_processed, 'Files:', count_files)
