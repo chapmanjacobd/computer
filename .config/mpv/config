@@ -60,3 +60,7 @@ demuxer-mkv-subtitle-preroll=yes
 
 replaygain=track
 af="scaletempo2,lavfi=[pan=1c|c0=0.5*c0+0.5*c1],volume=replaygain-track"
+
+[video finished]
+profile-cond=eof_reached
+save-position-on-quit=no
