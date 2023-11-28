@@ -31,7 +31,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 if not f.filename.endswith(os.sep):
                     log.warning('Ignoring non-directory zero size file: %s', f.filename)
                 continue
-            elif f.filename.lower().endswith(('.txt', '.pdf', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u')):
+            elif f.filename.lower().endswith(('.txt', '.pdf', '.docx', '.url', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db')):
                 continue
 
             files.append(f.filename)
