@@ -30,7 +30,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 if not f.filename.endswith(os.sep):
                     log.warning('Ignoring non-directory zero size file:', f.filename)
                 continue
-            elif f.filename.endswith(('.txt', '.html', '.jpg', '.png', '.bmp')):
+            elif f.filename.endswith(('.txt', '.pdf', '.html', '.jpg', '.png', '.bmp')):
                 continue
 
             files[os.path.splitext(f.filename)[1]].append(f.filename)
