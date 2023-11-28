@@ -7,6 +7,7 @@ from xklb.utils import objects
 from xklb.utils.log_utils import log
 import rarfile
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
@@ -29,10 +30,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 if not f.filename.endswith(os.sep):
                     log.warning('Ignoring non-directory zero size file:', f.filename)
                 continue
-            elif f.filename.endswith(('.txt', '.jpg')):
+            elif f.filename.endswith(('.txt', '.html', '.jpg', '.png', '.bmp')):
                 continue
 
-            files[os.path.splitext(f.filename)[1]].append((f.filename, f.mtime))
+            files[os.path.splitext(f.filename)[1]].append(f.filename)
 
         if len(files.keys()) == 0:
             log.error('No files found in: %s', input_path)
@@ -42,9 +43,26 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     log.debug('One type of extension (%s): %s', ext, member)
                     if not args.dry_run:
                         rf.extract(member, output_prefix)
+        elif len(files.keys()) == 2:
+            fist_ext, second_ext = files.keys()
+
+            low_q_ext, high_q_ext = None, None
+            if len(files[fist_ext]) != len(files[second_ext]):
+                log.error('Mismatched %s and %s: %s', fist_ext, second_ext, files)
+            elif set(files.keys()) == {'.mp3', '.wav'}:
+                low_q_ext, high_q_ext = '.mp3', '.wav'
+            elif set(files.keys()) == {'.mp3', '.flac'}:
+                low_q_ext, high_q_ext = '.mp3', '.flac'
+            else:
+                log.error('Two extension structure not recognized: %s', files)
+
+            if low_q_ext and high_q_ext:
+                for member in files[high_q_ext]:
+                    log.debug('%s and %s: %s', low_q_ext, high_q_ext, member)
+                    if not args.dry_run:
+                        rf.extract(member, output_prefix)
         else:
             log.error('Directory structure not recognized: %s', files)
-
 
 
 if __name__ == "__main__":
