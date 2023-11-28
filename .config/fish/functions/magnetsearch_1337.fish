@@ -1,5 +1,5 @@
 # Defined interactively
-function magnets1337 --argument search
+function magnetsearch_1337 --argument search
     for cat in TV Documentaries Movies XXX
         firefox --new-tab https://1337x.to/category-search/$search/$cat/1/
         read last_page_number
