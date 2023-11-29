@@ -442,6 +442,7 @@
   "python.analysis.completeFunctionParens": true,
   "python.envFile": "${workspaceFolder}/.env",
   "[python]": {
+
     "editor.formatOnPaste": false,
     "editor.wordBasedSuggestions": true,
     "editor.codeActionsOnSave": {
@@ -505,7 +506,7 @@
   "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
   "blockman.n16EnableFocus": false,
   "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
-  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.defaultInterpreterPath": "/usr/bin/python3.10",
   "python.analysis.typeCheckingMode":"strict",
   "python.analysis.userFileIndexingLimit": -1
 }
