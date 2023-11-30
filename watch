@@ -17,3 +17,4 @@ wt ~/d/75_Moviequeue/from_backup/ -d-30 -O
 wt 70_Now_Watching
 wt JUDGMENT PS4
 wt babylon5project -O
+wt Horizon Zero Dawn Walkthrough -O
