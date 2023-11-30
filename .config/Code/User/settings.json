@@ -506,7 +506,7 @@
   "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
   "blockman.n16EnableFocus": false,
   "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
-  "python.defaultInterpreterPath": "/usr/bin/python3.10",
+  "python.defaultInterpreterPath": "/usr/bin/python",
   "python.analysis.typeCheckingMode":"strict",
   "python.analysis.userFileIndexingLimit": -1
 }

@@ -99,6 +99,7 @@ perl-CPAN
 perl-Image-ExifTool
 pg_top
 playerctl
+pngquant
 powertop
 procps
 progress
