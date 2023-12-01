@@ -153,3 +153,4 @@ abbr -a -- skipworktree 'git update-index --skip-worktree --'
 abbr -a -- unskipworktree 'git update-index --no-skip-worktree --'
 abbr -a -- getTabs cut10
 abbr -a -- savetabs tabs.save
+abbr -a -- tixati /home/xk/.cargo/bin/vopono -v exec --provider custom --custom /etc/wireguard/cloudflare.conf --protocol wireguard tixati
