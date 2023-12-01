@@ -18,3 +18,4 @@ wt 70_Now_Watching
 wt JUDGMENT PS4
 wt babylon5project -O
 wt Horizon Zero Dawn Walkthrough -O
+wt -C --sort-by 'deleted/played desc, deleted desc'
