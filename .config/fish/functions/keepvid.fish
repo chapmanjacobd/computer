@@ -7,7 +7,7 @@ function keepvid
     end
 
     cp "$argv[1]" ~/d/77_Library/
-    if test (du -b $file | cut -f1) -gt (mbytes 400M)
+    if test (du -b "$argv[1]" | cut -f1) -gt (mbytes 400M)
         ffsmall "$HOME/d/77_Library/$f" $argv[2..-1]
         and /bin/rm "$HOME/d/77_Library/$f"
     end
