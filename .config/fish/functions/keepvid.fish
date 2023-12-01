@@ -7,9 +7,9 @@ function keepvid
     end
 
     cp "$argv[1]" ~/d/77_Library/
-    ffsmall "$HOME/d/77_Library/$f" $argv[2..-1]
-    and /bin/rm "$argv[1]" "$HOME/d/77_Library/$f"
-
-    ln -s "$HOME/d/77_Library/$f" "$argv[1]"
-    or rm "$filen".small.mkv
+    if test (du -b $file | cut -f1) -gt (mbytes 400M)
+        ffsmall "$HOME/d/77_Library/$f" $argv[2..-1]
+        and /bin/rm "$HOME/d/77_Library/$f"
+    end
+    /bin/rm "$argv[1]"
 end
