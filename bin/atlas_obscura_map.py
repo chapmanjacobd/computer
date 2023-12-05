@@ -27,8 +27,8 @@ args = parse_args()
 for p in Path(args.json_path).glob('*.json'):
     d = json.load(open(p))
 
-    nearby_places = d.pop('nearby_places', None) or {}
-    nearby_foods = d.pop('nearby_foods', None) or {}
+    nearby_places = d.pop('nearby_places', None) or []
+    nearby_foods = d.pop('nearby_foods', None) or []
 
     tables = site_extract.nosql_to_sql([d, *nearby_places, *nearby_foods])
 
