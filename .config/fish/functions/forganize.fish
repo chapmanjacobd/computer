@@ -7,9 +7,11 @@ function forganize
     #trash-size
     #trash-empty
 
+    set joblog (mktemp)
     for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         echo library christen -r "$m" -v
-    end | parallel --shuf
+    end | parallel --shuf --joblog $joblog
+    parallel --retry-failed --joblog $joblog -j1
 
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
@@ -52,7 +54,9 @@ function forganize
     ~/d/
     yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
 
+    set joblog (mktemp)
     for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         echo lb fsadd --filesystem ~/lb/fs/d.db "$m"
-    end | parallel --shuf
+    end | parallel --shuf --joblog $joblog
+    parallel --retry-failed --joblog $joblog -j1
 end
