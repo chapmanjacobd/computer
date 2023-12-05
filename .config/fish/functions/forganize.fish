@@ -19,13 +19,13 @@ function forganize
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/69_Taxes_Keep/ -pf | xargs -P 20 -I{} rm {}
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
-    set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_Classical_Composers/ ~/d/85_Inspiration/
+    set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_Classical_Composers/ ~/d/85_Inspiration/ ~/d/86_Samples/
     set photo_dirs ~/d/61_Photos_Unsorted/ ~/d/96_Weird_History/ ~/d/94_Cool/ ~/d/93_Bg/ ~/d/91_New_Art/ ~/d/98_Me/ ~/d/99_Art/
 
     # ~/d/84_MIDI && fd -tf -eMID -x mv "{}" "{.}.mid"
 
     fd . $audio_dirs -epng -ejpg -x rm "{}"
-    fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"; if test (duration "{.}.oga") -gt 2280; split_by_silence "{.}.oga"; end'
+    fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
     process_audio $audio_dirs
 
     for f in (fd -tf -eWEBM -eMP4 -eMKV -eM4V -eFLV -eAVI -eMPG -eMOV -eWMV -eGIF -E 'gifs/**/*' . ~/d/61_Photos_Unsorted/)
