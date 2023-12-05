@@ -11,6 +11,6 @@ function trash-empty-no-snapshot
     trash-list >>~/.local/share/trashed.txt
 
     if contains -- -f $opts; or gum confirm --default=no 'Empty trash?'
-        command trash-empty-no-snapshot -f
+        command trash-empty -f
     end
 end
