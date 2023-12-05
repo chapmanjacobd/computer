@@ -6,7 +6,7 @@ function ffsmallpar
     end
 
     set tmpfile (mktemp)
-    fd -S+200MB | grep -v .small. | sort_size.py >$tmpfile
+    fd . $argv -S+200MB | grep -v .small. | sort_size.py >$tmpfile
 
     if not test -s $tmpfile
         return

@@ -72,7 +72,6 @@ abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
 abbr -a -- curl curl -s
 abbr -a -- rg rg -i --no-heading --no-line-number -j1
-abbr -a -- sys sudo systemctl
 abbr -a -- bootlogs journalctl -r -b -1
 abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
@@ -153,3 +152,6 @@ abbr -a -- unskipworktree 'git update-index --no-skip-worktree --'
 abbr -a -- getTabs cut10
 abbr -a -- savetabs tabs.save
 abbr -a -- tixati /home/xk/.cargo/bin/vopono -v exec --provider custom --custom /etc/wireguard/cloudflare.conf --protocol wireguard tixati
+abbr -a -- sys systemctl
+abbr -a -- ssys sudo systemctl
+abbr -a -- sysu systemctl --user

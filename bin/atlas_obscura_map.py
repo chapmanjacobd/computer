@@ -16,6 +16,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("json_path")
     args = parser.parse_args()
 
+    Path(args.database).touch()
     args.db = db_utils.connect(args)
     log.info(objects.dict_filter_bool(args.__dict__))
 

@@ -1,5 +1,5 @@
 [Unit]
-Description='On *-*-* 23:15:00 run ~/d/69_Taxes_Keep/ && ffsmallpar'
+Description='On *-*-* 23:15:00 run ~/d/69_Taxes_Keep/ && ffsmallpar ~/d/69_Taxes_Keep/ ~/d/68_Vr_Tv_Keep/'
 
 [Service]
 Type=simple
