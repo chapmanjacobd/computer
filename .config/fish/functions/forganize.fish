@@ -7,6 +7,7 @@ function forganize
     #trash-size
     #trash-empty
 
+    ulimit -n 10240
     set joblog (mktemp)
     for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         echo library christen -r "$m" -v
