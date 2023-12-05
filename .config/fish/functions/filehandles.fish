@@ -1,4 +1,4 @@
 # Defined via `source`
 function filehandles
-    sudo lsof +c0 (mountpoints) | coln 1 | asc
+    sudo lsof +c0 (mountpoints) 2>/dev/null | grep -vE '^COMMAND' | coln 1 | asc
 end
