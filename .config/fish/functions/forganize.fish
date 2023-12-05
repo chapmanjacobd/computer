@@ -7,7 +7,7 @@ function forganize
     #trash-size
     #trash-empty
 
-    for m in /mnt/d{1,2,3,4,5,6,7,8,9}/*
+    for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         echo library christen -r "$m" -v
     end | parallel --shuf
 
@@ -52,7 +52,7 @@ function forganize
     ~/d/
     yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
 
-    for m in /mnt/d{1,2,3,4,5,6,7,8,9}/*
+    for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         echo lb fsadd --filesystem ~/lb/fs/d.db "$m"
     end | parallel --shuf
 end
