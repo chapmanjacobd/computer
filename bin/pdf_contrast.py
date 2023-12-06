@@ -3,16 +3,21 @@
 import argparse
 import io
 import os
+from pathlib import Path
 
 import img2pdf
 import ocrmypdf
 import pdf2image
-from PIL import ImageEnhance
+from PIL import ImageEnhance, Image
 from tqdm import tqdm
 
 
 def pdf_contrast(args):
-    input_images = pdf2image.convert_from_path(args.input_path)
+    if args.input_path.is_dir():
+        files = sorted(p for p in args.input_path.glob('*') if p.suffix != '.pdf')
+        input_images = [Image.open(p) for p in files]
+    else:
+        input_images = pdf2image.convert_from_path(args.input_path)
     print(f'Loaded {len(input_images)} pages')
 
     output_images: list[bytes] = []
@@ -31,7 +36,8 @@ def pdf_contrast(args):
     with open(args.output_path, "wb") as outf:
         img2pdf.convert(*output_images, outputstream=outf)
 
-    ocrmypdf.ocr(args.output_path, args.output_path, deskew=True, optimize=1)
+    if args.ocr:
+        ocrmypdf.ocr(args.output_path, args.output_path, deskew=True, optimize=1)
 
 
 if __name__ == "__main__":
@@ -40,10 +46,13 @@ if __name__ == "__main__":
     parser.add_argument("--contrast", "-c", type=int, default=100)
     parser.add_argument("--color", "-C", type=int, default=100)
     parser.add_argument("--sharpness", "-s", type=int, default=100)
+    parser.add_argument("--no-ocr", "--skip-ocr", dest='ocr', action='store_false')
 
     parser.add_argument("input_path", help="Input PDF file")
     parser.add_argument("output_path", nargs='?', help="Output PDF file")
     args = parser.parse_args()
+
+    args.input_path = Path(args.input_path).resolve()
 
     if args.output_path is None:
         params = []
@@ -57,6 +66,9 @@ if __name__ == "__main__":
             params.append(f"s{args.sharpness}")
 
         suffix = '.' + '.'.join(params) + '.pdf'
-        args.output_path = os.path.splitext(args.input_path)[0] + suffix
+        if Path(args.input_path).is_dir():
+            args.output_path = (args.input_path / args.input_path.name).with_suffix(suffix)
+        else:
+            args.output_path = os.path.splitext(args.input_path)[0] + suffix
 
     pdf_contrast(args)
