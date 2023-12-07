@@ -4,6 +4,8 @@ script-opts-append=autocrop-auto=no
 script-opts-append=excerpt-no-pause-on-file-loaded=1
 script-opts-append=osc-windowcontrols=no
 script-opts-append=ontop-level=window
+
+profile=fast
 ontop=yes
 keepaspect
 geometry=100%:100%
