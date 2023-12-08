@@ -1,4 +1,4 @@
 # Defined interactively
 function todo
-    headtee ~/j/private/todo.md
+    cat (echo $argv | psub) ~/j/private/todos.md | sponge ~/j/private/todos.md
 end
