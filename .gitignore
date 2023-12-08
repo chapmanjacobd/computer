@@ -1,3 +1,4 @@
+/.python_history
 /.config/oktetarc
 /.config/napari/
 /.config/krenamerc
@@ -459,4 +460,3 @@
 /.pulumi/
 /.pylint.d/
 /.pypirc
-/.python_history
