@@ -55,8 +55,8 @@ sub-gray=yes
 sub-fix-timing=yes
 
 demuxer-seekable-cache=yes
-demuxer-max-bytes=500MiB
-demuxer-readahead-secs=180
+demuxer-max-bytes=100MiB
+demuxer-readahead-secs=5
 demuxer-mkv-subtitle-preroll=yes
 
 replaygain=track
