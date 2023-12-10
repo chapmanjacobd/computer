@@ -393,9 +393,9 @@
   "r.alwaysUseActiveTerminal": true,
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll": false,
-    "source.organizeImports": false,
-    "source.sortMembers": false
+    "source.fixAll": "never",
+    "source.organizeImports": "never",
+    "source.sortMembers": "never"
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
@@ -418,7 +418,7 @@
   "[elixir]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
-    "editor.wordBasedSuggestions": false,
+    "editor.wordBasedSuggestions": "off",
     "editor.formatOnType": true,
     "editor.trimAutoWhitespace": false,
     "files.trimTrailingWhitespace": true,
@@ -444,7 +444,7 @@
   "[python]": {
 
     "editor.formatOnPaste": false,
-    "editor.wordBasedSuggestions": true,
+    "editor.wordBasedSuggestions": "matchingDocuments",
     "editor.codeActionsOnSave": {
       "source.organizeImports": false,
     },
@@ -508,5 +508,10 @@
   "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
   "python.defaultInterpreterPath": "/usr/bin/python",
   "python.analysis.typeCheckingMode":"strict",
-  "python.analysis.userFileIndexingLimit": -1
+  "python.analysis.userFileIndexingLimit": -1,
+  "[python][typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "never"
+    }
+  }
 }
