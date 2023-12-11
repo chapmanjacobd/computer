@@ -44,7 +44,6 @@ abbr -a -- rsync 'rsync -auh --info=progress2 --no-inc-recursive'
 abbr -a -- sde dnferase
 abbr -a -- sdi dnfinstall
 abbr -a -- sdu 'sudo dnf update'
-abbr -a -- sed sed\ \'s\|\|\|\'
 abbr -a -- size 'wc -c | numfmt --to=iec'
 abbr -a -- sl ls
 abbr -a -- sort 'sort --unique --ignore-case'
@@ -155,3 +154,4 @@ abbr -a -- tixati /home/xk/.cargo/bin/vopono -v exec --provider custom --custom 
 abbr -a -- sys systemctl
 abbr -a -- ssys sudo systemctl
 abbr -a -- sysu systemctl --user
+abbr -a -- sed 'sed "s|||"'
