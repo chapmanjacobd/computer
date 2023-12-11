@@ -10,7 +10,9 @@ function forganize
     ulimit -n 10240
     set joblog (mktemp)
     for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
-        echo library christen -r "$m" -v
+        if string match -qv -- '*Seeding*' "$m"
+            echo library christen -r "$m" -v
+        end
     end | parallel --shuf --joblog $joblog
     parallel --retry-failed --joblog $joblog -j1
 
