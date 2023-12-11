@@ -5,6 +5,6 @@ function cpd --argument s d
         set dest (path resolve "$d" | sed "s|/mnt/d/|/mnt/d$n/|")
 
         command mkdir -p "$dest"
-        cp -r --reflink=always "$src"/* "$dest"
+        cp -r --reflink=always "$src" "$dest"
     end
 end
