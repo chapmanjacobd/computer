@@ -4,7 +4,7 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
     "editor.trimAutoWhitespace": false,
-    "editor.wordBasedSuggestions": false,
+    "editor.wordBasedSuggestions": "off",
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true
@@ -27,7 +27,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.python",
     "editor.formatOnPaste": false,
-    "editor.wordBasedSuggestions": true,
+    "editor.wordBasedSuggestions": "matchingDocuments",
     "gitlens.codeLens.symbolScopes": ["!Module"]
   },
   "[sql]": {
@@ -35,7 +35,7 @@
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": false
+      "source.organizeImports": "never"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -182,9 +182,9 @@
   "diffEditor.wordWrap": "off",
   "editor.autoIndent": "none",
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
-    "source.organizeImports": true,
-    "source.sortMembers": true
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
   },
   "editor.cursorStyle": "block",
   "editor.formatOnPaste": true,
