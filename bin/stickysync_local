@@ -83,7 +83,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
     not_equal_conflicts = []
     for p in source_files:
         dest_file = as_dest(from_dir, to_dir, p)
-        if not is_same_filedata(p, dest_file):
+        if dest_file.exists() and not is_same_filedata(p, dest_file):
             not_equal_conflicts.append((p, dest_file))
     if not_equal_conflicts:
         log.error('Non-identical files found!')
