@@ -6,6 +6,6 @@ function copy_to_pakon
     stickysync_backup ~/d/00_Metadata/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/82_Audiobooks/rtorrent/
 
     for d in ~/d/24_Seeding/*
-        stickysync_local ~/d/00_Metadata/stickysync_qbittorrent $d ~/d/75_Moviequeue/From_Backup/
+        stickysync_local ~/d/00_Metadata/stickysync_qbittorrent $d ~/d/75_Moviequeue/
     end
 end
