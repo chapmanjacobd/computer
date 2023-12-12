@@ -46,7 +46,7 @@ def mergerfs_reflink(original: Path, duplicate: Path):
     is_cloned = False
 
     for n in range(1, 11):
-        src = bytes(original).replace(b"/mnt/d/", f"/mnt/d{n}/".encode())
+        src = bytes(original).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
         if os.path.exists(src):
             dest = bytes(duplicate).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
             os.makedirs(os.path.dirname(dest), exist_ok=True)
