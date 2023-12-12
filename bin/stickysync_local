@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+
+import argparse
+from pathlib import Path
+import subprocess
+import os
+
+from xklb.utils import file_utils
+from xklb.utils.log_utils import log
+import hashlib
+
+
+'''
+accept mergerfs paths: stickysync_local historyfile /mnt/d/from /mnt/d/to
+if a conflict exists in the destination, remove the file: rm /mnt/d/to
+make all destination directories
+find the disk location of the existing file and cp reflink on the same filesystem to the dup path: /mnt/d1/from /mnt/d1/to
+'''
+
+
+def is_same_filedata(file1, file2):
+    if file1.stat().st_size != file2.stat().st_size:
+        return False
+
+    with file1.open('rb') as f1, file2.open('rb') as f2:
+        first_1000_bytes_file1 = f1.read(1000)
+        first_1000_bytes_file2 = f2.read(1000)
+        if first_1000_bytes_file1 != first_1000_bytes_file2:
+            return False
+
+    hasher = hashlib.sha256()
+    with file1.open('rb') as f1:
+        for chunk in iter(lambda: f1.read(4096), b''):
+            hasher.update(chunk)
+    hash_file1 = hasher.hexdigest()
+
+    hasher = hashlib.sha256()
+    with file2.open('rb') as f2:
+        for chunk in iter(lambda: f2.read(4096), b''):
+            hasher.update(chunk)
+    hash_file2 = hasher.hexdigest()
+
+    return hash_file1 == hash_file2
+
+
+def mergerfs_reflink(original: Path, duplicate: Path):
+    is_cloned = False
+
+    for n in range(1, 11):
+        src = bytes(original).replace(b"/mnt/d/", f"/mnt/d{n}/".encode())
+        if os.path.exists(src):
+            dest = bytes(duplicate).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+
+            subprocess.check_call(['cp', '--reflink=always', src, dest])
+            is_cloned = True
+
+    # if not is_cloned:
+    #     os.makedirs(os.path.dirname(duplicate), exist_ok=True)
+    #     subprocess.check_call(['cp', '--reflink=always', original, duplicate])
+    #     is_cloned = True
+
+    if not is_cloned:
+        log.error('File %s was not cloned to %s. Was a new disk added?', original, duplicate)
+        raise RuntimeError
+
+
+def as_dest(source_folder, destination_folder, path) -> Path:
+    return destination_folder / path.relative_to(source_folder)
+
+
+def stickysync_local(historyfile, from_dir, to_dir):
+    history = set()
+    if Path(historyfile).is_file():
+        with open(historyfile, 'r') as hf:
+            history = set(hf.read().splitlines())
+
+    source_files = set(p for p in file_utils.rglob(from_dir, "*", yield_folders=False))
+    known_files = set(p for p in source_files if p.relative_to(from_dir) in history)
+    source_files -= known_files
+
+    # for p in source_files:
+    #     as_dest(from_dir, to_dir, p.parent).mkdir(exist_ok=True, parents=True)
+
+    not_equal_conflicts = []
+    for dest_file in file_utils.rglob(to_dir, "*", yield_folders=False):
+        dest_file_relative_to_source = as_dest(to_dir, from_dir, dest_file)
+
+        if dest_file_relative_to_source in source_files:
+            if is_same_filedata(dest_file_relative_to_source, dest_file):
+                dest_file.unlink()
+            else:
+                not_equal_conflicts.append((dest_file_relative_to_source, dest_file))
+
+    if not_equal_conflicts:
+        print('Non-identical files found!')
+        print(not_equal_conflicts)
+        raise SystemExit(2)
+
+    with open(historyfile, 'a') as hf:
+        for p in source_files:
+            mergerfs_reflink(p, as_dest(from_dir, to_dir, p))
+            hf.write(str(p.relative_to(from_dir)) + '\n')
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Sync new files within 24 hours from one directory to another.")
+    parser.add_argument("historyfile", help="File to store history of synced files")
+    parser.add_argument("from_dir", help="Source directory")
+    parser.add_argument("to_dir", help="Destination directory")
+    args = parser.parse_args()
+
+    args.from_dir = Path(args.from_dir).resolve()
+    args.to_dir = Path(args.to_dir).resolve()
+
+    stickysync_local(args.historyfile, args.from_dir, args.to_dir)
