@@ -44,7 +44,6 @@ def is_same_filedata(file1, file2):
 
 def mergerfs_reflink(original: Path, duplicate: Path):
     is_cloned = False
-
     for n in range(1, 11):
         src = bytes(original).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
         if os.path.exists(src):
@@ -58,7 +57,6 @@ def mergerfs_reflink(original: Path, duplicate: Path):
     #     os.makedirs(os.path.dirname(duplicate), exist_ok=True)
     #     subprocess.check_call(['cp', '--reflink=always', original, duplicate])
     #     is_cloned = True
-
     if not is_cloned:
         log.error('File %s was not cloned to %s. Was a new disk added?', original, duplicate)
         raise RuntimeError
@@ -83,15 +81,10 @@ def stickysync_local(historyfile, from_dir, to_dir):
     #     as_dest(from_dir, to_dir, p.parent).mkdir(exist_ok=True, parents=True)
 
     not_equal_conflicts = []
-    for dest_file in file_utils.rglob(to_dir, "*", yield_folders=False):
-        dest_file_relative_to_source = as_dest(to_dir, from_dir, dest_file)
-
-        if dest_file_relative_to_source in source_files:
-            if is_same_filedata(dest_file_relative_to_source, dest_file):
-                dest_file.unlink()
-            else:
-                not_equal_conflicts.append((dest_file_relative_to_source, dest_file))
-
+    for p in source_files:
+        dest_file = as_dest(from_dir, to_dir, p)
+        if not is_same_filedata(p, dest_file):
+            not_equal_conflicts.append((p, dest_file))
     if not_equal_conflicts:
         print('Non-identical files found!')
         print(not_equal_conflicts)
@@ -99,12 +92,15 @@ def stickysync_local(historyfile, from_dir, to_dir):
 
     with open(historyfile, 'a') as hf:
         for p in source_files:
-            mergerfs_reflink(p, as_dest(from_dir, to_dir, p))
+            dest_file = as_dest(from_dir, to_dir, p)
+            mergerfs_reflink(p, dest_file)
             hf.write(str(p.relative_to(from_dir)) + '\n')
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sync new files within 24 hours from one directory to another.")
+    parser.add_argument("--verbose", "-v", action="count", default=0)
+
     parser.add_argument("historyfile", help="File to store history of synced files")
     parser.add_argument("from_dir", help="Source directory")
     parser.add_argument("to_dir", help="Destination directory")
