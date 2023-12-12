@@ -4,5 +4,8 @@ function copy_to_pakon
     ssh backup remove_empty_directories /home/xk/d/_tixati/
 
     stickysync_backup ~/d/00_Metadata/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/82_Audiobooks/rtorrent/
-    # stickysync_backup ~/d/00_Metadata/stickysync_qbittorrent d/_qbittorrent/ /mnt/d/75_Moviequeue/From_Backup/
+
+    for d in ~/d/24_Seeding/*
+        stickysync_local ~/d/00_Metadata/stickysync_qbittorrent $d ~/d/75_Moviequeue/From_Backup/
+    end
 end
