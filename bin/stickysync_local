@@ -75,7 +75,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
             history = set(hf.read().splitlines())
 
     source_files = set(p for p in file_utils.rglob(from_dir, "*", yield_folders=False))
-    known_files = set(p for p in source_files if p.relative_to(from_dir) in history)
+    known_files = set(p for p in source_files if str(p.relative_to(from_dir)) in history)
     print(f'Filtering out {len(known_files)} known files')
     source_files -= known_files
 
