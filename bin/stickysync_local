@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
 import argparse
-from pathlib import Path
-import subprocess
+import hashlib
 import os
+import subprocess
+from pathlib import Path
 
 from xklb.utils import file_utils
 from xklb.utils.log_utils import log
-import hashlib
-
 
 '''
 accept mergerfs paths: stickysync_local historyfile /mnt/d/from /mnt/d/to
