@@ -155,3 +155,4 @@ abbr -a -- sys systemctl
 abbr -a -- ssys sudo systemctl
 abbr -a -- sysu systemctl --user
 abbr -a -- sed 'sed "s|||"'
+abbr -a -- magnets1337 'lb links (cb) --path-include magnet: | ssh backup tee -a ~/.local/magnets'
