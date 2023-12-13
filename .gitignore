@@ -1,3 +1,4 @@
+/.pki/
 /.psql_history
 /pakon/
 /.pypirc
@@ -458,4 +459,3 @@
 /.nx/
 /.openjfx/
 /.pdbhistory
-/.pki/
