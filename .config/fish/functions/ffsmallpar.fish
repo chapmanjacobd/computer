@@ -21,8 +21,8 @@ function ffsmallpar
             trash-put $f
         end
     end
-    ssh backup fd -HI -eMKV -eMP4 -d1 -x trash
-    ssh pulse15 fd -HI -eMKV -eMP4 -d1 -x trash
+    ssh backup fd -HI -eMKV -eMP4 -d1 -x rm
+    ssh pulse15 fd -HI -eMKV -eMP4 -d1 -x rm
 
     clear_lock_file ffsmallpar
 end
