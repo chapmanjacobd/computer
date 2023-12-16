@@ -1,3 +1,4 @@
+/.nx/
 /.pdbhistory
 /.pki/
 /.psql_history
@@ -457,4 +458,3 @@
 /.murex_modules/
 /.nicotine/
 /.npm/
-/.nx/
