@@ -93,6 +93,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
     with open(historyfile, 'a') as hf:
         for p in source_files:
             dest_file = as_dest(from_dir, to_dir, p)
+            dest_file.unlink(missing_ok=True)
             mergerfs_reflink(p, dest_file)
             hf.write(str(p.relative_to(from_dir)) + '\n')
 
