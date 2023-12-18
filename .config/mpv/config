@@ -21,6 +21,7 @@ ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height
 #vo=gpu
 #hwdec=auto-copy
 video-sync=display-resample
+hr-seek=absolute
 
 osd-font="Noto Sans"
 osd-font-size=40
