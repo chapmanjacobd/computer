@@ -12,9 +12,6 @@ autofit=50%x40%
 quiet=yes
 audio-display=no
 
-#scale=ewa_lanczos
-#dscale=ewa_lanczos
-#linear-downscaling=no
 deband=no
 tscale=oversample
 
@@ -46,18 +43,11 @@ blend-subtitles=yes
 volume=80
 volume-max=140
 
-demuxer-mkv-subtitle-preroll=yes
-sub-ass-vsfilter-blur-compat=no
 sub-fix-timing=yes
 sub-auto=fuzzy
 sub-gauss=1.0
 sub-gray=yes
 sub-fix-timing=yes
-
-demuxer-seekable-cache=yes
-demuxer-max-bytes=100MiB
-demuxer-readahead-secs=5
-demuxer-mkv-subtitle-preroll=yes
 
 replaygain=track
 af="scaletempo2,lavfi=[pan=1c|c0=0.5*c0+0.5*c1],volume=replaygain-track"
