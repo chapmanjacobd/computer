@@ -55,7 +55,12 @@ function forganize
     end
 
     ~/d/
-    yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
+    for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
+        if test -d "$dir"
+            "$dir"
+            yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
+        end
+    end
 
     set joblog (mktemp)
     for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
