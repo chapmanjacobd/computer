@@ -156,3 +156,6 @@ abbr -a -- ssys sudo systemctl
 abbr -a -- sysu systemctl --user
 abbr -a -- sed 'sed "s|||"'
 abbr -a -- magnets1337 'lb links (cb) --path-include magnet: | ssh backup tee -a ~/.local/magnets'
+abbr -a -- gdt git diff --text
+abbr -a -- gdts git diff --text --staged
+abbr -a -- gdst git diff --text --staged
