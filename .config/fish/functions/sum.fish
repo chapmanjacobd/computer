@@ -1,10 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function sum
-    set accumulator 0
-
-    while read -l line
-        set accumulator (math $accumulator+$line)
-    end
-
-    echo $accumulator
+    awk '{s+=$1} END {print s}' "$argv"
 end
