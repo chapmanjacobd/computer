@@ -8,7 +8,7 @@ function hourly
     ~/lb/
     set max (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)
     if test $max -gt 0
-        for dir in new/ vip_bbc/
+        for dir in new/ vip_new/ vip_bbc/
             set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir --reverse -n $max | count)
             set max (math $max-$filled)
         end
