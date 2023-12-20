@@ -11,4 +11,8 @@ function morganize
     for f in (fd -elist . ~/j/)
         s sorted "$f"
     end
+
+    for f in ~/j/lists/people.*
+        dedupe "$f" | sort_by_last_name.py | sponge "$f"
+    end
 end
