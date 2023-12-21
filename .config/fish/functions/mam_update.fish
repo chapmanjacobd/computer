@@ -3,8 +3,11 @@ function mam_update
     load_env_mam
 
     python -m xklb.scratch.mam_search --audiobooks --books --radio --cookie $MAM_COOKIE ~/d/23_Linkmining/mam/mam.db BBC R4
+    for q in (cat ~/j/lists/publishers.list)
+        python -m xklb.scratch.mam_search --comics --books --no-title --cookie $MAM_COOKIE ~/d/23_Linkmining/mam/mam.db $q
+    end
     for q in (cat ~/j/lists/people.narrators.list)
-        python -m xklb.scratch.mam_search --audiobooks --books --radio --narrator --cookie $MAM_COOKIE ~/d/23_Linkmining/mam/mam.db $q
+        python -m xklb.scratch.mam_search --audiobooks --books --radio --no-title --narrator --cookie $MAM_COOKIE ~/d/23_Linkmining/mam/mam.db $q
     end
 
     for db in ~/d/23_Linkmining/mam/mam.db
