@@ -28,4 +28,6 @@ function daily
     fd -S-12b -tf -x rm
 
     library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
+
+    sqlite-utils rebuild-fts ~/lb/video.db media
 end
