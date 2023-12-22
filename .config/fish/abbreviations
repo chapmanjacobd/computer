@@ -159,3 +159,4 @@ abbr -a -- magnets1337 'lb links (cb) --path-include magnet: | ssh backup tee -a
 abbr -a -- gdt git diff --text
 abbr -a -- gdts git diff --text --staged
 abbr -a -- gdst git diff --text --staged
+abbr -a -- du du -s --block-size=1
