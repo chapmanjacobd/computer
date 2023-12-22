@@ -3,8 +3,8 @@
 import argparse
 import hashlib
 import os
-import subprocess
 import shlex
+import subprocess
 from pathlib import Path
 
 from xklb.utils import file_utils
@@ -16,6 +16,7 @@ if a conflict exists in the destination, remove the file: rm /mnt/d/to
 make all destination directories
 find the disk location of the existing file and cp reflink on the same filesystem to the dup path: /mnt/d1/from /mnt/d1/to
 '''
+
 
 def is_same_filedata(file1, file2):
     if file1.stat().st_size != file2.stat().st_size:
