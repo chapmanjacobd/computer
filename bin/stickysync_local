@@ -16,7 +16,6 @@ make all destination directories
 find the disk location of the existing file and cp reflink on the same filesystem to the dup path: /mnt/d1/from /mnt/d1/to
 '''
 
-
 def is_same_filedata(file1, file2):
     if file1.stat().st_size != file2.stat().st_size:
         return False
@@ -77,25 +76,25 @@ def stickysync_local(historyfile, from_dir, to_dir):
     log.info(f'Filtering out %s known files', len(known_files))
     source_files -= known_files
 
-    # for p in source_files:
-    #     as_dest(from_dir, to_dir, p.parent).mkdir(exist_ok=True, parents=True)
-
     not_equal_conflicts = []
-    for p in source_files:
-        dest_file = as_dest(from_dir, to_dir, p)
-        if dest_file.exists() and not is_same_filedata(p, dest_file):
-            not_equal_conflicts.append((p, dest_file))
-    if not_equal_conflicts:
-        log.error('Non-identical files found!')
-        print(not_equal_conflicts)
-        raise SystemExit(2)
 
     with open(historyfile, 'a') as hf:
         for p in source_files:
             dest_file = as_dest(from_dir, to_dir, p)
-            dest_file.unlink(missing_ok=True)
+            if dest_file.exists():
+                if is_same_filedata(p, dest_file):
+                    dest_file.unlink(missing_ok=True)
+                else:
+                    not_equal_conflicts.append((str(p), str(dest_file)))
+
             mergerfs_reflink(p, dest_file)
             hf.write(str(p.relative_to(from_dir)) + '\n')
+
+    if not_equal_conflicts:
+        log.error('Non-identical files found!')
+        for conflict_src, conflict_dest in not_equal_conflicts:
+            print(conflict_src, conflict_dest)
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+/.local/var/pmbootstrap/
 /.MakeMKV/
 /.mnt/
 /.mozilla/
@@ -454,4 +455,3 @@
 /.local/state/
 /.local/.stfolder/
 /.local/.stversions/
-/.local/var/
