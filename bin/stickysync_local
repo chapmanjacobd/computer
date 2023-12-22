@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import os
 import subprocess
+import shlex
 from pathlib import Path
 
 from xklb.utils import file_utils
@@ -93,7 +94,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
     if not_equal_conflicts:
         log.error('Non-identical files found!')
         for conflict_src, conflict_dest in not_equal_conflicts:
-            print(conflict_src, conflict_dest)
+            print(shlex.quote(conflict_src), shlex.quote(conflict_dest))
         raise SystemExit(2)
 
 
