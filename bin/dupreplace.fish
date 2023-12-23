@@ -7,7 +7,7 @@ set original $argv[2]
 
 rm "$duplicate"
 
-for n in (seq 1 10)
+for n in (seq 1 $MERGERFS_DISKS)
     set src (echo "$original" | sed "s|/mnt/d/|/mnt/d$n/|")
     if test -e "$src"
         set dest (echo "$duplicate" | sed "s|/mnt/d/|/mnt/d$n/|")
