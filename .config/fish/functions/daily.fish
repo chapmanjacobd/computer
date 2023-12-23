@@ -27,7 +27,7 @@ function daily
     end
     fd -S-12b -tf -x rm
 
-    library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/
+    library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/ -w m.time_modified=0
 
     sqlite-utils rebuild-fts ~/lb/video.db media
 end
