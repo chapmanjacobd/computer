@@ -6,6 +6,7 @@ import os
 import shlex
 import subprocess
 from pathlib import Path
+from xklb.scripts import sample_compare
 
 from xklb.utils import file_utils
 from xklb.utils.log_utils import log
@@ -17,30 +18,6 @@ make all destination directories
 find the disk location of the existing file and cp reflink on the same filesystem to the dup path: /mnt/d1/from /mnt/d1/to
 '''
 
-
-def is_same_filedata(file1, file2):
-    if file1.stat().st_size != file2.stat().st_size:
-        return False
-
-    with file1.open('rb') as f1, file2.open('rb') as f2:
-        first_1000_bytes_file1 = f1.read(1000)
-        first_1000_bytes_file2 = f2.read(1000)
-        if first_1000_bytes_file1 != first_1000_bytes_file2:
-            return False
-
-    hasher = hashlib.sha256()
-    with file1.open('rb') as f1:
-        for chunk in iter(lambda: f1.read(4096), b''):
-            hasher.update(chunk)
-    hash_file1 = hasher.hexdigest()
-
-    hasher = hashlib.sha256()
-    with file2.open('rb') as f2:
-        for chunk in iter(lambda: f2.read(4096), b''):
-            hasher.update(chunk)
-    hash_file2 = hasher.hexdigest()
-
-    return hash_file1 == hash_file2
 
 
 def mergerfs_reflink(original: Path, duplicate: Path):
@@ -84,7 +61,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
         for p in source_files:
             dest_file = as_dest(from_dir, to_dir, p)
             if dest_file.exists():
-                if is_same_filedata(p, dest_file):
+                if sample_compare.sample_cmp(p, dest_file):
                     dest_file.unlink(missing_ok=True)
                 else:
                     not_equal_conflicts.append((str(p), str(dest_file)))
