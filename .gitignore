@@ -1,3 +1,4 @@
+/.local/.stfolder/
 /.local/var/pmbootstrap/
 /.MakeMKV/
 /.mnt/
@@ -453,4 +454,3 @@
 /.local/pipx/
 /.local/share/
 /.local/state/
-/.local/.stfolder/
