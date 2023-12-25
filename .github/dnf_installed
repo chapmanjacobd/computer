@@ -159,6 +159,7 @@ vdpauinfo
 vmtouch
 wget
 wine
+winetricks
 wmctrl
 xautomation
 xbindkeys
