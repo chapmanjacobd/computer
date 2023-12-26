@@ -1,3 +1,5 @@
+/.local/share/
+/.local/share/wineprefixes/
 /.local/state/
 /.local/.stfolder/
 /.local/var/pmbootstrap/
@@ -453,4 +455,3 @@
 /.local/lib/
 /.local/.local_b/
 /.local/pipx/
-/.local/share/
