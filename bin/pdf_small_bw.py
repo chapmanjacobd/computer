@@ -1,29 +1,25 @@
 #!/usr/bin/python3
 import argparse
-import os
 import tempfile
 from pathlib import Path
-
+from natsort import natsorted
 from xklb.utils import processes
 
 
-def convert_images_to_pdf(directory, resize=1000):
+def convert_images_to_pdf(directory, resize):
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
 
         output_pdfs = []
-        for filepath in Path(directory).iterdir():
+        for filepath in natsorted(Path(directory).iterdir()):
             temp_pbm = temp_dir_path / 'temp.pbm'
             output_pdf = temp_dir_path / filepath.with_suffix('.pdf').name
 
             processes.cmd('convert', str(filepath), '-resize', f'{resize}>', str(temp_pbm))
             processes.cmd('convert', str(temp_pbm), '-alpha', 'off', '-monochrome', '-compress', 'fax', str(output_pdf))
-
             output_pdfs.append(output_pdf)
 
-        pdf_files = [os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if f.lower().endswith('.pdf')]
-        pdf_files.sort()
-        processes.cmd('mutool', 'merge', '-o', 'out.pdf', *pdf_files)
+        processes.cmd('mutool', 'merge', '-o', 'out.pdf', *output_pdfs)
 
 
 if __name__ == "__main__":
