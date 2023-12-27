@@ -4,6 +4,7 @@ import argparse
 import io
 import os
 from pathlib import Path
+from typing import List
 
 import img2pdf
 import ocrmypdf
@@ -33,11 +34,20 @@ def pdf_contrast(args):
         output_images.append(out_img_bytes.getvalue())
 
     print(f'Saving {args.output_path}')
-    with open(args.output_path, "wb") as outf:
-        img2pdf.convert(*output_images, outputstream=outf)
+    if args.output_path.endswith(os.sep) or args.output_path.is_dir():
+        output_path = Path(args.output_path)
+        output_path.mkdir(exist_ok=True, parents=True)
+        for i, page_bytes in enumerate(output_images):
+            page_name = f"{args.input_path.stem}_page_{i + 1}.jpg"  # Creating a unique name for each page
+            page_path = output_path / page_name  # Constructing the path for each page in the directory
+            with open(page_path, "wb") as page_out:
+                page_out.write(page_bytes)
+    else:
+        with open(args.output_path, "wb") as outf:
+            img2pdf.convert(*output_images, outputstream=outf)
 
-    if args.ocr:
-        ocrmypdf.ocr(args.output_path, args.output_path, deskew=True, optimize=1)
+        if args.ocr:
+            ocrmypdf.ocr(args.output_path, args.output_path, deskew=True, optimize=1)
 
 
 if __name__ == "__main__":
@@ -50,12 +60,12 @@ if __name__ == "__main__":
 
     parser.add_argument("input_path", help="Input PDF file")
     parser.add_argument("output_path", nargs='?', help="Output PDF file")
-    args = parser.parse_args()
+    args = parser.parse_intermixed_args()
 
     args.input_path = Path(args.input_path).resolve()
 
     if args.output_path is None:
-        params = []
+        params: List[str] = []
         if args.contrast != 100:
             params.append(f"c{args.contrast}")
         if args.brightness != 100:
