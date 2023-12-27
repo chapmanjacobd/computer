@@ -38,8 +38,8 @@ def pdf_contrast(args):
         output_path = Path(args.output_path)
         output_path.mkdir(exist_ok=True, parents=True)
         for i, page_bytes in enumerate(output_images):
-            page_name = f"{args.input_path.stem}_page_{i + 1}.jpg"  # Creating a unique name for each page
-            page_path = output_path / page_name  # Constructing the path for each page in the directory
+            page_name = f"{args.input_path.stem}_page_{i + 1}.jpg"
+            page_path = output_path / page_name
             with open(page_path, "wb") as page_out:
                 page_out.write(page_bytes)
     else:
