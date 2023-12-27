@@ -37,11 +37,15 @@ def pdf_contrast(args):
     if args.output_path.endswith(os.sep) or args.output_path.is_dir():
         output_path = Path(args.output_path)
         output_path.mkdir(exist_ok=True, parents=True)
+
+        num_pages = len(output_images)
+        zero_pad_digits = len(str(num_pages))
+
         for i, page_bytes in enumerate(output_images):
-            page_name = f"{args.input_path.stem}_page_{i + 1}.jpg"
-            page_path = output_path / page_name
-            with open(page_path, "wb") as page_out:
-                page_out.write(page_bytes)
+            page_number = str(i + 1).zfill(zero_pad_digits)
+            page_name = f"{args.input_path.stem}_page_{page_number}.jpg"
+            with open(output_path / page_name, "wb") as fh:
+                fh.write(page_bytes)
     else:
         with open(args.output_path, "wb") as outf:
             img2pdf.convert(*output_images, outputstream=outf)
