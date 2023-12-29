@@ -58,6 +58,7 @@ httrack
 hw-probe
 hyperfine
 iftop
+java-latest-openjdk
 java-latest-openjdk-devel
 jq
 kcolorchooser
@@ -97,6 +98,7 @@ nomacs
 ocaml
 ocrmypdf
 okteta
+openjfx
 perl
 perl-CPAN
 perl-Image-ExifTool
