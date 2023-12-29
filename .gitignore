@@ -1,3 +1,4 @@
+/.local/lib/
 /.local/pipx/
 /.local/share/
 /.local/share/wineprefixes/
@@ -453,4 +454,3 @@
 /.local/*cookie*
 /.local/etc/
 /.local/include/
-/.local/lib/
