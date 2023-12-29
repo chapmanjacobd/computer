@@ -160,3 +160,4 @@ abbr -a -- gdt git diff --text
 abbr -a -- gdts git diff --text --staged
 abbr -a -- gdst git diff --text --staged
 abbr -a -- du du --block-size=1 --summarize
+abbr -a -- eda lb eda
