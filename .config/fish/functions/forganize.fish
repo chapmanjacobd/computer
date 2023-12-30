@@ -63,8 +63,10 @@ function forganize
     end
 
     set joblog (mktemp)
-    for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
-        echo lb fsadd --filesystem ~/lb/fs/d.db "$m"
+    for i in (seq 1 $MERGERFS_DISKS)
+        for m in /mnt/d$i/*
+            echo lb fsadd --filesystem ~/lb/fs/d$i.db "$m"
+        end
     end | parallel --shuf --joblog $joblog
     parallel --retry-failed --joblog $joblog -j1
 end
