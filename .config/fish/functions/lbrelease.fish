@@ -15,7 +15,7 @@ function lbrelease --argument oldver newver
     if wipm $newver
         git tag -a v$newver && git push --tags
         pip install --upgrade pip pdm
-        pdm lock --group :all
+        pdm lock --group deluxe,test
         sleep 400
         python -m pip install --upgrade xklb
         python -m pip install --upgrade xklb
