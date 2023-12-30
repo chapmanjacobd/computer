@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import argparse
-import hashlib
 import os
 import shlex
 import subprocess
@@ -50,7 +49,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
         with open(historyfile, 'r') as hf:
             history = set(hf.read().splitlines())
 
-    source_files = set(p for p in file_utils.rglob(from_dir, "*", yield_folders=False))
+    source_files = set(Path(s) for s in file_utils.rglob(from_dir)[0])
     known_files = set(p for p in source_files if str(p.relative_to(from_dir)) in history)
     log.info(f'Filtering out %s known files', len(known_files))
     source_files -= known_files
