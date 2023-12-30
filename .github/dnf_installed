@@ -32,6 +32,7 @@ feh
 ffmpeg
 ffmpeg-libs
 fftw-devel
+flacon
 fsearch
 gamemode
 gdal
@@ -65,6 +66,7 @@ kcolorchooser
 kdeplasma-addons
 kdiff3
 keepassxc
+kid3
 kitty
 kitty-terminfo
 kruler
