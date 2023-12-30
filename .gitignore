@@ -1,3 +1,4 @@
+/.local/include/
 /.local/lib/
 /.local/pipx/
 /.local/share/
@@ -453,4 +454,3 @@
 /.local/config/
 /.local/*cookie*
 /.local/etc/
-/.local/include/
