@@ -1,3 +1,4 @@
+/.local/cookies*
 /.local/include/
 /.local/lib/
 /.local/pipx/
@@ -452,4 +453,3 @@
 /.lmms/
 /.lmmsrc.xml
 /.local/config/
-/.local/*cookie*
