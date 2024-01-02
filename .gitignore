@@ -1,3 +1,4 @@
+/.local/config/
 /.local/cookies*
 /.local/include/
 /.local/lib/
@@ -452,4 +453,3 @@
 /.lesshst
 /.lmms/
 /.lmmsrc.xml
-/.local/config/
