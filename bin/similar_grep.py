@@ -10,15 +10,17 @@ def search_in_file(args, path):
     with open(path, 'r') as file:
         for line_number, line_text in enumerate(file, start=1):
             line_text = line_text.rstrip('\n')
-            similarity_ratio = difflib.SequenceMatcher(
-                None, args.search_term, strings.path_to_sentence(line_text.lower() if args.ignore_case else line_text)
-            ).ratio()
 
-            if args.maximum_similarity >= similarity_ratio >= args.minimum_similarity:
-                output = f"{strings.safe_percent(similarity_ratio)}\t{path}\t{line_text}"
-                if args.line_number:
-                    output = f"{strings.safe_percent(similarity_ratio)}\t{path}:{line_number}\t{line_text}"
-                print(output)
+            for search_arg in args.search_term.splitlines():
+                similarity_ratio = difflib.SequenceMatcher(
+                    None, search_arg, strings.path_to_sentence(line_text.lower() if args.ignore_case else line_text)
+                ).ratio()
+
+                if args.maximum_similarity >= similarity_ratio >= args.minimum_similarity:
+                    output = f"{strings.safe_percent(similarity_ratio)}\t{path}\t{line_text}"
+                    if args.line_number:
+                        output = f"{strings.safe_percent(similarity_ratio)}\t{path}:{line_number}\t{line_text}"
+                    print(output)
 
 
 def main():
@@ -31,6 +33,10 @@ def main():
     parser.add_argument('search_term', help='Search term')
     parser.add_argument('files', nargs='+', help='List of files or directories')
     args = parser.parse_args()
+
+    p = Path(args.search_term)
+    if p.is_file():
+        args.search_term = p.read_text()
 
     args.search_term = strings.path_to_sentence(args.search_term.lower())
     if args.ignore_case:
