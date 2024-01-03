@@ -439,6 +439,10 @@
     "--line-length=120 --skip-string-normalization"
   ],
   "python.languageServer": "Pylance",
+  "python.analysis.diagnosticSeverityOverrides": {
+      "reportUnusedImport": "warning",
+      "reportUnknownMemberType": "none"
+  },
   "python.analysis.completeFunctionParens": true,
   "python.envFile": "${workspaceFolder}/.env",
   "[python]": {

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
  Main script for sorting images in a folder into subfolders. This script launches a GUI which displays
  one image after the other and lets the user vote for different given labels from a list given as input to the
