@@ -21,6 +21,7 @@ function diskstatus
 
     for mnt in / (mergerfs_disk_mounts)
         if not sudo btrfs scrub status $mnt | grep -q 'no errors'
+            echo $mnt
             sudo btrfs scrub status $mnt
         end
     end

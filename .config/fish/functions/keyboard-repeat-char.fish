@@ -1,6 +1,6 @@
 # Defined interactively
 function keyboard-repeat-char
-    xdotool key --repeat 9999999 --delay 180 $argv
-    xdotool key $argv
+    xdotool key --repeat 99999 --delay 820 $argv
+    sleep 1
     xdotool key $argv
 end
