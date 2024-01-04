@@ -1,1 +1,1 @@
-/mnt/d/00_Metadata/
+/mnt/d/sync/self/
