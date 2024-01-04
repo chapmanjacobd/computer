@@ -2,7 +2,7 @@
 import argparse
 import os
 
-tasks = ['sync', 'dump', 'pending', 'check', 'library', 'archive']
+tasks = ['sync', 'dump', 'check', 'library', 'archive']
 categories = {
     'self': ['metadata', 'home', 'finances', 'secure', 'private', 'credentials', 'portraits', 'other'],
     'world': ['consulting', 'downloads', 'seeding', 'other'],
