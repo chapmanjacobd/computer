@@ -12,18 +12,18 @@ function weekly
 
     pip install --upgrade yt-dlp gallery-dl praw xklb
 
-    ~/d/30_Computing/
+    ~/d/library/datasets/social/
     reddit-user-to-sqlite user BuonaparteII
     ~/j/social/
-    for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from comments' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|' | tr / '#')
+    for title in (sqlite --no-headers --raw-lines ~/d/library/datasets/social/reddit.db 'select permalink from comments' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|' | tr / '#')
         set comment_id (string split '#' -f2 $title)
-        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from comments where permalink like '%$comment_id%'" >$title.md
+        sqlite --no-headers --raw-lines ~/d/library/datasets/social/reddit.db "select text from comments where permalink like '%$comment_id%'" >$title.md
     end
-    for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db 'select permalink from posts' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|')
-        sqlite --no-headers --raw-lines ~/d/30_Computing/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
+    for title in (sqlite --no-headers --raw-lines ~/d/library/datasets/social/reddit.db 'select permalink from posts' | sed 's|.*\/comments\/[^\/]*\/\(.*\)/.*|\1|')
+        sqlite --no-headers --raw-lines ~/d/library/datasets/social/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
     end
     fd -S-12b -tf -x rm
-    lb mergedbs --pk id ~/d/30_Computing/BuonaparteII.db ~/d/30_Computing/reddit.db
+    lb mergedbs --pk id ~/d/library/datasets/social/BuonaparteII.db ~/d/library/datasets/social/reddit.db
 
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/audio.db ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db

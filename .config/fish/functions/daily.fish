@@ -5,7 +5,7 @@ function daily
 
     # with_lock copy_to_pakon
 
-    lb relmv /mnt/d/70_Now_Watching/keep/* /mnt/d/77_Library/
+    lb relmv /mnt/d/sync/video/keep/* /mnt/d/archive/video/keep/
 
     catt volume 0 && catt volume 40
     pip install --upgrade pychromecast
@@ -21,13 +21,13 @@ function daily
     # command trash-empty 10 -f
 
     ~/j/social/
-    library tildes ~/d/30_Computing/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
-    for title in (sqlite --no-headers --raw-lines ~/d/30_Computing/tildes.db 'select path from media' | sed 's|.*\(/\)||' | strip)
-        sqlite --no-headers --raw-lines ~/d/30_Computing/tildes.db "select text from media where path like '%$title'" >$title.html
+    library tildes ~/d/library/datasets/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
+    for title in (sqlite --no-headers --raw-lines ~/d/library/datasets/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | strip)
+        sqlite --no-headers --raw-lines ~/d/library/datasets/social/tildes.db "select text from media where path like '%$title'" >$title.html
     end
     fd -S-12b -tf -x rm
 
-    library download ~/lb/audio.db --audio --prefix /mnt/d/81_New_Music/ -w m.time_modified=0
+    library download ~/lb/audio.db --audio --prefix /mnt/d/dump/audio/ -w m.time_modified=0
 
     sqlite-utils rebuild-fts ~/lb/video.db media
 end

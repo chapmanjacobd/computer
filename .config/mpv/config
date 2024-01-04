@@ -32,7 +32,7 @@ osd-shadow-color="#2f343f"
 osd-shadow-offset=1
 osd-border-size=1
 
-screenshot-directory=~/d/90_Now_Viewing/
+screenshot-directory=~/d/sync/image/other/
 screenshot-template=mpv-%F-%wH%wM_%wS.%wT
 
 save-position-on-quit

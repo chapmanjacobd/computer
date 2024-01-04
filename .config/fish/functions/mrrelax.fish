@@ -1,16 +1,16 @@
 function mrrelax
-    rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/d/64_Relaxation/keep/ ~/d/62_Photos_Keep/
+    rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/d/sync/porn/image/keep/ ~/d/sync/porn/image/
 
-    fd --max-results=500 -tf . ~/d/61_Photos_Unsorted/ -0 | xargs -0 -I{} mv "{}" ~/d/64_Relaxation/
+    fd --max-results=500 -tf . ~/d/dump/porn/image/ -0 | xargs -0 -I{} mv "{}" ~/d/sync/porn/image/
 
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --files-from=(
-        lt --db ~/lb/fs/63_Sounds.db -s /mnt/d/64_Relaxation/ -p f --moved /mnt/d/64_Relaxation/ /mnt/d/ | psub
-    ) /mnt/d/64_Relaxation/ /mnt/d/
+        lt --db ~/lb/fs/63_Sounds.db -s /mnt/d/sync/porn/image/ -p f --moved /mnt/d/sync/porn/image/ /mnt/d/ | psub
+    ) /mnt/d/sync/porn/image/ /mnt/d/
 
     rsync -a --remove-source-files --files-from=(
-        lt --db ~/lb/fs/63_Sounds.db -L 24 -p wf --moved /mnt/d/ /mnt/d/64_Relaxation/ | psub
-    ) /mnt/d/ /mnt/d/64_Relaxation/
+        lt --db ~/lb/fs/63_Sounds.db -L 24 -p wf --moved /mnt/d/ /mnt/d/sync/porn/image/ | psub
+    ) /mnt/d/ /mnt/d/sync/porn/image/
 
-    lb fsadd --video ~/lb/fs/tax.db /mnt/d/64_Relaxation/
+    lb fsadd --video ~/lb/fs/tax.db /mnt/d/sync/porn/image/
 
 end

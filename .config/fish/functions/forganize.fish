@@ -19,11 +19,11 @@ function forganize
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
     lb-refresh
-    lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/69_Taxes_Keep/ -pf | xargs -P 20 -I{} rm {}
+    lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/archive/porn/video/ -pf | xargs -P 20 -I{} rm {}
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
-    set audio_dirs ~/d/63_Sounds/ ~/d/81_New_Music/ ~/d/82_Audiobooks/ ~/d/83_Classical_Composers/ ~/d/85_Inspiration/ ~/d/86_Samples/
-    set photo_dirs ~/d/61_Photos_Unsorted/ ~/d/96_Weird_History/ ~/d/94_Cool/ ~/d/93_Bg/ ~/d/91_New_Art/ ~/d/98_Me/ ~/d/99_Art/
+    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/ ~/d/dump/audio/audiobooks/  ~/d/dump/audio/patterns/
+    set photo_dirs ~/d/dump/porn/image/ ~/d/96_Weird_History/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/sync/self/portraits/ ~/d/99_Art/
 
     # ~/d/84_MIDI && fd -tf -eMID -x mv "{}" "{.}.mid"
 
@@ -31,22 +31,22 @@ function forganize
     fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
     process_audio $audio_dirs
 
-    for f in (fd -tf -eWEBM -eMP4 -eMKV -eM4V -eFLV -eAVI -eMPG -eMOV -eWMV -eGIF -E 'gifs/**/*' . ~/d/61_Photos_Unsorted/)
+    for f in (fd -tf -eWEBM -eMP4 -eMKV -eM4V -eFLV -eAVI -eMPG -eMOV -eWMV -eGIF -E 'gifs/**/*' . ~/d/dump/porn/image/)
         if has_both_audio_video "$f"
-            mv "$f" ~/d/69_Taxes/unsorted/
+            mv "$f" ~/d/dump/porn/video/unsorted/
             continue
         else if has_video "$f"
-            mv "$f" ~/d/61_Photos_Unsorted/gifs/
+            mv "$f" ~/d/dump/porn/image/gifs/
             continue
         else
-            mv "$f" ~/d/63_Sounds/unsorted/
+            mv "$f" ~/d/dump/porn/audio/unsorted/
         end
     end
 
-    ~/d/71_Mealtime_Videos/
-    fd -epng -ejpg -egif -x mv {} ~/d/91_New_Art/unsorted/71_Mealtime_Videos/
+    ~/d/dump/video/other/
+    fd -epng -ejpg -egif -x mv {} ~/d/dump/image/other/unsorted/dump/video/other/
 
-    fd . ~/d/69_Taxes/ ~/d/91_New_Art/ ~/d/61_Photos_Unsorted/gifs/ -eGIF -eGIFV -j8 -x bash -c 'ffmpeg -hide_banner -loglevel warning -y  -i "{}" -vcodec libx265 "{.}".mp4 && rm "{}"'
+    fd . ~/d/dump/porn/video/ ~/d/dump/image/other/ ~/d/dump/porn/image/gifs/ -eGIF -eGIFV -j8 -x bash -c 'ffmpeg -hide_banner -loglevel warning -y  -i "{}" -vcodec libx265 "{.}".mp4 && rm "{}"'
 
     for dir in $photo_dirs
         $dir
