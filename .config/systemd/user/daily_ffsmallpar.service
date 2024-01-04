@@ -1,10 +1,9 @@
 [Unit]
-Description='On *-*-* 23:15:00 run ~/d/69_Taxes_Keep/ && ffsmallpar ~/d/69_Taxes_Keep/ ~/d/68_Vr_Tv_Keep/'
+Description='On *-*-* 23:15:00 run ffsmallpar'
 
 [Service]
 Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 100
-ExecStart='/usr/bin/fish' '-c' '~/d/69_Taxes_Keep/ && ffsmallpar'
-
+ExecStart='/usr/bin/fish' '-c' '~/d/archive/porn/video/ && ffsmallpar'
