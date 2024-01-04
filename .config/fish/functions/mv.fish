@@ -5,8 +5,8 @@ function mv
         mkdir "$parent"
     end
 
-    if test (count $argv) -eq 2
-        rmdir "$argv[-1]"  # fast rename if possible
+    if test (count $argv) -eq 2 -a (basename $argv[1]) = (basename $argv[2])
+        rmdir "$argv[2]" >/dev/null # fast rename if possible
     end
     command mv $argv
 end
