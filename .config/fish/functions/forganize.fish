@@ -7,14 +7,14 @@ function forganize
     #trash-size
     #trash-empty
 
-    ulimit -n 10240
-    set joblog (mktemp)
-    for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
-        if string match -qv -- '*Seeding*' "$m"
-            echo library christen -r "$m" -v
-        end
-    end | parallel --shuf --joblog $joblog
-    parallel --retry-failed --joblog $joblog -j1
+    #ulimit -n 10240
+    #set joblog (mktemp)
+    #for m in /mnt/d(seq 1 $MERGERFS_DISKS)/*
+    #    if string match -qv -- '*Seeding*' "$m"
+    #        echo library christen -r "$m" -v
+    #    end
+    #end | parallel --shuf --joblog $joblog
+    #parallel --retry-failed --joblog $joblog -j1
 
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
