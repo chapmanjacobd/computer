@@ -22,7 +22,7 @@ function forganize
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/archive/porn/video/ -pf | xargs -P 20 -I{} rm {}
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
-    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/ ~/d/dump/audio/audiobooks/  ~/d/dump/audio/patterns/
+    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/ ~/d/dump/audio/audiobooks/ ~/d/dump/audio/patterns/
     set photo_dirs ~/d/dump/porn/image/ ~/d/96_Weird_History/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/sync/self/portraits/ ~/d/99_Art/
 
     # ~/d/84_MIDI && fd -tf -eMID -x mv "{}" "{.}.mid"

@@ -6,8 +6,8 @@ function mv
     end
 
     if test (count $argv) -eq 2 -a (path basename $argv[1]) = (path basename $argv[2])
-    if not path extension $argv[-1] >/dev/null
-        rmdir "$argv[2]" 2>/dev/null # fast rename if possible
+        if not path extension $argv[-1] >/dev/null
+            rmdir "$argv[2]" 2>/dev/null # fast rename if possible
         end
     end
     command mv $argv
