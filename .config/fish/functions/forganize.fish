@@ -22,10 +22,10 @@ function forganize
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/archive/porn/video/ -pf | xargs -P 20 -I{} rm {}
     lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
-    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/ ~/d/dump/audio/audiobooks/ ~/d/dump/audio/patterns/
-    set photo_dirs ~/d/dump/porn/image/ ~/d/96_Weird_History/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/sync/self/portraits/ ~/d/99_Art/
+    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/
+    set photo_dirs ~/d/dump/porn/image/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/dump/image/other/
 
-    # ~/d/84_MIDI && fd -tf -eMID -x mv "{}" "{.}.mid"
+    ~/d/dump/audio/midi/ && fd -tf -eMID -x mv "{}" "{.}.mid"
 
     fd . $audio_dirs -epng -ejpg -x rm "{}"
     fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'

@@ -1,6 +1,6 @@
 # Defined interactively
 function keepaud
-    set dest (coalesce $argv[2] ~/d/85_Inspiration/ffa/)
+    set dest (coalesce $argv[2] ~/d/archive/audio/other/)
 
     cp $argv[1] $dest
     set f (basename $argv[1])
