@@ -12,7 +12,7 @@ categories = {
     'text': ['ebooks', 'manga', 'receipts', 'web', 'recipes', 'theory', 'other'],
     'porn': ['video', 'vr', 'audio', 'image', 'other'],
     'video': ['other'],
-    'audio': ['music', 'midi', 'patterns', 'recordings', 'other'],
+    'audio': ['music', 'audiobooks', 'midi', 'patterns', 'recordings', 'other'],
     'image': ['art', 'memes', 'patterns', 'other'],
     'internals': ['text', 'video', 'audio', 'image', 'other'],
     'projects': ['art', 'cinematograph', 'music', 'other'],
