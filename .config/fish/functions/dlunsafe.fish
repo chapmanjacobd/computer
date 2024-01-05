@@ -1,6 +1,6 @@
 # Defined interactively
 function dlunsafe
-    maxmem10b lbdl ~/lb/63_Sounds.db --audio --prefix /mnt/d/dump/porn/audio/ $argv
+    maxmem10b lbdl ~/lb/tax_Sounds.db --audio --prefix /mnt/d/dump/porn/audio/ $argv
     maxmem10b lbdl ~/lb/audio.db --audio --prefix /mnt/d/dump/audio/ $argv
     wait
     maxmem10b lbdl ~/lb/video.db --video --small --prefix /mnt/d/dump/video/other/ $argv

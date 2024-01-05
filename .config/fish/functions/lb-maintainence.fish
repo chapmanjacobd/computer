@@ -1,7 +1,7 @@
 # Defined via `source`
 function lb-maintainence
     ~/lb/
-    for db in video.db tax.db audio.db 63_Sounds.db
+    for db in video.db tax.db audio.db tax_Sounds.db
         sqlite3 $db 'delete from media where time_deleted>0'
         b lb optimize --fts $db
     end
