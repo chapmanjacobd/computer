@@ -27,7 +27,10 @@ def sort_and_move_torrents(args):
     sorted_torrents = sorted(torrent_data, key=lambda x: x[1], reverse=args.reverse)
 
     for torrent_file, size in sorted_torrents[: args.n]:
-        destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
+        if args.out:
+            destination_path = Path(args.out) / torrent_file.name
+        else:
+            destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
 
         if args.dry_run:
             print('mv', torrent_file, ' ', destination_path, '# ', humanize.naturalsize(size, binary=True))
@@ -41,6 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
+    parser.add_argument('--out', '-o')
 
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
