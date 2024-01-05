@@ -11,7 +11,7 @@ function daily
     pip install --upgrade pychromecast
 
     ~/lb/
-    for db in reddit/tax_sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_Classical_Composers.db
+    for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_Classical_Composers.db
         lb redditupdate $db --lookback 2
     end
 

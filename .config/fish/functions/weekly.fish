@@ -27,7 +27,7 @@ function weekly
 
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/audio.db ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/tax_sounds.db ~/lb/reddit/tax_sounds.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/tax_sounds.db ~/lb/reddit/63_Sounds.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/tax.db ~/lb/reddit/69_Taxes.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/91_New_Art.db ~/lb/reddit/91_New_Art.db
 
