@@ -7,7 +7,7 @@ function library-stats
         lb-dev wt $db -w time_deleted'>'0 -p a
     end
 
-    for db in ~/lb/fs/63_Sounds.db ~/lb/audio.db
+    for db in ~/lb/63_Sounds.db ~/lb/audio.db
         echo $db
         lb-dev lt $db -p a
         echo $db deleted
@@ -17,7 +17,7 @@ function library-stats
     end
 
     echo bigdirs
-    for db in ~/lb/tax.db ~/lb/video.db ~/lb/fs/63_Sounds.db ~/lb/audio.db
+    for db in ~/lb/tax.db ~/lb/video.db ~/lb/63_Sounds.db ~/lb/audio.db
         echo $db
         lb-dev bigdirs $db -L 5
     end
