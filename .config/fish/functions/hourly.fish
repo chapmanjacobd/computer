@@ -1,6 +1,6 @@
 # Defined interactively
 function hourly
-    # rsync -auh --info=progress2 --no-inc-recursive --remove-sent-files ~/Downloads/*.torrent backup:.local/data/rtorrent/watch/new/
+    ssh backup torrent_promote.py --out .local/data/qbittorrent/jptvclub/ .local/data/jptv.club/ -n1
 
     load_env_mam
     ~/.local/bin/mam_upload_credit.sh
