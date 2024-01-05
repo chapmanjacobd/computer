@@ -1,3 +1,4 @@
+*.hevc
 /.lesshst
 /.local/config/
 /.local/cookies*
