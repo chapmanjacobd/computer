@@ -1,3 +1,4 @@
+/.lesshst
 /.local/config/
 /.local/cookies*
 /.local/include/
@@ -450,4 +451,3 @@
 /.kde/
 /.kde4/
 /.kube/
-/.lesshst
