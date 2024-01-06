@@ -162,3 +162,4 @@ abbr -a -- gdst git diff --text --staged
 abbr -a -- du du --block-size=1 --summarize
 abbr -a -- eda lb eda
 abbr -a -- pstat pidstat -l --dec=0 3 1 -r
+abbr -a -- uuid lsblk -f
