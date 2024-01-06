@@ -1,5 +1,5 @@
 /.config/google-chrome-for-testing/
-*.hevc
+/*.hevc
 /.lesshst
 /.local/config/
 /.local/cookies*
