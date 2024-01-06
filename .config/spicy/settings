@@ -4,6 +4,7 @@ grab-mouse=true
 scaling=true
 auto-clipboard=true
 sync-modifiers=true
+resize-guest=true
 
 [ui]
 toolbar=true
