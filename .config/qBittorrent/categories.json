@@ -1,4 +1,7 @@
 {
+    "DeleteAfterHitRunClear": {
+        "save_path": ""
+    },
     "ReseedRequest": {
         "save_path": ""
     }
