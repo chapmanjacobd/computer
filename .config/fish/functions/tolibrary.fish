@@ -8,6 +8,7 @@ function tolibrary
             set path (string replace -r $r 'library/' $path)
         end
     end
+    mkdir (path dirname "$path")
 
     mv "$argv" "$path"
 end
