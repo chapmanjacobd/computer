@@ -20,6 +20,7 @@ copyq
 coreutils
 darktable
 ddcutil
+ddrescue
 digikam
 dnf-plugin-system-upgrade
 dnf-utils
