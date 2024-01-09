@@ -68,6 +68,7 @@ scikit-learn
 screeninfo
 selenium
 selenium-wire
+sparseutils
 sqlite-utils
 srsly
 sshuttle
