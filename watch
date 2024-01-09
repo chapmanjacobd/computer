@@ -19,6 +19,6 @@ wt 70_Now_Watching
 wt JUDGMENT PS4
 wt babylon5project -O
 wt Horizon Zero Dawn Walkthrough -O
-wt -C --sort-by 'deleted/played desc, deleted desc'
+wt -C --sort-groups-by 'deleted/played desc, deleted desc'
 wt -w "path like '%.mpg'"
 wt 'Babylon 5' -m 3 (poplinehead /mnt/d/75_Moviequeue/Babylon\ 5/TV\ and\ Movies/B5_Watch_Order_JMS_Official.txt)
