@@ -19,5 +19,6 @@ UUID=541f8cbf-ea99-428c-b916-11286b222efb /mnt/d1    btrfs defaults,users,noatim
 UUID=4a0d117c-8fd6-4f6a-ac99-1031cba15f5e /mnt/d2    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
 UUID=07bf21dc-f94a-4b46-b502-d5ac52b9a786 /mnt/d3    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
 UUID=6ac6c182-84bf-4fc6-a1fd-ba37b8b578a9 /mnt/d4    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
+UUID=9779face-01a7-4884-9c52-5aff03d7c359 /mnt/d5    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
 
-/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.writeback=true,security_capability=false,cache.readdir=true,func.readdir=cosr:8,cache.entry=120,cache.attr=120,cache.statfs=60,func.getattr=newest,moveonenospc=true,minfreespace=20G,threads=32,category.create=pfrd,readahead=1024   0 0
+/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=partial,dropcacheonclose=true,cache.writeback=true,security_capability=false,cache.readdir=true,func.readdir=cosr:8,cache.entry=120,cache.attr=120,cache.statfs=60,func.getattr=newest,moveonenospc=true,minfreespace=20G,threads=32,category.create=pfrd,readahead=1024   0 0
