@@ -45,7 +45,8 @@
 /.config/fish/functions/load_build_env.fish
 /bin/gpt4all/
 /.ipython/profile_default/history.sqlite
-/*.mp4
+*.mp4
+*.mkv
 /.parallel/semaphores/
 /.parallel/tmp/
 /.node_history
@@ -111,7 +112,6 @@
 /.config/Microsoft Teams - Preview/
 /.config/Microsoft/ Teams - Preview/
 /.config/Microsoft/
-/*.mkv
 /*.bak
 /.config/kactivitymanagerd-switcher
 /.RData
