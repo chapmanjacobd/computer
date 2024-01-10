@@ -1,4 +1,3 @@
-
 wt 'Mary Hartman' S01 -u path
 wt -d+4h -P pt
 wt -l inf -r -B --folder-size=-100Gi --folder-size=+12Gi
@@ -22,3 +21,4 @@ wt Horizon Zero Dawn Walkthrough -O
 wt -C --sort-groups-by 'deleted/played desc, deleted desc'
 wt -w "path like '%.mpg'"
 wt 'Babylon 5' -m 3 (poplinehead /mnt/d/75_Moviequeue/Babylon\ 5/TV\ and\ Movies/B5_Watch_Order_JMS_Official.txt)
+wt --sort 'ntile(1000) over (order by size/duration) desc' --fetch-siblings each
