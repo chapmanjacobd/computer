@@ -19,7 +19,7 @@ function forganize
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
     lb-refresh
-    #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/archive/porn/video/ -pf | xargs -P 20 -I{} rm {}
+    #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/check/porn/video/ -pf | xargs -P 20 -I{} rm {}
     #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 -pfd
 
     set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/

@@ -2,7 +2,7 @@
 function mrquest
     ls ~/quest/Movies/
     if confirm
-        mv ~/quest/Movies/* ~/d/archive/porn/vr/
-        fd --max-results=3 . ~/d/dump/porn/vr/_new/ | xargs -I{} mv {} ~/quest/Movies/
+        mv ~/quest/Movies/* ~/d/library/porn/vr/
+        fd --max-results=3 . ~/d/check/porn/vr/ | xargs -I{} mv {} ~/quest/Movies/
     end
 end

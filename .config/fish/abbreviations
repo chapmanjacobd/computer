@@ -107,7 +107,7 @@ abbr -a -- gc gclone
 abbr -a -- repeal until
 abbr -a -- lsofhome 'lsof /home/ | sort -k 7 -u --human-numeric-sort'
 abbr -a -- traceroute mtr
-abbr -a -- taxes wt --db /home/xk/lb/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/archive/porn/video/ --start '10%' --gui --prefetch 4 -u duration desc, size desc --duration-from-size +180
+abbr -a -- taxes wt --db /home/xk/lb/tax.db --action ask_move_or_delete --keep-dir /home/xk/d/library/porn/video/ --start '10%' --gui --prefetch 4 -u duration desc, size desc --duration-from-size +180
 abbr -a -- ldd readelf -d
 abbr -a -- timecalc2 insect
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
