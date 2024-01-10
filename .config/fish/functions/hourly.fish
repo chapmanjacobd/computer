@@ -1,6 +1,6 @@
 # Defined interactively
 function hourly
-    ssh backup torrent_promote.py --out .local/data/qbittorrent/jptvclub/ .local/data/jptv.club/ -n1
+    ssh backup torrent_promote.py --out .local/data/qbittorrent/seed/jptvclub/ .local/data/jptv.club/ -n1
 
     load_env_mam
     ~/.local/bin/mam_upload_credit.sh
