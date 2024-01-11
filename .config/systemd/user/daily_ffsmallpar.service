@@ -6,4 +6,4 @@ Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 100
-ExecStart='/usr/bin/fish' '-c' '~/d/archive/porn/video/ && ffsmallpar'
+ExecStart='/usr/bin/fish' '-c' '~/d/library/porn/video/ && ffsmallpar'
