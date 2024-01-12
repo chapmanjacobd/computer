@@ -29,4 +29,5 @@ function openlinks
     end
     wait
     sed -i -e 1,"$qty"d $file
+    lines $file
 end
