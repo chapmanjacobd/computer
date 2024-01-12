@@ -1,4 +1,4 @@
-function opentabs
+function openmctabs
     argparse 'p/prefix=+' 'n/qty=' -- $argv
     set -l file $argv[1]
 

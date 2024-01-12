@@ -1,5 +1,5 @@
 [Unit]
-Description=/usr/bin/fish -c opentabs /home/xk/mc/tabs
+Description=/usr/bin/fish -c openmctabs /home/xk/mc/tabs
 
 [Timer]
 Persistent=yes

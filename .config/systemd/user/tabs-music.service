@@ -1,5 +1,5 @@
 [Unit]
-Description=/usr/bin/fish -c opentabs /home/xk/mc/_music
+Description=/usr/bin/fish -c openmctabs /home/xk/mc/_music
 Requires=xdg-desktop-autostart.target
 Requires=firefox.service
 
@@ -8,4 +8,4 @@ Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
 ExecStart=
-ExecStart="/usr/bin/fish" "-c" "opentabs /home/xk/mc/_music"
+ExecStart="/usr/bin/fish" "-c" "openmctabs /home/xk/mc/_music"

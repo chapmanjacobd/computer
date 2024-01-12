@@ -164,3 +164,4 @@ abbr -a -- eda lb eda
 abbr -a -- pstat pidstat -l --dec=0 3 1 -r
 abbr -a -- uuid lsblk -f
 abbr -a -- sshfs sshfs -o noauto,noatime,_netdev,reconnect,ConnectTimeout=10,ServerAliveInterval=8,TCPKeepAlive=no,auto_cache,cache_timeout=115200,attr_timeout=115200,entry_timeout=1200
+abbr -a -- opentabs openlinks
