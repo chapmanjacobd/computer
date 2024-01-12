@@ -1,3 +1,4 @@
+/.gsutil/
 /.java/
 /vdhcoapp-2.0.10/
 /.jkiss-lm/dbeaver-ee.lic
@@ -450,4 +451,3 @@
 /.gnome/
 /.gnupg/
 /.grass8/
-/.gsutil/
