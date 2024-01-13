@@ -656,7 +656,7 @@ Uuid={0a07c0cc-4b9a-4bd9-8255-44ff13bfb5cb}
 
 [Data_4]
 Comment=Comment
-DataCount=24
+DataCount=25
 Enabled=true
 Name=layer2
 SystemGroup=0
@@ -1088,6 +1088,32 @@ TriggersCount=1
 Key=Alt+PgDown
 Type=SHORTCUT
 Uuid={c1b32653-c74c-458a-b0f4-20ecd471ca31}
+
+[Data_4_25]
+Comment=Comment
+Enabled=true
+Name=vncbackup
+Type=SIMPLE_ACTION_DATA
+
+[Data_4_25Actions]
+ActionsCount=1
+
+[Data_4_25Actions0]
+CommandURL=fish -c "vnc backup"
+Type=COMMAND_URL
+
+[Data_4_25Conditions]
+Comment=
+ConditionsCount=0
+
+[Data_4_25Triggers]
+Comment=Simple_action
+TriggersCount=1
+
+[Data_4_25Triggers0]
+Key=Alt+B
+Type=SHORTCUT
+Uuid={aa2d8940-63ae-4cbd-8fa3-124518460733}
 
 [Data_4_2Actions]
 ActionsCount=1
