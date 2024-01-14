@@ -5,6 +5,7 @@ from pathlib import Path
 
 from torrentool.api import Torrent
 from xklb.utils import strings
+from rich import inspect
 
 parser = argparse.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
@@ -18,11 +19,11 @@ torrents = [
 
 duplicates = {}
 for i in range(len(torrents)):
-    name1 = torrents[i][0]
+    torrent_path1 = torrents[i][0]
     torrent1 = torrents[i][1]
 
     for j in range(i + 1, len(torrents)):
-        name2 = torrents[j][0]
+        torrent_path2 = torrents[j][0]
         torrent2 = torrents[j][1]
 
         is_dupe = False
@@ -41,13 +42,18 @@ for i in range(len(torrents)):
                     match_count += 1
             similarity = match_count / len(torrent1.files)
             if similarity > 0.3:
-                print(name1, name2, 'are similar', strings.safe_percent(similarity))
+                print(torrent_path1, torrent_path2, 'are similar', strings.safe_percent(similarity))
+                inspect(torrent1)
+                inspect(torrent2)
 
         if is_dupe:
-            if name1 not in duplicates:
-                duplicates[name1] = []
-            duplicates[name1].append(name1)
-            duplicates[name1].append(name2)
+            inspect(torrent1)
+            inspect(torrent2)
+
+            if torrent_path1 not in duplicates:
+                duplicates[torrent_path1] = []
+            duplicates[torrent_path1].append(torrent_path1)
+            duplicates[torrent_path1].append(torrent_path2)
 
 print("Duplicate groups:")
 for group in sorted(duplicates, key=len, reverse=True):
