@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+from pathlib import Path
 
 from torrentool.api import Torrent
 from xklb.utils import strings
@@ -12,7 +13,7 @@ args = parser.parse_args()
 torrents = [
     (torrent_file, Torrent.from_file(torrent_file))
     for torrent_folder in args.paths
-    for torrent_file in torrent_folder.glob('*.torrent')
+    for torrent_file in Path(torrent_folder).glob('*.torrent')
 ]
 
 duplicates = []
