@@ -53,6 +53,8 @@ sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon k
 #gcloud auth application-default login
 #gcloud auth login
 #https://www.ctrl.blog/entry/fedora-hibernate.html
+# sudo systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
 python -m ensurepip
 python -m pip install --upgrade pip
 for dep in (cat .github/pip_installed)
