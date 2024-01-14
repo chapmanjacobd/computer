@@ -36,10 +36,11 @@ for i in range(len(torrents)):
                 is_dupe = True
 
         elif len(torrent1.files) > 10 and len(torrent2.files) > 10:
-            match_count = 0
-            for f1, f2 in zip(torrent1.files, torrent2.files):
-                if f1.length == f2.length:
-                    match_count += 1
+            lengths_set1 = set(f1.length for f1 in torrent1.files)
+            lengths_set2 = set(f2.length for f2 in torrent2.files)
+            overlap_lengths = lengths_set1.intersection(lengths_set2)
+            match_count = len(overlap_lengths)
+
             similarity = match_count / len(torrent1.files)
             if similarity > 0.3:
                 print(torrent_path1, torrent_path2, 'are similar', strings.safe_percent(similarity))
