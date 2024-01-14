@@ -16,7 +16,7 @@ torrents = [
     for torrent_file in Path(torrent_folder).glob('*.torrent')
 ]
 
-duplicates = []
+duplicates = {}
 for i in range(len(torrents)):
     name1 = torrents[i][0]
     torrent1 = torrents[i][1]
