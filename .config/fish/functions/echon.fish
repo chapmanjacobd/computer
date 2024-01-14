@@ -1,4 +1,4 @@
 # Defined interactively
 function echon
-    echo $argv | string split ' '
+    string replace ' ' \n -- $argv
 end
