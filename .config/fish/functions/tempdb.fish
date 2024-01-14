@@ -1,4 +1,4 @@
 # Defined interactively
 function tempdb
-    mktemp --suffix .db
+    mktemp --suffix .db | tee /dev/tty
 end
