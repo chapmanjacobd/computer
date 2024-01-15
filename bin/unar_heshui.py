@@ -35,7 +35,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     log.warning('Ignoring non-directory zero size file: %s', f.filename)
                 continue
             elif f.filename.lower().endswith(
-                ('.txt', '.pdf', '.docx', '.url', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db', 'desktop.ini', '.DS_Store')
+                ( '.url', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db', 'desktop.ini', '.DS_Store')
             ):
                 continue
             if any(s in f.filename.lower() for s in ('左右反転バージョン',)):
@@ -43,8 +43,8 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 
             files.append(f.filename)
 
-        files, nested_archives = [s for s in files if not s.endswith(('.exe', '.rar'))], [
-            s for s in files if s.endswith(('.exe', '.rar'))
+        files, nested_archives = [s for s in files if not s.endswith(('.exe', '.rar', '.zip'))], [
+            s for s in files if s.endswith(('.exe', '.rar', '.zip'))
         ]
         if nested_archives:
             log.error('nested archives: %s', nested_archives)
@@ -68,7 +68,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 
         extensions = Counter(Path(s).suffix.lower() for s in files)
 
-        for extra in ['.lrc', '.rtf']:
+        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx']:
             if extra in extensions:
                 extra_files = [s for s in files if s.endswith(extra)]
                 log.info('Extracting %s extras %s', extra, extra_files)
