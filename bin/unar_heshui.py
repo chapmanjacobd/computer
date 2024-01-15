@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     src = Path(args.source_path)
     output_prefix = src.parent / (src.parent.name + 'out')
-    output_prefix.mkdir(exist_ok=args.dry_run)
+    output_prefix.mkdir(exist_ok=True)  # exist_ok=args.dry_run
 
     count_skipped = 0
     count_processed = 0
