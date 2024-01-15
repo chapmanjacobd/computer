@@ -49,4 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
 
+    if args.out:
+        Path(args.out).mkdir(exists_ok=True, parents=True)
+
     sort_and_move_torrents(args)
