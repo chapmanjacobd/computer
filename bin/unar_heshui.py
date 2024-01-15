@@ -62,6 +62,8 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         log.exception(input_path)
                         raise
             if not files:
+                if args.unlink:
+                    input_path.unlink()
                 return count_extracted
 
         extensions = Counter(Path(s).suffix.lower() for s in files)
