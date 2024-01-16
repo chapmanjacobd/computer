@@ -8,7 +8,7 @@ import tempfile
 import rarfile
 from xklb.utils import objects
 from xklb.utils.log_utils import log
-
+from xklb.scripts import process_audio
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -21,6 +21,13 @@ def parse_args() -> argparse.Namespace:
 
     log.info(objects.dict_filter_bool(args.__dict__))
     return args
+'''
+zip files
+
+
+unar everything first and then move files
+
+'''
 
 
 def check_archive(args, input_path: Path, output_prefix: Path):
@@ -35,7 +42,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     log.warning('Ignoring non-directory zero size file: %s', f.filename)
                 continue
             elif f.filename.lower().endswith(
-                ( '.url', '.html', '.htm', '.jpg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db', 'desktop.ini', '.DS_Store')
+                ( '.url', '.html', '.htm', '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db', 'desktop.ini', '.DS_Store')
             ):
                 continue
             if any(s in f.filename.lower() for s in ('左右反転バージョン',)):
@@ -83,29 +90,38 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             for member in [s for s in files if s.endswith(key)]:
                 log.debug('One type of extension: %s', member)
                 if not args.dry_run:
-                    rf.extract(member, output_prefix)
+                    output_path = rf.extract(member, output_prefix)
+                    process_audio.process_path(output_path)
                 count_extracted += 1
 
             if args.unlink:
                 input_path.unlink()
         elif len(extensions) == 2:
-            fist_ext, second_ext = extensions
+            first_ext, second_ext = extensions
 
             low_q_ext, high_q_ext = None, None
-            if len([s for s in files if s.endswith(fist_ext)]) != len([s for s in files if s.endswith(second_ext)]):
-                log.error('Mismatched extensions %s: %s', extensions, files)
-            elif set(extensions) == {'.mp3', '.wav'}:
+            if set(extensions) == {'.mp3', '.wav'}:
                 low_q_ext, high_q_ext = '.mp3', '.wav'
             elif set(extensions) == {'.mp3', '.flac'}:
                 low_q_ext, high_q_ext = '.mp3', '.flac'
             else:
                 log.error('Two extension structure %s not recognized: %s', extensions, files)
+                return count_extracted
+
+            if len([s for s in files if s.endswith(first_ext)]) != len([s for s in files if s.endswith(second_ext)]):
+                for member in [s for s in files if s.endswith(low_q_ext)]:
+                    if Path(member).with_suffix(high_q_ext).name in [Path(s).name for s in files]:
+                        files.remove(member)
+            if len([s for s in files if s.endswith(first_ext)]) != len([s for s in files if s.endswith(second_ext)]):
+                log.error('Mismatched extensions %s: %s', extensions, files)
+                return count_extracted
 
             if low_q_ext and high_q_ext:
                 for member in [s for s in files if s.endswith(high_q_ext)]:
                     log.debug('%s and %s: %s', low_q_ext, high_q_ext, member)
                     if not args.dry_run:
-                        rf.extract(member, output_prefix)
+                        output_path = rf.extract(member, output_prefix)
+                        process_audio.process_path(output_path)
                     count_extracted += 1
 
                 if args.unlink:
@@ -135,7 +151,7 @@ if __name__ == "__main__":
                 else:
                     count_skipped += 1
             except (rarfile.BadRarFile, rarfile.NotRarFile):
-                log.info('Corrupt file: %s', input_path)
+                log.warning('Corrupt file: %s', input_path)
             except rarfile.NeedFirstVolume:
                 log.debug('NeedFirstVolume: %s', input_path)
             except Exception as e:
