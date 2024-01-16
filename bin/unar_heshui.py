@@ -30,7 +30,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 
     if input_path.stem == '.zip':
         output_dir = patoolib.extract_archive(input_path, outdir=output_prefix)
-        return count_extracted + len(list(Path(output_dir).rglob('*')))
+        zip_files = len(list(Path(output_dir).rglob('*')))
+        if zip_files > 0 and args.unlink:
+            input_path.unlink()
+        return count_extracted + zip_files
 
     with rarfile.RarFile(input_path, errors='strict') as rf:
         rf.setpassword('heshui')
