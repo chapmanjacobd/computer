@@ -9,6 +9,7 @@ import rarfile
 from xklb.utils import objects
 from xklb.utils.log_utils import log
 from xklb.scripts import process_audio
+import patoolib
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -21,17 +22,16 @@ def parse_args() -> argparse.Namespace:
 
     log.info(objects.dict_filter_bool(args.__dict__))
     return args
-'''
-zip files
 
-
-unar everything first and then move files
-
-'''
 
 
 def check_archive(args, input_path: Path, output_prefix: Path):
     count_extracted = 0
+
+    if input_path.stem == '.zip':
+        output_dir = patoolib.extract_archive(input_path, outdir=output_prefix)
+        return count_extracted + len(list(Path(output_dir).rglob('*')))
+
     with rarfile.RarFile(input_path, errors='strict') as rf:
         rf.setpassword('heshui')
 
