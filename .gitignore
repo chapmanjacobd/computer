@@ -1,3 +1,4 @@
+/.games/
 /.gsutil/
 /.java/
 /vdhcoapp-2.0.10/
@@ -447,4 +448,3 @@
 /.electron/
 /.fltk/
 /.fonts/
-/.games/

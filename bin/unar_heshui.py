@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 import argparse
 import os
+import tempfile
+import zipfile
 from collections import Counter
 from pathlib import Path
-import tempfile
 
 import rarfile
+from xklb.scripts import process_audio
 from xklb.utils import objects
 from xklb.utils.log_utils import log
-from xklb.scripts import process_audio
-import patoolib
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -24,19 +25,28 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+class ArchiveHandler:
+    def __init__(self, file_path):
+        self.file_path = Path(file_path)
+        self.archive = None
+
+    def __enter__(self):
+        if self.file_path.suffix == '.zip':
+            self.archive = zipfile.ZipFile(self.file_path)
+        else:
+            self.archive = rarfile.RarFile(self.file_path, errors='strict')
+        return self.archive
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.archive:
+            self.archive.close()
+
 
 def check_archive(args, input_path: Path, output_prefix: Path):
     count_extracted = 0
 
-    if input_path.stem == '.zip':
-        output_dir = patoolib.extract_archive(input_path, outdir=output_prefix)
-        zip_files = len(list(Path(output_dir).rglob('*')))
-        if zip_files > 0 and args.unlink:
-            input_path.unlink()
-        return count_extracted + zip_files
-
-    with rarfile.RarFile(input_path, errors='strict') as rf:
-        rf.setpassword('heshui')
+    with ArchiveHandler(input_path) as rf:
+        rf.setpassword(b'heshui')
 
         files = []
         for f in rf.infolist():
@@ -45,7 +55,20 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     log.warning('Ignoring non-directory zero size file: %s', f.filename)
                 continue
             elif f.filename.lower().endswith(
-                ( '.url', '.html', '.htm', '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.m3u', 'Thumbs.db', 'desktop.ini', '.DS_Store')
+                (
+                    '.url',
+                    '.html',
+                    '.htm',
+                    '.jpg',
+                    '.jpeg',
+                    '.png',
+                    '.bmp',
+                    '.gif',
+                    '.m3u',
+                    'Thumbs.db',
+                    'desktop.ini',
+                    '.DS_Store',
+                )
             ):
                 continue
             if any(s in f.filename.lower() for s in ('左右反転バージョン',)):
@@ -57,13 +80,15 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             s for s in files if s.endswith(('.exe', '.rar', '.zip'))
         ]
         if nested_archives:
-            log.error('nested archives: %s', nested_archives)
+            log.info('nested archives: %s', nested_archives)
             with tempfile.TemporaryDirectory() as temp_prefix:
                 rf.extractall(temp_prefix)
+
+                nested_output_prefix = output_prefix / input_path.stem
                 for nested_archive in nested_archives:
                     temp_path = Path(temp_prefix) / nested_archive
                     try:
-                        count_extracted += check_archive(args, temp_path, output_prefix)
+                        count_extracted += check_archive(args, temp_path, nested_output_prefix)
                     except (rarfile.BadRarFile, rarfile.NotRarFile):
                         log.info('Corrupt file: %s', temp_path)
                     except rarfile.NeedFirstVolume:
@@ -71,20 +96,24 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     except Exception:
                         log.exception(input_path)
                         raise
-            if not files:
-                if args.unlink:
-                    input_path.unlink()
-                return count_extracted
 
         extensions = Counter(Path(s).suffix.lower() for s in files)
-
         for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx']:
             if extra in extensions:
                 extra_files = [s for s in files if s.endswith(extra)]
                 log.info('Extracting %s extras %s', extra, extra_files)
                 for member in extra_files:
-                    rf.extract(member, output_prefix)
+                    if not args.dry_run:
+                        rf.extract(member, output_prefix)
+                    files.remove(member)
+                    count_extracted += 1
                 del extensions[extra]
+
+        if nested_archives:
+            if not files:
+                if args.unlink:
+                    input_path.unlink()
+                return count_extracted
 
         if len(files) == 0:
             log.error('No files found in: %s', input_path)
