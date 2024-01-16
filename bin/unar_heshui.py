@@ -112,7 +112,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
         if nested_archives:
             if not files:
                 if args.unlink:
-                    input_path.unlink()
+                    delete_archive(input_path, rf)
                 return count_extracted
 
         if len(files) == 0:
@@ -127,7 +127,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 count_extracted += 1
 
             if args.unlink:
-                input_path.unlink()
+                delete_archive(input_path, rf)
         elif len(extensions) == 2:
             first_ext, second_ext = extensions
 
@@ -156,10 +156,18 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     count_extracted += 1
 
                 if args.unlink:
-                    input_path.unlink()
+                    delete_archive(input_path, rf)
         else:
             log.error('Directory structure not recognized: %s', files)
     return count_extracted
+
+def delete_archive(input_path, rf):
+    if isinstance(rf, zipfile.ZipFile):
+        input_path.unlink()
+    else:
+        for s in rf.volumelist():
+            os.unlink(s)
+
 
 
 if __name__ == "__main__":
