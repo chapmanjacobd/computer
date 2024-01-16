@@ -68,6 +68,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             elif f.filename.lower().endswith(
                 (
                     '.url',
+                    '.website',
                     '.html',
                     '.htm',
                     '.jpg',
@@ -110,7 +111,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         raise
 
         extensions = Counter(Path(s).suffix.lower() for s in files)
-        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx']:
+        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4','.mkv']:
             if extra in extensions:
                 extra_files = [s for s in files if s.endswith(extra)]
                 log.info('Extracting %s extras %s', extra, extra_files)
@@ -148,19 +149,21 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 low_q_ext, high_q_ext = '.mp3', '.wav'
             elif set(extensions) == {'.mp3', '.flac'}:
                 low_q_ext, high_q_ext = '.mp3', '.flac'
+            elif set(extensions) == {'.wma', '.wav'}:
+                low_q_ext, high_q_ext = '.wma', '.wav'
             else:
                 log.error('Two extension structure %s not recognized: %s', extensions, files)
                 return count_extracted
 
-            if len([s for s in files if s.endswith(first_ext)]) != len([s for s in files if s.endswith(second_ext)]):
-                for member in [s for s in files if s.endswith(low_q_ext)]:
+            if len([s for s in files if s.lower().endswith(first_ext)]) != len([s for s in files if s.lower().endswith(second_ext)]):
+                for member in [s for s in files if s.lower().endswith(low_q_ext)]:
                     if Path(member).with_suffix(high_q_ext).name in [Path(s).name for s in files]:
                         files.remove(member)
-            if len([s for s in files if s.endswith(first_ext)]) != len([s for s in files if s.endswith(second_ext)]):
+            if len([s for s in files if s.lower().endswith(first_ext)]) != len([s for s in files if s.lower().endswith(second_ext)]):
                 log.error('Mismatched extensions %s: %s', extensions, files)
 
             if low_q_ext and high_q_ext:
-                for member in [s for s in files if s.endswith(high_q_ext)]:
+                for member in [s for s in files if s.lower().endswith(high_q_ext)]:
                     log.debug('%s and %s: %s', low_q_ext, high_q_ext, member)
                     if not args.dry_run:
                         output_path = rf.extract(member, output_prefix)
