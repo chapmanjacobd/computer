@@ -53,6 +53,9 @@ def delete_archive(input_path, rf):
 def check_archive(args, input_path: Path, output_prefix: Path):
     count_extracted = 0
 
+    output_prefix = output_prefix / input_path.stem
+    output_prefix = Path(*OrderedDict.fromkeys(output_prefix.parts).keys())  # remove duplicate path parts
+
     with ArchiveHandler(input_path) as rf:
         rf.setpassword(b'heshui')
 
@@ -92,14 +95,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             with tempfile.TemporaryDirectory() as temp_prefix:
                 rf.extractall(temp_prefix)
 
-                nested_output_prefix = output_prefix / input_path.stem
-                # remove duplicate path parts
-                nested_output_prefix = Path(*OrderedDict.fromkeys(nested_output_prefix.parts).keys())
-
                 for nested_archive in nested_archives:
                     temp_path = Path(temp_prefix) / nested_archive
                     try:
-                        count_extracted += check_archive(args, temp_path, nested_output_prefix)
+                        count_extracted += check_archive(args, temp_path, output_prefix)
                     except (rarfile.BadRarFile, rarfile.NotRarFile):
                         log.info('Corrupt file: %s', temp_path)
                     except rarfile.NeedFirstVolume:
