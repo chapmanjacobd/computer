@@ -61,6 +61,7 @@ function forganize
             yes | bfs -nohidden -type d -exec bfs -f {} -not -type d -exit 1 \; -prune -ok bfs -f {} -type d -delete \;
         end
     end
+    mktree.py ~/d/
 
     set joblog (mktemp)
     for i in (seq 1 $MERGERFS_DISKS)
