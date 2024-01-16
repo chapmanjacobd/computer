@@ -103,6 +103,8 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         log.info('Corrupt file: %s', temp_path)
                     except rarfile.NeedFirstVolume:
                         log.debug('NeedFirstVolume: %s', temp_path)
+                    except FileNotFoundError:
+                        log.debug('FileNotFoundError: %s', temp_path)
                     except Exception:
                         log.exception(input_path)
                         raise
@@ -195,6 +197,8 @@ if __name__ == "__main__":
                 log.warning('Corrupt file: %s', input_path)
             except rarfile.NeedFirstVolume:
                 log.debug('NeedFirstVolume: %s', input_path)
+            except FileNotFoundError:
+                log.debug('FileNotFoundError: %s', input_path)
             except Exception as e:
                 log.exception(input_path)
                 if args.dry_run:
