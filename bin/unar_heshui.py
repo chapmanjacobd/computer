@@ -3,7 +3,7 @@ import argparse
 import os
 import tempfile
 import zipfile
-from collections import Counter
+from collections import Counter, OrderedDict
 from pathlib import Path
 
 import rarfile
@@ -40,6 +40,14 @@ class ArchiveHandler:
     def __exit__(self, exc_type, exc_value, traceback):
         if self.archive:
             self.archive.close()
+
+
+def delete_archive(input_path, rf):
+    if isinstance(rf, zipfile.ZipFile):
+        input_path.unlink()
+    else:
+        for s in rf.volumelist():
+            os.unlink(s)
 
 
 def check_archive(args, input_path: Path, output_prefix: Path):
@@ -85,6 +93,9 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 rf.extractall(temp_prefix)
 
                 nested_output_prefix = output_prefix / input_path.stem
+                # remove duplicate path parts
+                nested_output_prefix = Path(*OrderedDict.fromkeys(nested_output_prefix.parts).keys())
+
                 for nested_archive in nested_archives:
                     temp_path = Path(temp_prefix) / nested_archive
                     try:
@@ -160,14 +171,6 @@ def check_archive(args, input_path: Path, output_prefix: Path):
         else:
             log.error('Directory structure not recognized: %s', files)
     return count_extracted
-
-def delete_archive(input_path, rf):
-    if isinstance(rf, zipfile.ZipFile):
-        input_path.unlink()
-    else:
-        for s in rf.volumelist():
-            os.unlink(s)
-
 
 
 if __name__ == "__main__":
