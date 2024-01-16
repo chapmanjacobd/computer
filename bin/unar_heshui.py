@@ -146,7 +146,6 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         files.remove(member)
             if len([s for s in files if s.endswith(first_ext)]) != len([s for s in files if s.endswith(second_ext)]):
                 log.error('Mismatched extensions %s: %s', extensions, files)
-                return count_extracted
 
             if low_q_ext and high_q_ext:
                 for member in [s for s in files if s.endswith(high_q_ext)]:
