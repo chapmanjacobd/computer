@@ -137,7 +137,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                 log.debug('One type of extension: %s', member)
                 if not args.dry_run:
                     output_path = rf.extract(member, output_prefix)
-                    process_audio.process_path(output_path)
+                    try:
+                        process_audio.process_path(output_path)
+                    except Exception:
+                        pass
                 count_extracted += 1
 
             if args.unlink:
@@ -156,7 +159,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             for member in files:
                 if not args.dry_run:
                     output_path = rf.extract(member, output_prefix)
-                    process_audio.process_path(output_path)
+                    try:
+                        process_audio.process_path(output_path)
+                    except Exception:
+                        pass
                 count_extracted += 1
 
         if args.unlink:
