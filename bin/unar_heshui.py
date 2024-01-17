@@ -200,4 +200,4 @@ if __name__ == "__main__":
                 if args.dry_run:
                     raise
 
-            printing.print_overwrite('Skipped:', count_skipped, 'Processed:', count_processed, 'Files:', count_files)
+            printing.print_overwrite(f"Skipped: {count_skipped} Processed: {count_processed} Files: {count_files}")
