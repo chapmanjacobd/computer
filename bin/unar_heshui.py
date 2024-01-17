@@ -130,6 +130,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 
         if len(files) == 0:
             log.error('No files found in: %s', input_path)
+            return count_extracted
         elif len(extensions) == 1:
             key, _value = extensions.popitem()
             for member in [s for s in files if s.endswith(key)]:
@@ -141,39 +142,26 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 
             if args.unlink:
                 delete_archive(input_path, rf)
-        elif len(extensions) == 2:
-            first_ext, second_ext = extensions
+        else:  # len(extensions) >= 2
 
-            low_q_ext, high_q_ext = None, None
-            if set(extensions) == {'.mp3', '.wav'}:
-                low_q_ext, high_q_ext = '.mp3', '.wav'
-            elif set(extensions) == {'.mp3', '.flac'}:
-                low_q_ext, high_q_ext = '.mp3', '.flac'
-            elif set(extensions) == {'.wma', '.wav'}:
-                low_q_ext, high_q_ext = '.wma', '.wav'
-            else:
-                log.error('Two extension structure %s not recognized: %s', extensions, files)
-                return count_extracted
+            low_q_exts = ['.mp3', '.wma']
+            high_q_exts = ['.wav', '.flac']
 
-            if len([s for s in files if s.lower().endswith(first_ext)]) != len([s for s in files if s.lower().endswith(second_ext)]):
+            for low_q_ext in low_q_exts:
                 for member in [s for s in files if s.lower().endswith(low_q_ext)]:
-                    if Path(member).with_suffix(high_q_ext).name in [Path(s).name for s in files]:
-                        files.remove(member)
-            if len([s for s in files if s.lower().endswith(first_ext)]) != len([s for s in files if s.lower().endswith(second_ext)]):
-                log.error('Mismatched extensions %s: %s', extensions, files)
+                    for high_q_ext in high_q_exts:
+                        if Path(member).with_suffix(high_q_ext).name in [Path(s).name for s in files]:
+                            files.remove(member)
 
-            if low_q_ext and high_q_ext:
-                for member in [s for s in files if s.lower().endswith(high_q_ext)]:
-                    log.debug('%s and %s: %s', low_q_ext, high_q_ext, member)
-                    if not args.dry_run:
-                        output_path = rf.extract(member, output_prefix)
-                        process_audio.process_path(output_path)
-                    count_extracted += 1
+            for member in files:
+                if not args.dry_run:
+                    output_path = rf.extract(member, output_prefix)
+                    process_audio.process_path(output_path)
+                count_extracted += 1
 
-                if args.unlink:
-                    delete_archive(input_path, rf)
-        else:
-            log.error('Directory structure not recognized: %s', files)
+        if args.unlink:
+            delete_archive(input_path, rf)
+
     return count_extracted
 
 
