@@ -8,7 +8,7 @@ from pathlib import Path
 
 import rarfile
 from xklb.scripts import process_audio
-from xklb.utils import objects
+from xklb.utils import objects, printing
 from xklb.utils.log_utils import log
 
 
@@ -111,7 +111,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         raise
 
         extensions = Counter(Path(s).suffix.lower() for s in files)
-        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4','.mkv']:
+        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4', '.mkv']:
             if extra in extensions:
                 extra_files = [s for s in files if s.endswith(extra)]
                 log.info('Extracting %s extras %s', extra, extra_files)
@@ -146,7 +146,6 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             if args.unlink:
                 delete_archive(input_path, rf)
         else:  # len(extensions) >= 2
-
             low_q_exts = ['.mp3', '.wma']
             high_q_exts = ['.wav', '.flac']
 
@@ -201,4 +200,4 @@ if __name__ == "__main__":
                 if args.dry_run:
                     raise
 
-    print('Skipped:', count_skipped, 'Processed:', count_processed, 'Files:', count_files)
+            printing.print_overwrite('Skipped:', count_skipped, 'Processed:', count_processed, 'Files:', count_files)
