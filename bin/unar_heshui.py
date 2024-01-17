@@ -8,9 +8,10 @@ from pathlib import Path
 
 import rarfile
 from xklb.scripts import process_audio
-from xklb.utils import objects, printing
+from xklb.utils import objects
 from xklb.utils.log_utils import log
 
+# fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar_heshui.py --unlink {}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -18,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", "-v", action="count", default=0)
 
-    parser.add_argument("source_path", type=Path, default=Path.cwd())
+    parser.add_argument("rar_path")
     args = parser.parse_intermixed_args()
 
     log.info(objects.dict_filter_bool(args.__dict__))
@@ -173,31 +174,20 @@ def check_archive(args, input_path: Path, output_prefix: Path):
 if __name__ == "__main__":
     args = parse_args()
 
-    src = Path(args.source_path)
-    output_prefix = src.parent / (src.parent.name + 'out')
+    input_path = Path(args.rar_path)
+
+    output_prefix = Path('out')
     output_prefix.mkdir(exist_ok=True)  # exist_ok=args.dry_run
 
-    count_skipped = 0
-    count_processed = 0
-    count_files = 0
-    for input_path in src.rglob('*'):
-        if input_path.is_file():
-            try:
-                ar_extracted = check_archive(args, input_path, output_prefix)
-                if ar_extracted > 0:
-                    count_files += ar_extracted
-                    count_processed += 1
-                else:
-                    count_skipped += 1
-            except (rarfile.BadRarFile, rarfile.NotRarFile):
-                log.warning('Corrupt file: %s', input_path)
-            except rarfile.NeedFirstVolume:
-                log.debug('NeedFirstVolume: %s', input_path)
-            except FileNotFoundError:
-                log.debug('FileNotFoundError: %s', input_path)
-            except Exception as e:
-                log.exception(input_path)
-                if args.dry_run:
-                    raise
-
-            printing.print_overwrite(f"Skipped: {count_skipped} Processed: {count_processed} Files: {count_files}")
+    try:
+        ar_extracted = check_archive(args, input_path, output_prefix)
+    except (rarfile.BadRarFile, rarfile.NotRarFile):
+        log.warning('Corrupt file: %s', input_path)
+    except rarfile.NeedFirstVolume:
+        log.debug('NeedFirstVolume: %s', input_path)
+    except FileNotFoundError:
+        log.debug('FileNotFoundError: %s', input_path)
+    except Exception as e:
+        log.exception(input_path)
+        if args.dry_run:
+            raise
