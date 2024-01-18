@@ -9,6 +9,7 @@ from xklb.scripts import sample_compare
 
 from xklb.utils import file_utils
 from xklb.utils.log_utils import log
+import glob
 
 '''
 accept mergerfs paths: stickysync_local historyfile /mnt/d/from /mnt/d/to
@@ -21,10 +22,10 @@ find the disk location of the existing file and cp reflink on the same filesyste
 
 def mergerfs_reflink(original: Path, duplicate: Path):
     is_cloned = False
-    for n in range(1, 11):
-        src = bytes(original).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
+    for d in glob.glob("/mnt/d[1-9]"):
+        src = bytes(original).replace(b"/mnt/d/", f"{d}/".encode(), 1)
         if os.path.exists(src):
-            dest = bytes(duplicate).replace(b"/mnt/d/", f"/mnt/d{n}/".encode(), 1)
+            dest = bytes(duplicate).replace(b"/mnt/d/", f"{d}/".encode(), 1)
             os.makedirs(os.path.dirname(dest), exist_ok=True)
 
             subprocess.check_call(['cp', '--reflink=always', src, dest])
