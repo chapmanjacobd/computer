@@ -6,6 +6,11 @@ function copy_to_pakon
     stickysync_backup ~/d/sync/datasets/file-lists/stickysync_rtorrent_audiobooks d/_rtorrent/ /mnt/d/dump/audio/audiobooks/rtorrent/
 
     for d in ~/d/check/world/seeding/*
-        stickysync_local ~/d/sync/datasets/file-lists/stickysync_qbittorrent $d ~/d/dump/video/(path basename $d)/
+        switch $d
+            case '*music*'
+                stickysync_local ~/d/sync/datasets/file-lists/stickysync_qbittorrent $d ~/d/dump/audio/music/(path basename $d)/
+            case '*'
+                stickysync_local ~/d/sync/datasets/file-lists/stickysync_qbittorrent $d ~/d/dump/video/(path basename $d)/
+        end
     end
 end
