@@ -50,8 +50,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
             history = set(hf.read().splitlines())
 
     source_files = set(Path(s) for s in file_utils.rglob(from_dir)[0])
-    source_files_rel = set(str(p.relative_to(from_dir)) for p in source_files)
-    known_files = source_files_rel & history
+    known_files = set(p for p in source_files if str(p.relative_to(from_dir)) in history)
     source_files -= known_files
     print(f'Copying {len(source_files)} new [{len(known_files)} known]')
 
