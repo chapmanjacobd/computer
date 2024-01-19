@@ -3,6 +3,7 @@ function _ytdl
         -o "%(ie_key,extractor_key,extractor)s/%(uploader,uploader_id)s/%(title).200B_%(view_count)3.2D_[%(id).60B].%(ext)s" --restrict-filenames \
         --download-archive ~/.local/share/yt_archive.txt --retries 13 --extractor-retries 13 \
         --extractor-args youtubetab:skip=authcheck --embed-metadata \
+        --no-progress \
         --reject-title "Trailer|Sneak Peek|Preview|Teaser|Promo|Live |Stream|Twitch|Crypto|Meetup|Montage|Bitcoin|Makeup|Apology|Clip |Top 10|Top Ten|Panel|Red Carpet Premiere|Now Playing|In Theaters| Scene|Announcement|First Look|Final Look|Outtakes|360|World Premiere|Event|TV Spot|Advert|campaign|Horror|Graphics Card| GPU | Terror| AWARD|Ceremony" \
         $argv
 end
