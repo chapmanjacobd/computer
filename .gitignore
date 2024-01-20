@@ -1,3 +1,4 @@
+/.config/mpv/scripts/autosub.lua
 /*.db*
 /.games/
 /.gsutil/
