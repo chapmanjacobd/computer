@@ -10,8 +10,7 @@ function weekly
 
     mam_update
 
-    lb fsadd ~/lb/video.db --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/video/ ~/d/dump/video
-    lb fsadd ~/lb/tax.db --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/porn/video/ ~/d/dump/porn/video/
+    lb-refresh
 
     pip install --upgrade yt-dlp gallery-dl praw xklb
 
