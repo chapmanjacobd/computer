@@ -120,10 +120,12 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         count_extracted += check_archive(args, temp_path, output_prefix)
                     except (rarfile.BadRarFile, rarfile.NotRarFile):
                         log.info('Corrupt file: %s', temp_path)
+                        args.unlink = False
                     except rarfile.NeedFirstVolume:
                         log.debug('NeedFirstVolume: %s', temp_path)
                     except zipfile.BadZipFile:
                         log.exception('Nested zip: %s', temp_path)
+                        args.unlink = False
                     except FileNotFoundError:
                         log.debug('FileNotFoundError: %s', temp_path)
                     except Exception:
