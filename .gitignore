@@ -1,3 +1,4 @@
+/.docker/
 /.eclipse/
 /.config/mpv/scripts/autosub.lua
 /*.db*
@@ -446,4 +447,3 @@
 /.debug/
 /discovery*
 /Discovery*
-/.docker/
