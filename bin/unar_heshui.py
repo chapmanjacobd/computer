@@ -8,6 +8,7 @@ from pathlib import Path
 
 import rarfile
 from xklb.scripts import process_audio
+from xklb.scripts.rel_mv import rel_move
 from xklb.utils import objects
 from xklb.utils.log_utils import log
 
@@ -15,6 +16,7 @@ from xklb.utils.log_utils import log
 
 TEMP_BASE_DIR = Path('~/.tmp').expanduser()
 TEMP_BASE_DIR.mkdir(exist_ok=True)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -63,115 +65,103 @@ def check_archive(args, input_path: Path, output_prefix: Path):
     with ArchiveHandler(input_path) as rf:
         rf.setpassword(b'heshui')
 
-        files = []
-        for f in rf.infolist():
-            if f.file_size == 0:
-                if not f.filename.endswith(os.sep):
-                    log.warning('Ignoring non-directory zero size file: %s', f.filename)
-                continue
-            elif f.filename.lower().endswith(
-                (
-                    '.url',
-                    '.website',
-                    '.html',
-                    '.htm',
-                    '.jpg',
-                    '.jpeg',
-                    '.png',
-                    '.bmp',
-                    '.gif',
-                    '.m3u',
-                    'Thumbs.db',
-                    'desktop.ini',
-                    '.DS_Store',
-                )
-            ):
-                continue
-            if any(s in f.filename.lower() for s in ('左右反転バージョン',)):
-                continue
+        with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix1:
+            rf.extractall(temp_prefix1)
 
-            files.append(f.filename)
+            files = []
+            for f in Path(temp_prefix1).rglob('*'):
+                if not f.is_file():
+                    continue
 
-        files, nested_archives = [s for s in files if not s.endswith(('.exe', '.rar', '.zip'))], [
-            s for s in files if s.endswith(('.exe', '.rar', '.zip'))
-        ]
-        if nested_archives:
-            log.info('nested archives: %s', nested_archives)
-            with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix:
-                rf.extractall(temp_prefix)
+                stats = f.stat()
+                if stats.st_size == 0:
+                    log.warning('Ignoring non-directory zero size file: %s', f)
+                elif f.name.lower().endswith(
+                    (
+                        '.url',
+                        '.website',
+                        '.html',
+                        '.htm',
+                        '.jpg',
+                        '.jpeg',
+                        '.png',
+                        '.bmp',
+                        '.gif',
+                        '.m3u',
+                        'Thumbs.db',
+                        'desktop.ini',
+                        '.DS_Store',
+                    )
+                ) or any(s in f.name.lower() for s in ('左右反転バージョン',)):
+                    log.debug('Ignoring file: %s', f)
+                else:
+                    files.append(f)
 
-                for nested_archive in nested_archives:
-                    temp_path = Path(temp_prefix) / nested_archive
-                    try:
-                        count_extracted += check_archive(args, temp_path, output_prefix)
-                    except (rarfile.BadRarFile, rarfile.NotRarFile):
-                        log.info('Corrupt file: %s', temp_path)
-                    except rarfile.NeedFirstVolume:
-                        log.debug('NeedFirstVolume: %s', temp_path)
-                    except zipfile.BadZipFile:
-                        log.exception('Nested zip: %s', temp_path)
-                    except FileNotFoundError:
-                        log.debug('FileNotFoundError: %s', temp_path)
-                    except Exception:
-                        log.exception(input_path)
-                        raise
+            files, nested_archives = [p for p in files if not p.name.endswith(('.exe', '.rar', '.zip'))], [
+                p for p in files if p.name.endswith(('.exe', '.rar', '.zip'))
+            ]
+            if nested_archives:
+                log.info('nested archives: %s', nested_archives)
+                with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix2:
+                    rf.extractall(temp_prefix2)
 
-        extensions = Counter(Path(s).suffix.lower() for s in files)
-        for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4', '.mkv']:
-            if extra in extensions:
-                extra_files = [s for s in files if s.endswith(extra)]
-                log.info('Extracting %s extras %s', extra, extra_files)
-                for member in extra_files:
-                    if not args.dry_run:
-                        rf.extract(member, output_prefix)
-                    files.remove(member)
-                    count_extracted += 1
-                del extensions[extra]
+                    for nested_archive in nested_archives:
+                        temp_path = Path(temp_prefix2) / nested_archive
+                        try:
+                            count_extracted += check_archive(args, temp_path, output_prefix)
+                        except (rarfile.BadRarFile, rarfile.NotRarFile):
+                            log.info('Corrupt file: %s', temp_path)
+                        except rarfile.NeedFirstVolume:
+                            log.debug('NeedFirstVolume: %s', temp_path)
+                        except zipfile.BadZipFile:
+                            log.exception('Nested zip: %s', temp_path)
+                        except FileNotFoundError:
+                            log.debug('FileNotFoundError: %s', temp_path)
+                        except Exception:
+                            log.exception(input_path)
+                            raise
 
-        if nested_archives:
-            if not files:
-                if args.unlink:
-                    delete_archive(input_path, rf)
+            extensions = Counter(p.suffix.lower() for p in files)
+            for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4', '.mkv']:
+                if extra in extensions:
+                    extra_files = [p for p in files if p.name.endswith(extra)]
+                    log.info('Extracting %s extras %s', extra, extra_files)
+                    for p in extra_files:
+                        rel_move([p], output_prefix, dry_run=args.dry_run)
+                        files.remove(p)
+                        count_extracted += 1
+                    del extensions[extra]
+
+            if nested_archives:
+                if not files:
+                    if args.unlink:
+                        delete_archive(input_path, rf)
+                    return count_extracted
+
+            if len(files) == 0:
+                log.error('No files found in: %s', input_path)
                 return count_extracted
+            elif len(extensions) > 1:
+                low_q_exts = ['.mp3', '.wma', '.aac']
+                high_q_exts = ['.wav', '.flac']
 
-        if len(files) == 0:
-            log.error('No files found in: %s', input_path)
-            return count_extracted
-        elif len(extensions) == 1:
-            key, _value = extensions.popitem()
-            for member in [s for s in files if s.endswith(key)]:
-                log.debug('One type of extension: %s', member)
+                for low_q_ext in low_q_exts:
+                    for p in [p for p in files if p.name.lower().endswith(low_q_ext)]:
+                        for high_q_ext in high_q_exts:
+                            if p.with_suffix(high_q_ext).name in [p.name for p in files]:
+                                files.remove(p)
+
+            for p in files:
                 if not args.dry_run:
-                    output_path = rf.extract(member, output_prefix)
                     try:
-                        process_audio.process_path(output_path)
+                        p = process_audio.process_path(p)
                     except Exception:
                         pass
+                rel_move([p], output_prefix, dry_run=args.dry_run)
                 count_extracted += 1
 
             if args.unlink:
                 delete_archive(input_path, rf)
-        else:  # len(extensions) >= 2
-            low_q_exts = ['.mp3', '.wma']
-            high_q_exts = ['.wav', '.flac']
-
-            for low_q_ext in low_q_exts:
-                for member in [s for s in files if s.lower().endswith(low_q_ext)]:
-                    for high_q_ext in high_q_exts:
-                        if Path(member).with_suffix(high_q_ext).name in [Path(s).name for s in files]:
-                            files.remove(member)
-
-            for member in files:
-                if not args.dry_run:
-                    output_path = rf.extract(member, output_prefix)
-                    try:
-                        process_audio.process_path(output_path)
-                    except Exception:
-                        pass
-                count_extracted += 1
-
-        if args.unlink:
-            delete_archive(input_path, rf)
 
     return count_extracted
 
