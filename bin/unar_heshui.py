@@ -61,9 +61,9 @@ def filter_archives(files):
 
     first_part_archives = []
     for p in archive_files:
-        if p.suffix[2:].isdigit() and int(p.suffix[2:]) > 0:
+        if p.suffix[2:].isdigit() and int(p.suffix[2:]) > 1:
             continue
-        elif 'part' in p.name.split('.')[-1] and p.name[-1].isdigit() and int(p.name[-1]) > 0:
+        elif 'part' in p.stem.split('.')[-1] and p.stem[-1].isdigit() and int(p.stem[-1]) > 1:
             continue
 
         first_part_archives.append(p)
@@ -114,24 +114,21 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             files, nested_archives = filter_archives(files)
             if nested_archives:
                 log.info('nested archives: %s', nested_archives)
-                with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix2:
-                    rf.extractall(temp_prefix2)
-
-                    for nested_archive in nested_archives:
-                        temp_path = Path(temp_prefix2) / nested_archive
-                        try:
-                            count_extracted += check_archive(args, temp_path, output_prefix)
-                        except (rarfile.BadRarFile, rarfile.NotRarFile):
-                            log.info('Corrupt file: %s', temp_path)
-                        except rarfile.NeedFirstVolume:
-                            log.debug('NeedFirstVolume: %s', temp_path)
-                        except zipfile.BadZipFile:
-                            log.exception('Nested zip: %s', temp_path)
-                        except FileNotFoundError:
-                            log.debug('FileNotFoundError: %s', temp_path)
-                        except Exception:
-                            log.exception(input_path)
-                            raise
+                for nested_archive in nested_archives:
+                    temp_path = Path(temp_prefix1) / nested_archive
+                    try:
+                        count_extracted += check_archive(args, temp_path, output_prefix)
+                    except (rarfile.BadRarFile, rarfile.NotRarFile):
+                        log.info('Corrupt file: %s', temp_path)
+                    except rarfile.NeedFirstVolume:
+                        log.debug('NeedFirstVolume: %s', temp_path)
+                    except zipfile.BadZipFile:
+                        log.exception('Nested zip: %s', temp_path)
+                    except FileNotFoundError:
+                        log.debug('FileNotFoundError: %s', temp_path)
+                    except Exception:
+                        log.exception(input_path)
+                        raise
 
             extensions = Counter(p.suffix.lower() for p in files)
             for extra in ['.lrc', '.rtf', '.txt', '.pdf', '.docx', '.mp4', '.mkv']:
