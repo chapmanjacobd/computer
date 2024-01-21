@@ -13,6 +13,9 @@ from xklb.utils.log_utils import log
 
 # fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar_heshui.py --unlink {}
 
+TEMP_BASE_DIR = Path('~/.tmp').expanduser()
+TEMP_BASE_DIR.mkdir(exist_ok=True)
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--unlink", action="store_true")
@@ -94,7 +97,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
         ]
         if nested_archives:
             log.info('nested archives: %s', nested_archives)
-            with tempfile.TemporaryDirectory() as temp_prefix:
+            with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix:
                 rf.extractall(temp_prefix)
 
                 for nested_archive in nested_archives:
@@ -105,6 +108,8 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         log.info('Corrupt file: %s', temp_path)
                     except rarfile.NeedFirstVolume:
                         log.debug('NeedFirstVolume: %s', temp_path)
+                    except zipfile.BadZipFile:
+                        log.exception('Nested zip: %s', temp_path)
                     except FileNotFoundError:
                         log.debug('FileNotFoundError: %s', temp_path)
                     except Exception:

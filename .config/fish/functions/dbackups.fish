@@ -6,7 +6,7 @@ function dbackups
     end
 
     rsync -ah --info=progress2 --no-inc-recursive /mnt/d/sync/ backup:/mnt/d/sync/
-    rsync -ah --info=progress2 --no-inc-recursive /mnt/d/archive/ backup:/mnt/d/archive/
+    # rsync -ah --info=progress2 --no-inc-recursive /mnt/d/archive/ backup:/mnt/d/archive/
 
     ~/
     rsync -ah --files-from=(lb lt ~/lb/audio.db -w 'play_count > 0' -pf | sed 's|/mnt/d/||' | psub) /mnt/d/ backup:/mnt/d/
