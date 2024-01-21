@@ -55,6 +55,20 @@ def delete_archive(input_path, rf):
         for s in rf.volumelist():
             os.unlink(s)
 
+def filter_archives(files):
+    non_archive_files = [p for p in files if not p.name.endswith(('.exe', '.rar', '.zip'))]
+    archive_files = [p for p in files if p.name.endswith(('.exe', '.rar', '.zip'))]
+
+    first_part_archives = []
+    for p in archive_files:
+        if p.suffix[2:].isdigit() and int(p.suffix[2:]) > 0:
+            continue
+        elif 'part' in p.name.split('.')[-1] and p.name[-1].isdigit() and int(p.name[-1]) > 0:
+            continue
+
+        first_part_archives.append(p)
+
+    return non_archive_files, first_part_archives
 
 def check_archive(args, input_path: Path, output_prefix: Path):
     count_extracted = 0
@@ -69,14 +83,14 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             rf.extractall(temp_prefix1)
 
             files = []
-            for f in Path(temp_prefix1).rglob('*'):
-                if not f.is_file():
+            for p in Path(temp_prefix1).rglob('*'):
+                if not p.is_file():
                     continue
 
-                stats = f.stat()
+                stats = p.stat()
                 if stats.st_size == 0:
-                    log.warning('Ignoring non-directory zero size file: %s', f)
-                elif f.name.lower().endswith(
+                    log.warning('Ignoring non-directory zero size file: %s', p)
+                elif p.name.lower().endswith(
                     (
                         '.url',
                         '.website',
@@ -92,14 +106,12 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         'desktop.ini',
                         '.DS_Store',
                     )
-                ) or any(s in f.name.lower() for s in ('左右反転バージョン',)):
-                    log.debug('Ignoring file: %s', f)
+                ) or any(s in p.name.lower() for s in ('左右反転バージョン',)):
+                    log.debug('Ignoring file: %s', p)
                 else:
-                    files.append(f)
+                    files.append(p)
 
-            files, nested_archives = [p for p in files if not p.name.endswith(('.exe', '.rar', '.zip'))], [
-                p for p in files if p.name.endswith(('.exe', '.rar', '.zip'))
-            ]
+            files, nested_archives = filter_archives(files)
             if nested_archives:
                 log.info('nested archives: %s', nested_archives)
                 with tempfile.TemporaryDirectory(dir=TEMP_BASE_DIR) as temp_prefix2:
@@ -127,7 +139,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     extra_files = [p for p in files if p.name.endswith(extra)]
                     log.info('Extracting %s extras %s', extra, extra_files)
                     for p in extra_files:
-                        rel_move([p], output_prefix, dry_run=args.dry_run)
+                        rel_move([p], output_prefix, dry_run=args.dry_run, relative_to=temp_prefix1)
                         files.remove(p)
                         count_extracted += 1
                     del extensions[extra]
@@ -157,7 +169,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         p = process_audio.process_path(p)
                     except Exception:
                         pass
-                rel_move([p], output_prefix, dry_run=args.dry_run)
+                rel_move([p], output_prefix, dry_run=args.dry_run, relative_to=temp_prefix1)
                 count_extracted += 1
 
             if args.unlink:
@@ -171,7 +183,7 @@ if __name__ == "__main__":
 
     input_path = Path(args.rar_path)
 
-    output_prefix = Path('out')
+    output_prefix = Path('out').resolve()
     output_prefix.mkdir(exist_ok=True)  # exist_ok=args.dry_run
 
     try:
