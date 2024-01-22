@@ -167,3 +167,4 @@ abbr -a -- sshfs sshfs -o noauto,noatime,_netdev,reconnect,ConnectTimeout=10,Ser
 abbr -a -- opentabs openlinks
 abbr -a -- whichpip pip list -v
 abbr -a -- exts fileTypeStatistics
+abbr -a -- wdlf lb links --no-extract --download
