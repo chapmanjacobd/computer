@@ -3,7 +3,7 @@ function hourly
     ssh backup torrent_promote.py --out .local/data/qbittorrent/seed/jptvclub/ .local/data/jptv.club/ -n1
 
     load_env_mam
-    ~/.local/bin/mam_upload_credit.sh
+    ~/bin/mam_upload_credit.sh
 
     ~/lb/
     set max (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)
