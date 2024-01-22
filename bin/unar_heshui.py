@@ -138,7 +138,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     extra_files = [p for p in files if p.name.endswith(extra)]
                     log.info('Extracting %s extras %s', extra, extra_files)
                     for p in extra_files:
-                        rel_move([p], output_prefix, dry_run=args.dry_run, relative_to=temp_prefix1)
+                        rel_move([p], output_prefix, dry_run=args.dry_run, relative_from=temp_prefix1)
                         files.remove(p)
                         count_extracted += 1
                     del extensions[extra]
@@ -168,7 +168,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                         p = process_audio.process_path(p)
                     except Exception:
                         pass
-                rel_move([p], output_prefix, dry_run=args.dry_run, relative_to=temp_prefix1)
+                rel_move([p], output_prefix, dry_run=args.dry_run, relative_from=temp_prefix1)
                 count_extracted += 1
 
             if args.unlink:
