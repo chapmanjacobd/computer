@@ -60,6 +60,7 @@ httrack
 hw-probe
 hyperfine
 iftop
+iotop
 java-latest-openjdk
 java-latest-openjdk-devel
 jq

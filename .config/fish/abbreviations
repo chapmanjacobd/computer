@@ -111,7 +111,6 @@ abbr -a -- taxes wt --db /home/xk/lb/tax.db --action ask_move_or_delete --keep-d
 abbr -a -- ldd readelf -d
 abbr -a -- timecalc2 insect
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
-abbr -a -- iotop 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- firefox systemctl --user start firefox
 abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
@@ -168,3 +167,5 @@ abbr -a -- opentabs openlinks
 abbr -a -- whichpip pip list -v
 abbr -a -- exts fileTypeStatistics
 abbr -a -- wdlf lb links --no-extract --download
+abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
+abbr -a -- iotop sudo iotop -Poa
