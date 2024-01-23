@@ -1,2 +1,4 @@
 lb openlinks -w 'time_modified=0' -- ~/lb/sites/yatv.net.db 59분 -E BJ
 lb open-links ~/lb/sites/sugoimusic.me.db --prefix 'https://music.youtube.com/search?q=' --title
+lb open-links ~/lb/sites/sugoimusic.me.japanese.db --prefix 'https://music.youtube.com/search?q=' --title
+lb openlinks -w 'coalesce(time_modified,0)=0' ~/lb/sites/pornolab.net.db -c p1
