@@ -1099,7 +1099,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_4_25Actions0]
-CommandURL=fish -c "vnc backup"
+CommandURL=/usr/NX/bin/nxplayer --session ~/.ssh/backup.nxs
 Type=COMMAND_URL
 
 [Data_4_25Conditions]
