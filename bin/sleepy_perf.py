@@ -45,7 +45,8 @@ def main():
                 key = data["function_name"]
                 counts[key]["count"] += 1
             else:
-                key =  pid
+                key =  f"{data["function_name"]}{pid}{data["command"]}"
+                counts[key]["pid"] = pid
                 counts[key]["command"] = data["command"]
                 counts[key]["function_name"] = data["function_name"]
                 counts[key]["count"] += 1
@@ -58,7 +59,7 @@ def main():
     else:
         counts = sorted(counts.items(), key=lambda item: (item[1]["command"], item[1]["count"]), reverse=True)
         for key, data in counts:
-            print(f"{data['count']}\t{data['function_name']}\t{data['command']} ({key})")
+            print(f"{data['count']}\t{data['function_name']}\t{data['command']}:{data['pid']}")
 
 
 if __name__ == "__main__":
