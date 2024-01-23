@@ -1,0 +1,2 @@
+lb openlinks -w 'time_modified=0' -- ~/lb/sites/yatv.net.db 59분 -E BJ
+lb open-links ~/lb/sites/sugoimusic.me.db --prefix 'https://music.youtube.com/search?q=' --title
