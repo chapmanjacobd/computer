@@ -47,6 +47,11 @@ function _abbr_ltv
 end
 abbr -a ltv --function _abbr_ltv
 
+function _abbr_lnv
+    echo (cat ~/links | strip | shuf -n 1)
+end
+abbr -a lnv --function _abbr_lnv
+
 function _abbr_ltc
     if grep Bedroom ~/.config/catt/catt.cfg >/dev/null
         echo 'cr && lt -c -t Bedroom'
