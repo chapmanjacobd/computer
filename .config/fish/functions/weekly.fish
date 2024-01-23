@@ -55,4 +55,5 @@ function weekly
         gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -15 | psub)
     end
 
+    eval-shuf-repeat ~/.jobs/dl_image.sh
 end
