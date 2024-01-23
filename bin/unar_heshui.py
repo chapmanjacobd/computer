@@ -160,7 +160,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     for p in [p for p in files if p.name.lower().endswith(low_q_ext)]:
                         for high_q_ext in high_q_exts:
                             if p.with_suffix(high_q_ext).name in [p.name for p in files]:
-                                files.remove(p)
+                                try:
+                                    files.remove(p)
+                                except ValueError:
+                                    pass
 
             for p in files:
                 if not args.dry_run:
