@@ -8,6 +8,7 @@ function lb-refresh
     lb fsadd ~/lb/tax_sounds.db --audio --delete-unplayable --process --move ~/d/check/porn/audio/ ~/d/dump/porn/audio/ -v
 
     lb fsadd ~/lb/video.db --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/video/ ~/d/dump/video/ -v
+    fd . /mnt/d/dump/video/ -emp3 -x lb relmv {} /mnt/d/dump/audio/from_video/
 
     ~/lb/
     for db in video.db tax.db audio.db tax_sounds.db

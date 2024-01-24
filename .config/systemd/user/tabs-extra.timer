@@ -1,9 +1,0 @@
-[Unit]
-Description=/usr/bin/fish -c openmctabs /home/xk/mc/tabs
-
-[Timer]
-Persistent=yes
-OnCalendar=*-*-* 17:05
-
-[Install]
-WantedBy=timers.target
