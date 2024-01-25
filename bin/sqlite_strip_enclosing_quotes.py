@@ -14,11 +14,18 @@ def strip_enclosing_quotes(s):
 
     return s
 
+def is_system_table(s):
+    if '_fts_' in s or s.endswith('_fts') or s.startswith('sqlite_stat'):
+        return True
+    return False
 
 def process_columns(db_path, columns):
     db = Database(sqlite3.connect(db_path))
 
     for table in db.tables:
+        if is_system_table(table.name):
+            continue
+
         columns_to_update = [col for col in columns if col in table.columns_dict]
         if not columns_to_update:
             continue
@@ -26,14 +33,19 @@ def process_columns(db_path, columns):
         print(table)
         print(columns_to_update)
 
-        for row in table.rows:
-            updates = {
-                col: strip_enclosing_quotes(row[col])
-                for col in columns_to_update
-                if row[col] != strip_enclosing_quotes(row[col])
-            }
-            if updates:
-                table.update(row["id"], updates)
+        with db.conn:
+            for row in table.rows:
+                updates = {
+                    col: strip_enclosing_quotes(row[col])
+                    for col in columns_to_update
+                    if row[col] != strip_enclosing_quotes(row[col])
+                }
+                if updates:
+                    try:
+                        table.update(row["id"], updates)
+                    except sqlite3.IntegrityError as e:
+                        print('Deleting row', row, e)
+                        table.delete_where('id = ?', [row['id']])
 
 
 def main():
