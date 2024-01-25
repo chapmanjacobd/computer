@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import argparse
 import sqlite3
+
 from sqlite_utils import Database
+
 
 def strip_enclosing_quotes(s):
     if len(s) < 2:
@@ -11,6 +13,7 @@ def strip_enclosing_quotes(s):
         return s[1:-1]
 
     return s
+
 
 def process_columns(db_path, columns):
     db = Database(sqlite3.connect(db_path))
@@ -24,9 +27,14 @@ def process_columns(db_path, columns):
         print(columns_to_update)
 
         for row in table.rows:
-            updates = {col: strip_enclosing_quotes(row[col]) for col in columns_to_update if row[col] != strip_enclosing_quotes(row[col])}
+            updates = {
+                col: strip_enclosing_quotes(row[col])
+                for col in columns_to_update
+                if row[col] != strip_enclosing_quotes(row[col])
+            }
             if updates:
                 table.update(row["id"], updates)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Strip enclosing quotes from specified columns in a SQLite database.")
@@ -36,6 +44,6 @@ def main():
 
     process_columns(args.db_path, args.columns)
 
+
 if __name__ == "__main__":
     main()
-
