@@ -1,4 +1,5 @@
 lb openlinks ~/lb/sites/music.db -w 'play_count=0' --cluster --prefix https://music.youtube.com/search?q=%
+lb openlinks ~/lb/sites/japan.db -w 'play_count=0' --cluster -c p1
 lb openlinks ~/lb/sites/cine.db -w 'play_count=0' --cluster --prefix https://www.google.com/search?q=% https://1337x.to/search/%/1/
 lb openlinks ~/lb/sites/links.db -w 'play_count=0' --cluster
 lb openlinks ~/lb/sites/yatv.net.db -w 'play_count=0' --cluster -E BJ -s (random 4 58)분
