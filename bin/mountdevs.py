@@ -30,7 +30,7 @@ def mount_partition(partition):
     try:
         output = subprocess.check_output(['sudo', 'udisksctl', 'mount', '-b', partition])
         output_decoded = output.decode().strip()
-        match = re.search(r"Mounted (.*) at (.*)\.", output_decoded)
+        match = re.search(r"Mounted (.*) at (.*)", output_decoded)
         if match:
             mount_point = match.group(2)
             return mount_point
