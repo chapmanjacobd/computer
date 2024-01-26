@@ -28,7 +28,7 @@ def get_mounts():
 
 def mount_partition(partition):
     try:
-        output = subprocess.check_output(['sudo', 'udisksctl', 'mount', '-o', 'user', '-b', partition])
+        output = subprocess.check_output(['sudo', 'udisksctl', 'mount', '-o', 'x-udisks-auth', '-b', partition])
         output_decoded = output.decode().strip()
         match = re.search(r"Mounted (.*) at (.*)", output_decoded)
         if match:
