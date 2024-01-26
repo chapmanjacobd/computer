@@ -1,2 +1,4 @@
 [Plugin-org.kde.ActivityManager.Resources.Scoring]
+blocked-by-default=true
 off-the-record-activities=577840c9-b0bb-4255-bc13-d26fe06d710e
+what-to-remember=2

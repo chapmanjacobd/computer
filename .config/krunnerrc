@@ -1,4 +1,12 @@
+[General]
+ActivityAware=false
+
 [Plugins]
 baloosearchEnabled=false
+bookmarksEnabled=false
+browserhistoryEnabled=false
 locationsEnabled=false
+marbleEnabled=false
 placesEnabled=false
+recentdocumentsEnabled=false
+webshortcutsEnabled=false
