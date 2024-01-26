@@ -9,7 +9,7 @@ import psutil
 
 def list_partitions(device):
     try:
-        output = subprocess.check_output(['lsblk', '-no', 'NAME', device]).decode().strip().split()
+        output = subprocess.check_output(['lsblk', '-nplo', 'NAME', device]).decode().strip().split()
         return [f"{device}{part}" for part in output if part != device.split('/')[-1]]
     except subprocess.CalledProcessError as e:
         print(f"Error listing partitions for {device}: {e}")
