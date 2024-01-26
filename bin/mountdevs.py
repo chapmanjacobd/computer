@@ -58,8 +58,8 @@ def main():
                 mount_point = mount_partition(partition)
                 mounts[partition].append(mount_point)
 
-        for m in mounts[device]:
-            print(device, m, sep='\t')
+            for m in mounts[partition]:
+                print(device, m, sep='\t')
 
 
 if __name__ == "__main__":
