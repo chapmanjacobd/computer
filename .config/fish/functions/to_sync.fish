@@ -9,5 +9,6 @@ function to_sync
         end
     end
 
+    mkdir (path dirname "$path")
     mv "$argv" "$path"
 end
