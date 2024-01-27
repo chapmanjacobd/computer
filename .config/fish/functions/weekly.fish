@@ -50,10 +50,15 @@ function weekly
     end
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
 
-    for dfolder in 61_Photos_Unsorted 91_New_Art 95_Memes
-        ~/d/$dfolder/
-        gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/$dfolder-instagram.txt | shuf | head -15 | psub)
-    end
+
+    ~/d/dump/image/art/
+    gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/91_New_Art-instagram.txt | shuf | head -15 | psub)
+
+    ~/d/dump/image/memes/
+    gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/95_Memes-instagram.txt | shuf | head -15 | psub)
+
+    ~/d/dump/porn/image/
+    gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
 
     eval-shuf-repeat ~/.jobs/dl_image.sh
 end
