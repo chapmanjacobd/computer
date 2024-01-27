@@ -10,6 +10,9 @@ bind \e\[1\;5D backward-bigword
 bind \b backward-kill-bigword
 bind \cy redo
 
+source ~/.config/fish/functions/dup_word_left_of_cursor.fish
+bind \e, dup_word_left_of_cursor
+
 source ~/.config/fish/functions/ls.fish
 
 source $__fish_config_dir/abbreviations
