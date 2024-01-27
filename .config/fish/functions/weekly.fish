@@ -59,6 +59,4 @@ function weekly
 
     ~/d/dump/porn/image/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
-
-    eval-shuf-repeat ~/.jobs/dl_image.sh
 end
