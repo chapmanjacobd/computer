@@ -1,3 +1,4 @@
+/.config/zoomus.conf
 /.docker/
 /.eclipse/
 /.config/mpv/scripts/autosub.lua
@@ -439,4 +440,3 @@
 /.config/zathura/
 /.config/Zeal/
 /.config/zim/
-/.config/zoomus.conf
