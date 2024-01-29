@@ -1,5 +1,5 @@
 # Defined interactively
-function to_sync
+function tosync
     set path "$argv"
     set -l tasks sync/ dump/ pending/ check/ library/ archive/
 

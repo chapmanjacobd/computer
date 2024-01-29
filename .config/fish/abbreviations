@@ -171,3 +171,4 @@ abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- iotop sudo iotop -Poa
 abbr -a -- parent path dirname
 abbr -a -- tosync to_sync
+abbr -a -- to_sync tosync
