@@ -1,4 +1,4 @@
 # Defined interactively
 function fileTypeStatistics
-    fd -tf . $argv | ext | asc
+    fd -tf -HI . $argv | ext | asc
 end
