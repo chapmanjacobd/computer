@@ -117,7 +117,6 @@ abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
 abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cbfile
-abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- inotify kde-inotify-survey
 abbr -a -- syss timer-status
 abbr -a -- dl eval-shuf-repeat
@@ -171,3 +170,5 @@ abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- iotop sudo iotop -Poa
 abbr -a -- parent path dirname
 abbr -a -- to_sync tosync
+abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
+abbr -a -- timezone_update tzupdate
