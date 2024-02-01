@@ -9,4 +9,9 @@ if you wanna be my lover you gotta get with my friends:
 
 ## Setup
 
-View setup instructions here: [./.github/](./)
+    git clone --no-checkout https://github.com/chapmanjacobd/computer
+    mv computer/.git/ .
+    git reset HEAD --hard
+    bash .github/setup-server.sh
+    bash .github/setup-fedora.sh
+
