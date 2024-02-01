@@ -3,6 +3,7 @@
 set -Eeuox pipefail
 
 ssh-keygen -t ed25519 -q -N '' </dev/zero || true
+cat .ssh/id_ed25519.pub >> .ssh/authorized_keys
 sudo visudo
 
 sudo cp -a ~/.github/etc/. /etc/ && sudo restorecon -R /etc

@@ -49,7 +49,7 @@ sudo dnf install -y codium google-cloud-sdk mpv ffmpeg python3 python3-pip git a
 
 #setxkbmap us -variant altgr-intl -option caps:backspace
 
-sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror chromium docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmahjongg kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring
+sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring
 # sudo dnf erase plasma-discover
 
 #gcloud init
@@ -60,7 +60,7 @@ sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon k
 
 python -m ensurepip
 python -m pip install --upgrade pip
-for dep in (cat .github/pip_installed)
+for dep in $(cat .github/pip_installed); do
     python -m pip install $dep
 end
 python -m pip install yt-dlp pipenv catt xklb
@@ -69,4 +69,3 @@ python -m pip install yt-dlp pipenv catt xklb
 cd ~ && restorecon -vR .
 #reboot
 R --slave -e 'update.packages()'
-sudo dnf copr enable cboxdoerfer/fsearch
