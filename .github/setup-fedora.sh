@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -Eeuox pipefail
+
 #source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
 
