@@ -1,3 +1,4 @@
+/.local/etc/jupyter/
 /.config/zoomus.conf
 /.docker/
 /.eclipse/

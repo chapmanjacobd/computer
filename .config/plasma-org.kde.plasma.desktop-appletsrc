@@ -540,7 +540,9 @@ immutability=1
 plugin=org.kde.plasma.devicenotifier
 
 [Containments][160][Applets][189][Configuration]
-PreloadWeight=0
+PreloadWeight=5
+popupHeight=324
+popupWidth=324
 
 [Containments][160][Applets][192]
 immutability=1
@@ -1463,5 +1465,3 @@ PreloadWeight=55
 
 [Containments][8][Applets][15][Configuration]
 PreloadWeight=75
-
-[ScreenMapping]
