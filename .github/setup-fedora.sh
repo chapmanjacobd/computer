@@ -64,7 +64,7 @@ python -m ensurepip
 python -m pip install --upgrade pip
 for dep in $(cat .github/pip_installed); do
     python -m pip install $dep
-end
+done
 python -m pip install yt-dlp pipenv catt xklb
 
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
