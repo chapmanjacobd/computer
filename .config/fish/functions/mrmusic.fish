@@ -2,7 +2,7 @@ function mrmusic
     lb relmv /mnt/d/sync/audio/weekly/ /mnt/d/
 
     lb relmv (
-        lt --db ~/lb/audio.db --local-media-only -w 'play_count=0' -u random -L 600 -p f
+        lt --db ~/lb/audio.db --local-media-only -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 600 -p f
     ) /mnt/d/sync/audio/weekly/
 
     lb relmv (
