@@ -7,6 +7,10 @@ function trash-empty-no-snapshot
         return 1
     end
 
+    for mnt in (mergerfs_disk_mounts)
+        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
+    end
+
     trash-size
     trash-list >>~/.local/share/trashed.txt
 
