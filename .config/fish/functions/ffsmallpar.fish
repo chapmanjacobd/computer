@@ -18,7 +18,7 @@ function ffsmallpar
 
     for f in (cat $tmpfile)
         if test -e $f -a -e (path change-extension small.mkv $f)
-            trash-put "$f"
+            rm "$f"
             mv (path change-extension small.mkv $f) ~/d/archive/porn/video/
         end
     end
