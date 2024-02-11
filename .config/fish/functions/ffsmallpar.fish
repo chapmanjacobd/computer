@@ -19,7 +19,7 @@ function ffsmallpar
     for f in (cat $tmpfile)
         if test -e $f -a -e (path change-extension small.mkv $f)
             rm "$f"
-            mv (path change-extension small.mkv $f) ~/d/archive/porn/video/
+            archive (path change-extension small.mkv $f)
         end
     end
     ssh backup fd -HI -eMKV -eMP4 -d1 -x rm
