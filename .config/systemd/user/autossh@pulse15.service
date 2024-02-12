@@ -1,5 +1,5 @@
 [Unit]
-Description=pakon tunnel
+Description=pulse15 tunnel
 After=network.target network-online.target NetworkManager-wait-online.service
 
 [Service]
@@ -7,7 +7,7 @@ Type=simple
 ExecStart=/usr/bin/ssh -NT -R localhost:7070:localhost:22 pakon
 Restart=always
 RestartSec=15
-SyslogIdentifier=autossh@pakon
+SyslogIdentifier=autossh@pulse15
 
 [Install]
 WantedBy=default.target
