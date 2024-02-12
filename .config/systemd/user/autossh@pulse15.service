@@ -4,7 +4,7 @@ After=network.target network-online.target NetworkManager-wait-online.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/ssh -NT -R localhost:7070:localhost:22 pakon
+ExecStart=/usr/bin/autossh -M 0 -N -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=45" -o "ServerAliveCountMax=2" -R localhost:7070:localhost:22 pakon
 Restart=always
 RestartSec=15
 SyslogIdentifier=autossh@pulse15
