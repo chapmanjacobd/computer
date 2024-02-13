@@ -1,6 +1,5 @@
 # Defined interactively
 function lb-refresh
-    ~/d/dump/porn/video/
     for file in (fd -tf -eZIP -eRAR -eEXE -er00 . ~/d/dump/porn/video/ ~/d/dump/video/)
         unar $file
     end
