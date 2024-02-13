@@ -1,5 +1,10 @@
 # Defined interactively
 function lb-refresh
+    ~/d/dump/porn/video/
+    for file in (fd -tf -eZIP -eRAR -eEXE -er00 . ~/d/dump/porn/video/ ~/d/dump/video/)
+        unar $file
+    end
+
     lb fsadd ~/lb/tax.db --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/porn/video/ ~/d/dump/porn/video/ -v
     fd . /mnt/d/dump/porn/video/ -ejpg -ejpeg -epng -x lb relmv {} /mnt/d/dump/porn/image/from_video/
     fd . /mnt/d/dump/porn/video/ -emka -x lb relmv {} /mnt/d/dump/porn/audio/from_video/
