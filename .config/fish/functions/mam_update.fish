@@ -15,8 +15,8 @@ function mam_update
     end
 
     for db in ~/d/library/datasets/links/mam/mam.db
-        sqlite --no-headers --raw-lines "$db" "select id from media where added > $(timestamp 1 week ago 0 -u) and vip=1 and seeders>0" | sed "s|^|curl -OJs -b mam_id=$MAM_COOKIE https://www.myanonamouse.net/tor/download.php?tid=|" | parallel -S backup -j4 ".local/data/rtorrent/watch/vip_new/; eval {}"
-        sqlite --no-headers --raw-lines "$db" "select id from media where added > $(timestamp 1 week ago 0 -u) and vip=0 and seeders>0" | sed "s|^|curl -OJs -b mam_id=$MAM_COOKIE https://www.myanonamouse.net/tor/download.php?tid=|" | parallel -S backup -j4 ".local/data/rtorrent/watch/nonvip_new/; eval {}"
+        sqlite --no-headers --raw-lines "$db" "select id from media where unixepoch(added) > $(timestamp 1 week ago 0 -u) and vip=1 and seeders>0" | sed "s|^|curl -OJs -b mam_id=$MAM_COOKIE https://www.myanonamouse.net/tor/download.php?tid=|" | parallel -S backup -j4 ".local/data/rtorrent/watch/vip_new/; eval {}"
+        sqlite --no-headers --raw-lines "$db" "select id from media where unixepoch(added) > $(timestamp 1 week ago 0 -u) and vip=0 and seeders>0" | sed "s|^|curl -OJs -b mam_id=$MAM_COOKIE https://www.myanonamouse.net/tor/download.php?tid=|" | parallel -S backup -j4 ".local/data/rtorrent/watch/nonvip_new/; eval {}"
     end
 
 end
