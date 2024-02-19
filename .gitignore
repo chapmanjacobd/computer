@@ -1,3 +1,4 @@
+/.config/wireplumber/
 /.config/trashrc
 /.config/xdg-desktop-portal-kderc
 /.local/etc/jupyter/
@@ -427,4 +428,3 @@
 /.config/vscode-sqltools/
 /.config/VSCodium/
 /.config/whipper/
-/.config/wireplumber/
