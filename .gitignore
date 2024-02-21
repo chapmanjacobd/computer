@@ -1,3 +1,5 @@
+/.config/whipper/
+/.config/VSCodium/
 /.config/wireplumber/
 /.config/trashrc
 /.config/xdg-desktop-portal-kderc
@@ -426,5 +428,3 @@
 /.config/vlc/
 /.config/.vscode/
 /.config/vscode-sqltools/
-/.config/VSCodium/
-/.config/whipper/
