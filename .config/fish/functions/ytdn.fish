@@ -1,5 +1,5 @@
 # Defined interactively
 function ytdn
-    ~/d/dump/video/other/
+    ~/d/dump/video/
     yt $argv
 end
