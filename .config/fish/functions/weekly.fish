@@ -5,7 +5,7 @@ function weekly
     mrmusic
     #mrvideo
     mrporn
-    mrrelax
+    #mrrelax
     morganize
 
     mam_update
