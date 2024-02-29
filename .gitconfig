@@ -72,3 +72,5 @@
 	history = log --follow -p --
 [advice]
 	skippedCherryPicks = false
+[branch]
+	sort = -committerdate
