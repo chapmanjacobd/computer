@@ -1,6 +1,6 @@
 function weekly
     dbackups
-    trash ~/d/.stversions/*
+    trash ~/d/sync/.stversions/*
 
     mrmusic
     #mrvideo

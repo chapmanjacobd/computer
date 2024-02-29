@@ -409,7 +409,7 @@
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": false
+      "source.organizeImports": "never"
     },
   },
   "workbench.editor.showTabs": "single",
@@ -466,7 +466,7 @@
     "editor.formatOnPaste": false,
     "editor.wordBasedSuggestions": "matchingDocuments",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": false,
+      "source.organizeImports": "never"
     },
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
