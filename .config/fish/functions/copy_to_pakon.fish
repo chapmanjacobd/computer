@@ -14,4 +14,6 @@ function copy_to_pakon
         end
     end
     stickysync_local ~/d/sync/datasets/file-lists/stickysync_qbittorrent ~/d/check/world/seeding-porn/ ~/d/dump/porn/video/
+
+    lb-refresh
 end
