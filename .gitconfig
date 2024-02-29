@@ -6,12 +6,15 @@
 	enabled = true
 [push]
 	default = current
+	autosetupremote = true
 [core]
 	pager = delta --syntax-theme GitHub --max-line-length 1024 # --keep-plus-minus-markers
 	excludesfile = /home/xk/.gitignore_global
 	preloadindex = true
 	fscache = true
 	autocrlf = false
+	# autocrlf = input # ?
+	# safecrlf = true
 	eol = lf
 	logallrefupdates = true
 	attributesfile = /home/xk/.gitattributes_global
@@ -58,6 +61,7 @@
 	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
 	autoStash = true
+	conflictstyle = zdiff3
 [log]
 	date = relative-local
 [url "git@github.com:"]
