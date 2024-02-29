@@ -26,6 +26,7 @@
 	tool = delta
 	difftool = delta
     colormoved = zebra
+	context = 5
 [diff "sqlite3"]
     binary = true
     textconv = "echo .dump | sqlite3"
@@ -74,3 +75,7 @@
 	skippedCherryPicks = false
 [branch]
 	sort = -committerdate
+[tag]
+	sort = taggerdate
+[gpg]
+	format = ssh
