@@ -44,13 +44,6 @@ function weekly
     eval-shuf-repeat ~/.jobs/dl_video.sh
     eval-shuf-repeat ~/.jobs/dl_audio.sh
 
-    ~/lb/
-    for db in reddit/61_Photos_Unsorted.db
-        lb redditupdate $db --lookback 8
-    end
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
-
-
     ~/d/dump/image/art/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/91_New_Art-instagram.txt | shuf | head -15 | psub)
 
@@ -59,4 +52,11 @@ function weekly
 
     ~/d/dump/porn/image/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
+
+    ~/lb/
+    for db in reddit/61_Photos_Unsorted.db
+        lb redditupdate $db --lookback 8
+    end
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
+
 end
