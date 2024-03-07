@@ -1,9 +1,0 @@
-[Unit]
-Description=/usr/bin/fish -c cine
-
-[Timer]
-Persistent=yes
-OnCalendar=*-*-* 9:55
-
-[Install]
-WantedBy=timers.target
