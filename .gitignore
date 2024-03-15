@@ -1,3 +1,4 @@
+/.config/syncthing/
 /.config/unity3d/
 /.config/whipper/
 /.config/VSCodium/
@@ -411,4 +412,3 @@
 /.config/sxhkd/
 /.config/sxkhd/
 /.config/synapse/
-/.config/syncthing/
