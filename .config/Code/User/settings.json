@@ -376,10 +376,12 @@
     "vals",
     "vcodec",
     "voronoi",
+    "webpath",
     "webvtt",
     "wraplength",
     "xattr",
     "xattrs",
+    "xklb",
     "xvfb"
   ],
   "editor.stopRenderingLineAfter": 15000,
