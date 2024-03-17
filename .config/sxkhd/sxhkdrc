@@ -1,0 +1,10 @@
+~button2
+    "~/.config/sxkhd/autoscroll.sh"
+@button2
+
+~control + c
+    echo -n | xsel -n -i
+~control + shift + c
+    echo -n | xsel -n -i
+~control + x
+    echo -n | xsel -n -i
