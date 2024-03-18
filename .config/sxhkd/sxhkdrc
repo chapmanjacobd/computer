@@ -1,0 +1,2 @@
+~button2
+    echo -n | xsel -n -i
