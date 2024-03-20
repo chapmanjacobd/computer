@@ -1,3 +1,5 @@
+/.config/.stversions/
+/.config/.stfolder/
 /.config/syncthing/
 /.config/unity3d/
 /.config/whipper/
@@ -405,5 +407,3 @@
 /.config/sq/
 /.config/sqlite3/
 /.config/sqlitebrowser/
-/.config/.stfolder/
-/.config/.stversions/
