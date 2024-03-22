@@ -7,6 +7,6 @@ play_count=0
 delete-if-audiobook
 --local-media-only
 --fetch-siblings
-if-audiobook
+each
 /home/xk/lb/audio.db"
 end
