@@ -1,4 +1,6 @@
 # Defined via `source`
 function dsql
-    sqlite-utils --no-headers --csv ~/lb/fs/d*.db $argv | tr -d '\r'
+    for db in ~/lb/fs/d*.db
+        sqlite-utils --no-headers --csv $db $argv | tr -d '\r'
+    end
 end
