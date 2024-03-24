@@ -15,16 +15,16 @@ function lbrelease --argument oldver newver
 
     git add .
     rg -i --no-heading todo:
-    git --no-pager diff $oldver
-    git --no-pager diff $oldver | grep TODO
-    git diff --stat $oldver
+    git --no-pager diff "v$oldver"
+    git --no-pager diff "v$oldver" | grep TODO
+    git diff --stat "v$oldver"
     echo
     git status
     if gum confirm --default=no
         git commit -m "$newver"
         git pull
         git push
-        git tag -a v$newver && git push --tags
+        git tag -a "v$newver" && git push --tags
         pip install --upgrade pip pdm
         pdm lock --group deluxe,test
         sleep 400
