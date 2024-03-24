@@ -40,7 +40,6 @@ abbr -a -- q exit
 abbr -a -- rm trash-put
 abbr -a -- rmove 'rsync -a --info=progress2 --no-inc-recursive --remove-source-files --backup-dir (date "+%d.%m.%Y")'
 abbr -a -- rmv 'rclone move --delete-empty-src-dirs'
-abbr -a -- rsync 'rsync -auh --info=progress2 --no-inc-recursive'
 abbr -a -- sde dnferase
 abbr -a -- sdi dnfinstall
 abbr -a -- sdu 'sudo dnf update'
@@ -172,3 +171,4 @@ abbr -a -- parent path dirname
 abbr -a -- to_sync tosync
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- timezone_update tzupdate
+abbr -a -- rsync rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
