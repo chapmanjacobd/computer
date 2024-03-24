@@ -12,12 +12,25 @@ function lbrelease --argument oldver newver
     python -m xklb.readme >.github/README.md
     git reset tests/cassettes/
     git restore tests/cassettes/
-    if wipm $newver
+
+    git add .
+    rg -i --no-heading todo:
+    git --no-pager diff $oldver
+    git --no-pager diff $oldver | grep TODO
+    git diff --stat $oldver
+    echo
+    git status
+    if gum confirm --default=no
+        git commit -m "$argv"
+        git pull
+        git push
         git tag -a v$newver && git push --tags
         pip install --upgrade pip pdm
         pdm lock --group deluxe,test
         sleep 400
         python -m pip install --upgrade xklb
         python -m pip install --upgrade xklb
+    else
+        return 1
     end
 end
