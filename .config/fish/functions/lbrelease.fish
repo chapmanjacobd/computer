@@ -21,7 +21,7 @@ function lbrelease --argument oldver newver
     echo
     git status
     if gum confirm --default=no
-        git commit -m "$argv"
+        git commit -m "$newver"
         git pull
         git push
         git tag -a v$newver && git push --tags
