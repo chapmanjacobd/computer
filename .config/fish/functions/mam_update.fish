@@ -9,6 +9,9 @@ function mam_update
     for q in (cat ~/j/lists/people.narrators.list)
         python -m xklb.scratch.mam_search --audiobooks --books --radio --no-title --narrator --cookie $MAM_COOKIE ~/d/library/datasets/links/mam/mam.db $q
     end
+    for q in (cat ~/j/lists/people.authors.list)
+        python -m xklb.scratch.mam_search --audiobooks --books --comics --no-title --cookie $MAM_COOKIE ~/d/library/datasets/links/mam/mam.db $q
+    end
 
     for l in (cat ~/j/private/mam_custom_args.txt)
         python -m xklb.scratch.mam_search --cookie $MAM_COOKIE ~/d/library/datasets/links/mam/mam.db (string split ' ' -- $l) ''
