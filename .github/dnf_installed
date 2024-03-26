@@ -24,6 +24,7 @@ dnf-plugin-system-upgrade
 dnf-utils
 dub
 earlyoom
+easyeffects
 edk2-tools
 eza
 fatrace
