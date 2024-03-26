@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse
 import sqlite3
 import sys
@@ -17,7 +18,9 @@ def main():
 
     lines_buffer = []
     for line in input_source:
-        lines_buffer.append(line.strip())
+        line = line.strip()
+        if line:
+            lines_buffer.append(line)
 
         if len(lines_buffer) >= args.height:
             with conn:
