@@ -1,0 +1,8 @@
+[General]
+onLaunchAction=UseLastUsedCapturemode
+
+[Save]
+defaultSaveImageFormat=JPEG
+defaultSaveLocation=file:///home/xk/d/sync/image/Screenshots/
+lastSaveLocation=file:///home/xk/sync/image/Screenshots/Screenshot_20240327_143254.jpeg
+saveFilenameFormat=Screenshot_%Y-%M-%D_%H%m.%2d
