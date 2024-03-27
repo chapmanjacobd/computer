@@ -22,4 +22,6 @@ function library-stats
         lb-dev bigdirs $db -L 5
     end
 
+    links-status ~/mc/cine.db ~/mc/links.db ~/mc/music.db ~/mc/tv.db ~/lb/sites/manual/*.db
+    dlstatus ~/lb/tax_sounds.db ~/lb/video.db ~/lb/tax.db ~/lb/fs/91_New_Art.db ~/lb/audio.db ~/lb/fs/61_Photos_Unsorted.db
 end
