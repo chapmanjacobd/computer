@@ -9,6 +9,7 @@ daff
 datasette
 emoji-country-flag
 filprofiler
+freezegun
 frogmouth
 fsspec
 gallery-dl
