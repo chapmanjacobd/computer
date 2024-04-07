@@ -4,9 +4,9 @@ function image-folder-ask-keep
         for d in (fd . -td "$dir" | sortlength | tac)
             feh -q -F --hide-pointer --sort filename --on-last-slide resume -G --auto-zoom --zoom max --draw-tinted --image-bg black --scale-down -D -3 "$d"
             if confirm keep
-                lb relmv "$d" ~/d/library/porn/image/
+                b lb relmv "$d" ~/d/library/porn/image/
             else
-                trash-put "$d"
+                b trash-put "$d"
             end
         end
     end
