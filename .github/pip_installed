@@ -34,6 +34,7 @@ line_profiler
 lux
 memray
 mnamer
+mutmut
 napari
 nbformat
 outrun
