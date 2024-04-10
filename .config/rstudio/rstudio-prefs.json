@@ -1,0 +1,44 @@
+{
+    "show_margin": false,
+    "reindent_on_paste": false,
+    "soft_wrap_r_files": true,
+    "default_encoding": "UTF-8",
+    "default_project_location": "~/Rprojects",
+    "source_with_echo": true,
+    "show_terminal_tab": false,
+    "wrap_tab_navigation": false,
+    "reuse_sessions_for_project_links": true,
+    "panes": {
+        "quadrants": [
+            "TabSet1",
+            "TabSet2",
+            "Source",
+            "Console"
+        ],
+        "tabSet1": [
+            "Environment",
+            "History",
+            "Connections",
+            "Build",
+            "VCS",
+            "Tutorial",
+            "Presentation"
+        ],
+        "tabSet2": [
+            "Files",
+            "Plots",
+            "Packages",
+            "Help",
+            "Viewer",
+            "Presentations"
+        ],
+        "console_left_on_top": false,
+        "console_right_on_top": false
+    },
+    "editor_theme": "Tomorrow Night 80s",
+    "posix_terminal_shell": "bash",
+    "custom_shell_command": "~/.local/bin/radian",
+    "jobs_tab_visibility": "shown",
+    "new_proj_git_init": true,
+    "document_author": "Jacob"
+}
