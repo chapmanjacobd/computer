@@ -28,20 +28,13 @@ function forganize
     ~/d/dump/audio/midi/ && fd -tf -eMID -x mv "{}" "{.}.mid"
 
     fd . $audio_dirs -epng -ejpg -x rm "{}"
-    fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
+    # fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
     process_audio $audio_dirs
 
-    for f in (fd -tf -eWEBM -eMP4 -eMKV -eM4V -eFLV -eAVI -eMPG -eMOV -eWMV -eGIF -E 'gifs/**/*' . ~/d/dump/porn/image/)
-        if has_both_audio_video "$f"
-            mv "$f" ~/d/dump/porn/video/unsorted/
-            continue
-        else if has_video "$f"
-            mv "$f" ~/d/dump/porn/image/gifs/
-            continue
-        else
-            mv "$f" ~/d/dump/porn/audio/unsorted/
-        end
-    end
+    lb fsadd (tempdb) --move ~/d/check/image/ --process --image ~/d/dump/image/ --delete-unplayable
+    lb fsadd (tempdb) --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
+    lb fsadd (tempdb) --move ~/d/check/porn/image/ --process --image ~/d/dump/porn/image/ --delete-unplayable
+    lb fsadd (tempdb) --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --io-multiplier 0.2
 
     ~/d/dump/video/other/
     fd -epng -ejpg -egif -x mv {} ~/d/dump/image/other/unsorted/dump/video/other/
