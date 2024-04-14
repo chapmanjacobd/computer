@@ -19,7 +19,6 @@
       "IPython",
       "--no-autoindent",
   ],
-    // "editor.inlayHints.enabled": "off",
   "editor.tabSize": 4,
   "editor.copyWithSyntaxHighlighting": false,
   "python.terminal.activateEnvironment": true,
@@ -97,10 +96,10 @@
     "editorLineNumber.foreground": "#000",
     "editor.lineHighlightBackground": "#1073cf2d",
     "editor.selectionBackground": "#0bc94ad7",
-    "editorOverviewRuler.findMatchForeground": "#082200",
-    "editor.findRangeHighlightBackground": "#000824",
-    "editorOverviewRuler.rangeHighlightForeground": "#000",
-    "editorOverviewRuler.selectionHighlightForeground": "#000",
+    "editorOverviewRuler.findMatchForeground": "#08220042",
+    "editor.findRangeHighlightBackground": "#08220042",
+    "editorOverviewRuler.rangeHighlightForeground": "#08220042",
+    "editorOverviewRuler.selectionHighlightForeground": "#08220042",
     "panelTitle.activeBorder": "#000",
     "panelTitle.activeForeground": "#000000",
     "panelTitle.inactiveForeground": "#222222",
@@ -108,7 +107,9 @@
     "sideBar.background": "#b3aaa2",
     "sideBarSectionHeader.background": "#9b8f7c",
     "panel.background": "#9b8f7c",
-    "editor.lineHighlightBorder": "#9fced11f"
+    "editor.lineHighlightBorder": "#9fced11f",
+    "editorInlayHint.background": "#d1bca7",
+    "editorInlayHint.foreground": "#555",
   },
   "editor.tokenColorCustomizations": {
     "comments": "#1a6100",
@@ -121,38 +122,14 @@
       }
     ]
   },
-  "bracket-pair-colorizer-2.scopeLineCSS": [
-    "borderStyle : solid",
-    "borderWidth : 1px",
-    "borderColor : black",
-    "opacity: 0.7"
-  ],
-  "bracket-pair-colorizer-2.colors": [
-    "Black",
-    "White",
-    "Gold",
-    "Blue",
-    "DarkRed"
-  ],
-  "bracket-pair-colorizer-2.activeScopeCSS": [
-    "borderStyle : solid",
-    "borderWidth : 1px",
-    "borderColor : {color}",
-    "opacity: 0.5"
-  ],
   "editor.minimap.showSlider": "always",
   "editor.minimap.renderCharacters": false,
   "editor.minimap.maxColumn": 80,
-  "prettier.noSpaceEmptyFn": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "extensions.ignoreRecommendations": true,
-  "prettier.jsxSingleQuote": true,
-  "prettier.printWidth": 100,
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "prettier.useTabs": false,
-  "prettier.trailingComma": "es5",
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
   },
@@ -387,16 +364,6 @@
     "xklb",
     "xvfb"
   ],
-  "editor.stopRenderingLineAfter": 15000,
-  "gitlens.statusBar.enabled": false,
-  "gitlens.views.repositories.location": "scm",
-  "gitlens.views.fileHistory.location": "explorer",
-  "gitlens.views.lineHistory.location": "explorer",
-  "gitlens.views.compare.location": "gitlens",
-  "gitlens.views.search.location": "gitlens",
-  "gitlens.advanced.messages": {
-    "suppressSupportGitLensNotification": true
-  },
   "workbench.iconTheme": "material-icon-theme",
   "r.bracketedPaste": true,
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
@@ -419,7 +386,6 @@
     },
   },
   "workbench.editor.showTabs": "single",
-  "headwind.runOnSave": false,
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
@@ -486,7 +452,6 @@
   "blockman.n08CustomColorOfDepth3": "hsla(207, 20%, 91%,60%)",
   "blockman.n09CustomColorOfDepth4": "hsla(207, 20%, 91%,70%)",
   "blockman.n10CustomColorOfDepth5": "hsla(207, 20%, 91%,80%)",
-  "bracket-pair-colorizer-2.depreciation-notice": false,
   "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
   "javascript.suggest.completeFunctionCalls": true,
@@ -506,20 +471,11 @@
     "--skip-string-normalization"
   ],
   "editor.inlineSuggest.enabled": true,
-  "github.copilot.advanced": {},
-  "github.copilot.enable": {
-    "*": true,
-    "yaml": false,
-    "plaintext": false,
-    "markdown": false,
-    "python": false
-  },
   "isort.args": [
     "--profile",
     "google",
     "--line-length=120"
   ],
-  "Lua.telemetry.enable": false,
   "git.openRepositoryInParentFolders": "never",
   "yaml.schemas":{
     "/home/xk/.local/yaml/argo.json":"*workflow.yaml"
@@ -531,7 +487,7 @@
   "blockman.n20CustomColorOfDepth0Border": "none",
   "blockman.n04Sub02ColorComboPresetForLightTheme": "Classic Light (Solid colors) Old",
   "blockman.n16EnableFocus": false,
-  "blockman.n04ColorComboPreset": "Classic Light (Solid colors) Old",
+  "blockman.n04ColorComboPreset": "Classic Light (Gradients)",
   "python.defaultInterpreterPath": "/usr/bin/python",
   "python.analysis.typeCheckingMode":"strict",
   "python.analysis.userFileIndexingLimit": -1,
@@ -539,5 +495,8 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "never"
     }
-  }
+  },
+  "editor.inlayHints.enabled": "on",
+  "python.analysis.inlayHints.functionReturnTypes":true,
+  "python.analysis.inlayHints.pytestParameters":true,
 }
