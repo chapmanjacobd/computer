@@ -1,3 +1,4 @@
+/.config/rclone/
 /.config/RStudiorc
 /.config/SideQuest/
 /.config/sonic-visualiser/
@@ -385,4 +386,3 @@
 /.config/R/
 /.config/ranger/
 /.config/RawTherapee/
-/.config/rclone/
