@@ -16,7 +16,9 @@ function ffsmallpar
     ssh -fN backup
     cat $tmpfile | timeout -s HUP 18h parallel --sshloginfile ~/.parallel/sshloginfile.ffmpeg --transfer "lb process-video {} && rsync -auh --remove-sent-files {.}.av1.mkv" $hostname:(pwd) >/dev/null
 
-    rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial --remove-sent-files backup:\*.av1.mkv .
+    for pc in backup pulse15
+        rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial --remove-sent-files $pc:\*.av1.mkv .
+    end
 
     for f in (cat $tmpfile)
         if test -e $f -a -e (path change-extension av1.mkv $f)
