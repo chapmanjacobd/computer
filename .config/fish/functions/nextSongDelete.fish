@@ -2,7 +2,7 @@
 function nextSongDelete
     if pgrep -f 'lb listen'
         lb next --delete-file
-    else if pgrep -f 'mpv .*/6'
+    else if pgrep -f 'mpv .*mpv_socket'
         lb-dev next --delete-files
     else
         ssh pulse15 lb next --delete-file
