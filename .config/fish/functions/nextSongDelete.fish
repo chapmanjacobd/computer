@@ -1,6 +1,6 @@
 # Defined interactively
 function nextSongDelete
-    if pgrep -f 'lb listen'
+    if pgrep -f 'lb listen'; or pgrep -f 'lb lt'
         lb next --delete-file
     else if pgrep -f 'mpv .*mpv_socket'
         lb-dev next --delete-files
