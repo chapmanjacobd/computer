@@ -3,6 +3,7 @@
 import argparse
 import shutil
 from pathlib import Path
+import statistics
 from typing import List, Tuple
 
 import humanize
@@ -21,8 +22,14 @@ def sort_and_move_torrents(args):
     torrent_data: List[Tuple[Path, int]] = []
     for torrent_file in paths:
         torrent = Torrent.from_file(torrent_file)
-        total_size = sum(f.length for f in torrent.files)
-        torrent_data.append((torrent_file, total_size))
+        file_sizes = [f.length for f in torrent.files]
+
+        if args.average:
+            torrent_data.append((torrent_file, statistics.mean(file_sizes)))
+        elif args.median:
+            torrent_data.append((torrent_file, statistics.median(file_sizes)))
+        else:
+            torrent_data.append((torrent_file, sum(file_sizes)))
 
     sorted_torrents = sorted(torrent_data, key=lambda x: x[1], reverse=args.reverse)
 
@@ -45,6 +52,8 @@ if __name__ == '__main__':
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
     parser.add_argument('--out', '-o')
+    parser.add_argument('--average', '--avg', '--priority', action='store_true', help='Priority mode: sort by average file size')
+    parser.add_argument('--median', '--mid', action='store_true', help='Sort by median file size instead of total size')
 
     parser.add_argument('paths', nargs='+')
     args = parser.parse_args()
