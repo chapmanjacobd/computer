@@ -47,9 +47,9 @@ function forganize
     lb fsadd ~/lb/audio.db --audio --delete-unplayable --process --move ~/d/check/audio/ ~/d/dump/audio/
 
     lb fsadd (tempdb) --move ~/d/check/image/ --process --image ~/d/dump/image/ --delete-unplayable
-    lb fsadd (tempdb) --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
+    lb fsadd ~/lb/video.db --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
     lb fsadd (tempdb) --move ~/d/check/porn/image/ --process --image ~/d/dump/porn/image/ --delete-unplayable
-    lb fsadd (tempdb) --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --io-multiplier 0.2
+    lb fsadd ~/lb/tax.db --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --io-multiplier 0.2
 
     ~/d/dump/video/other/
     fd -epng -ejpg -egif -x mv {} ~/d/dump/image/other/unsorted/dump/video/other/
