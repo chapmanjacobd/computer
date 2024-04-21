@@ -1,6 +1,9 @@
 [General]
 onLaunchAction=UseLastUsedCapturemode
 
+[GuiConfig]
+captureMode=0
+
 [Save]
 defaultSaveImageFormat=JPEG
 defaultSaveLocation=file:///home/xk/d/sync/image/Screenshots/
