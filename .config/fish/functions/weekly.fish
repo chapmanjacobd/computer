@@ -37,7 +37,7 @@ function weekly
     lb merge-online-local ~/lb/audio.db --yes
 
     tubeupdate
-    for db in ~/lb/sites/*.db
+    for db in ~/lb/sites/*.db ~/lb/sites/manual/*.db
         lb linksupdate $db
     end
 
