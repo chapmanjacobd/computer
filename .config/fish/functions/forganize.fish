@@ -31,7 +31,7 @@ function forganize
     # fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
     process_audio $audio_dirs
 
-    for file in (fd -tf -eZIP -eRAR -eEXE -er00 . ~/d/dump/porn/video/ ~/d/dump/video/)
+    for file in (fd -tf -eZIP -eRAR -eEXE -er00 -eCBR -eCBZ . ~/d/dump/porn/video/ ~/d/dump/video/)
         unar $file
     end
 
