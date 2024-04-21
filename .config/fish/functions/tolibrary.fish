@@ -1,6 +1,6 @@
 # Defined interactively
 function tolibrary
-    set path "$argv"
+    set path (path resolve "$argv")
     set -l tasks sync/ dump/ pending/ check/ library/ archive/
 
     for r in $tasks
