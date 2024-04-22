@@ -13,6 +13,7 @@ cat $SPEND_JSON 2>/dev/null| jq '.seedbonus' | grep '^[0-9][0-9]*\.\?[0-9]*$' > 
 if [ $? -ne 0 ]
 then
   echo Failed to get number of bonus points - aborting.
+  cat $SPEND_JSON
   exit 1
 fi
 
