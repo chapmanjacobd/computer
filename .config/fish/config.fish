@@ -12,6 +12,11 @@ bind \cy redo
 
 bind \e, backward-kill-bigword yank yank
 
+function cmd_to_clipboard
+    echo (commandline) | xclip -selection clipboard
+end
+bind \e\[99\;6u cmd_to_clipboard
+
 source ~/.config/fish/functions/ls.fish
 
 source $__fish_config_dir/abbreviations
