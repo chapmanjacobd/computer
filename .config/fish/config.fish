@@ -17,6 +17,11 @@ function cmd_to_clipboard
 end
 bind \e\[99\;6u cmd_to_clipboard
 
+function insert_previous_command
+    commandline --insert -- (history -1)
+end
+bind \e/ insert_previous_command
+
 source ~/.config/fish/functions/ls.fish
 
 source $__fish_config_dir/abbreviations
