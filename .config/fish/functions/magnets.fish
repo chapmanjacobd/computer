@@ -13,7 +13,7 @@ function magnets
             sleep 5
         end
 
-        cat ~/.local/magnets | tee /dev/tty | xargs tixati
+        cat ~/.local/magnets | string escape | tee /dev/tty | xargs tixati
         and true >~/.local/magnets
 
         if not test $tixati_is_running -eq 0
