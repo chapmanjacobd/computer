@@ -11,6 +11,7 @@ function weekly
     mam_update
 
     lb-refresh
+    lb-rebuild-fts
 
     pip install --upgrade yt-dlp gallery-dl praw xklb
 

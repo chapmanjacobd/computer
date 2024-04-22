@@ -5,9 +5,4 @@ function lb-refresh
 
     lb fsadd ~/lb/tax.db --video ~/d/sync/porn/video/
     lb fsadd ~/lb/tax_sounds.db --audio ~/d/sync/porn/audio/
-
-    for db in video.db tax.db audio.db tax_sounds.db
-        b sqlite-utils rebuild-fts ~/lb/$db media
-    end
-    wait
 end

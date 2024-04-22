@@ -19,6 +19,7 @@ function forganize
     fd -tf -d1 --fixed-strings ? . (cat d/.stignore | grep !/ | sed 's|!/\(.*\)|/home/xk/d/\1/|') -x rename ? '' {}
 
     lb-refresh
+    lb-rebuild-fts
     #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/check/porn/video/ -pf | xargs -P 20 -I{} rm {}
     #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 -pfd
 
@@ -35,16 +36,7 @@ function forganize
         unar $file
     end
 
-    lb fsadd ~/lb/tax.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/porn/video/ ~/d/dump/porn/video/ -v
-    fd . /mnt/d/dump/porn/video/ -ejpg -ejpeg -epng -epdf -x lb relmv {} /mnt/d/dump/porn/image/from_video/
-    fd . /mnt/d/dump/porn/video/ -emka -em4a -x lb relmv {} /mnt/d/dump/porn/audio/from_video/
-
-    lb fsadd ~/lb/tax_sounds.db --audio --delete-unplayable --process --move ~/d/check/porn/audio/ ~/d/dump/porn/audio/
-
-    lb fsadd ~/lb/video.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/video/ ~/d/dump/video/
-    lb fsadd ~/lb/audio.db --audio --delete-unplayable --process --move ~/d/check/audio/from_video/ ~/d/dump/video/
-
-    lb fsadd ~/lb/audio.db --audio --delete-unplayable --process --move ~/d/check/audio/ ~/d/dump/audio/
+    lb-load
 
     lb fsadd ~/lb/image.db --move ~/d/check/image/ --process --image ~/d/dump/image/ --delete-unplayable
     lb fsadd ~/lb/video.db --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
