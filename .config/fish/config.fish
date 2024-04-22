@@ -13,7 +13,7 @@ bind \cy redo
 bind \e, backward-kill-bigword yank yank
 
 function cmd_to_clipboard
-    echo -n (commandline) | xclip -selection clipboard
+    echo -n (commandline) | cb
 end
 bind \e\[99\;6u cmd_to_clipboard
 
