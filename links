@@ -2,5 +2,7 @@ lb openlinks ~/mc/music.db -w 'play_count=0' --cluster --prefix https://music.yo
 lb openlinks ~/mc/tv.db -w 'play_count=0' --cluster -c p1
 lb openlinks ~/mc/cine.db -w 'play_count=0' --cluster --prefix https://www.google.com/search?q=% https://rutracker.org/forum/tracker.php?max=1&nm=%
 lb openlinks ~/mc/links.db -w 'play_count=0' --cluster
-lb openlinks ~/lb/sites/manual/yatv.net.db -w 'play_count=0' --cluster -E BJ -s (random 4 58)분
-lb openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' --cluster -c p1
+#lb openlinks ~/lb/sites/manual/yatv.net.db -w 'play_count=0' --cluster -E BJ -s (random 4 58)분
+#lb openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' --cluster -c p1
+firefox --new-tab (ssh pakon lb-dev openlinks ~/lb/sites/manual/yatv.net.db -w 'play_count=0' --cluster -E BJ -s (random 4 58)분 --browser print)
+firefox --new-tab (ssh pakon lb-dev openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' --cluster -c p1 --browser print)
