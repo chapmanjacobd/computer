@@ -4,9 +4,8 @@ import argparse
 import difflib
 from pathlib import Path
 
-from rich import inspect
 from torrentool.api import Torrent
-from xklb.utils import arggroups
+from xklb.utils import arggroups, strings
 from xklb.utils.log_utils import log
 from xklb.utils.printing import print_overwrite
 
@@ -23,25 +22,25 @@ torrents = [
 
 log.info('Data loaded')
 
-duplicates = {}
-for i in range(len(torrents)):
-    torrent_path1 = torrents[i][0]
+duplicates:dict[str, list[tuple[str, int]]] = {}
+len_torrents = len(torrents)
+for i in range(len_torrents):
+    torrent1_path = torrents[i][0]
     torrent1 = torrents[i][1]
+    torrent1_size = torrents[i][1].total_size
 
+    print_overwrite('Checking', i, 'of', len_torrents, f"({strings.safe_percent(i/len_torrents)})")
     for j in range(i + 1, len(torrents)):
-        torrent_path2 = torrents[j][0]
+        torrent2_path = torrents[j][0]
         torrent2 = torrents[j][1]
+        torrent2_size = torrents[j][1].total_size
 
-        print_overwrite('Comparing', i, 'with', j)
-        if difflib.SequenceMatcher(None, torrent_path2.name, torrent_path1.name).ratio() > 0.73:
-            inspect(torrent1)
-            inspect(torrent2)
-
-            if torrent_path1 not in duplicates:
-                duplicates[torrent_path1] = []
-            duplicates[torrent_path1].append(torrent_path1)
-            duplicates[torrent_path1].append(torrent_path2)
+        if difflib.SequenceMatcher(None, torrent2_path.name, torrent1_path.name).ratio() > 0.73:
+            if torrent1_path not in duplicates:
+                duplicates[str(torrent1_path)] = []
+            duplicates[str(torrent1_path)].append((str(torrent1_path), torrent1_size))
+            duplicates[str(torrent2_path)].append((str(torrent2_path), torrent2_size))
 
 print("Duplicate groups:")
 for group in sorted(duplicates, key=len, reverse=True):
-    print(duplicates[group])
+    print(sorted(duplicates[group], key=lambda x: x[1], reverse=True))
