@@ -4,43 +4,44 @@ import argparse
 import difflib
 from pathlib import Path
 
+import humanize
 from torrentool.api import Torrent
+from xklb.text import cluster_sort
 from xklb.utils import arggroups, strings
 from xklb.utils.log_utils import log
 from xklb.utils.printing import print_overwrite
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--small', action='store_true')
+parser.add_argument('--size', action='store_true')
+parser.add_argument('--only-duplicates', action='store_true')
+parser.add_argument('--only-originals', action='store_true')
 arggroups.debug(parser)
 arggroups.paths_or_stdin(parser)
 args = parser.parse_args()
 
-torrents = [
-    (torrent_file, Torrent.from_file(torrent_file))
-    for torrent_folder in args.paths
-    for torrent_file in Path(torrent_folder).glob('*.torrent')
-]
+paths = [str(f) for torrent_folder in args.paths for f in Path(torrent_folder).glob('*.torrent')]
 
-log.info('Data loaded')
+groups = cluster_sort.cluster_paths(paths, n_clusters=int(len(paths) / 2.5))
+groups = sorted(groups, key=lambda d: (-len(d["grouped_paths"]), -len(d["common_prefix"])))
 
-duplicates:dict[str, list[tuple[str, int]]] = {}
-len_torrents = len(torrents)
-for i in range(len_torrents):
-    torrent1_path = torrents[i][0]
-    torrent1 = torrents[i][1]
-    torrent1_size = torrents[i][1].total_size
+if not args.only_originals and not args.only_duplicates:
+    print("Duplicate groups:")
 
-    print_overwrite('Checking', i, 'of', len_torrents, f"({strings.safe_percent(i/len_torrents)})")
-    for j in range(i + 1, len(torrents)):
-        torrent2_path = torrents[j][0]
-        torrent2 = torrents[j][1]
-        torrent2_size = torrents[j][1].total_size
+for group in groups:
+    t = [(path, Torrent.from_file(path).total_size) for path in group['grouped_paths']]
+    t = sorted(t, key=lambda x: x[1], reverse=not args.small)
 
-        if difflib.SequenceMatcher(None, torrent2_path.name, torrent1_path.name).ratio() > 0.73:
-            if torrent1_path not in duplicates:
-                duplicates[str(torrent1_path)] = []
-            duplicates[str(torrent1_path)].append((str(torrent1_path), torrent1_size))
-            duplicates[str(torrent1_path)].append((str(torrent2_path), torrent2_size))
+    if args.only_originals:
+        t=t[:1]
+    if args.only_duplicates:
+        t=t[1:]
 
-print("Duplicate groups:")
-for group in sorted(duplicates, key=len, reverse=True):
-    print(sorted(duplicates[group], key=lambda x: x[1], reverse=True))
+    for path, size in t:
+        if args.size:
+            print(path, '# ', humanize.naturalsize(size, binary=True))
+        else:
+            print(path)
+
+    if not args.only_originals and not args.only_duplicates:
+        print()

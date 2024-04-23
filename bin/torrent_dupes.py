@@ -6,6 +6,7 @@ from pathlib import Path
 from rich import inspect
 from torrentool.api import Torrent
 from xklb.utils import strings
+from xklb.utils.printing import print_overwrite
 
 parser = argparse.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
@@ -17,11 +18,13 @@ torrents = [
     for torrent_file in Path(torrent_folder).glob('*.torrent')
 ]
 
+len_torrents = len(torrents)
 duplicates = {}
-for i in range(len(torrents)):
+for i in range(len_torrents):
     torrent_path1 = torrents[i][0]
     torrent1 = torrents[i][1]
 
+    print_overwrite('Checking', i, 'of', len_torrents, f"({strings.safe_percent(i/len_torrents)})")
     for j in range(i + 1, len(torrents)):
         torrent_path2 = torrents[j][0]
         torrent2 = torrents[j][1]
