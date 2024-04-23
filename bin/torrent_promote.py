@@ -25,7 +25,7 @@ def sort_and_move_torrents(args):
     for torrent_file in paths:
         torrent = Torrent.from_file(torrent_file)
 
-        if args.ext and not set(args.ext).intersection(Path(f.name).suffix for f in torrent.files):
+        if args.ext and not set(args.ext).intersection(Path(f.name).suffix[1:] for f in torrent.files):
             continue
 
         file_sizes = [f.length for f in torrent.files]
