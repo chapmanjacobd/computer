@@ -39,7 +39,7 @@ for i in range(len_torrents):
             if torrent1_path not in duplicates:
                 duplicates[str(torrent1_path)] = []
             duplicates[str(torrent1_path)].append((str(torrent1_path), torrent1_size))
-            duplicates[str(torrent2_path)].append((str(torrent2_path), torrent2_size))
+            duplicates[str(torrent1_path)].append((str(torrent2_path), torrent2_size))
 
 print("Duplicate groups:")
 for group in sorted(duplicates, key=len, reverse=True):
