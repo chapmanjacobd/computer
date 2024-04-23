@@ -3,9 +3,9 @@
 import argparse
 from pathlib import Path
 
+from rich import inspect
 from torrentool.api import Torrent
 from xklb.utils import strings
-from rich import inspect
 
 parser = argparse.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')

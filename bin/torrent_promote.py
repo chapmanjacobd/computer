@@ -2,12 +2,14 @@
 
 import argparse
 import shutil
-from pathlib import Path
 import statistics
+from pathlib import Path
 from typing import List, Tuple
 
 import humanize
 from torrentool.api import Torrent
+from xklb.utils import argparse_utils
+from xklb.utils.log_utils import arggroups
 
 
 def sort_and_move_torrents(args):
@@ -19,11 +21,14 @@ def sort_and_move_torrents(args):
         else:
             paths.append(p)
 
-    torrent_data: List[Tuple[Path, int]] = []
+    torrent_data: List[Tuple[Path, float]] = []
     for torrent_file in paths:
         torrent = Torrent.from_file(torrent_file)
-        file_sizes = [f.length for f in torrent.files]
 
+        if args.ext and not set(args.ext).intersection(Path(f.name).suffix for f in torrent.files):
+            continue
+
+        file_sizes = [f.length for f in torrent.files]
         if args.average:
             torrent_data.append((torrent_file, statistics.mean(file_sizes)))
         elif args.median:
@@ -42,20 +47,26 @@ def sort_and_move_torrents(args):
         if args.dry_run:
             print('mv', torrent_file, ' ', destination_path, '# ', humanize.naturalsize(size, binary=True))
         else:
-            output_path = shutil.move(torrent_file, destination_path)
+            shutil.move(torrent_file, destination_path)
             print(destination_path)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
-    parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--dry-run', '-p', action='store_true')
     parser.add_argument('--out', '-o')
-    parser.add_argument('--average', '--avg', '--priority', action='store_true', help='Priority mode: sort by average file size')
-    parser.add_argument('--median', '--mid', action='store_true', help='Sort by median file size instead of total size')
+    parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
 
-    parser.add_argument('paths', nargs='+')
+    parser.add_argument('--reverse', '-r', action='store_true')
+    parser.add_argument(
+        '--average', '--avg', '--priority', action='store_true', help='Priority mode: sort by average file size'
+    )
+    parser.add_argument('--median', '--mid', action='store_true', help='Sort by median file size instead of total size')
+    parser.add_argument("--ext", "-e", default=[], action=argparse_utils.ArgparseList)
+
+    arggroups.debug(parser)
+
+    arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
 
     if args.out:
