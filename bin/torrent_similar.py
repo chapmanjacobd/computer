@@ -1,15 +1,12 @@
 #!/usr/bin/python3
 
 import argparse
-import difflib
 from pathlib import Path
 
 import humanize
 from torrentool.api import Torrent
 from xklb.text import cluster_sort
-from xklb.utils import arggroups, strings
-from xklb.utils.log_utils import log
-from xklb.utils.printing import print_overwrite
+from xklb.utils import arggroups
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--small', action='store_true')
@@ -33,9 +30,9 @@ for group in groups:
     t = sorted(t, key=lambda x: x[1], reverse=not args.small)
 
     if args.only_originals:
-        t=t[:1]
+        t = t[:1]
     if args.only_duplicates:
-        t=t[1:]
+        t = t[1:]
 
     for path, size in t:
         if args.size:
