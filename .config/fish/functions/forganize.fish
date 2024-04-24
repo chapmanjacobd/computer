@@ -2,8 +2,6 @@ function forganize
     morganize
     dorganize
 
-    sort --unique ~/mc/tabs | lb clustersort | sponge ~/mc/tabs
-
     #trash-size
     #trash-empty
 
@@ -23,36 +21,11 @@ function forganize
     #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/check/porn/video/ -pf | xargs -P 20 -I{} rm {}
     #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 -pfd
 
-    set audio_dirs ~/d/dump/porn/audio/ ~/d/dump/audio/
-    set photo_dirs ~/d/dump/porn/image/ ~/d/dump/image/other/ ~/d/dump/image/other/ ~/d/dump/image/other/
-
     # ~/d/dump/audio/midi/ && fd -tf -eMID -x mv "{}" "{.}.mid"
 
-    fd . $audio_dirs -epng -ejpg -x rm "{}"
-    # fd . $audio_dirs -H -tf -eWEBM -j8 -x fish -c 'mkvextract "{}" tracks 0:"{.}".oga && rm "{}"'
-    process_audio $audio_dirs
-
-    for file in (fd -tf -eZIP -eRAR -eEXE -er00 -eCBR -eCBZ . ~/d/dump/porn/video/ ~/d/dump/video/)
-        unar $file
-    end
+    fd . ~/d/dump/porn/audio/ ~/d/dump/audio/ -epng -ejpg -x rm "{}"
 
     lb-load
-
-    lb fsadd ~/lb/image.db --move ~/d/check/image/ --process --image ~/d/dump/image/ --delete-unplayable
-    lb fsadd ~/lb/video.db --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
-    lb fsadd ~/lb/tax_image.db --move ~/d/check/porn/image/ --process --image ~/d/dump/porn/image/ --delete-unplayable
-    lb fsadd ~/lb/tax.db --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --io-multiplier 0.2
-
-    ~/d/dump/video/other/
-    fd -epng -ejpg -egif -x mv {} ~/d/dump/image/other/unsorted/dump/video/other/
-
-    fd . ~/d/dump/porn/video/ ~/d/dump/image/other/ ~/d/dump/porn/image/gifs/ -eGIF -eGIFV -j8 -x bash -c 'ffmpeg -hide_banner -loglevel warning -y  -i "{}" -vcodec libx265 "{.}".mp4 && rm "{}"'
-
-    for dir in $photo_dirs
-        $dir
-        fd -tf -eWEBP -ePNG -x fish -c 'convert "{}" "{.}.jpg" && rm "{}"'
-        fd -eJPEG -x mv "{}" "{.}.jpg"
-    end
 
     ~/d/
     for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*

@@ -1,5 +1,9 @@
 # Defined interactively
 function lb-load
+    for file in (fd -tf -eZIP -eRAR -eEXE -er00 -eCBR -eCBZ . ~/d/dump/porn/video/ ~/d/dump/video/)
+        unar $file
+    end
+
     lb fsadd ~/lb/tax.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/porn/video/ ~/d/dump/porn/video/ -v
     lb relmv --ext jpg,jpeg,png,pdf ~/d/dump/porn/video/ /mnt/d/dump/porn/image/from_video/
     lb relmv --ext mka,m4a,mp3 ~/d/dump/porn/video/ /mnt/d/dump/porn/audio/from_video/
@@ -14,4 +18,9 @@ function lb-load
 
     lb fsadd ~/lb/audio.db --audio --delete-unplayable --process --move ~/d/check/audio/from_video/ ~/d/dump/video/
     lb fsadd ~/lb/audio.db --audio --delete-unplayable --process --move ~/d/check/audio/ ~/d/dump/audio/
+
+    lb fsadd ~/lb/image.db --move ~/d/check/image/ --process --image ~/d/dump/image/ --delete-unplayable -v
+    lb fsadd ~/lb/video.db --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --io-multiplier 0.2
+    lb fsadd ~/lb/tax_image.db --move ~/d/check/porn/image/ --process --image ~/d/dump/porn/image/ --delete-unplayable -v
+    lb fsadd ~/lb/tax.db --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --io-multiplier 0.2
 end
