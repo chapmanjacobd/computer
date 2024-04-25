@@ -5,6 +5,17 @@
 #sidebar-header {
   visibility: collapse !important;
 } 
+#tabbrowser-tabs {
+    visibility: collapse;
+}
+#sidebar-header, #sidebar-splitter {
+  display: none;
+}
+#browser vbox#appcontent tabbrowser, #content, #tabbrowser-tabpanels, 
+browser[type=content-primary],browser[type=content] > html {
+    background: #c8b4a0 !important
+}
+
 /* Hide all tabs and tab bar buttons */
 #main-window:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
   opacity: 0;
