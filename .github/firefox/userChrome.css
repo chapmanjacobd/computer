@@ -1,0 +1,39 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+#TabsToolbar {
+  visibility: collapse;
+}
+#sidebar-header {
+  visibility: collapse !important;
+} 
+/* Hide all tabs and tab bar buttons */
+#main-window:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* This makes the bar shorter vertically but removes the 3 window buttons */
+#main-window #TabsToolbar {
+  visibility: collapse !important;
+}
+
+/* For full screen mode */
+#TabsToolbar[inFullscreen]{
+  display: none !important; 
+}
+/*** Tighten up drop-down/context/popup menu spacing (8 Sep 2021) ***/
+
+menupopup:not(.in-menulist) > menuitem, 
+menupopup:not(.in-menulist) > menu {
+  padding-block: 4px !important; /* reduce to 3px, 2px, 1px or 0px as needed */ 
+  min-height: unset !important; /* v92.0 - for padding below 4px */
+}
+:root {
+  --arrowpanel-menuitem-padding: 4px 8px !important;
+}
+
+@-moz-document url-prefix(about:reader){
+ body.sepia {
+  color: #000 !important;
+  background-color: #C8B4A0 !important;
+ }
+}
