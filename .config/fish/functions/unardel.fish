@@ -1,6 +1,6 @@
 function unardel
     for f in $argv
-        /usr/bin/unar -q -o (path dirname "$f") -d "$f"
+        not /usr/bin/unar -q -o (path dirname "$f") -d "$f" &| grep -i password
         and rm "$f"
     end
 end
