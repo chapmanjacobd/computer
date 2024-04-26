@@ -1,7 +1,7 @@
 -- MIT License
 -- Copyright (c) 2023 GhostNaN
 
-local WHISPER_CMD = "whisper --threads 6 --task translate"
+local WHISPER_CMD = "whisper --threads 6 --language Japanese --task translate"
 local CHUNK_SIZE = 15 * 1000 -- the amount of subs to process at a time in ms
 local WAV_CHUNK_SIZE = CHUNK_SIZE + 1000 -- pad the wav time
 local INIT_POS = 0 -- starting position to start creating subs in ms
@@ -61,7 +61,7 @@ end
 
 local function appendSubs(current_pos)
 
-	os.execute(WHISPER_CMD..' --output-srt -d '..CHUNK_SIZE..' -f '..TMP_WAV_PATH..' -of '..TMP_SUB_PATH..'_append', 'r')
+	os.execute(WHISPER_CMD..' --output_format srt '..TMP_WAV_PATH..' | grep [[] > '..TMP_SUB_PATH..'_append.srt', 'r')
 
 	-- offset srt timings to current_pos
 	os.execute('ffmpeg -hide_banner -loglevel error -itsoffset '..current_pos..'ms -i '..TMP_SUB_PATH..'_append.srt'..' -c copy -y '..TMP_SUB_PATH..'_append_offset.srt', 'r')
