@@ -1,3 +1,4 @@
+/.config/QGIS/
 /.config/QGIS3rc
 /.config/QtProject.conf
 /.config/rclone/
@@ -378,4 +379,3 @@
 /.config/qalculate/
 /.config/QDirStat/
 /.config/QDirStatrc
-/.config/QGIS/
