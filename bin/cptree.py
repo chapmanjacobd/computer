@@ -45,19 +45,21 @@ def cp_tree():
         for folder in folders:
             p = Path(folder).relative_to(source_folder)
             p = dst / p.parent / (args.folder_prefix + p.name + args.folder_suffix)
-            if args.simulate:
-                print('mkdir', p)
-            else:
-                p.mkdir(parents=True, exist_ok=True)
+            if not p.exists():
+                if args.simulate:
+                    print('mkdir', p)
+                else:
+                    p.mkdir(parents=True, exist_ok=True)
 
     if not args.folders_only:
         for file in files:
             p = Path(file).relative_to(source_folder)
             p = dst / p.parent / (args.file_prefix + p.stem + args.file_suffix + p.suffix + args.file_ext)
-            if args.simulate:
-                print('touch', p)
-            else:
-                p.touch(exist_ok=True)
+            if not p.exists():
+                if args.simulate:
+                    print('touch', p)
+                else:
+                    p.touch(exist_ok=True)
 
 
 if __name__ == "__main__":
