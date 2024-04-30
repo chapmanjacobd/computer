@@ -1,3 +1,4 @@
+/.config/qalculate/qalc.history
 /.config/QDirStat/
 /.local/models/
 /.config/QGIS/
@@ -378,4 +379,3 @@
 /.config/pulse.bak/
 /.config/PulseEffects/
 /.config/pypoetry/
-/.config/qalculate/
