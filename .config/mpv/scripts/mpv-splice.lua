@@ -2,6 +2,7 @@
 --
 -- MPV Splice
 -- URL: https://github.com/pvpscript/mpv-video-splice
+-- GPLv3
 --
 -- Requires: ffmpeg
 --
@@ -295,7 +296,7 @@ function process_video()
 				tmp_dir, rnd_str, i, ext)
 			cat_file_ptr:write(string.format("file '%s'\n", path))
 			os.execute(string.format("%s -ss %s -i \"%s\" -to %s " ..
-				"-c copy -copyts -avoid_negative_ts make_zero \"%s\"",
+				"-c copy -copyts -avoid_negative_ts make_non_negative \"%s\"",
 				ffmpeg, obj.t_start, input_file, obj.t_end,
 				path))
 		end
