@@ -1,3 +1,6 @@
+-- https://github.com/aidanholm/mpv-easycrop/tree/master
+-- GPLv3
+
 local msg = require('mp.msg')
 local assdraw = require('mp.assdraw')
 
