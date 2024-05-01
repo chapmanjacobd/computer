@@ -1,7 +1,6 @@
 function daily
     ~/
     popline ~/.gitignore
-    popline ~/j/.gitignore
 
     with_lock copy_to_pakon
 
