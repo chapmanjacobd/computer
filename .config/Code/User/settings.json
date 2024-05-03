@@ -8,6 +8,7 @@
   "terminal.integrated.scrollback": 10000,
   "terminal.external.linuxExec": "kitty",
   "terminal.explorerKind": "external",
+  "debug.gutterMiddleClickAction": "none",
   "terminal.integrated.profiles.linux": {
     "kitty": {
       "path": "/usr/bin/kitty"
