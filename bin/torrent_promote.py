@@ -8,7 +8,6 @@ from typing import List, Tuple
 
 import humanize
 from torrentool.api import Torrent
-from xklb.utils import argparse_utils
 from xklb.utils.log_utils import arggroups
 
 
@@ -62,8 +61,6 @@ if __name__ == '__main__':
         '--average', '--avg', '--priority', action='store_true', help='Priority mode: sort by average file size'
     )
     parser.add_argument('--median', '--mid', action='store_true', help='Sort by median file size instead of total size')
-    parser.add_argument("--ext", "-e", default=[], action=argparse_utils.ArgparseList)
-
     arggroups.debug(parser)
 
     arggroups.paths_or_stdin(parser)
