@@ -1,3 +1,4 @@
+/.config/pulse/
 /.config/qalculate/qalc.history
 /qb/
 /.config/QDirStat/
@@ -376,4 +377,3 @@
 /.config/print-manager
 /.config/procps/
 /.config/ptpython/
-/.config/pulse/
