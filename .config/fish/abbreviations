@@ -171,6 +171,6 @@ abbr -a -- to_sync tosync
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- timezone_update tzupdate
 abbr -a -- rsync rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
-abbr -a -- music lb listen /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
+abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --rescan
