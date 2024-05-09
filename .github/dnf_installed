@@ -28,6 +28,7 @@ dub
 earlyoom
 easyeffects
 edk2-tools
+exiv2-devel
 eza
 fatrace
 feh
@@ -82,6 +83,7 @@ lapack-devel
 ldc
 libavif-tools
 libcec
+libheif-freeworld
 libicu
 libicu-devel
 libmediainfo
