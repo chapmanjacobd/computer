@@ -1,3 +1,4 @@
+/.config/praw.ini
 /.config/pulse/
 /.config/qalculate/qalc.history
 /qb/
@@ -373,4 +374,3 @@
 /.config/PlasmaUserFeedback
 /.config/plasma-workspace/
 /.config/pmbootstrap.cfg
-/.config/praw.ini
