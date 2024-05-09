@@ -4,6 +4,11 @@ function keepaud
 
     cp $argv[1] $dest
     set f (basename $argv[1])
-    ffa "$dest/$f"
-    and /bin/rm $argv[1] "$dest/$f"
+
+    if has_video "$dest/$f"
+        ffa "$dest/$f"
+        and /bin/rm "$dest/$f"
+    end
+
+    /bin/rm $argv[1]    
 end
