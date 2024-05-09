@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 import humanize
 from torrentool.api import Torrent
-from xklb.utils.log_utils import arggroups
+from xklb.utils import arggroups
 
 
 def sort_and_move_torrents(args):

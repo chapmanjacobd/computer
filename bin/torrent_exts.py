@@ -5,7 +5,7 @@ from collections import Counter
 from pathlib import Path
 
 from torrentool.api import Torrent
-from xklb.utils.log_utils import arggroups
+from xklb.utils import arggroups
 
 
 def print_exts(args):

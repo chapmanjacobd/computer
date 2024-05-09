@@ -10,7 +10,6 @@ def cp_tree():
 
     parser.add_argument('--files-only', '-tf', action='store_true', help='Copy files only')
     parser.add_argument('--folders-only', '-td', action='store_true', help='Copy folders only')
-    parser.add_argument("--ext", "-e", default=[], action=argparse_utils.ArgparseList)
 
     parser.add_argument('--folder-prefix', default='', help='Prefix for new folder names')
     parser.add_argument('--file-prefix', default='', help='Prefix for new file names')
