@@ -10,5 +10,5 @@ function keepaud
         and /bin/rm "$dest/$f"
     end
 
-    /bin/rm $argv[1]    
+    /bin/rm $argv[1]
 end
