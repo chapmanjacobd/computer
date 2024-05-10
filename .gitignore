@@ -81,6 +81,7 @@
 /.ipython/profile_default/history.sqlite
 *.mp4
 *.mkv
+*.mov
 /.parallel/semaphores/
 /.parallel/tmp/
 /.node_history
