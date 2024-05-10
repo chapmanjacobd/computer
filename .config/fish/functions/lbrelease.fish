@@ -10,8 +10,8 @@ function lbrelease --argument oldver newver
     lbformat
     rg -i --no-heading --no-line-number --fixed-strings -j1 ', 0)' | grep -ivE 'coalesce|noqa'
     python -m xklb.readme >.github/README.md
-    git reset tests/cassettes/
-    git restore tests/cassettes/
+    # git reset tests/cassettes/
+    # git restore tests/cassettes/
 
     git add .
     rg -i --no-heading todo:
