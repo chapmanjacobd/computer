@@ -76,6 +76,11 @@ increase_volume=Volume Up,Volume Up,Increase Volume
 mic_mute=Microphone Mute,Microphone Mute\tMeta+Volume Mute,Mute Microphone
 mute=Volume Mute,Volume Mute,Mute
 
+[konversation]
+_k_friendly_name=Konversation
+next_active_tab=none,none,Next Active Tab
+toggle_mainwindow_visibility=none,none,Show/Hide Konversation
+
 [ksmserver]
 Halt Without Confirmation=none,,Halt Without Confirmation
 Lock Session=Meta+L,Meta+L\tScreensaver,Lock Session

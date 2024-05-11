@@ -1,3 +1,5 @@
+/.config/konversationrc
+/.config/konversation.notifyrc
 /.config/praw.ini
 /.config/pulse/
 /.config/qalculate/qalc.history
@@ -373,4 +375,3 @@
 /.config/plasmashellrc
 /.config/plasmashellrc2
 /.config/PlasmaUserFeedback
-/.config/plasma-workspace/
