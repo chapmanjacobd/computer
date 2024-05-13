@@ -9,5 +9,5 @@ function torganize
     rsync -auh --remove-sent-files ~/Downloads/\[HappyFappy\]*.torrent backup:.local/data/qbittorrent/porn/happyfappy/
     rsync -auh --remove-sent-files ~/Downloads/\[pornolab.net\]*.torrent backup:.local/data/qbittorrent/porn/pornolab.net/
 
-    rsync -auh --remove-sent-files ~/Downloads/*.torrent backup:.local/data/qbittorrent/seed_pause/
+    rsync -auh --remove-sent-files ~/Downloads/*.torrent backup:.local/data/qbittorrent/seed_pause/others/
 end
