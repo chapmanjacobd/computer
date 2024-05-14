@@ -1,5 +1,6 @@
 .syncthing.*
-/.config/plasmashellrc2
+/.config/plasmashellrc
+/.config/*rc2
 /.config/konversationrc
 /.config/konversation.notifyrc
 /.config/praw.ini
@@ -374,4 +375,3 @@
 /.config/plasmaConfSaver/
 /.config/PlasmaDiscoverUpdates
 /.config/plasma-nm
-/.config/plasmashellrc
