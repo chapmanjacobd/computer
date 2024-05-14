@@ -54,7 +54,6 @@ abbr -a -- szu 'sudo zypper dup'
 abbr -a -- ta 'lb tabsadd --frequency quarterly --category misc ~/lb/tabs.db'
 abbr -a -- td tempdir
 abbr -a -- tee 'tee -a'
-abbr -a -- timers 'systemctl --user list-timers --all --no-pager --no-legend'
 abbr -a -- tmux 'tmux new-session -A -s phone'
 abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -- wts 'wt -p -u duration -s'
@@ -174,3 +173,4 @@ abbr -a -- rsync rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.r
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
 abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --rescan
+abbr -a -- timers systemctl --user list-timers --all --no-pager --no-legend --state=running
