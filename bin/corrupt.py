@@ -2,11 +2,12 @@
 # https://github.com/joshsegall/corrupt
 
 import argparse
+from xklb.utils import argparse_utils
 import random
 import string
 import sys
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument(
     'input', nargs='?', type=argparse.FileType('rb'), default=sys.stdin, help='input file. defaults to stdin'
 )
@@ -43,7 +44,7 @@ for chunk_start in range(0, len(data)):
     if chunk_end > nextn:
         k = nextn - chunk_start * 8
 
-        if ascii:
+        if args.ascii:
             b = random.choice(string.printable).encode()
         else:
             b = bytes([random.randint(0, 255)])
@@ -57,7 +58,7 @@ for chunk_start in range(0, len(data)):
 
 random.seed()
 while args.garbage > 0:
-    if ascii:
+    if args.ascii:
         b = random.choice(string.printable).encode()
     else:
         b = bytes([random.randint(0, 255)])

@@ -1,10 +1,9 @@
 #!/usr/bin/python3
-import argparse
 import concurrent.futures
 from pathlib import Path
 
 import humanize
-from xklb.utils import nums
+from xklb.utils import argparse_utils, nums
 
 
 def get_recursive_size(path):
@@ -40,7 +39,7 @@ def main(directory, byte_limit):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
+    parser = argparse_utils.ArgumentParser(
         description="Select the largest directories/files that fit into a given byte limit."
     )
     parser.add_argument("size_limit")

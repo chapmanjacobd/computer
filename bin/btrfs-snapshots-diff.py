@@ -39,6 +39,7 @@ Copyright (c) 2016-2021 Jean-Denis Girard <jd.girard@sysnux.pf>
 '''
 
 import argparse
+from xklb.utils import argparse_utils
 import subprocess
 import time
 from collections import OrderedDict
@@ -475,7 +476,7 @@ def main():
     '''Main !'''
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Display differences between 2 Btrfs snapshots")
+    parser = argparse_utils.ArgumentParser(description="Display differences between 2 Btrfs snapshots")
     parser.add_argument('-p', '--parent', help='parent snapshot (must exists and be readonly)')
     parser.add_argument('-c', '--child', help='child snapshot (will be created if it does not exist)')
     parser.add_argument('-f', '--file', help="diff file")

@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
 import argparse
+from xklb.utils import argparse_utils
 import json
 import sys
 from datetime import datetime
 
 import tabulate
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument("file", nargs="?", type=argparse.FileType("r"), default=sys.stdin)
 args = parser.parse_args()
 

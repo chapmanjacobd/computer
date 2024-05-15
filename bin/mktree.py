@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-import argparse
 import os
+
+from xklb.utils import argparse_utils
 
 tasks = ['sync', 'dump', 'check', 'library', 'archive']
 categories = {
@@ -31,7 +32,7 @@ def create_directory_structure(base_dir):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Create directory hierarchy.')
+    parser = argparse_utils.ArgumentParser(description='Create directory hierarchy.')
     parser.add_argument('base_dir', nargs='?', default=os.getcwd())
     args = parser.parse_args()
 

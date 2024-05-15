@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-import argparse
 import re
+
+from xklb.utils import argparse_utils
 
 
 def grep_file(file_path, search_term):
@@ -34,7 +35,9 @@ def print_matches(file_path, search_term):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Search for a term in a file and print the percentage of occurrences.")
+    parser = argparse_utils.ArgumentParser(
+        description="Search for a term in a file and print the percentage of occurrences."
+    )
     parser.add_argument("file_path", help="Path to the file to search.")
     parser.add_argument("search_term", help="The term to search for.")
 

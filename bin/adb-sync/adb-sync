@@ -17,7 +17,7 @@
 """Sync files from/to an Android device."""
 
 from __future__ import unicode_literals
-import argparse
+from xklb.utils import argparse_utils
 import glob
 import locale
 import os
@@ -630,7 +630,7 @@ def FixPath(src, dst):
 
 
 def main(*args):
-  parser = argparse.ArgumentParser(
+  parser = argparse_utils.ArgumentParser(
       description='Synchronize a directory between an Android device and the '+
       'local file system')
   parser.add_argument('source', metavar='SRC', type=str, nargs='+',

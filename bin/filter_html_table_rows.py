@@ -1,9 +1,8 @@
 #!/usr/bin/python3
-import argparse
-
 from bs4 import BeautifulSoup
+from xklb.utils import argparse_utils
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument("filepath", help="HTML file path")
 parser.add_argument("search_str", help="Text or partial HTML to search for")
 parser.add_argument(

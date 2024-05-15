@@ -1,11 +1,13 @@
 #!/usr/bin/python3
-import argparse
 import os
 import time
 from collections import defaultdict
 
+from xklb.utils import argparse_utils
+
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="Aggregate kernel function sleep counts for processes.")
+    parser = argparse_utils.ArgumentParser(description="Aggregate kernel function sleep counts for processes.")
     parser.add_argument("--aggregate-system", '-a', action="store_true", help="Group by system instead of PID.")
     parser.add_argument("--time", '-t', type=float, default=4.1, help="Profiling time")
     return parser.parse_args()

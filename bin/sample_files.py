@@ -1,11 +1,12 @@
 #!/usr/bin/python3
-import argparse
 import os
 import random
 import sys
 from typing import Dict, List
 
-parser = argparse.ArgumentParser()
+from xklb.utils import argparse_utils
+
+parser = argparse_utils.ArgumentParser()
 parser.add_argument('--files', type=int, default=1, help='Print N random files per directory')
 parser.add_argument('--folders', '--dirs', action='store_true', help='Only print unique directories')
 args = parser.parse_args()

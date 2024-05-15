@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import argparse
 import io
 import os
 from pathlib import Path
@@ -9,8 +8,9 @@ from typing import List
 import img2pdf
 import ocrmypdf
 import pdf2image
-from PIL import ImageEnhance, Image
+from PIL import Image, ImageEnhance
 from tqdm import tqdm
+from xklb.utils import argparse_utils
 
 
 def pdf_contrast(args):
@@ -55,7 +55,7 @@ def pdf_contrast(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument("--brightness", "-b", type=int, default=100)
     parser.add_argument("--contrast", "-c", type=int, default=100)
     parser.add_argument("--color", "-C", type=int, default=100)

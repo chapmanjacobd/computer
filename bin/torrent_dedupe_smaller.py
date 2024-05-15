@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-import argparse
 import os
 from pathlib import Path
 
 from torrentool.api import Torrent
+from xklb.utils import argparse_utils
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 parser.add_argument('-r', '--remove', action='store_true', help='Actually remove files')
 args = parser.parse_args()

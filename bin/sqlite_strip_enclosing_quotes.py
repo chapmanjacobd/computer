@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-import argparse
 import sqlite3
 
 from sqlite_utils import Database
+from xklb.utils import argparse_utils
 
 
 def strip_enclosing_quotes(s):
@@ -14,10 +14,12 @@ def strip_enclosing_quotes(s):
 
     return s
 
+
 def is_system_table(s):
     if '_fts_' in s or s.endswith('_fts') or s.startswith('sqlite_stat'):
         return True
     return False
+
 
 def process_columns(db_path, columns):
     db = Database(sqlite3.connect(db_path))
@@ -49,7 +51,9 @@ def process_columns(db_path, columns):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Strip enclosing quotes from specified columns in a SQLite database.")
+    parser = argparse_utils.ArgumentParser(
+        description="Strip enclosing quotes from specified columns in a SQLite database."
+    )
     parser.add_argument("db_path", help="Path to the SQLite database file")
     parser.add_argument("columns", nargs="+", help="Column names to process")
     args = parser.parse_args()

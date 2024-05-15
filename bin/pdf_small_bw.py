@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import argparse
 import tempfile
 from pathlib import Path
+
 from natsort import natsorted
-from xklb.utils import processes
+from xklb.utils import argparse_utils, processes
 
 
 def convert_images_to_pdf(directory, resize):
@@ -23,7 +23,7 @@ def convert_images_to_pdf(directory, resize):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Convert images in a directory to a combined PDF')
+    parser = argparse_utils.ArgumentParser(description='Convert images in a directory to a combined PDF')
     parser.add_argument('directory', help='Path to the directory containing images')
     parser.add_argument(
         '-r', '--resize', type=int, default=1000, help='Resize images to the specified width (default: 1000)'

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import argparse
+from xklb.utils import argparse_utils
 import os
 import shlex
 import subprocess
@@ -79,7 +79,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Sync new files within 24 hours from one directory to another.")
+    parser = argparse_utils.ArgumentParser(description="Sync new files within 24 hours from one directory to another.")
     parser.add_argument("--verbose", "-v", action="count", default=0)
 
     parser.add_argument("historyfile", help="File to store history of synced files")

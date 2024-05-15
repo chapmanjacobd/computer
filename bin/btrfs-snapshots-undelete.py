@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
-import argparse
+import shlex
 from os import unlink
 from pathlib import Path
-import shlex
 from struct import unpack
 from sys import exit, stderr  # pylint: disable=redefined-builtin
+
+from xklb.utils import argparse_utils
 
 printerr = stderr.write
 
@@ -42,6 +43,7 @@ SOFTWARE.
 Copyright (c) 2016-2021 Jean-Denis Girard <jd.girard@sysnux.pf>
 © SysNux http://www.sysnux.pf/
 '''
+
 
 class BtrfsStream:
     '''Btrfs send stream representation'''
@@ -144,8 +146,7 @@ class BtrfsStream:
                 offset2, path = self._tlv_get_string('BTRFS_SEND_A_PATH', offset)
                 offset2, size = self._tlv_get_u64('BTRFS_SEND_A_SIZE', offset2)
 
-                print(f'# truncated {size:d} cp',  shlex.quote(str(Path(args.snapshot_root, path))), path)
-
+                print(f'# truncated {size:d} cp', shlex.quote(str(Path(args.snapshot_root, path))), path)
 
             elif command == 'BTRFS_SEND_C_END':
                 break
@@ -154,9 +155,8 @@ class BtrfsStream:
             cmd_ref += 1
 
 
-
 def main():
-    parser = argparse.ArgumentParser(description="print unlinks between 2 btrfs snapshots")
+    parser = argparse_utils.ArgumentParser(description="print unlinks between 2 btrfs snapshots")
     parser.add_argument('--snapshot-root', default='.snapshots/one/')
     parser.add_argument('diff_file')
     args = parser.parse_args()

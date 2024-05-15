@@ -14,7 +14,7 @@
  Apache License 2.0
 """
 
-import argparse
+from xklb.utils import argparse_utils
 import Tkinter as tk
 import os
 from shutil import copyfile, move
@@ -180,7 +180,7 @@ def make_folder(directory):
 if __name__ == "__main__":
 
     # Make input arguments
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument('-f', '--folder', help='Input folder where the *tif images should be', required=True)
     parser.add_argument('-l', '--labels', nargs='+', help='Possible labels in the images', required=True)
     args = parser.parse_args()

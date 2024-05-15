@@ -17,6 +17,7 @@ deleted.
 """
 
 import sys
+
 import fitz
 
 

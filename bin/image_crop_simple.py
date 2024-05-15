@@ -1,8 +1,10 @@
 #!/usr/bin/python3
+import os
+
 import cv2
 import numpy as np
-import os
-import argparse
+from xklb.utils import argparse_utils
+
 
 def crop_rectangles(image_path, output_folder):
     if not os.path.exists(output_folder):
@@ -24,16 +26,20 @@ def crop_rectangles(image_path, output_folder):
     output_path = os.path.join(output_folder, "cropped_image.jpg")
     cv2.imwrite(output_path, output_image)
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Crop based on edge detection.')
+    parser = argparse_utils.ArgumentParser(description='Crop based on edge detection.')
     parser.add_argument('input_image', type=str, help='Path to the input image')
-    parser.add_argument('-o', '--output_folder', type=str, default='output/', help='Output folder to save cropped image')
+    parser.add_argument(
+        '-o', '--output_folder', type=str, default='output/', help='Output folder to save cropped image'
+    )
     args = parser.parse_args()
 
     input_image_path = args.input_image
     output_folder = args.output_folder
 
     crop_rectangles(input_image_path, output_folder)
+
 
 if __name__ == "__main__":
     main()

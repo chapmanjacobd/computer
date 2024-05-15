@@ -22,7 +22,7 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import argparse
+from xklb.utils import argparse_utils
 import errno
 import sys
 from itertools import repeat
@@ -37,7 +37,7 @@ class Bork(Exception):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument(
         '--usage',
         '-u',

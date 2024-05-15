@@ -1,14 +1,14 @@
 #!/usr/bin/python
-import argparse
 from pathlib import Path
 
 import yaml
 from hera.workflows.models import Workflow
 from rich import print
+from xklb.utils import argparse_utils
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument("yaml_file", type=Path)
     args = parser.parse_args()
 

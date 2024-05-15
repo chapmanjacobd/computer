@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
-import argparse
 from pathlib import Path
 
 import humanize
 from torrentool.api import Torrent
 from xklb.text import cluster_sort
-from xklb.utils import arggroups
+from xklb.utils import arggroups, argparse_utils
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument('--small', action='store_true')
 parser.add_argument('--size', action='store_true')
 parser.add_argument('--only-duplicates', action='store_true')

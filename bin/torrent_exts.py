@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import argparse
 from collections import Counter
 from pathlib import Path
 
 from torrentool.api import Torrent
-from xklb.utils import arggroups
+from xklb.utils import arggroups, argparse_utils
 
 
 def print_exts(args):
@@ -27,7 +26,7 @@ def print_exts(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     arggroups.debug(parser)
 
     arggroups.paths_or_stdin(parser)

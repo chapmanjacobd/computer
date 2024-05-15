@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-import sys
 import importlib.util
+import sys
 
 if len(sys.argv) < 2:
     print("Please provide the module name as an argument.")
@@ -15,4 +15,3 @@ else:
             print(f"Module '{module_name}' not found.")
     except ImportError:
         print(f"Unable to import '{module_name}'.")
-

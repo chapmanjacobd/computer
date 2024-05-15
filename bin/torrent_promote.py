@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import argparse
 import shutil
 import statistics
 from pathlib import Path
@@ -8,7 +7,7 @@ from typing import List, Tuple
 
 import humanize
 from torrentool.api import Torrent
-from xklb.utils import arggroups
+from xklb.utils import arggroups, argparse_utils
 
 
 def sort_and_move_torrents(args):
@@ -46,14 +45,21 @@ def sort_and_move_torrents(args):
             destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
 
         if args.dry_run or args.print:
-            print('mv', torrent_file, ' ', destination_path, '# ', size if args.file_count else humanize.naturalsize(size, binary=True))
+            print(
+                'mv',
+                torrent_file,
+                ' ',
+                destination_path,
+                '# ',
+                size if args.file_count else humanize.naturalsize(size, binary=True),
+            )
         else:
             shutil.move(torrent_file, destination_path)
             print(destination_path)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--out', '-o')
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')

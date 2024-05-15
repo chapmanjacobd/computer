@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
-import argparse
 import shelve
 from pathlib import Path
 
+from xklb.utils import argparse_utils
+
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument('database', help='The name of the shelve database file to check')
     args = parser.parse_args()
 

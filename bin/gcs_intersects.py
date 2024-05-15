@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import argparse
 import functools
 import re
 
@@ -8,8 +7,9 @@ import geopandas as gpd
 from google.cloud import storage
 from osgeo import gdal
 from shapely.geometry import box
+from xklb.utils import argparse_utils
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument('gcs_folder', help='Top level folder in GCS bucket to search')
 parser.add_argument('vector_file', help='Vector file for intersection')
 args = parser.parse_args()

@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-import argparse
 import re
 import subprocess
 from collections import defaultdict
 
 import psutil
+from xklb.utils import argparse_utils
 
 
 def list_partitions(device):
@@ -42,7 +42,7 @@ def mount_partition(partition):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Mount partitions of given devices.')
+    parser = argparse_utils.ArgumentParser(description='Mount partitions of given devices.')
     parser.add_argument('devices', nargs='+', help='Block devices (e.g., /dev/sdb)')
     args = parser.parse_args()
 

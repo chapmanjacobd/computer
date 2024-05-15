@@ -1,10 +1,12 @@
 #!/usr/bin/python3
-import argparse
 import sqlite3
 import sys
 
+from xklb.utils import argparse_utils
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Process some lines and store them into SQLite.')
+    parser = argparse_utils.ArgumentParser(description='Process some lines and store them into SQLite.')
     parser.add_argument('-n', '--height', type=int, default=1, help='Number of lines to group together')
     parser.add_argument('input_file', type=str, help='Input file path or "-" for stdin')
     parser.add_argument('output_db', type=str, help='Output SQLite database file path')
@@ -33,6 +35,7 @@ def main():
     if input_source is not sys.stdin:
         input_source.close()
     conn.close()
+
 
 if __name__ == '__main__':
     main()

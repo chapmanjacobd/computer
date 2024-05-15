@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import argparse
+from xklb.utils import argparse_utils
 import os
 import tempfile
 import zipfile
@@ -7,9 +8,9 @@ from collections import Counter, OrderedDict
 from pathlib import Path
 
 import rarfile
-from xklb.scripts import process_audio
-from xklb.scripts.rel_mv import rel_move
-from xklb.utils import objects
+from xklb.mediafiles import process_ffmpeg
+from xklb.folders.rel_mv import rel_move
+from xklb.utils import objects, arggroups
 from xklb.utils.log_utils import log
 
 # fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar_heshui.py --unlink {}
@@ -19,10 +20,11 @@ TEMP_BASE_DIR.mkdir(exist_ok=True)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument("--unlink", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", "-v", action="count", default=0)
+    arggroups.process_ffmpeg(parser)
 
     parser.add_argument("rar_path")
     args = parser.parse_intermixed_args()
@@ -138,7 +140,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     extra_files = [p for p in files if p.name.endswith(extra)]
                     log.info('Extracting %s extras %s', extra, extra_files)
                     for p in extra_files:
-                        rel_move([p], output_prefix, dry_run=args.dry_run, relative_from=temp_prefix1)
+                        rel_move([p], output_prefix, simulate=args.dry_run, relative_from=[temp_prefix1])
                         files.remove(p)
                         count_extracted += 1
                     del extensions[extra]
@@ -168,10 +170,10 @@ def check_archive(args, input_path: Path, output_prefix: Path):
             for p in files:
                 if not args.dry_run:
                     try:
-                        p = process_audio.process_path(p)
+                        p = process_ffmpeg.process_path(args, p)
                     except Exception:
                         pass
-                rel_move([p], output_prefix, dry_run=args.dry_run, relative_from=temp_prefix1)
+                rel_move([p], output_prefix, simulate=args.dry_run, relative_from=[temp_prefix1])
                 count_extracted += 1
 
             if args.unlink:

@@ -1,9 +1,8 @@
 #!/usr/bin/python3
-import argparse
 import difflib
 from pathlib import Path
 
-from xklb.utils import strings
+from xklb.utils import argparse_utils, strings
 
 
 def search_in_file(args, path):
@@ -24,7 +23,7 @@ def search_in_file(args, path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Similar to grep using difflib')
+    parser = argparse_utils.ArgumentParser(description='Similar to grep using difflib')
     parser.add_argument('--ignore-case', '-i', action='store_true', help='Ignore upper-case')
     parser.add_argument('--line-number', action='store_true', help='Print line numbers along with output')
     parser.add_argument('--minimum-similarity', '-m', type=float, default=0.3)

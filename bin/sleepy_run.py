@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # ~/bin/sleepy_run.py --trigger "429 Too Many Requests" yes 429 Too Many Requests
 
-import argparse
 import random
 import signal
 import subprocess
 import sys
 import time
+
+from xklb.utils import argparse_utils
 
 
 class Actions:
@@ -50,7 +51,7 @@ def sleepy_run(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
+    parser = argparse_utils.ArgumentParser(
         description="Run a program and do something when a specific message is encountered (stdout or stderr)."
     )
     parser.add_argument(

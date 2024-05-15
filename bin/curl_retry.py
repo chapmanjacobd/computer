@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-import argparse
 import os
 import shutil
 import subprocess
 import tempfile
 
 import tenacity
+from xklb.utils import argparse_utils
 
 
 def curl(curl_cmd):
@@ -40,7 +40,7 @@ def curl_with_filetype(curl_cmd, expected_type):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument("--file-type", "--filetype", help="Expected file type")
     parser.add_argument("--move", help="Path to move file to on success")
 

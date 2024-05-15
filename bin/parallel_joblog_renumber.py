@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+from xklb.utils import argparse_utils
 import sys
 
 
@@ -12,7 +13,7 @@ def pipe_lines(x) -> None:
         sys.exit(141)
 
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument("joblog", type=argparse.FileType("r"))
 parser.add_argument("argsfile", nargs="?", type=argparse.FileType("r"), default=sys.stdin)
 parser.add_argument("output_path", nargs="?")

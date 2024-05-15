@@ -1,13 +1,13 @@
 #!/usr/bin/python
-import argparse
 from pathlib import Path
 from pprint import pprint
 
 import yaml
+from xklb.utils import argparse_utils
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument("yaml_file", type=Path)
     args = parser.parse_args()
 

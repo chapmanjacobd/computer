@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-import argparse
 import shutil
 from pathlib import Path
 
 from torrentool.api import Torrent
+from xklb.utils import argparse_utils
 
 
 def check_torrents(torrent_folder: Path, files_folder: Path):
@@ -35,7 +35,7 @@ def check_torrents(torrent_folder: Path, files_folder: Path):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse_utils.ArgumentParser()
     parser.add_argument('torrent_folder', help='Folder containing torrent files')
     parser.add_argument('files_folder', help='Folder containing downloaded files')
     args = parser.parse_args()

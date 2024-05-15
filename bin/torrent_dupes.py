@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
-import argparse
 from pathlib import Path
 
 from rich import inspect
 from torrentool.api import Torrent
-from xklb.utils import strings
+from xklb.utils import argparse_utils, strings
 from xklb.utils.printing import print_overwrite
 
-parser = argparse.ArgumentParser()
+parser = argparse_utils.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
 
