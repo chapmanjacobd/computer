@@ -32,6 +32,8 @@ def sort_and_move_torrents(args):
             torrent_data.append((torrent_file, statistics.mean(file_sizes)))
         elif args.median:
             torrent_data.append((torrent_file, statistics.median(file_sizes)))
+        elif args.file_count:
+            torrent_data.append((torrent_file, len(file_sizes)))
         else:
             torrent_data.append((torrent_file, sum(file_sizes)))
 
@@ -44,7 +46,7 @@ def sort_and_move_torrents(args):
             destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
 
         if args.dry_run or args.print:
-            print('mv', torrent_file, ' ', destination_path, '# ', humanize.naturalsize(size, binary=True))
+            print('mv', torrent_file, ' ', destination_path, '# ', size if args.file_count else humanize.naturalsize(size, binary=True))
         else:
             shutil.move(torrent_file, destination_path)
             print(destination_path)
@@ -57,6 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
 
     parser.add_argument('--reverse', '-r', action='store_true')
+    parser.add_argument('--file-count', '--count', action='store_true')
     parser.add_argument(
         '--average', '--avg', '--priority', action='store_true', help='Priority mode: sort by average file size'
     )
