@@ -1,5 +1,4 @@
 # Defined interactively
 function ffmpeg.keyframes
-    ffmpeg -discard nokey -i $argv -c copy /tmp/t1.264
-    ffmpeg -r 30 -i /tmp/t1.264 -c copy (path change-extension .keys.mkv $argv)
+    ffmpeg -i "$argv" -filter:v "select='eq(pict_type,PICT_TYPE_I)',setpts=N/FRAME_RATE/TB" (path change-extension .keys.mkv "$argv")
 end
