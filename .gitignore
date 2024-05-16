@@ -87,6 +87,7 @@
 *.mp4
 *.mkv
 *.avi
+*.wmv
 *.mov
 /.parallel/semaphores/
 /.parallel/tmp/
