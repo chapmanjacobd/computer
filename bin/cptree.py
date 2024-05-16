@@ -5,7 +5,7 @@ from xklb.utils import arg_utils, arggroups, argparse_utils, file_utils
 
 
 def cp_tree():
-    parser = argparse_utils.ArgumentParser(description='Copy files and directories recursively.')
+    parser = argparse_utils.ArgumentParser(description='Copy filenames and directorynames recursively')
 
     parser.add_argument('--files-only', '-tf', action='store_true', help='Copy files only')
     parser.add_argument('--folders-only', '-td', action='store_true', help='Copy folders only')
