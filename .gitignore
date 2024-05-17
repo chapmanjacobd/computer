@@ -1,3 +1,4 @@
+/.config/plasmaConfSaver/
 .syncthing.*
 /.config/plasmashellrc
 /.config/*rc2
@@ -374,4 +375,3 @@
 /.config/pipewire/
 /.config/pipewire-media-session/
 /.config/pitivi/
-/.config/plasmaConfSaver/
