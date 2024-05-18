@@ -6,6 +6,6 @@ function mrmusic
     ) /mnt/d/sync/audio/weekly/
 
     lb relmv (
-        lb media ~/lb/audio.db --local -E /sync/audio/ -w 'play_count=0' --lower 4 --upper 16 -p bf | shuf | head -n 8
+        lb media ~/lb/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf | shuf | head -n 8
     ) /mnt/d/sync/audio/weekly/
 end
