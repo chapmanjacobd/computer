@@ -9,7 +9,7 @@ function dbackups
     # rsync -ah --info=progress2 --no-inc-recursive /mnt/d/archive/ backup:/mnt/d/archive/
 
     ~/
-    rsync -ah --files-from=(lb fs ~/lb/audio.db -w 'play_count > 0' -pf | sed 's|/mnt/d/||' | psub) /mnt/d/ backup:/mnt/d/
+    rsync -ah --files-from=(lb media ~/lb/audio.db -w 'play_count > 0' -pf | sed 's|/mnt/d/||' | psub) /mnt/d/ backup:/mnt/d/
 
     # ssh backup sudo systemctl poweroff
 end
