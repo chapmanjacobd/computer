@@ -5,6 +5,7 @@ autossh
 awscli
 bash
 bat
+bitstream-vera-fonts-all
 blas-devel
 bottles
 bpftrace
@@ -194,6 +195,7 @@ xinput
 xorg-x11-drv-amdgpu
 xorg-x11-server-Xvfb
 xournal
+xournalpp
 xrandr
 xset
 Xvfb
