@@ -1,5 +1,6 @@
-function lbrelease --argument oldver newver
+function lbrelease --argument newver
     ~/lb/
+    set oldver (awk -F'"' '/^__version__/{print $2}' xklb/__init__.py)
 
     #PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring poetry update
     sed -i "s|$oldver|$newver|" xklb/__init__.py
