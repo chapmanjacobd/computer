@@ -1,3 +1,4 @@
+/.config/pipewire/
 /.config/xournalpp/
 /.config/plasmaConfSaver/
 .syncthing.*
@@ -373,4 +374,3 @@
 /.config/pgcli/
 /.config/Picardrc
 /.config/pip/
-/.config/pipewire/
