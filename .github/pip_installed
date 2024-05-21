@@ -2,7 +2,6 @@ aiohttp
 annoy
 black
 brotab
-camelot-py
 catt
 charset-normalizer
 cython
@@ -38,7 +37,6 @@ mnamer
 mutmut
 napari
 nbformat
-opencv-python
 outrun
 parquet-cli
 parquet-tools
