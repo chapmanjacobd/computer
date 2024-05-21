@@ -38,6 +38,7 @@ mnamer
 mutmut
 napari
 nbformat
+opencv-python
 outrun
 parquet-cli
 parquet-tools
