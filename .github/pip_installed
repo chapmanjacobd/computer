@@ -2,7 +2,6 @@ aiohttp
 annoy
 black
 brotab
-camelot-py[cv]
 catt
 charset-normalizer
 cython
@@ -55,6 +54,7 @@ pyicu
 pylint
 pymcdm
 pympler
+pypdf_table_extraction
 pytest-icdiff
 python-dateutil
 python_mpv_jsonipc
