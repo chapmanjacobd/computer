@@ -2,6 +2,7 @@ aiohttp
 annoy
 black
 brotab
+camelot-py[cv]
 catt
 charset-normalizer
 cython
