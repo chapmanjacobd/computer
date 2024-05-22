@@ -90,6 +90,7 @@ unzip-http
 vulture
 waybackpy
 wheel
+xattr
 xklb
 xxhash
 yt-dlp
