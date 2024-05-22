@@ -57,6 +57,8 @@ def get_destination_mount(destination):
 
 def main():
     parser = argparse.ArgumentParser(description='Copy files with reflink and handle mergerfs mounts.')
+    parser.add_argument('--simulate', '--dry-run', help='Dry run')
+
     parser.add_argument('sources', nargs='+', help='Source files to copy.')
     parser.add_argument('destination', help='Destination directory.')
     args = parser.parse_args()
@@ -74,8 +76,11 @@ def main():
             if os.path.exists(original_path):
                 found_file = True
                 dest_path = os.path.join(args.destination, os.path.relpath(source, mergerfs_mount))
-                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                copy_with_reflink(original_path, dest_path)
+                if args.simulate:
+                    print('cp', '--reflink=always', original_path, dest_path)
+                else:
+                    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                    copy_with_reflink(original_path, dest_path)
 
         if not found_file:
             print(f"Could not find srcmount of {source}")
