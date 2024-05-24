@@ -1,6 +1,7 @@
 /state/
 /lib/
 /include/
+/pipx/
 /share/Trash/
 /share/virtualenv/
 /share/virtualenvs/
@@ -8,8 +9,12 @@
 /share/icons/
 /share/DBeaverData/drivers/
 /share/kactivitymanagerd/
-/share/Steam
-/share/lutris
+/share/Steam/
+/share/QGIS/
+/share/pdm/
+/share/wineprefixes/
+/share/hatch/
+/share/lutris/
 /var/pmbootstrap
 /bin/
 /Downloads/
