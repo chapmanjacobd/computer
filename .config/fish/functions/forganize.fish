@@ -26,6 +26,7 @@ function forganize
     fd . ~/d/dump/porn/audio/ ~/d/dump/audio/ -epng -ejpg -x rm "{}"
 
     lb-load
+    yes | lb dedupe-media --fs ~/lb/video.db -v --dedupe-cmd dupreplace.fish
 
     ~/d/
     for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
