@@ -27,6 +27,8 @@ function forganize
 
     lb-load
     yes | lb dedupe-media --fs ~/lb/video.db -v --dedupe-cmd dupreplace.fish
+    yes | lb dedupe-media --fs ~/lb/tax.db -v
+    yes | lb dedupe-media --fs ~/lb/audio.db -v
 
     ~/d/
     for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
