@@ -1,15 +1,11 @@
 #!/usr/bin/python3
+import argparse
 import os
 import signal
 import statistics
 import time
 
-import os
-import time
-import argparse
-
 import humanize
-
 from xklb.utils.processes import exit_nicely
 
 signal.signal(signal.SIGINT, exit_nicely)
@@ -28,7 +24,7 @@ def process_uptime(pid):
 def main():
     parser = argparse.ArgumentParser(description='Print IO stats about a process')
     parser.add_argument('--interval', '-d', type=int, default=2, help='Interval between updates')
-    parser.add_argument('--init-bias',  type=int, default=6, help='Number of intervals to rely on initial stats')
+    parser.add_argument('--init-bias', type=int, default=6, help='Number of intervals to rely on initial stats')
 
     parser.add_argument('pid', type=int, help='PID of the process')
     args = parser.parse_args()
