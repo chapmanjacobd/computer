@@ -1,5 +1,5 @@
 function mrmusic
-    rclone move /mnt/d/sync/audio/weekly/ /mnt/d/check/audio/
+    lb mv /mnt/d/sync/audio/weekly/ /mnt/d/check/audio/
 
     lb relmv (
         lb media ~/lb/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 600 -p f

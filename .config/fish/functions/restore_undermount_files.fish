@@ -8,7 +8,7 @@ function restore_undermount_files
         # may be wise to do manually, if one is wise enough--or prevent this to begin with via conventional mountpoint dir permissions
         NO_COLOR=1 ncdu /orig_mnt/$dir
         if confirm
-            rclone move /orig_mnt/$dir /mnt/$dir
+            lb mv /orig_mnt/$dir /mnt/$dir
         end
     end
 end
