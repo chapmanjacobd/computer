@@ -7,6 +7,9 @@ function lb-load
     lb fsadd ~/lb/tax.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move ~/d/check/porn/video/ ~/d/dump/porn/video/ -v
     lb relmv --ext jpg,jpeg,png,pdf,tiff,tif,bmp,webp ~/d/dump/porn/video/ /mnt/d/dump/porn/image/from_video/
     lb relmv --ext mka,m4a,mp3 ~/d/dump/porn/video/ /mnt/d/dump/porn/audio/from_video/
+    ~/d/dump/porn/video/
+    fd -edb -edcsv -enfo -x rm
+    remove_empty_directories .
 
     lb fsadd ~/lb/tax_sounds.db --audio --delete-unplayable --process --move ~/d/check/porn/audio/ ~/d/dump/porn/audio/ -v
     lb fsadd ~/lb/tax_sounds.db --audio --delete-unplayable --process --move ~/d/check/porn/audio/from_video/ ~/d/dump/porn/video/
