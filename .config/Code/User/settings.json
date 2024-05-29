@@ -502,6 +502,5 @@
     }
   },
   "editor.inlayHints.enabled": "on",
-  "python.analysis.inlayHints.functionReturnTypes":true,
   "python.analysis.inlayHints.pytestParameters":true,
 }
