@@ -41,6 +41,7 @@ nbformat
 outrun
 parquet-cli
 parquet-tools
+pdftools
 pdm
 Pillow
 pipdeptree
