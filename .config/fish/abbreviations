@@ -178,3 +178,4 @@ abbr -a -- punpause-all presume-all
 abbr -a -- punpause-fzf presume-fzf
 abbr -a -- punpause presume
 abbr -a -- recommit wipam
+abbr -a -- cbfold cbwrap
