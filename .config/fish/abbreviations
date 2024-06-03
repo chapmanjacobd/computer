@@ -179,3 +179,4 @@ abbr -a -- punpause presume
 abbr -a -- recommit wipam
 abbr -a -- cbfold cbwrap
 abbr -a -- rsync rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
+abbr -a -- sponge_rsync rsink
