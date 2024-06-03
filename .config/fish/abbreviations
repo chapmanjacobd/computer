@@ -168,7 +168,6 @@ abbr -a -- parent path dirname
 abbr -a -- to_sync tosync
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- timezone_update tzupdate
-abbr -a -- rsync rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
 abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
@@ -179,3 +178,4 @@ abbr -a -- punpause-fzf presume-fzf
 abbr -a -- punpause presume
 abbr -a -- recommit wipam
 abbr -a -- cbfold cbwrap
+abbr -a -- rsync rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
