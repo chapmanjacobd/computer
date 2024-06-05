@@ -1,3 +1,4 @@
+/.config/okularrc
 /.config/opera/
 /.config/vlc/
 /.config/mpv/.fullscreen
@@ -366,4 +367,3 @@
 /.config/obsidian/
 /.config/obs-studio/
 /.config/offlinebay/
-.config/okularrc
