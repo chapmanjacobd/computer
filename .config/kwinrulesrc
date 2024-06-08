@@ -1,6 +1,14 @@
 [$Version]
 update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-virtual-desktop-ids
 
+[08d14e10-058d-4cc1-ade6-dbaee3d45da2]
+Description=Settings for nxplayer.bin
+fpplevel=3
+fpplevelrule=2
+wmclass=nxplayer.bin
+wmclasscomplete=true
+wmclassmatch=1
+
 [1]
 Description=ignore mpv alt-tab
 fsplevel=4
@@ -20,13 +28,21 @@ skiptaskbarrule=2
 wmclass=projectM-pulseaudio
 wmclassmatch=1
 
+[3]
+Description=Settings for nxplayer.bin
+fpplevel=3
+fpplevelrule=2
+wmclass=nxplayer.bin
+wmclasscomplete=true
+wmclassmatch=1
+
 [General]
 ColorScheme[$d]
-count=2
+count=3
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2
+rules=1,2,3
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
