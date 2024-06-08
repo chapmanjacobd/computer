@@ -44,7 +44,7 @@ def sort_and_move_torrents(args):
         else:
             destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
 
-        if args.dry_run or args.print:
+        if args.simulate or args.print:
             print(
                 'mv',
                 torrent_file,
@@ -60,7 +60,6 @@ def sort_and_move_torrents(args):
 
 if __name__ == '__main__':
     parser = argparse_utils.ArgumentParser()
-    parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--out', '-o')
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
 
@@ -74,6 +73,7 @@ if __name__ == '__main__':
 
     arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
+    arggroups.args_post(args, parser)
 
     if args.out:
         Path(args.out).mkdir(exist_ok=True, parents=True)

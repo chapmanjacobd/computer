@@ -22,12 +22,12 @@ TEMP_BASE_DIR.mkdir(exist_ok=True)
 def parse_args() -> argparse.Namespace:
     parser = argparse_utils.ArgumentParser()
     parser.add_argument("--unlink", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--verbose", "-v", action="count", default=0)
     arggroups.process_ffmpeg(parser)
+    arggroups.debug(parser)
 
     parser.add_argument("rar_path")
     args = parser.parse_intermixed_args()
+    arggroups.args_post(args, parser)
 
     log.info(objects.dict_filter_bool(args.__dict__))
     return args
@@ -140,7 +140,7 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                     extra_files = [p for p in files if p.name.endswith(extra)]
                     log.info('Extracting %s extras %s', extra, extra_files)
                     for p in extra_files:
-                        rel_move([p], output_prefix, simulate=args.dry_run, relative_from=[temp_prefix1])
+                        rel_move([p], output_prefix, simulate=args.simulate, relative_from=[temp_prefix1])
                         files.remove(p)
                         count_extracted += 1
                     del extensions[extra]
@@ -168,12 +168,12 @@ def check_archive(args, input_path: Path, output_prefix: Path):
                                     pass
 
             for p in files:
-                if not args.dry_run:
+                if not args.simulate:
                     try:
                         p = process_ffmpeg.process_path(args, p)
                     except Exception:
                         pass
-                rel_move([p], output_prefix, simulate=args.dry_run, relative_from=[temp_prefix1])
+                rel_move([p], output_prefix, simulate=args.simulate, relative_from=[temp_prefix1])
                 count_extracted += 1
 
             if args.unlink:
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     input_path = Path(args.rar_path)
 
     output_prefix = Path('out').resolve()
-    output_prefix.mkdir(exist_ok=True)  # exist_ok=args.dry_run
+    output_prefix.mkdir(exist_ok=True)  # exist_ok=args.simulate
 
     try:
         ar_extracted = check_archive(args, input_path, output_prefix)
@@ -200,5 +200,5 @@ if __name__ == "__main__":
         log.debug('FileNotFoundError: %s', input_path)
     except Exception as e:
         log.exception(input_path)
-        if args.dry_run:
+        if args.simulate:
             raise

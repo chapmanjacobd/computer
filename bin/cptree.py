@@ -6,7 +6,6 @@ from xklb.utils import arg_utils, arggroups, argparse_utils, file_utils
 
 def cp_tree():
     parser = argparse_utils.ArgumentParser(description='Copy filenames and directorynames recursively')
-
     parser.add_argument('--files-only', '-tf', action='store_true', help='Copy files only')
     parser.add_argument('--folders-only', '-td', action='store_true', help='Copy folders only')
 
@@ -16,13 +15,12 @@ def cp_tree():
     parser.add_argument('--folder-suffix', default='', help='Suffix for new folder names')
     parser.add_argument('--file-suffix', default='', help='Suffix for new file names')
     parser.add_argument('--file-ext', default='', help='Ext for new file names')
-
-    parser.add_argument('--simulate', '--dry-run', action='store_true')
     arggroups.debug(parser)
 
     parser.add_argument('source', help='Source directory')
     parser.add_argument('destination', help='Destination directory')
     args = parser.parse_args()
+    arggroups.args_post(args, parser)
 
     source_folder, source_glob = arg_utils.split_folder_glob(args.source)
     source_folder = source_folder.resolve()
