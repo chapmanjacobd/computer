@@ -1,9 +1,13 @@
 #!/usr/bin/fish
 
 if test -t 0
-    set file (tempfile png)
+    set file (mktemp --suffix .png)
     xclip -selection clipboard -target image/png -out > $file
-    kitty +kitten icat $file
+    if test -t 1
+        kitty +kitten icat $file
+    else
+        cat $file
+    end
 else
     set file (tempfile png)
     cat > $file
