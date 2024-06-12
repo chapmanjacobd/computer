@@ -7,7 +7,7 @@ function trash-empty-no-snapshot
         return 1
     end
 
-    for mnt in (mergerfs_disk_mounts)
+    for mnt in $args
         sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
     end
 
