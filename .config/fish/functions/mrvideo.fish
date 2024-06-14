@@ -1,5 +1,6 @@
 function mrvideo
-    lb relmv ~/d/sync/video/keep/ ~/d/library/video/
+    lb mv ~/d/sync/video/keep/ ~/d/library/video/
+    mkdir ~/d/sync/video/keep/
 
     lb relmv (
         lb watch ~/lb/video.db -E /sync/video/other/ --local -pf -L 2
