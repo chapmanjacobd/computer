@@ -26,4 +26,6 @@ function lb-load
     lb fsadd ~/lb/video.db --move ~/d/check/video/image/ --process ~/d/dump/image/ --delete-unplayable --threads 3
     lb fsadd ~/lb/tax_image.db --move ~/d/check/porn/image/ --process --image ~/d/dump/porn/image/ --delete-unplayable -v
     lb fsadd ~/lb/tax.db --move ~/d/check/porn/video/image/ --process ~/d/dump/porn/image/ --delete-unplayable --threads 3
+
+    lb mv --ext mka,mp3,oga,opus ~/d/check/porn/video/ ~/d/dump/porn/image/ /mnt/d/dump/porn/audio/from_video/
 end
