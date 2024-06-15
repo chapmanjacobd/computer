@@ -26,13 +26,13 @@ function weekly
         sqlite --no-headers --raw-lines ~/d/library/datasets/social/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
     end
     fd -S-12b -tf -x rm
-    lb mergedbs --pk id ~/d/library/datasets/social/BuonaparteII.db ~/d/library/datasets/social/reddit.db
+    lb mergedbs --pk id ~/d/library/datasets/social/reddit.db ~/d/library/datasets/social/BuonaparteII.db
 
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/audio.db ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/video.db ~/lb/reddit/71_Mealtime_Videos.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/tax_sounds.db ~/lb/reddit/63_Sounds.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/tax.db ~/lb/reddit/69_Taxes.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/91_New_Art.db ~/lb/reddit/91_New_Art.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db ~/lb/audio.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/71_Mealtime_Videos.db ~/lb/video.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/63_Sounds.db ~/lb/tax_sounds.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/69_Taxes.db ~/lb/tax.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/91_New_Art.db ~/lb/fs/91_New_Art.db
 
     lb merge-online-local ~/lb/video.db --yes
     lb merge-online-local ~/lb/audio.db --yes
