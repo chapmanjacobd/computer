@@ -1,2 +1,3 @@
+request_timeout = 100
 [python]
 use_venv = false
