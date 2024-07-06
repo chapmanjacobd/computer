@@ -34,7 +34,7 @@ def pdf_contrast(args):
         output_images.append(out_img_bytes.getvalue())
 
     print(f'Saving {args.output_path}')
-    if args.output_path.endswith(os.sep) or args.output_path.is_dir():
+    if args.output_path.endswith(os.sep) or Path(args.output_path).is_dir():
         output_path = Path(args.output_path)
         output_path.mkdir(exist_ok=True, parents=True)
 

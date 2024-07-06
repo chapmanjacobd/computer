@@ -23,6 +23,7 @@ google-cloud-secret-manager
 google-cloud-storage
 humanize
 ics
+img2pdf
 impacket
 ipdb
 ipython
@@ -38,9 +39,11 @@ mnamer
 mutmut
 napari
 nbformat
+ocrmypdf
 outrun
 parquet-cli
 parquet-tools
+pdf2image
 pdftools
 pdm
 Pillow
