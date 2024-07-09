@@ -108,6 +108,7 @@
 /.ipython/profile_default/history.sqlite
 *.mp4
 *.mkv
+*.mka
 *.avi
 *.wmv
 *.mov
