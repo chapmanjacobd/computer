@@ -261,6 +261,7 @@
     "mountpoints",
     "MSYS",
     "munge",
+    "muxer",
     "natsort",
     "naturaldate",
     "naturalsize",
