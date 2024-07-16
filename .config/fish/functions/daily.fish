@@ -8,7 +8,7 @@ function daily
     mkdir /mnt/d/sync/video/keep/
 
     catt volume 0 && catt volume 40
-    pip install --upgrade pychromecast
+    pip install --upgrade pychromecast yt-dlp
 
     sync_history
     # command trash-empty 10 -f
