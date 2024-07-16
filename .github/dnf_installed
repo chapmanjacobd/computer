@@ -183,6 +183,7 @@ unrar
 unzip
 usbutils
 util-linux
+valgrind
 vdpauinfo
 vmtouch
 wget
