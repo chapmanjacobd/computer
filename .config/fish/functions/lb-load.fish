@@ -1,6 +1,6 @@
 # Defined interactively
 function lb-load
-    for file in (fd -tf -eZIP -eRAR -eEXE -er00 -eCBR -eCBZ -eISO . ~/d/dump/porn/video/ ~/d/dump/video/)
+    for file in (fd -tf -eZIP -e7z -eRAR -eEXE -er00 -eCBR -eCBZ -eISO . ~/d/dump/porn/video/ ~/d/dump/video/)
         unardel $file
     end
 
