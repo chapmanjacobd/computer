@@ -5,7 +5,6 @@ function magnets
     combine ~/.local/magnets not ~/.local/magnets_history | sponge ~/.local/magnets
     cat ~/.local/magnets >>~/.local/magnets_history
 
-    if test $DISPLAY = ':1001'
         pgrep tixati >/dev/null
         set tixati_is_running $status
         if not test $tixati_is_running -eq 0
@@ -21,5 +20,4 @@ function magnets
             pkill tixati
         end
 
-    end
 end
