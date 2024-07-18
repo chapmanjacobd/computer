@@ -2,6 +2,8 @@ function weekly
     dbackups
     trash ~/d/sync/.stversions/*
 
+    update_unli_cities_visas
+
     mrmusic
     #mrvideo
     mrporn
