@@ -13,7 +13,6 @@ wmclassmatch=1
 Description=ignore mpv alt-tab
 fsplevel=4
 fsplevelrule=2
-maximizehorizrule=3
 skiptaskbar=true
 skiptaskbarrule=3
 wmclass=mpv
