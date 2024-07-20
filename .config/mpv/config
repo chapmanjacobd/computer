@@ -49,7 +49,6 @@ sub-fix-timing=yes
 sub-auto=fuzzy
 sub-gauss=1.0
 sub-gray=yes
-sub-fix-timing=yes
 
 replaygain=track
 af="scaletempo2,lavfi=[pan=1c|c0=0.5*c0+0.5*c1],volume=replaygain-track"
