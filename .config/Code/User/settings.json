@@ -110,7 +110,7 @@
     "panel.background": "#9b8f7c",
     "editor.lineHighlightBorder": "#9fced11f",
     "editorInlayHint.background": "#d1bca7",
-    "editorInlayHint.foreground": "#555",
+    "editorInlayHint.foreground": "#555"
   },
   "editor.tokenColorCustomizations": {
     "comments": "#1a6100",
@@ -502,5 +502,5 @@
       "source.organizeImports": "never"
     }
   },
-  "editor.inlayHints.enabled": "on",
+  "editor.inlayHints.enabled": "off",
 }

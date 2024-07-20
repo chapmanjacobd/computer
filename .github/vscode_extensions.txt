@@ -5,6 +5,7 @@ aliariff.auto-add-brackets
 antfu.iconify
 Asuka.insertnumbers
 bastienboutonnet.vscode-dbt
+be5invis.toml
 bibhasdn.unique-lines
 bierner.lit-html
 bmalehorn.vscode-fish
@@ -15,7 +16,6 @@ christian-kohler.path-intellisense
 chunsen.bracket-select
 damonsk.vscode-wardley-maps
 DavidAnson.vscode-markdownlint
-earshinov.permute-lines
 EditorConfig.EditorConfig
 ElecTreeFrying.insert-random-text
 hbenl.vscode-test-explorer
@@ -26,6 +26,7 @@ Koihik.vscode-lua-format
 leodevbro.blockman
 lokalise.i18n-ally
 ms-python.black-formatter
+ms-python.debugpy
 ms-python.isort
 ms-python.python
 ms-python.vscode-pylance
@@ -34,7 +35,6 @@ ms-vscode-remote.remote-ssh
 ms-vscode-remote.remote-ssh-edit
 ms-vscode-remote.remote-wsl
 ms-vscode-remote.vscode-remote-extensionpack
-ms-vscode.cpptools
 ms-vscode.remote-explorer
 ms-vscode.remote-server
 ms-vscode.test-adapter-converter
@@ -45,6 +45,7 @@ rlivings39.fzf-quick-open
 samuelcolvin.jinjahtml
 skyapps.fish-vscode
 streetsidesoftware.code-spell-checker
+sysoev.vscode-open-in-github
 tushortz.python-extended-snippets
 Tyriar.sort-lines
 usernamehw.errorlens
