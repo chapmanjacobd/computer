@@ -17,7 +17,9 @@ function trash-empty
 
     if contains -- -f $opts; or gum confirm --default=no 'Empty trash?'
         for mnt in $args
-            sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one &
+            if test -e $mnt/.snapshots/one
+               sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one &
+            end
         end
 
         command trash-empty -f
