@@ -3,8 +3,7 @@ function trash-empty-no-snapshot
     filter_opts $argv
 
     if test -z "$args"
-        echo Error! No mount points passed as args
-        return 1
+        set args (trash-list --trash-dirs)
     end
 
     for mnt in $args

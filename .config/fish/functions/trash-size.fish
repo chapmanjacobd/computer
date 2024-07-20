@@ -1,6 +1,6 @@
 # Defined interactively
 function trash-size
-    for f in ~/.local/share/Trash/ /mnt/d/.Trash/
+    for f in (trash-list --trash-dirs)
         echo $f
         du -hs $f
     end
