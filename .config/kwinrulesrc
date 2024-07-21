@@ -41,7 +41,7 @@ count=3
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2,3
+rules=1,3,2
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
