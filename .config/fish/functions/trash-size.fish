@@ -1,7 +1,6 @@
 # Defined interactively
 function trash-size
     for f in (trash-list --trash-dirs)
-        echo $f
-        du -hs $f
+        du -hs $f | grep -v ^0
     end
 end
