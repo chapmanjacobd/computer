@@ -16,9 +16,9 @@
   },
   "terminal.integrated.defaultProfile.linux": "fish",
   "python.terminal.launchArgs": [
-      "-m",
-      "IPython",
-      "--no-autoindent",
+    "-m",
+    "IPython",
+    "--no-autoindent",
   ],
   "editor.tabSize": 4,
   "editor.copyWithSyntaxHighlighting": false,
@@ -127,7 +127,6 @@
   "editor.minimap.renderCharacters": false,
   "editor.minimap.maxColumn": 80,
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "extensions.ignoreRecommendations": true,
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
@@ -428,19 +427,18 @@
   ],
   "python.languageServer": "Pylance",
   "python.analysis.diagnosticSeverityOverrides": {
-      "reportUnusedImport": "warning",
-      "reportMissingParameterType": "none",
-      "reportMissingTypeStubs": "none",
-      "reportUnknownMemberType": "none",
-      "reportUnknownArgumentType": "none",
-      "reportUnknownParameterType": "none",
-      "reportUnknownLambdaType": "none",
-      "reportUnknownVariableType": "none"
+    "reportUnusedImport": "warning",
+    "reportMissingParameterType": "none",
+    "reportMissingTypeStubs": "none",
+    "reportUnknownMemberType": "none",
+    "reportUnknownArgumentType": "none",
+    "reportUnknownParameterType": "none",
+    "reportUnknownLambdaType": "none",
+    "reportUnknownVariableType": "none"
   },
   "python.analysis.completeFunctionParens": true,
   "python.envFile": "${workspaceFolder}/.env",
   "[python]": {
-
     "editor.formatOnPaste": false,
     "editor.wordBasedSuggestions": "matchingDocuments",
     "editor.codeActionsOnSave": {
@@ -483,8 +481,8 @@
     "--line-length=120"
   ],
   "git.openRepositoryInParentFolders": "never",
-  "yaml.schemas":{
-    "/home/xk/.local/yaml/argo.json":"*workflow.yaml"
+  "yaml.schemas": {
+    "/home/xk/.local/yaml/argo.json": "*workflow.yaml"
   },
   "[sql]": {
     "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
@@ -495,7 +493,7 @@
   "blockman.n16EnableFocus": false,
   "blockman.n04ColorComboPreset": "Classic Light (Gradients)",
   "python.defaultInterpreterPath": "/usr/bin/python",
-  "python.analysis.typeCheckingMode":"strict",
+  "python.analysis.typeCheckingMode": "strict",
   "python.analysis.userFileIndexingLimit": -1,
   "[python][typescript]": {
     "editor.codeActionsOnSave": {
@@ -503,4 +501,27 @@
     }
   },
   "editor.inlayHints.enabled": "off",
+  "clangd.checkUpdates": false,
+  "code-runner.enableAppInsights": false,
+  "docker-explorer.enableTelemetry": false,
+  "extensions.ignoreRecommendations": true,
+  "gitlens.showWelcomeOnInstall": false,
+  "gitlens.showWhatsNewAfterUpgrades": false,
+  "java.help.firstView": "none",
+  "java.help.showReleaseNotes": false,
+  "julia.enableTelemetry": false,
+  "kite.showWelcomeNotificationOnStartup": false,
+  "Lua.telemetry.enable": false,
+  "material-icon-theme.showWelcomeMessage": false,
+  "pros.showWelcomeOnStartup": false,
+  "pros.useGoogleAnalytics": false,
+  "redhat.telemetry.enabled": false,
+  "rpcServer.showStartupMessage": false,
+  "shellcheck.disableVersionCheck": true,
+  "sonarlint.disableTelemetry": true,
+  "telemetry.enableCrashReporter": true,
+  "telemetry.enableTelemetry": false,
+  "terraform.telemetry.enabled": false,
+  "vsicons.dontShowNewVersionMessage": true,
+  "workbench.welcomePage.walkthroughs.openOnInstall": false
 }
