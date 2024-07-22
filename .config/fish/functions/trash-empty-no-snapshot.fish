@@ -7,8 +7,8 @@ function trash-empty-no-snapshot
     end
 
     for mnt in $args
-    if test -e $mnt/.snapshots/one
-        sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
+        if test -e $mnt/.snapshots/one
+            sudo btrfs subvolume delete --commit-each $mnt/.snapshots/one
         end
     end
 
