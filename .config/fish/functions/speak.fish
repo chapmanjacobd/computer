@@ -1,4 +1,4 @@
 # Defined interactively
 function speak
-    piper --model ~/.local/share/models/piper/en_US-joe-medium.onnx --output-raw | aplay -r 22050 -f S16_LE -t raw -
+    piper --model ~/.local/share/models/piper/en_US-joe-medium.onnx --output-raw | mpv --demuxer=rawaudio --demuxer-rawaudio-rate=22050 --demuxer-rawaudio-channels=1 --demuxer-rawaudio-format=s16le -
 end
