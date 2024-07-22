@@ -79,3 +79,5 @@
 	sort = -committerdate
 [tag]
 	sort = taggerdate
+[commit]
+	template = /home/xk/.gitmessage

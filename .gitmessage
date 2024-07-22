@@ -1,0 +1,7 @@
+# explain the commit in one line (use the imperative)
+
+# blank line between title and body
+
+# Body: Explain *why* not *how*
+# Include task ID (Jira issue)
+# Wrap at 72 chars. ################################## which is here ####
