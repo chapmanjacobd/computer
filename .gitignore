@@ -1,3 +1,4 @@
+/.config/keepassxc/
 /.npm/
 /nltk_data/
 /.config/KeePassXCrc
@@ -340,4 +341,3 @@
 /.config/kdiff3rc
 /.config/KeePass/
 /.config/keepassx/
-/.config/keepassxc/
