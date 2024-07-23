@@ -286,6 +286,7 @@
     "precisedelta",
     "preexec",
     "promisify",
+    "psub",
     "psutil",
     "pulumi",
     "pushshift",
