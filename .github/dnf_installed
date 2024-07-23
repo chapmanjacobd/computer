@@ -67,6 +67,7 @@ hw-probe
 hyperfine
 idle3-tools
 iftop
+ImageMagick-devel
 iotop
 java-latest-openjdk
 java-latest-openjdk-devel
