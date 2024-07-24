@@ -1,0 +1,30 @@
+#!/bin/bash -e
+set -o pipefail
+
+# Any arguments are incorrect.  Note that git intercepts --help and tries to
+# open the man page.
+if [ $# -gt 0 ]; then
+   echo 'Usage: git merge-stats'
+   exit 1
+fi
+
+echo "% of Total Merges               Author  # of Merges  % of Commits"
+# Use --first-parent to only count merges into the current branch; this gets
+# rid of commits where you merge upstream into your feature branch.
+mergeCounts=`git log --first-parent --merges --pretty='format:%an' | sort | uniq -c | sort -nr`
+totalMerges=`git log --first-parent --merges --oneline | wc -l`
+
+if [ $totalMerges -eq 0 ]; then
+   echo 'No merges found.'
+   exit 0
+fi
+
+while read -r line; do
+   authorMerges=`awk '{print $1}' <<< "$line"`
+   author=`sed "s/$authorMerges //" <<< "$line"`
+   authorCommits=`git log --oneline --author="$author" | wc -l`
+   totalPercentage=`echo "scale=2; (100*$authorMerges) / $totalMerges" | bc`
+   authorPercentage=`echo "scale=2; (100*$authorMerges) / $authorCommits" | bc`
+   printf "%17.2f %20s %12i %13.2f\n" "$totalPercentage" "$author" "$authorMerges" "$authorPercentage"
+done <<< "$mergeCounts"
+
