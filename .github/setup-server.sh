@@ -6,6 +6,8 @@ ssh-keygen -t ed25519 -q -N '' </dev/zero || true
 cat .ssh/id_ed25519.pub >> .ssh/authorized_keys
 sudo visudo
 
+echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts
+
 sudo cp -a ~/.github/etc/. /etc/ && sudo restorecon -R /etc
 sudo systemctl enable --now sshd
 sudo systemctl enable --now fstrim.timer
@@ -61,4 +63,3 @@ sudo systemctl disable --now sysstat-collect.timer
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
 rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd
-
