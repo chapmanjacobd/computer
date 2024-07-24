@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 05:15:00 run lb-refresh'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 05:15:00
+
+[Install]
+WantedBy=timers.target
+

@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 05:15:00 run lb-refresh'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 100
+ExecStart='/usr/bin/fish' '-c' 'lb-refresh'
+
