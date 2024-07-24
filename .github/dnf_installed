@@ -18,6 +18,7 @@ cheat
 chromaprint-tools
 chromium
 clickhouse-client
+cmake
 code
 copyq
 coreutils
@@ -122,6 +123,7 @@ okteta
 openblas-devel
 openjfx
 pandoc
+pciutils-devel
 perl
 perl-CPAN
 perl-Image-ExifTool
