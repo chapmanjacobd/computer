@@ -82,7 +82,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 # Helps to generate manpage with help2man before installing the library
 [ "$1" = '-h' ] && { usage; exit; }
 [ "$1" = '-v' ] && { version; exit; }
-. ${0%/*}/liblist.sh
+. $(dirname "$0")/liblist.sh
 
 arg_err() {
     usage ; exit 2
