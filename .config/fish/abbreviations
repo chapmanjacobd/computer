@@ -9,7 +9,6 @@ abbr -a -- clipboard cb
 abbr -a -- cup 'docker compose -f docker/docker-compose.yaml up'
 abbr -a -- dc cd
 abbr -a -- dd 'dd status=progress if= of='
-abbr -a -- dmesg 'dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice,info'
 abbr -a -- fdh fd\ --hidden\ --exclude\ \'.git\'
 abbr -a -- fdwatch 'fd -x fish -c "mpvonce {}"'
 abbr -a -- fi 'sudo btrfs fi usage'
@@ -183,3 +182,4 @@ abbr -a -- sponge_rsync rsink
 abbr -a -- timeout timeout --preserve-status --signal INT 20m
 abbr -a -- massif valgrind --tool=massif
 abbr -a -- ash ssh
+abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice
