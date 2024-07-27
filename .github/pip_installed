@@ -80,6 +80,7 @@ screeninfo
 selenium
 selenium-wire
 sparseutils
+sqlite-path
 sqlite-utils
 srsly
 sshuttle
