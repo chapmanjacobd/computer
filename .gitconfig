@@ -44,11 +44,19 @@
 	old = red bold
 	new = green bold
 	whitespace = red reverse
+[color.grep]
+	match = red normal bold
+	filename = magenta
+	lineNumber = green
+	column = green
+	separator = cyan
 [pull]
 	rebase = merges
 [rebase]
 	autoStash = true
+	autosquash = true
 	updateRefs = true
+	missingCommitsCheck = warn
 [init]
 	defaultBranch = main
 [filter "lfs"]
@@ -65,6 +73,9 @@
 [merge]
 	autoStash = true
 	conflictstyle = zdiff3
+	summary = true
+	diffstat = true
+	log = 50
 [log]
 	date = relative-local
 [url "git@github.com:"]
