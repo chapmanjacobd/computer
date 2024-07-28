@@ -183,3 +183,4 @@ abbr -a -- timeout timeout --preserve-status --signal INT 20m
 abbr -a -- massif valgrind --tool=massif
 abbr -a -- ash ssh
 abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice
+abbr -a -- insect numbat
