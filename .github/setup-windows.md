@@ -1,3 +1,9 @@
+https://youtu.be/eh3SK-97Sss
+
+## Mouse
+
+https://superuser.com/questions/954021/how-do-you-enable-focus-follows-mouse-in-windows-10
+
 ## keyboard
 
 https://unli.xyz/k.ex
@@ -8,30 +14,41 @@ https://unli.xyz/k.ex
 - https://github.com/colemakmods/mod-dh#windows
 - https://github.com/kmonad/kmonad/blob/master/doc/installation.md#windows-environment
 
-## Script customization
-
-- https://gist.github.com/mikepruett3/7ca6518051383ee14f9cf8ae63ba18a7
-
 ## Package Manager
+
+```
+scoop bucket add extras
+FOR /F %%i IN (scoop_installed.txt) DO scoop install %%i
+
+scoop install koffee wezterm alacritty rio windows-terminal terminalpp everything-powertoys altsnap moar ov
+```
 
 - https://scoop.sh/
 - https://ninite.com/
+- https://github.com/chapmanjacobd/computer/tree/main/.github
+- https://scoop.sh/#/apps?q=nirsoft
 - https://community.chocolatey.org/packages
+- https://scoop.sh/#/buckets
+- https://scoop.sh/#/apps?q=%22https%3A%2F%2Fgithub.com%2FScoopInstaller%2FExtras%22&s=2&d=1
 
 ## Misc
 
 - https://keypirinha.com/
-- https://github.com/doublecmd/doublecmd
 - https://www.msys2.org/
 - https://github.com/chapmanjacobd/library/blob/main/.github/Windows.md
 
 ## Remove distractions, but only ones that have popups, obviously slow the computer, or otherwise inhibit work
 
+- https://gist.github.com/mikepruett3/7ca6518051383ee14f9cf8ae63ba18a7
 - https://github.com/Raphire/Win11Debloat
 - https://github.com/Jisll/windows11/blob/main/Perfect%20Windows/Start%20Optimize%20Windows.bat
 - https://github.com/Jisll/windows11/blob/main/Debloating/Remove%20Packages.cmd
 - https://github.com/valinet/ExplorerPatcher
 - https://github.com/Open-Shell/Open-Shell-Menu
+
+## Alternatively...
+
+- https://github.com/directvt/vtm
 - https://github.com/cairoshell/cairoshell
 - http://blackbox4windows.com/index.php?/topic/123-mojmirs-build/
 - https://www.most-useful.com/kde-plasma-on-wsl.html
