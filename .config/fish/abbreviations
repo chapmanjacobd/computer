@@ -184,3 +184,4 @@ abbr -a -- massif valgrind --tool=massif
 abbr -a -- ash ssh
 abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice
 abbr -a -- insect numbat
+abbr -a -- slurp string join \'\ \'

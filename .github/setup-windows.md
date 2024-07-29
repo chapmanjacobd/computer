@@ -20,11 +20,31 @@ https://unli.xyz/k.ex
 scoop bucket add extras
 FOR /F %%i IN (scoop_installed.txt) DO scoop install %%i
 
-scoop install koffee wezterm alacritty rio windows-terminal terminalpp everything-powertoys altsnap moar ov
+clink autorun install
+
+Install-Module PSEverything
+Install-Module PowerTab
+
+```
+
+```
+scoop install listary keypirinha koffee wezterm alacritty rio windows-terminal terminalpp everything-powertoys altsnap moar ov lazydocker wizmo ueli gitbutler cmder
+
+https://learn.microsoft.com/en-us/windows/powertoys/run
+
+https://www.grc.com/wizmo/wizmo.htm
+
+doskey ..=..\$*
+doskey ...=..\..\$*
+
+doskey okeys=notepad c:\myaliases.txt
+doskey updatekeys=doskey /macrofile=C:\myaliases.txt
+updatekeys
 ```
 
 - https://scoop.sh/
 - https://ninite.com/
+- https://raw.githubusercontent.com/niedzielski/cb/main/cb
 - https://github.com/chapmanjacobd/computer/tree/main/.github
 - https://scoop.sh/#/apps?q=nirsoft
 - https://community.chocolatey.org/packages
