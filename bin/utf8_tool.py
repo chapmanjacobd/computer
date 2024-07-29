@@ -12,12 +12,18 @@ def get_utf8_info(char):
         return "Not found", None
 
 def process_input(text):
+    prev_char_ascii = False
     for char in text:
         if ord(char) > 127:
+            if prev_char_ascii:
+                print()
+
             name, code_point = get_utf8_info(char)
-            print(f"\n{char} ({name}, U+{code_point}, 0x{char.encode().hex()})")
+            print(f"{char} ({name}, U+{code_point}, 0x{char.encode().hex()})")
+            prev_char_ascii = False
         else:
             print(char, end='')
+            prev_char_ascii = True
 
 def main():
     input_text = sys.stdin.read()
