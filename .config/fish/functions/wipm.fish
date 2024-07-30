@@ -8,7 +8,7 @@ function wipm
     echo
     git status
     if gum confirm --default=no
-        git commit -m "$argv"
+        git utccommit -m "$argv"
         git pull
         git push
     else
