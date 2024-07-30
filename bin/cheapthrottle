@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# from https://gitlab.com/hydrargyrum/attic/
 # SPDX-License-Identifier: WTFPL
 # shellcheck enable=
 
