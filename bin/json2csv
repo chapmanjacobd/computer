@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
+
+"""
+Usage:
+
+Print a CSV of file.json:
+    json2csv < file.json
+
+Same, but put 'id' and 'name' as first columns:
+    json2csv id name < file.json
+"""
+
+import argparse
+from csv import DictWriter
+from collections import OrderedDict
+import json
+import sys
+
+
+def read(fd):
+    with fd:
+        text = fd.read()
+
+    try:
+        return json.loads(text, object_pairs_hook=OrderedDict)
+    except json.JSONDecodeError as initial:
+        try:
+            return [json.loads(line, object_pairs_hook=OrderedDict) for line in text.split("\n") if line]
+        except json.JSONDecodeError:
+            raise initial
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--separator", default=",", help="Output CSV separator (default: ',')")
+parser.add_argument('-f', '--file', default='-', help='JSON file to read (standard input by default)')
+parser.add_argument('-k', '--keep-only', action='store_const', const=True, help='Keep only specified fields')
+parser.add_argument('field', nargs='*', help='display field in the leftmost columns')
+args = parser.parse_args()
+
+if args.file == '-':
+    fd = sys.stdin
+else:
+    fd = open(args.file, 'r')
+
+data = read(fd)
+
+okdata = False
+if isinstance(data, list):
+    if all(isinstance(obj, dict) for obj in data):
+        okdata = True
+    elif all(isinstance(obj, list) for obj in data):
+        data = [{col: obj[n] for n, col in enumerate(data[0])} for obj in data[1:]]
+        okdata = True
+elif isinstance(data, dict) and all(isinstance(obj, list) for obj in data.values()):
+    def get(l, n):
+        try:
+            return l[n]
+        except IndexError:
+            return None
+
+    nrows = max(len(v) for v in data.values())
+    data = [OrderedDict((k, get(data[k], n)) for k in data) for n in range(nrows)]
+    okdata = True
+
+if not okdata:
+    raise ValueError('input must be a JSON list of dictionaries or a dictionary with lists')
+
+order = args.field or []
+keys = OrderedDict((k, None) for k in order)
+
+if args.keep_only:
+    def keep(d):
+        return OrderedDict((k, v) for k, v in d.items() if k in keys)
+    data = [keep(r) for r in data]
+else:
+    keys.update((k, None) for d in data for k in d.keys())
+
+keys = list(keys)
+
+try:
+    writer = DictWriter(sys.stdout, keys, delimiter=args.separator)
+    writer.writeheader()
+    for d in data:
+        writer.writerow(d)
+except KeyboardInterrupt:
+    pass
+except BrokenPipeError:
+    pass

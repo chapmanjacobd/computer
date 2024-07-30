@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
+
+import binascii
+import locale
+import os
+import re
+import signal
+import sys
+
+
+def main():
+	buffer = b''
+	while True:
+		block = sys.stdin.buffer.read(4096)
+		if not block:
+			break
+
+		buffer += block
+		buffer = re.sub(b'\\s', b'', buffer)
+
+		if len(buffer) % 2:
+			block, buffer = buffer[:-1], buffer[-1:]
+		else:
+			block, buffer = buffer, b''
+
+		if block:
+			try:
+				sys.stdout.buffer.write(binascii.unhexlify(block))
+			except binascii.Error:
+				print('error: unexpected non-hex data', file=sys.stderr)
+				sys.exit(os.EX_DATAERR)
+
+	if buffer:
+		print('error: too short data', file=sys.stderr)
+		sys.exit(os.EX_DATAERR)
+
+
+if __name__ == '__main__':
+	locale.setlocale(locale.LC_ALL, "")
+	signal.signal(signal.SIGINT, signal.SIG_DFL)
+	signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+	main()
