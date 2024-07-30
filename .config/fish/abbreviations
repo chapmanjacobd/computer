@@ -186,3 +186,4 @@ abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,
 abbr -a -- insect numbat
 abbr -a -- slurp string join \'\ \'
 abbr -a -- unslurp string split \'\ \'
+abbr -a -- gitstars githubstars
