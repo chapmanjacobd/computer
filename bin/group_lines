@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# from https://gitlab.com/hydrargyrum/attic/
 # SPDX-License-Identifier: WTFPL
 
 import argparse
