@@ -1,5 +1,6 @@
 function daily
     ~/
+    sticky_config
     popline ~/.gitignore
 
     with_lock copy_to_pakon
