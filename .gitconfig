@@ -19,6 +19,12 @@
 	eol = lf
 	logallrefupdates = true
 	attributesfile = /home/xk/.gitattributes_global
+[transfer]
+    fsckobjects = true
+[fetch]
+    fsckobjects = true
+[receive]
+    fsckObjects = true
 [interactive]
 	diffFilter = delta --color-only
 [diff]
