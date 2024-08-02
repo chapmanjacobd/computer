@@ -24,7 +24,7 @@ categories = {
 def create_directory_structure(base_dir):
     structure = set()
     for task in tasks:
-        structure.add(task)
+        structure.add(str(Path(base_dir, task)))
 
         for category, subcategories in categories.items():
             path = str(Path(base_dir, task, category))
@@ -39,11 +39,9 @@ def create_directory_structure(base_dir):
     return structure
 
 def check_directory_structure(base_path, expected_structure):
-    base_path = Path(base_path)
-
     def check_path(dir):
         for p in dir.glob("*"):
-            if str(p).count(os.sep) > str(base_path).count(os.sep) + 2:
+            if str(p).count(os.sep) > str(base_path).count(os.sep) + 3:
                 continue
 
             if not p.is_dir():
@@ -53,13 +51,14 @@ def check_directory_structure(base_path, expected_structure):
                     print(p)
                 else:
                     check_path(p)
-
     check_path(base_path)
 
 if __name__ == "__main__":
     parser = argparse_utils.ArgumentParser(description='Create directory hierarchy.')
     parser.add_argument('base_dir', nargs='?', default=os.getcwd())
     args = parser.parse_args()
+
+    args.base_dir = Path(args.base_dir).absolute()
 
     structure = create_directory_structure(args.base_dir)
     check_directory_structure(args.base_dir, structure)

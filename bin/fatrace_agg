@@ -18,10 +18,9 @@ def main():
     parser.add_argument('--max-counts', '--max', type=int, default=float('inf'), help='Maximum count to display')
     args = parser.parse_args()
 
-    pattern = re.compile(r'(\w+)\((\d+)\): (.*) (/.+)')
+    pattern = re.compile(r'(\w+)\((\d+)\): (.+)')
 
     program_counts = defaultdict(int)
-    access_counts = defaultdict(int)
     path_counts = defaultdict(int)
     try:
         for line in sys.stdin:
@@ -30,21 +29,17 @@ def main():
 
             match = pattern.match(line)
             if match:
-                program_name, _, access_type, path = match.groups()
+                program_name, _, path = match.groups()
                 program_counts[program_name] += 1
-                access_counts[access_type] += 1
                 path_counts[path] += 1
     except KeyboardInterrupt:
         print()
 
+    print("Path Counts:")
+    print_sorted_counts(path_counts, args.min_counts, args.max_counts)
+    print()
     print("Program Counts:")
     print_sorted_counts(program_counts, args.min_counts, args.max_counts)
-
-    print("\nAccess Type Counts:")
-    print_sorted_counts(access_counts, args.min_counts, args.max_counts)
-
-    print("\nPath Counts:")
-    print_sorted_counts(path_counts, args.min_counts, args.max_counts)
 
 if __name__ == "__main__":
     main()
