@@ -27,8 +27,8 @@ elif is_win; then
   alias cbcopy=putclip
   alias cbpaste=getclip
 else
-  alias cbcopy='xclip -sel c'
-  alias cbpaste='xclip -sel c -o'
+  alias cbcopy='xsel --clipboard --input'
+  alias cbpaste='xsel --clipboard --output'
 fi
 
 # ------------------------------------------------------------------------------
