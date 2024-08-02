@@ -28,6 +28,8 @@
 	difftool = delta
     colormoved = zebra
 	context = 5
+[delta]
+    navigate = true
 [diff "sqlite3"]
     binary = true
     textconv = "echo .dump | sqlite3"
