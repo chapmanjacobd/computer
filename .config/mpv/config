@@ -52,6 +52,7 @@ sub-gray=yes
 
 replaygain=track
 af="scaletempo2,lavfi=[pan=1c|c0=0.5*c0+0.5*c1],volume=replaygain-track"
+audio-channels=2
 
 [video finished]
 profile-cond=eof_reached
