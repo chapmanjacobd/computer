@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+from pathlib import Path
 
 from xklb.utils import argparse_utils
 
@@ -21,19 +22,44 @@ categories = {
 
 
 def create_directory_structure(base_dir):
+    structure = set()
     for task in tasks:
+        structure.add(task)
+
         for category, subcategories in categories.items():
-            path = os.path.join(base_dir, task, category)
+            path = str(Path(base_dir, task, category))
             os.makedirs(path, exist_ok=True)
+            structure.add(path)
 
             for subcategory in subcategories:
-                path = os.path.join(base_dir, task, category, subcategory)
+                path = str(Path(base_dir, task, category, subcategory))
                 os.makedirs(path, exist_ok=True)
+                structure.add(path)
 
+    return structure
+
+def check_directory_structure(base_path, expected_structure):
+    base_path = Path(base_path)
+
+    def check_path(dir):
+        for p in dir.glob("*"):
+            if str(p).count(os.sep) > str(base_path).count(os.sep) + 2:
+                continue
+
+            if not p.is_dir():
+                print(p)
+            else:
+                if str(p) not in expected_structure:
+                    print(p)
+                else:
+                    check_path(p)
+
+    check_path(base_path)
 
 if __name__ == "__main__":
     parser = argparse_utils.ArgumentParser(description='Create directory hierarchy.')
     parser.add_argument('base_dir', nargs='?', default=os.getcwd())
     args = parser.parse_args()
 
-    create_directory_structure(args.base_dir)
+    structure = create_directory_structure(args.base_dir)
+    check_directory_structure(args.base_dir, structure)
