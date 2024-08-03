@@ -69,6 +69,7 @@ hw-probe
 hyperfine
 idle3-tools
 iftop
+igt-gpu-tools
 ImageMagick-devel
 iotop
 java-latest-openjdk
