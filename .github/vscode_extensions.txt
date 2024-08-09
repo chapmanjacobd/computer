@@ -22,6 +22,7 @@ KevinRose.vsc-python-indent
 keyring.Lua
 Koihik.vscode-lua-format
 leodevbro.blockman
+marlom.keep-context
 ms-python.black-formatter
 ms-python.debugpy
 ms-python.isort
@@ -44,3 +45,4 @@ sysoev.vscode-open-in-github
 tushortz.python-extended-snippets
 Tyriar.sort-lines
 usernamehw.errorlens
+yy0931.vscode-sqlite3-editor
