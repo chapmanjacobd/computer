@@ -1,0 +1,8 @@
+[Plugins]
+org.kde.ActivityManager.ResourceScoringEnabled=false
+
+[activities]
+577840c9-b0bb-4255-bc13-d26fe06d710e=Default
+
+[main]
+currentActivity=577840c9-b0bb-4255-bc13-d26fe06d710e
