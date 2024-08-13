@@ -1,9 +1,9 @@
 function lbrelease --argument newver
     ~/lb/
-    set oldver (awk -F'"' '/^__version__/{print $2}' xklb/__init__.py)
+    set oldver (awk -F'"' '/^__version__/{print $2}' xklb/__main__.py)
 
     #PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring poetry update
-    sed -i "s|$oldver|$newver|" xklb/__init__.py
+    sed -i "s|$oldver|$newver|" xklb/__main__.py
 
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
     rg db.execute
