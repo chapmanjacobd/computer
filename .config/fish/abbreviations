@@ -188,3 +188,4 @@ abbr -a -- slurp string join \'\ \'
 abbr -a -- unslurp string split \'\ \'
 abbr -a -- gitstars githubstars
 abbr -a -- qr_decode zbarimg
+abbr -a -- t mkcdtemp
