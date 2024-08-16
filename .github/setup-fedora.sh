@@ -22,7 +22,6 @@ sudo /usr/NX/bin/nxserver --restart
 
 sudo rm /etc/xdg/plasma-workspace/env/nx-sourceenv.sh
 
-sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf group update core -y
 sudo dnf --with-optional -y groupinstall Multimedia
 sudo dnf install -y gstreamer1-plugins-{bad-\*,good-\*,base} gstreamer1-plugin-openh264 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
