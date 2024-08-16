@@ -50,7 +50,9 @@ cd bfs && ./configure --enable-release && make && sudo make install
 # flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 # flatpak install flathub org.freedesktop.Platform.ffmpeg-full
 
-sudo dnf install $(cat ~/.github/dnf_installed)
+for package in (cat ~/.github/dnf_installed)
+    sudo dnf install -y $package
+end
 
 # sudo usermod -aG docker xk
 # mkdir -p ~/.docker/cli-plugins/

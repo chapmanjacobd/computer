@@ -1,2 +1,12 @@
 [BatteryManagement]
 BatteryCriticalAction=0
+
+[LowBattery][Display]
+UseProfileSpecificDisplayBrightness=false
+
+[LowBattery][Keyboard]
+KeyboardBrightness=0
+UseProfileSpecificKeyboardBrightness=true
+
+[LowBattery][SuspendAndShutdown]
+LidAction=2
