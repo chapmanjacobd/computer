@@ -45,10 +45,10 @@ sudo dnf group install -y "C Development Tools and Libraries"
 sudo dnf install liburing-devel
 
 cd ~/ && mkdir -p bin/ && cd bin/ && rm -rf bfs/ && git clone https://github.com/tavianator/bfs.git
-cd bfs && make release && sudo make install
+cd bfs && ./configure --enable-release && make && sudo make install
 
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install flathub org.freedesktop.Platform.ffmpeg-full
+# flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+# flatpak install flathub org.freedesktop.Platform.ffmpeg-full
 
 sudo dnf install $(cat ~/.github/dnf_installed)
 
