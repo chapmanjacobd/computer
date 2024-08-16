@@ -2,13 +2,22 @@
 
 set -Eeuox pipefail
 
+sudo hostnamectl hostname pakon
+sudo localectl set-keymap us-colemak_dh
+
 ssh-keygen -t ed25519 -q -N '' </dev/zero || true
 cat .ssh/id_ed25519.pub >> .ssh/authorized_keys
 sudo visudo
 
 echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts
 
-sudo cp -a ~/.github/etc/. /etc/ && sudo restorecon -R /etc
+cat /home/xk/.github/etc/nanorc | sudo tee /etc/nanorc
+
+# library cp --dry-run ~/.github/etc/ /etc/
+# sudo cp -a ~/.github/etc/. /etc/
+# sudo restorecon -R /etc
+mkdir ~/.ssh/control/
+cat ~/.github/etc/ssh/sshd_config.d/xk.conf | sudo tee /etc/ssh/sshd_config.d/xk.conf
 sudo systemctl enable --now sshd
 sudo systemctl enable --now fstrim.timer
 
