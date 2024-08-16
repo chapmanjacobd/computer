@@ -41,6 +41,7 @@ ffmpeg
 ffmpeg-libs
 fftw-devel
 flacon
+fpart
 gamemode
 gdal
 gdal-devel
