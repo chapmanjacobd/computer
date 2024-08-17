@@ -5,6 +5,9 @@ set -Eeuox pipefail
 #source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
 
+# fpsync /home/xk/ 192.168.68.65:/home/xk/
+# fpsync /mnt/d/ 192.168.68.65:/mnt/d/
+
 chmod 0600 ~/.nx/config/authorized.crt
 echo "EnableUPnP none" | sudo tee -a /usr/NX/etc/server.cfg
 echo "NXKeyBasedUsePAM 0" | sudo tee -a /usr/NX/etc/server.cfg
