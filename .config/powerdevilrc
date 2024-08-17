@@ -4,8 +4,7 @@ LidAction=0
 PowerButtonAction=2
 
 [Battery][Display]
-DimDisplayIdleTimeoutSec=30
-TurnOffDisplayIdleTimeoutSec=120
+TurnOffDisplayIdleTimeoutWhenLockedSec=20
 
 [Battery][SuspendAndShutdown]
 LidAction=0

@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/autossh -M 0 -N -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=45" -o "ServerAliveCountMax=3" -R localhost:7070:localhost:22 pakon
+ExecStart=/usr/bin/autossh -M 0 -NT -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=45" -R localhost:7070:localhost:22 pakon
 Restart=always
 RestartSec=15
 
