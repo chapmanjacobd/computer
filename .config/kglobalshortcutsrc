@@ -11,6 +11,10 @@ Switch keyboard layout to English (Colemak-DH)=none,none,Switch keyboard layout 
 Switch keyboard layout to English (US)=none,none,Switch keyboard layout to English (US)
 Switch keyboard layout to Norwegian (Colemak\x5beD\x5d, unified symbols)=none,none,Switch keyboard layout to Norwegian (Colemak[eD]\\, unified symbols)
 Switch keyboard layout to cmk_ed_us=none,none,Switch keyboard layout to cmk_ed_us
+Switch to Last-Used Keyboard Layout=Meta+Alt+L,none,Switch to Last-Used Keyboard Layout
+Switch to Next Keyboard Layout=Meta+Alt+K,none,Switch to Next Keyboard Layout
+_k_friendly_name=Keyboard Layout Switcher
+
 [kaccess]
 Toggle Screen Reader On and Off=Meta+Alt+S,Meta+Alt+S,Toggle Screen Reader On and Off
 _k_friendly_name=Accessibility
@@ -18,7 +22,7 @@ _k_friendly_name=Accessibility
 [kcm_touchpad]
 Disable Touchpad=Touchpad Off,Touchpad Off,Disable Touchpad
 Enable Touchpad=Touchpad On,Touchpad On,Enable Touchpad
-Toggle Touchpad=Touchpad Toggle,Touchpad Toggle\tMeta+Ctrl+Zenkaku Hankaku,Toggle Touchpad
+Toggle Touchpad=Touchpad Toggle,Touchpad Toggle,Toggle Touchpad
 _k_friendly_name=Touchpad
 
 [khotkeys]
@@ -80,6 +84,10 @@ Halt Without Confirmation=none,,Shut Down Without Confirmation
 Lock Session=Meta+L,Meta+L\tScreensaver,Lock Session
 Log Out=Ctrl+Alt+Del,Ctrl+Alt+Del,Show Logout Prompt
 Log Out Without Confirmation=none,,Log Out Without Confirmation
+LogOut=none,,Log Out
+Reboot=none,,Reboot
+Reboot Without Confirmation=none,,Reboot Without Confirmation
+Shut Down=none,,Shut Down
 _k_friendly_name=Session Management
 
 [kwin]
@@ -94,6 +102,7 @@ Expose=Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)
 ExposeAll=Ctrl+F10\tLaunch (C),Ctrl+F10\tLaunch (C),Toggle Present Windows (All desktops)
 ExposeClass=Ctrl+F7,Ctrl+F7,Toggle Present Windows (Window class)
 ExposeClassCurrentDesktop=none,none,Toggle Present Windows (Window class on current desktop)
+Grid View=none,Meta+G,Toggle Grid View
 Increase Opacity=none,,Increase Opacity of Active Window by 5%
 Invert Screen Colors=none,none,Invert Screen Colors
 Kill Window=Ctrl+Alt+Esc,Meta+Ctrl+Esc,Kill Window
@@ -350,11 +359,12 @@ PowerOff=Power Off,Power Off,Power Off
 Sleep=Sleep,Sleep,Suspend
 Toggle Keyboard Backlight=Keyboard Light On/Off,Keyboard Light On/Off,Toggle Keyboard Backlight
 Turn Off Screen=none,none,Turn Off Screen
-_k_friendly_name=Power Management
+_k_friendly_name=KDE Power Management System
 powerProfile=Battery\tMeta+B,Battery\tMeta+B,Switch Power Profile
 
 [plasmashell]
-_k_friendly_name=Plasma
+_k_friendly_name=plasmashell
+activate application launcher=Meta,Meta\tAlt+F1,Activate Application Launcher
 activate task manager entry 1=Meta+1,Meta+1,Activate Task Manager Entry 1
 activate task manager entry 10=none,Meta+0,Activate Task Manager Entry 10
 activate task manager entry 2=Meta+2,Meta+2,Activate Task Manager Entry 2
@@ -398,19 +408,10 @@ _launch=Alt+F2\tSearch
 [services][org.kde.spectacle.desktop]
 ActiveWindowScreenShot=none
 FullScreenScreenShot=none
-RecordRegion=\t
+RecordRegion=none
 RectangularRegionScreenShot=Print
 WindowUnderCursorScreenShot=Ctrl+Print
 _launch=none
-
-[systemsettings.desktop]
-_k_friendly_name=System Settings
-_launch=Tools,Tools,System Settings
-kcm-kscreen=none,none,Display Configuration
-kcm-lookandfeel=none,none,Global Theme
-kcm-users=none,none,Users
-powerdevilprofilesconfig=none,none,Energy Saving
-screenlocker=none,none,Screen Locking
 
 [wacomtablet]
 Map to fullscreen=Meta+Ctrl+F,Meta+Ctrl+F,Map to fullscreen

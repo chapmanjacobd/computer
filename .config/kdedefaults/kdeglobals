@@ -1,8 +1,8 @@
 [General]
-ColorScheme=ZionReversed2InactiveMod
+ColorScheme=BreezeLight
 
 [Icons]
-Theme=breeze-dark
+Theme=breeze
 
 [KDE]
 widgetStyle=Breeze

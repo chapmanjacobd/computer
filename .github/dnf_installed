@@ -180,6 +180,8 @@ swtpm
 symlinks
 sysfsutils
 systemtap
+terminus-fonts
+terminus-fonts-console
 tesseract
 testdisk
 tiresias-info-z-fonts
