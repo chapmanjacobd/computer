@@ -1,3 +1,17 @@
+[AC][SuspendAndShutdown]
+AutoSuspendAction=0
+LidAction=0
+PowerButtonAction=2
+
+[Battery][Display]
+DimDisplayIdleTimeoutSec=30
+TurnOffDisplayIdleTimeoutSec=120
+
+[Battery][SuspendAndShutdown]
+LidAction=0
+PowerButtonAction=2
+SleepMode=2
+
 [BatteryManagement]
 BatteryCriticalAction=0
 
@@ -9,4 +23,6 @@ KeyboardBrightness=0
 UseProfileSpecificKeyboardBrightness=true
 
 [LowBattery][SuspendAndShutdown]
-LidAction=2
+LidAction=0
+PowerButtonAction=2
+SleepMode=2
