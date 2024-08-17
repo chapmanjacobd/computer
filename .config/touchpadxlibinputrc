@@ -7,6 +7,13 @@ tapToClick=true
 pointerAcceleration=0.4
 tapToClick=true
 
+[SYNA2BA6:00 06CB:CEF5 Touchpad]
+clickMethodAreas=false
+clickMethodClickfinger=true
+disableWhileTyping=false
+pointerAcceleration=0.6
+tapToClick=true
+
 [SynPS/2 Synaptics TouchPad]
 tapToClick=true
 

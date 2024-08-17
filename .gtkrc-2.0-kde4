@@ -1,5 +1,5 @@
 gtk-sound-theme-name="ocean"
-gtk-cursor-theme-size=48
+gtk-cursor-theme-size=96
 gtk-enable-animations=0
 
 gtk-primary-button-warps-slider=1
@@ -10,13 +10,13 @@ gtk-menu-images=1
 
 gtk-button-images=1
 
-gtk-cursor-theme-name="breeze_cursors"
+gtk-cursor-theme-name="Bibata-Modern-Ice"
 
-gtk-icon-theme-name="breeze"
+gtk-icon-theme-name="Newaita-dark"
 
 gtk-font-name="Noto Sans,  10"
 
 include "/usr/share/themes/Adwaita/gtk-2.0/gtkrc"
 
-gtk-theme-name="Breeze"
+gtk-theme-name="Breeze-Dark"
 

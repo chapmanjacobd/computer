@@ -9,7 +9,10 @@ ScrollFactor=0.75
 
 [Mouse]
 X11LibInputXAccelProfileFlat=true
-cursorSize=48
+XLbInptAccelProfileFlat=false
+XLbInptPointerAcceleration=0.6
+cursorSize=96
+cursorTheme=Bibata-Modern-Ice
 
 [Tmp]
 update_info=delete_cursor_old_default_size.upd:DeleteCursorOldDefaultSize
