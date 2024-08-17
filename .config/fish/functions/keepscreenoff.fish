@@ -1,5 +1,5 @@
 # Defined interactively
 function keepscreenoff
     kwriteconfig5 --file powermanagementprofilesrc --group AC --group DPMSControl --key idleTime 500
-    qdbus-qt5 org.freedesktop.PowerManagement /org/kde/Solid/PowerManagement reparseConfiguration
+    qdbus org.freedesktop.PowerManagement /org/kde/Solid/PowerManagement reparseConfiguration
 end
