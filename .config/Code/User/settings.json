@@ -24,7 +24,6 @@
   "editor.copyWithSyntaxHighlighting": false,
   "python.terminal.activateEnvironment": true,
   "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#%^&*|+=[]{}`~，。？「」『』`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?_",
-  "python.venvPath": "${workspaceFolder}/.venv/bin/python",
   "python.pythonPath": ".venv/bin/python",
   "editor.cursorStyle": "block",
   "editor.guides.bracketPairs": false,
