@@ -75,7 +75,7 @@ sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.ta
 sudo systemctl disable --now systemd-journald-audit.socket
 sudo systemctl mask systemd-journald-audit.socket
 
-rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd
+# rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd  # Plasma 6 does not like this...
 
 for dep in $(cat .github/cargo_installed); do
     cargo install $dep

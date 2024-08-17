@@ -19,20 +19,23 @@ wmclass=mpv
 wmclassmatch=2
 
 [2]
-Description=Settings for projectM-pulseaudio
+Description=Settings for nxplayer.bin
 below=true
-belowrule=2
+fpplevel=3
+fpplevelrule=2
 skiptaskbar=true
-skiptaskbarrule=2
-wmclass=projectM-pulseaudio
+wmclass=nxplayer.bin
+wmclasscomplete=true
 wmclassmatch=1
 
 [3]
-Description=Settings for nxplayer.bin
+Description=Settings for projectM-pulseaudio
+below=true
+belowrule=2
 fpplevel=3
-fpplevelrule=2
-wmclass=nxplayer.bin
-wmclasscomplete=true
+skiptaskbar=true
+skiptaskbarrule=2
+wmclass=projectM-pulseaudio
 wmclassmatch=1
 
 [General]
@@ -41,7 +44,7 @@ count=3
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,3,2
+rules=1,2,3
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
