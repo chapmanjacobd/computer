@@ -415,7 +415,7 @@ _launch=Alt+`
 _launch=none
 
 [services][org.kde.krunner.desktop]
-_launch=Alt+F2\tSearch
+_launch=Meta+Space\tSearch\tAlt+F2
 
 [services][org.kde.spectacle.desktop]
 ActiveWindowScreenShot=none
