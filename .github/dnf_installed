@@ -131,6 +131,7 @@ perl
 perl-CPAN
 perl-Image-ExifTool
 pg_top
+plasma-workspace-x11
 playerctl
 pngquant
 powertop
