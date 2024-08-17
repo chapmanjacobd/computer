@@ -25,11 +25,6 @@ Enable Touchpad=Touchpad On,Touchpad On,Enable Touchpad
 Toggle Touchpad=Touchpad Toggle,Touchpad Toggle,Toggle Touchpad
 _k_friendly_name=Touchpad
 
-[kded5]
-Show System Activity=Ctrl+Esc,Ctrl+Esc,Show System Activity
-_k_friendly_name=KDE Daemon
-display=Display\tMeta+P,Display\tMeta+P,Switch Display
-
 [khotkeys]
 _k_friendly_name=Custom Shortcuts Service
 {0a07c0cc-4b9a-4bd9-8255-44ff13bfb5cb}=Meta+E,none,krusader
@@ -49,7 +44,7 @@ _k_friendly_name=Custom Shortcuts Service
 {78f29ee0-1700-4a48-a561-8d71db49caa5}=none,none,right
 {7a586e5e-7f1c-430e-b786-ead50018e9be}=Alt+Shift+K,none,sitdown
 {7e6dd6b6-9dae-4baf-85e5-27f24f77462a}=Alt+H,none,tv
-{8555f0fc-c6ad-4709-a35f-377a48d5ff2f}=Meta+`,none,konsole
+{8555f0fc-c6ad-4709-a35f-377a48d5ff2f}=none,none,konsole
 {9e67300c-bc6f-4023-94df-2760e4b1a55c}=Alt+K,none,standup
 {a3b237f7-233a-4e92-8760-359e0fc2def6}=Alt+Space,none,enter
 {aa2d8940-63ae-4cbd-8fa3-124518460733}=Alt+B,none,vncbackup
@@ -252,17 +247,17 @@ Switch to Screen to the Right=none,,Switch to Screen to the Right
 Toggle Night Color=none,none,Suspend/Resume Night Light
 Toggle Window Raise/Lower=none,,Toggle Window Raise/Lower
 ToggleCurrentThumbnail=none,Meta+Ctrl+T,Toggle Thumbnail for Current Window
-Walk Through Desktop List=none,,Walk Through Desktop List
-Walk Through Desktop List (Reverse)=none,,Walk Through Desktop List (Reverse)
-Walk Through Desktops=none,,Walk Through Desktops
-Walk Through Desktops (Reverse)=none,,Walk Through Desktops (Reverse)
+Walk Through Desktop List=none,none,Walk Through Desktop List
+Walk Through Desktop List (Reverse)=none,none,Walk Through Desktop List (Reverse)
+Walk Through Desktops=none,none,Walk Through Desktops
+Walk Through Desktops (Reverse)=none,none,Walk Through Desktops (Reverse)
 Walk Through Window Tabs=none,none,Walk Through Window Tabs
 Walk Through Window Tabs (Reverse)=none,none,Walk Through Window Tabs (Reverse)
 Walk Through Windows=Alt+Tab,Alt+Tab,Walk Through Windows
 Walk Through Windows (Reverse)=Alt+Shift+Backtab,Alt+Shift+Tab,Walk Through Windows (Reverse)
 Walk Through Windows Alternative=none,,Walk Through Windows Alternative
 Walk Through Windows Alternative (Reverse)=none,,Walk Through Windows Alternative (Reverse)
-Walk Through Windows of Current Application=Alt+`,Alt+`,Walk Through Windows of Current Application
+Walk Through Windows of Current Application=none,Alt+`,Walk Through Windows of Current Application
 Walk Through Windows of Current Application (Reverse)=Alt+~,Alt+~,Walk Through Windows of Current Application (Reverse)
 Walk Through Windows of Current Application Alternative=none,,Walk Through Windows of Current Application Alternative
 Walk Through Windows of Current Application Alternative (Reverse)=none,,Walk Through Windows of Current Application Alternative (Reverse)
@@ -355,39 +350,6 @@ playpausemedia=Media Play,Media Play,Play/Pause media playback
 previousmedia=Media Previous,Media Previous,Media playback previous
 stopmedia=Media Stop,Media Stop,Stop media playback
 
-[org.kde.dolphin.desktop]
-_k_friendly_name=Dolphin
-_launch=none,Meta+E,Dolphin
-
-[org.kde.kcalc.desktop]
-_k_friendly_name=KCalc
-_launch=Launch (1),Launch (1),KCalc
-
-[org.kde.konsole.desktop]
-NewTab=none,none,Open a New Tab
-NewWindow=none,none,Open a New Window
-_k_friendly_name=Konsole
-_launch=none,none,Konsole
-
-[org.kde.krunner.desktop]
-RunClipboard=Alt+Shift+F2,Alt+Shift+F2,Run command on clipboard contents
-_k_friendly_name=KRunner
-_launch=Alt+F2\tSearch,Alt+Space\tAlt+F2\tSearch,KRunner
-
-[org.kde.plasma.emojier.desktop]
-_k_friendly_name=Emoji Selector
-_launch=Meta+.,Meta+.,Emoji Selector
-
-[org.kde.spectacle.desktop]
-ActiveWindowScreenShot=none,Meta+Print,Capture Active Window
-CurrentMonitorScreenShot=none,none,Capture Current Monitor
-FullScreenScreenShot=none,Shift+Print,Capture Entire Desktop
-OpenWithoutScreenshot=none,none,Launch Spectacle without capturing
-RectangularRegionScreenShot=Print,Meta+Shift+Print,Capture Rectangular Region
-WindowUnderCursorScreenShot=Ctrl+Print,Meta+Ctrl+Print,Capture Window Under Cursor
-_k_friendly_name=Spectacle
-_launch=none,Print,Launch Spectacle
-
 [org_kde_powerdevil]
 Decrease Keyboard Brightness=Keyboard Brightness Down,Keyboard Brightness Down,Decrease Keyboard Brightness
 Decrease Screen Brightness=Monitor Brightness Down,Monitor Brightness Down,Decrease Screen Brightness
@@ -446,6 +408,12 @@ switch to next activity=none,,Switch to Next Activity
 switch to previous activity=none,,Switch to Previous Activity
 toggle do not disturb=none,none,Toggle do not disturb
 
+[services][kitty.desktop]
+_launch=Alt+`
+
+[services][org.kde.dolphin.desktop]
+_launch=none
+
 [services][org.kde.krunner.desktop]
 _launch=Alt+F2\tSearch
 
@@ -456,15 +424,6 @@ RecordRegion=none
 RectangularRegionScreenShot=Print
 WindowUnderCursorScreenShot=Ctrl+Print
 _launch=none
-
-[systemsettings.desktop]
-_k_friendly_name=System Settings
-_launch=Tools,Tools,System Settings
-kcm-kscreen=none,none,Display Configuration
-kcm-lookandfeel=none,none,Global Theme
-kcm-users=none,none,Users
-powerdevilprofilesconfig=none,none,Energy Saving
-screenlocker=none,none,Screen Locking
 
 [wacomtablet]
 Map to fullscreen=Meta+Ctrl+F,Meta+Ctrl+F,Map to fullscreen
