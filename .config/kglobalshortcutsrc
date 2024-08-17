@@ -11,10 +11,6 @@ Switch keyboard layout to English (Colemak-DH)=none,none,Switch keyboard layout 
 Switch keyboard layout to English (US)=none,none,Switch keyboard layout to English (US)
 Switch keyboard layout to Norwegian (Colemak\x5beD\x5d, unified symbols)=none,none,Switch keyboard layout to Norwegian (Colemak[eD]\\, unified symbols)
 Switch keyboard layout to cmk_ed_us=none,none,Switch keyboard layout to cmk_ed_us
-Switch to Last-Used Keyboard Layout=Meta+Alt+L,Meta+Alt+L,
-Switch to Next Keyboard Layout=none,Meta+Alt+K,Switch to Next Keyboard Layout
-_k_friendly_name=Keyboard Layout Switcher
-
 [kaccess]
 Toggle Screen Reader On and Off=Meta+Alt+S,Meta+Alt+S,Toggle Screen Reader On and Off
 _k_friendly_name=Accessibility
@@ -24,11 +20,6 @@ Disable Touchpad=Touchpad Off,Touchpad Off,Disable Touchpad
 Enable Touchpad=Touchpad On,Touchpad On,Enable Touchpad
 Toggle Touchpad=Touchpad Toggle,Touchpad Toggle\tMeta+Ctrl+Zenkaku Hankaku,Toggle Touchpad
 _k_friendly_name=Touchpad
-
-[kded5]
-Show System Activity=Ctrl+Esc,Ctrl+Esc,Show System Activity
-_k_friendly_name=KDE Daemon
-display=Display\tMeta+P,Display\tMeta+P,Switch Display
 
 [khotkeys]
 _k_friendly_name=Custom Shortcuts Service
@@ -89,10 +80,6 @@ Halt Without Confirmation=none,,Shut Down Without Confirmation
 Lock Session=Meta+L,Meta+L\tScreensaver,Lock Session
 Log Out=Ctrl+Alt+Del,Ctrl+Alt+Del,Show Logout Prompt
 Log Out Without Confirmation=none,,Log Out Without Confirmation
-LogOut=,,Log Out
-Reboot=,,Reboot
-Reboot Without Confirmation=none,,Reboot Without Confirmation
-Shut Down=,,Shut Down
 _k_friendly_name=Session Management
 
 [kwin]
@@ -107,7 +94,6 @@ Expose=Ctrl+F9,Ctrl+F9,Toggle Present Windows (Current desktop)
 ExposeAll=Ctrl+F10\tLaunch (C),Ctrl+F10\tLaunch (C),Toggle Present Windows (All desktops)
 ExposeClass=Ctrl+F7,Ctrl+F7,Toggle Present Windows (Window class)
 ExposeClassCurrentDesktop=none,none,Toggle Present Windows (Window class on current desktop)
-Grid View=,Meta+G,Toggle Grid View
 Increase Opacity=none,,Increase Opacity of Active Window by 5%
 Invert Screen Colors=none,none,Invert Screen Colors
 Kill Window=Ctrl+Alt+Esc,Meta+Ctrl+Esc,Kill Window
@@ -351,39 +337,6 @@ playpausemedia=Media Play,Media Play,Play/Pause media playback
 previousmedia=Media Previous,Media Previous,Media playback previous
 stopmedia=Media Stop,Media Stop,Stop media playback
 
-[org.kde.dolphin.desktop]
-_k_friendly_name=Dolphin
-_launch=none,Meta+E,Dolphin
-
-[org.kde.kcalc.desktop]
-_k_friendly_name=KCalc
-_launch=Launch (1),Launch (1),KCalc
-
-[org.kde.konsole.desktop]
-NewTab=none,none,Open a New Tab
-NewWindow=none,none,Open a New Window
-_k_friendly_name=Konsole
-_launch=none,none,Konsole
-
-[org.kde.krunner.desktop]
-RunClipboard=Alt+Shift+F2,Alt+Shift+F2,Run command on clipboard contents
-_k_friendly_name=KRunner
-_launch=Alt+F2\tSearch,Alt+Space\tAlt+F2\tSearch,KRunner
-
-[org.kde.plasma.emojier.desktop]
-_k_friendly_name=Emoji Selector
-_launch=Meta+.,Meta+.,Emoji Selector
-
-[org.kde.spectacle.desktop]
-ActiveWindowScreenShot=none,Meta+Print,Capture Active Window
-CurrentMonitorScreenShot=none,none,Capture Current Monitor
-FullScreenScreenShot=none,Shift+Print,Capture Entire Desktop
-OpenWithoutScreenshot=none,none,Launch Spectacle without capturing
-RectangularRegionScreenShot=Print,Meta+Shift+Print,Capture Rectangular Region
-WindowUnderCursorScreenShot=Ctrl+Print,Meta+Ctrl+Print,Capture Window Under Cursor
-_k_friendly_name=Spectacle
-_launch=none,Print,Launch Spectacle
-
 [org_kde_powerdevil]
 Decrease Keyboard Brightness=Keyboard Brightness Down,Keyboard Brightness Down,Decrease Keyboard Brightness
 Decrease Screen Brightness=Monitor Brightness Down,Monitor Brightness Down,Decrease Screen Brightness
@@ -402,7 +355,6 @@ powerProfile=Battery\tMeta+B,Battery\tMeta+B,Switch Power Profile
 
 [plasmashell]
 _k_friendly_name=Plasma
-activate application launcher=Meta\t,Meta\tAlt+F1,Activate Application Launcher
 activate task manager entry 1=Meta+1,Meta+1,Activate Task Manager Entry 1
 activate task manager entry 10=none,Meta+0,Activate Task Manager Entry 10
 activate task manager entry 2=Meta+2,Meta+2,Activate Task Manager Entry 2
@@ -438,7 +390,7 @@ show-on-mouse-pos=none,Meta+V,Open Klipper at Mouse Position
 stop current activity=none,Meta+S,Stop Current Activity
 switch to next activity=none,,Switch to Next Activity
 switch to previous activity=none,,Switch to Previous Activity
-toggle do not disturb=none,,Toggle do not disturb
+toggle do not disturb=none,none,Toggle do not disturb
 
 [services][org.kde.krunner.desktop]
 _launch=Alt+F2\tSearch

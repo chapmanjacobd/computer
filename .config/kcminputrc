@@ -8,7 +8,7 @@ PointerAcceleration=0.600
 ScrollFactor=0.75
 
 [Mouse]
-X11LibInputXAccelProfileFlat=false
+X11LibInputXAccelProfileFlat=true
 cursorSize=48
 cursorTheme=HighContrast
 
