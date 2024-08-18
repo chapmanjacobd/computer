@@ -17,7 +17,7 @@ cat /home/xk/.github/etc/nanorc | sudo tee /etc/nanorc
 # sudo cp -a ~/.github/etc/. /etc/
 # sudo restorecon -R /etc
 mkdir ~/.ssh/control/
-cat ~/.github/etc/ssh/sshd_config.d/xk.conf | sudo tee /etc/ssh/sshd_config.d/xk.conf
+cat ~/.github/etc/ssh/sshd_config.d/10-xk.conf | sudo tee /etc/ssh/sshd_config.d/10-xk.conf
 sudo systemctl enable --now sshd
 sudo systemctl enable --now fstrim.timer
 
