@@ -11,7 +11,7 @@ ScrollFactor=0.75
 X11LibInputXAccelProfileFlat=true
 XLbInptAccelProfileFlat=false
 XLbInptPointerAcceleration=0.8
-cursorSize=96
+cursorSize=88
 cursorTheme=Bibata-Modern-Ice
 
 [Tmp]
