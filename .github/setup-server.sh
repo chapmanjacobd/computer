@@ -80,3 +80,6 @@ sudo systemctl mask systemd-journald-audit.socket
 for dep in $(cat .github/cargo_installed); do
     cargo install $dep
 done
+
+sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
+sudo dnf install -y xpra
