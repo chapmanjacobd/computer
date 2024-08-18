@@ -1,3 +1,4 @@
+gtk-enable-event-sounds=0
 gtk-sound-theme-name="ocean"
 gtk-cursor-theme-size=88
 gtk-enable-animations=0
