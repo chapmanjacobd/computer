@@ -189,3 +189,4 @@ abbr -a -- unslurp string split \'\ \'
 abbr -a -- gitstars githubstars
 abbr -a -- qr_decode zbarimg
 abbr -a -- t mkcdtemp
+abbr -a -- nmap nmap -Pn
