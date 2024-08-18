@@ -217,7 +217,7 @@ xorg-x11-drv-amdgpu
 xorg-x11-server-Xvfb
 xournal
 xournalpp
-xpra
+xpra-x11
 xrandr
 xsel
 xset
