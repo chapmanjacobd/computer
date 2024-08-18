@@ -386,16 +386,22 @@ _launch=Alt+K
 _launch=Alt+Shift+K
 
 [services][fish-12.desktop]
-_launch=Alt+D
+_launch=Alt+Shift+D
 
 [services][fish-13.desktop]
-_launch=Alt+C
+_launch=Alt+Shift+C
 
 [services][fish-14.desktop]
 _launch=Alt+[
 
 [services][fish-15.desktop]
 _launch=Alt+]
+
+[services][fish-16.desktop]
+_launch=Alt+D
+
+[services][fish-17.desktop]
+_launch=Alt+C
 
 [services][fish-2.desktop]
 _launch=Alt+T
