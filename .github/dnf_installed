@@ -218,6 +218,7 @@ xorg-x11-server-Xvfb
 xournal
 xournalpp
 xpra-client
+xpra-client-gtk3
 xpra-codecs-extras
 xpra-server
 xpra-x11
