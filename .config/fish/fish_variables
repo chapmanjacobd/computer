@@ -27,6 +27,7 @@ SETUVAR --export PSQLRC:/pg/psqlrc
 SETUVAR --export PYTHONBREAKPOINT:IPython\x2eterminal\x2edebugger\x2eset_trace
 SETUVAR --export PYTHONIOENCODING:utf\x2d8
 SETUVAR --export RCLONE_LOCAL_NO_PREALLOCATE:true
+SETUVAR --export XPRA_SHOW_SPINNER_WINDOW_TYPES:
 SETUVAR Z_DATA_DIR:/home/xk/\x2elocal/share/z
 SETUVAR --export __fish_git_prompt_showuntrackedfiles:1
 SETUVAR __fish_initialized:3400
