@@ -36,14 +36,6 @@ skiptaskbarrule=2
 wmclass=projectM-pulseaudio
 wmclassmatch=1
 
-[4]
-Description=New window settings
-maximizehoriz=true
-maximizehorizrule=3
-maximizevert=true
-maximizevertrule=3
-types=1
-
 [9c9d98f3-e9cc-4d91-84e4-75dd0eab2699]
 Description=New window settings
 maximizehoriz=true
@@ -54,11 +46,11 @@ types=1
 
 [General]
 ColorScheme[$d]
-count=4
+count=3
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2,3,4
+rules=1,2,3
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
