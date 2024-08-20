@@ -42,6 +42,7 @@ ffmpeg-libs
 fftw-devel
 flacon
 fpart
+freerdp-server
 gamemode
 gdal
 gdal-devel
