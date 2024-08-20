@@ -1,4 +1,4 @@
-/.config/Heroic/
+/.config/heroic/
 /.*fakexinerama
 /.config/xpra/
 /.config/ibus/bus/
@@ -332,4 +332,3 @@
 /.config/Hardcoded Software/
 /.config/hawck/
 /.config/helm/
-/.config/heroic/
