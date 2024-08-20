@@ -9,6 +9,8 @@ function vnc
         b ssh -4 xk@pakon -f -L 4102:localhost:4000 'sleep 20'
         sleep 1
         /usr/NX/bin/nxplayer --session ~/.ssh/pakon.nxs
+        # xpra start-desktop --resize-display="2880x1726"
+        # xpra attach ssh://pakon/
     end
     if contains backup $argv
         /usr/NX/bin/nxplayer --session ~/.ssh/backup.nxs
