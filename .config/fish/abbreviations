@@ -190,3 +190,4 @@ abbr -a -- gitstars githubstars
 abbr -a -- qr_decode zbarimg
 abbr -a -- t mkcdtemp
 abbr -a -- nmap nmap -Pn
+abbr -a -- evtest sudo python -m evdev.evtest
