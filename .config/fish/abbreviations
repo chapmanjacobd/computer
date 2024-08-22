@@ -135,7 +135,6 @@ abbr -a -- ytd 'lb dladd ~/lb/video.db (cb)'
 abbr -a -- osq osqueryi
 abbr -a -- df 'df -h | sort --human-numeric-sort -k2'
 abbr -a -- revsort rightsort
-abbr -a -- pstree 'pstree -a -p'
 abbr -a -- pcontinue presume
 abbr -a -- lsgpu lsgpu -p
 abbr -a -- restore_snapshot snapshot_restore
@@ -191,3 +190,4 @@ abbr -a -- qr_decode zbarimg
 abbr -a -- t mkcdtemp
 abbr -a -- nmap nmap -Pn
 abbr -a -- evtest sudo python -m evdev.evtest
+abbr -a -- pstree 'pstree -a -t -p'
