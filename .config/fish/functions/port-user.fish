@@ -3,8 +3,7 @@ function port-user
     if count $pid >/dev/null
         for id in $pid
         set -l cmd (ps -p $id -o command | tail -n 1)
-        printf "PID: %s\n" $id
-        printf "CMD: %s\n" $cmd
+        printf "%s\t%s\n" $id $cmd
         end
     else
         echo nope
