@@ -3,8 +3,7 @@ Description=len tunnel
 After=network.target
 
 [Service]
-Type=simple
-ExecStart=/bin/ssh -NT -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=45" -R localhost:7070:localhost:22 pakon
+ExecStart=/bin/ssh -T -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval=45" -R localhost:7070:localhost:22 pakon
 Restart=always
 RestartSec=15
 
