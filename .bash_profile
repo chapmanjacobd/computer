@@ -6,7 +6,7 @@ if [ -f ~/.bashrc ]; then
 fi
 
 GTK_USE_PORTAL=1
-export LD_PRELOAD=/home/xk/bin/libstderred.so
+#export LD_PRELOAD=/home/xk/.local/\$LIB/libstderred.so
 
 eval "$(dircolors)"
 # Run something, muting output or redirecting it to the debug stream
