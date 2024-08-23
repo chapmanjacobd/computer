@@ -20,6 +20,7 @@ ui = UInput(
             e.KEY_PAGEUP,
             e.KEY_PAGEDOWN,
             e.BTN_LEFT,
+            e.BTN_MIDDLE,
             e.BTN_RIGHT,
             e.BTN_WHEEL,
             e.KEY_SCROLLUP,
