@@ -1,3 +1,5 @@
+import subprocess
+
 import evdev
 from evdev import UInput
 from evdev import ecodes as e
@@ -44,9 +46,7 @@ with device.grab_context():  # get exclusive access
                     pressed_action = False
                 elif event.value == 0:  # Right Button Released
                     if pressed_action is False:  # Right Button was pressed and released without other actions
-                        ui.write(e.EV_KEY, e.BTN_RIGHT, 1)
-                        ui.write(e.EV_KEY, e.BTN_RIGHT, 0)
-                        ui.syn()
+                        subprocess.run(["xdotool", "click", "3"])
                     right_button_pressed = False
             elif event.code == e.BTN_MIDDLE:
                 if event.value == 1 and right_button_pressed:  # Right Button + Middle Button (XButton2)
