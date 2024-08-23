@@ -56,7 +56,10 @@ with device.grab_context():  # get exclusive access
                     ui.write(e.EV_KEY, e.KEY_LEFTCTRL, 0)
                     ui.syn()
                     pressed_action = True
-            else:
+                else:  # Middle Click
+                    ui.write(event.type, event.code, event.value)
+                    ui.syn()
+            else:  # other keys
                 ui.write(event.type, event.code, event.value)
                 ui.syn()
         elif event.type == e.EV_REL:
