@@ -10,6 +10,6 @@ xinput set-prop 9 310 1
 ~/bin/trackballscroll.sh &
 xmodmap -e "clear Lock" > /dev/null
 
-b sudo python bin/wheel.py
+run sudo python bin/wheel.py
 
 # b mons.sh -a
