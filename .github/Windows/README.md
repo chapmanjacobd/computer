@@ -4,16 +4,6 @@
 
 https://youtu.be/eh3SK-97Sss
 
-## Mouse
-
-https://superuser.com/questions/954021/how-do-you-enable-focus-follows-mouse-in-windows-10
-
-### Keyboard
-
-- https://github.com/dreymar/bigbagkbdtrixpkl
-- https://github.com/colemakmods/mod-dh#windows
-- https://github.com/kmonad/kmonad/blob/master/doc/installation.md#windows-environment
-
 ## Package Manager
 
 ```
@@ -48,20 +38,25 @@ Install-Module PSEverything
 Install-Module PowerTab
 ```
 
+## Mouse
+
+https://superuser.com/questions/954021/how-do-you-enable-focus-follows-mouse-in-windows-10
+
+### Keyboard alternatives
+
+- https://github.com/dreymar/bigbagkbdtrixpkl
+- https://github.com/colemakmods/mod-dh#windows
+- https://github.com/kmonad/kmonad/blob/master/doc/installation.md#windows-environment
+
 ## Misc
 
 - https://learn.microsoft.com/en-us/windows/powertoys/run
 - https://www.grc.com/wizmo/wizmo.htm
 
-- https://scoop.sh/
 - https://ninite.com/
 - https://raw.githubusercontent.com/niedzielski/cb/main/cb
 - https://github.com/chapmanjacobd/computer/tree/main/.github
-- https://scoop.sh/#/apps?q=nirsoft
 - https://community.chocolatey.org/packages
-- https://scoop.sh/#/buckets
-- https://scoop.sh/#/apps?q=%22https%3A%2F%2Fgithub.com%2FScoopInstaller%2FExtras%22&s=2&d=1
-
 - https://keypirinha.com/
 - https://github.com/chapmanjacobd/library/blob/main/.github/Windows.md
 
@@ -168,32 +163,4 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "L
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarAnimations" /t REG_DWORD /d "0" /f
 reg add "HKCU\Software\Microsoft\Windows\DWM" /v "AlwaysHibernateThumbnails" /t REG_DWORD /d "0" /f
 reg add "HKCU\Software\Microsoft\Windows\DWM" /v "EnableAeroPeek" /t REG_DWORD /d "0" /f
-```
-
-## Set default applications
-
-```bat
-:: Set the path to VSCode executable
-set "VSCodePath=E:\VSCode"
-
-:: Define common registry key strings
-set "regKeyHKCR=HKEY_CLASSES_ROOT"
-set "regKeyCustomShell=%regKeyHKCR%\*\shell\Custom\shell\VsCode"
-set "regKeyDirectoryShell=%regKeyHKCR%\Directory\shell\vscode"
-set "regKeyDirectoryBackgroundShell=%regKeyHKCR%\Directory\Background\shell\vscode"
-
-:: Add/Edit registry keys for editing with VSCode
-reg add "%regKeyCustomShell%" /ve /d "Edit with VSCode" /f
-reg add "%regKeyCustomShell%" /v Icon /d "%VSCodePath%\Code.exe,0" /f
-reg add "%regKeyCustomShell%\command" /ve /d "\"%VSCodePath%\Code.exe\" \"%1\"" /f
-
-:: Add/Edit registry keys for opening folder as VS Code project
-reg add "%regKeyDirectoryShell%" /ve /d "Open Folder as VS Code Project" /f
-reg add "%regKeyDirectoryShell%" /v Icon /d "%VSCodePath%\Code.exe,0" /f
-reg add "%regKeyDirectoryShell%\command" /ve /d "\"%VSCodePath%\Code.exe\" \"%1\"" /f
-
-:: Add/Edit registry keys for opening folder in VS Code project (background)
-reg add "%regKeyDirectoryBackgroundShell%" /ve /d "Open Folder in VS Code Project" /f
-reg add "%regKeyDirectoryBackgroundShell%" /v Icon /d "%VSCodePath%\Code.exe,0" /f
-reg add "%regKeyDirectoryBackgroundShell%\command" /ve /d "\"%VSCodePath%\Code.exe\" \"%V\"" /f
 ```
