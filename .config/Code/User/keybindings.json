@@ -31,5 +31,13 @@
   {
     "key": "alt+z",
     "command": "editor.action.toggleWordWrap"
+  },
+  {
+    "key": "ctrl+q",
+    "command": "workbench.action.closeWindow"
+  },
+  {
+    "key": "ctrl+shift+w",
+    "command": "-workbench.action.closeWindow"
   }
 ]

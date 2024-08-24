@@ -114,7 +114,7 @@ Loop, %timesY%
         Click WheelUp
         movedy := movedy / 6
     }
-}   
+}
 
 MouseMove ox, oy
 return
@@ -133,12 +133,12 @@ return
 ;    Send, {blind}{PGDN}
 ;    Sleep, 10
 ;    return
-;    
+;
 ;    RButton & MButton::
 ;    Send, ^w
 ;    Sleep, 200
 ;    return
-;    
+;
 ;return
 
 RButton::Send {RButton}
@@ -152,17 +152,17 @@ RButton::Send {RButton}
     Send, {PGUP}
     Sleep, 20
     return
-    
+
     RButton & LButton::
     Send, {PGDN}
     Sleep, 20
     return
-    
+
     RButton & MButton::
     Send, ^w
     Sleep, 200
     return
-    
+
     RButton & WheelUp::
     Send, {PGUP}
     Sleep, 10
@@ -172,7 +172,7 @@ RButton::Send {RButton}
     Send, {PGDN}
     Sleep, 10
     return
-    
+
 return
 
 SetKeyDelay 30,50
@@ -183,15 +183,15 @@ XButton2alt:
     Send, ^{PGUP}
     Sleep, 10
     return
-    
+
     XButton2 & RButton::
     return
-    
+
     XButton2 & LButton::
     Send, ^{PGDN}
     Sleep, 10
     return
-    
+
 return
 
 XButton1::Send {MButton}
@@ -199,20 +199,45 @@ XButton1::Send {MButton}
     XButton1 & XButton2::
     soundset, +5
     return
-    
+
     XButton1 & LButton::
     return
-    
+
     XButton1 & RButton::
     soundset, -5
     return
-    
+
 return
 
+
+e::f
+r::p
+t::b
+y::j
+u::l
+i::u
+o::y
+p::`;
+s::r
+d::s
+f::t
+g::g
+h::m
+j::n
+k::e
+l::i
+`;::o
+z::x
+x::c
+c::d
+b::z
+n::k
+m::h
+
+
+^q::Send, !{F4}
+
 ;;extend
-
-;HINT: use original keys yo
-
 
 ;
 ;    #`::`
@@ -242,7 +267,7 @@ return
 ;    ;#[::
 ;    #]::]
 ;    #\::Capslock
-;    
+;
 ;    #a::Send ^{End}
 ;    #s::Send {F2}
 ;    #d::Send {Del}
@@ -253,11 +278,11 @@ return
 ;    #j::Send {Down}
 ;    #k::Send {Right}
 ;    #l::
-;    
+;
 ;    #`;::
-;    
+;
 ;    ;#'::MouseMove,  20,  0, 0, R
-;    
+;
 #z::Run C:\bbZero\blackbox.exe -exec @bbcore.ShowMenu
 ;    #x::x
 ;    #c::LButton
@@ -280,18 +305,18 @@ return
 ;mods
 
 #If WinActive("ahk_class OpusApp") || WinActive("ahk_class XLMAIN")
-    
+
     +^z::Send ^y
-    
+
 return
 
 #If WinActive("ahk_exe ACDSeeUltimate10.exe")
-    
+
     End::Send {Del}
-    
+
 return
 
-;#If WinActive("ahk_exe explorer.exe")   
+;#If WinActive("ahk_exe explorer.exe")
 ;    Enter::Send {Space} {Enter}
 ;return
 
@@ -300,12 +325,26 @@ return
 *W::Send, !{F4}
 
 RButton::Send {RButton}
-
     RButton & XButton2::
     Send, !{F4}
     Sleep, 10
     return
-    
 return
 
-#If
+^+Space::
+    WinGet, activeHwnd, ID, A
+
+    ; Toggle the maximization state of the active window
+    WinGet, MaxState, MinMax, ahk_id %activeHwnd%
+    if (MaxState = 1)  ; currently maximized
+        WinRestore, ahk_id %activeHwnd%
+    else
+        WinMaximize, ahk_id %activeHwnd%
+return
+
+#If, GetKeyState("LWin", "P")
+    *f::
+        WinGet, activeHwnd, ID, A
+        WinSet, AlwaysOnTop, , ahk_id %activeHwnd%
+    Return
+Return

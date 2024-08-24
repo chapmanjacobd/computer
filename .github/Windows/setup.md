@@ -1,14 +1,14 @@
+# Setup
+
+## Setup music
+
 https://youtu.be/eh3SK-97Sss
 
 ## Mouse
 
 https://superuser.com/questions/954021/how-do-you-enable-focus-follows-mouse-in-windows-10
 
-## keyboard
-
-https://unli.xyz/k.ex
-
-### Alternatives?
+### Keyboard
 
 - https://github.com/dreymar/bigbagkbdtrixpkl
 - https://github.com/colemakmods/mod-dh#windows
@@ -17,30 +17,41 @@ https://unli.xyz/k.ex
 ## Package Manager
 
 ```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
 scoop bucket add extras
-FOR /F %%i IN (scoop_installed.txt) DO scoop install %%i
+FOR /F %i IN (scoop_installed.txt) DO scoop install %i
 
 clink autorun install
 
+clink set clink.logo none
+clink set clink.autostart nu
+clink set history.max_lines 888888
+
+setx path "%path%;C:\Users\JChapman\bin;C:\Users\JChapman\scoop\apps\msys2\current\usr\bin;C:\Users\JChapman\scoop\apps\msys2\current\mingw64\bin\"
+
+code --install-extension amodio.restore-editors
+
+setup task scheduler C:\Users\JChapman\scoop\shims\scoop.cmd update --all
+
+msys2
+xargs -a pacman_installed.txt pacman -S --needed --noconfirm
+
+pip install pyreadline3
+```
+
+## PowerShell
+
+```ps1
 Install-Module PSEverything
 Install-Module PowerTab
-
 ```
 
-```
-scoop install listary keypirinha koffee wezterm alacritty rio windows-terminal terminalpp everything-powertoys altsnap moar ov lazydocker wizmo ueli gitbutler cmder
+## Misc
 
-https://learn.microsoft.com/en-us/windows/powertoys/run
-
-https://www.grc.com/wizmo/wizmo.htm
-
-doskey ..=..\$*
-doskey ...=..\..\$*
-
-doskey okeys=notepad c:\myaliases.txt
-doskey updatekeys=doskey /macrofile=C:\myaliases.txt
-updatekeys
-```
+- https://learn.microsoft.com/en-us/windows/powertoys/run
+- https://www.grc.com/wizmo/wizmo.htm
 
 - https://scoop.sh/
 - https://ninite.com/
@@ -51,10 +62,7 @@ updatekeys
 - https://scoop.sh/#/buckets
 - https://scoop.sh/#/apps?q=%22https%3A%2F%2Fgithub.com%2FScoopInstaller%2FExtras%22&s=2&d=1
 
-## Misc
-
 - https://keypirinha.com/
-- https://www.msys2.org/
 - https://github.com/chapmanjacobd/library/blob/main/.github/Windows.md
 
 ## Remove distractions, but only ones that have popups, obviously slow the computer, or otherwise inhibit work
@@ -189,4 +197,3 @@ reg add "%regKeyDirectoryBackgroundShell%" /ve /d "Open Folder in VS Code Projec
 reg add "%regKeyDirectoryBackgroundShell%" /v Icon /d "%VSCodePath%\Code.exe,0" /f
 reg add "%regKeyDirectoryBackgroundShell%\command" /ve /d "\"%VSCodePath%\Code.exe\" \"%V\"" /f
 ```
-

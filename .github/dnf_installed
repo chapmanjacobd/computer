@@ -215,6 +215,7 @@ xdg-desktop-portal-kde
 xdg-user-dirs
 xdotool
 xinput
+xkill
 xorg-x11-drv-amdgpu
 xorg-x11-server-Xvfb
 xournal

@@ -1,0 +1,10 @@
+set colored-stats                 on   # Turn on complet
+set colored-completion-prefix     on   
+
+$if clink
+set search-ignore-case            on   # Case insensitive history searches.
+set completion-auto-query-items   on   # Prompt before showing completions if they'll exceed half the screen.
+
+"\t": clink-select-complete
+
+$endif

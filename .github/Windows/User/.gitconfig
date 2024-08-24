@@ -1,0 +1,76 @@
+[pack]
+	windowMemory = 2000m
+	SizeLimit = 200m
+	threads = 1
+[gpg]
+	format = ssh
+[user]
+	signingkey = C:\\Users\\JChapman\\.ssh\\id_ed25519.pub
+	email =
+	name = Jacob Chapman
+[commit]
+	gpgsign = true
+[rebase]
+	autoStash = true
+[merge]
+	autoStash = true
+[pull]
+	rebase = true
+[log]
+    date = relative-local
+[branch]
+    sort = -committerdate
+[tag]
+    sort = taggerdate
+[alias]
+    history = log --follow -p --
+    brame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
+[transfer]
+    fsckobjects = true
+[fetch]
+    fsckobjects = true
+[receive]
+    fsckObjects = true
+[diff]
+    algorithm = histogram
+    indentHeuristic = true
+    colormoved = zebra
+    context = 5
+    tool = delta
+    difftool = delta
+[delta]
+    navigate = true
+[push]
+    default = current
+    autosetupremote = true
+    followtags = true
+[core]
+    preloadindex = true
+    fscache = true
+    logallrefupdates = true
+	attributesfile = C:\\Users\\JChapman\\.gitattributes
+	pager = delta --syntax-theme GitHub --max-line-length 1024
+	autocrlf = false
+[color]
+	ui = auto
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = yellow
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color.grep]
+	match = red normal bold
+	filename = magenta
+	lineNumber = green
+	column = green
+	separator = cyan
+[diff "excel"]
+    textconv = python3 ~/bin/cscript2stdout.py ~/bin/excel2csv.vbs
+    cachetextconv = true
+    binary = true

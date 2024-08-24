@@ -1,0 +1,2 @@
+mingw-w64-x86_64-sqlite3
+mingw-w64-x86_64-readline
