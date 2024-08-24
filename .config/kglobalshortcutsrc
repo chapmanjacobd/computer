@@ -423,7 +423,7 @@ _launch=Alt+D
 _launch=Alt+C
 
 [services][fish-18.desktop]
-_launch=Ctrl+Shift+Space
+_launch=Meta+Up\tCtrl+Shift+Space
 
 [services][fish-19.desktop]
 _launch=Alt+J
