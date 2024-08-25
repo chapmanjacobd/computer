@@ -11,6 +11,10 @@ wmclassmatch=1
 
 [1]
 Description=ignore mpv alt-tab
+fpplevel=3
+fpplevelrule=2
+fsplevel=3
+fsplevelrule=2
 skiptaskbar=true
 skiptaskbarrule=3
 wmclass=mpv
