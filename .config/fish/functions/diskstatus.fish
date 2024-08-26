@@ -26,5 +26,7 @@ function diskstatus
         end
     end
 
+    ro_mounts
+
     lb mu (mergerfs_disk_mounts)
 end
