@@ -14,7 +14,6 @@ btrfsmaintenance
 cairo-devel
 calibre
 cargo
-cheat
 chromaprint-tools
 chromium
 clickhouse-client
@@ -190,7 +189,6 @@ tesseract
 testdisk
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
-tldr
 translate-shell
 trash-cli
 trurl

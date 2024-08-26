@@ -121,7 +121,6 @@ abbr -a -- er eval-random
 abbr -a -- refreshLibrary lb-refresh
 abbr -a -- abspath lsdir
 abbr -a -- mv-ln mvln
-abbr -a -- man manual
 abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
 abbr -a -- gd 'git diff; git diff --stat'
 abbr -a -- mod_up clear_mod_keys.sh
@@ -191,3 +190,4 @@ abbr -a -- t mkcdtemp
 abbr -a -- nmap nmap -Pn
 abbr -a -- evtest sudo python -m evdev.evtest
 abbr -a -- pstree 'pstree -a -t -p'
+abbr -a -- manual man
