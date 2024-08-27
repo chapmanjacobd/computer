@@ -62,6 +62,7 @@ pympler
 pypdf_table_extraction
 pytest-icdiff
 pytest-randomly
+pytest-regressions
 python-dateutil
 python_mpv_jsonipc
 pyupgrade
