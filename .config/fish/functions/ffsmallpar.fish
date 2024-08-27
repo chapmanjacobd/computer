@@ -12,11 +12,11 @@ function ffsmallpar
         return
     end
 
-    ssh -fN pulse15 # workaround for VisualHostKey
+    ssh -fN len # workaround for VisualHostKey
     ssh -fN backup
     cat $tmpfile | timeout -s HUP 18h parallel --sshloginfile ~/.parallel/sshloginfile.ffmpeg --transfer "lb process-video {} && rsync -auh --remove-sent-files {.}.av1.mkv" $hostname:(pwd) >/dev/null
 
-    for pc in backup pulse15
+    for pc in backup len
         rsync -auh --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial --remove-sent-files $pc:\*.av1.mkv .
     end
 
@@ -27,7 +27,7 @@ function ffsmallpar
         end
     end
     ssh backup fd -HI -eMKV -eMP4 -d1 -x rm
-    ssh pulse15 fd -HI -eMKV -eMP4 -d1 -x rm
+    ssh len fd -HI -eMKV -eMP4 -d1 -x rm
 
     clear_lock_file ffsmallpar
 end

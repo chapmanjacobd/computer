@@ -1,6 +1,6 @@
 # Defined interactively
 function allpc
-    for pc in pakon backup pulse15
+    for pc in pakon backup len
         echo $pc
         ssh $pc $argv
         or $argv

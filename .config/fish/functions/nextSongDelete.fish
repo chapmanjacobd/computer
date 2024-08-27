@@ -5,6 +5,6 @@ function nextSongDelete
     else if pgrep -f 'mpv .*mpv_socket'
         lb-dev next --delete-files
     else
-        ssh pulse15 lb next --delete-file
+        ssh len lb next --delete-file
     end
 end
