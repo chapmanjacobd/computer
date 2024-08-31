@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import evdev
 from evdev import UInput
 from evdev import ecodes as e
