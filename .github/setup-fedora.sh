@@ -8,23 +8,6 @@ sudo systemctl set-default graphical.target
 # fpsync /home/xk/ 192.168.68.65:/home/xk/
 # fpsync /mnt/d/ 192.168.68.65:/mnt/d/
 
-chmod 0600 ~/.nx/config/authorized.crt
-echo "EnableUPnP none" | sudo tee -a /usr/NX/etc/server.cfg
-echo "NXKeyBasedUsePAM 0" | sudo tee -a /usr/NX/etc/server.cfg
-echo "AcceptedAuthenticationMethods NX-private-key" | sudo tee -a /usr/NX/etc/server.cfg
-echo "EnableAdministratorLogin 0" | sudo tee -a /usr/NX/etc/server.cfg
-echo "EnableNetworkBroadcast 0" | sudo tee -a /usr/NX/etc/server.cfg
-echo "EnableSyslogSupport 1" | sudo tee -a /usr/NX/etc/server.cfg
-echo "EnableWebPlayer 0" | sudo tee -a /usr/NX/etc/server.cfg
-echo "AuthorizationTimeout 100" | sudo tee -a /usr/NX/etc/server.cfg
-echo "EnableDiskSharing none" | sudo tee -a /usr/NX/etc/node.cfg
-echo "EnablePublicDiskSharing 0" | sudo tee -a /usr/NX/etc/node.cfg
-echo "EnableSyslogSupport 1" | sudo tee -a /usr/NX/etc/node.cfg
-echo "UpdateFrequency 0" | sudo tee -a /usr/NX/etc/node.cfg
-sudo /usr/NX/bin/nxserver --restart
-
-sudo rm /etc/xdg/plasma-workspace/env/nx-sourceenv.sh
-
 sudo dnf group update core -y
 sudo dnf --with-optional -y groupinstall Multimedia
 sudo dnf install -y gstreamer1-plugins-{bad-\*,good-\*,base} gstreamer1-plugin-openh264 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
@@ -63,10 +46,6 @@ sudo dnf install -y mpv ffmpeg python3 python3-pip git android-tools R ImageMagi
 sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring
 # sudo dnf erase plasma-discover
 
-#gcloud init
-#gcloud auth application-default login
-#gcloud auth login
-#https://www.ctrl.blog/entry/fedora-hibernate.html
 # sudo systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
 python -m ensurepip
