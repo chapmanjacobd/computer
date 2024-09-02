@@ -18,6 +18,8 @@
 *.avi      binary
 *.bash     text eol=lf
 *.bat      text eol=crlf
+*.vbs      text eol=crlf
+*.ahk      text eol=crlf
 *.bibtex   text diff=bibtex
 *.bmp      binary
 *.cdxml    text eol=crlf
@@ -75,6 +77,7 @@
 *.lock     text -diff
 *.ls       text
 *.lua      text
+*.nu       text
 *.m4a      binary
 *.m4v      binary
 *.map      text -diff

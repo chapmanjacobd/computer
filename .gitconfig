@@ -13,10 +13,9 @@
 	excludesfile = /home/xk/.gitignore_global
 	preloadindex = true
 	fscache = true
-	autocrlf = false
-	# autocrlf = input # ?
-	# safecrlf = true
 	eol = lf
+	autocrlf = false
+	safecrlf = true
 	logallrefupdates = true
 	attributesfile = /home/xk/.gitattributes_global
 [transfer]
