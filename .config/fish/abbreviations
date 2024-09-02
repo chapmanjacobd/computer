@@ -108,7 +108,6 @@ abbr -a -- ldd readelf -d
 abbr -a -- timecalc2 insect
 abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x09%an%x09%ad%x09%s" --name-status | grep -v ^M'
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
-abbr -a -- grm git restore --source=HEAD --staged --worktree -- .
 abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cbfile
@@ -191,3 +190,4 @@ abbr -a -- evtest sudo python -m evdev.evtest
 abbr -a -- pstree 'pstree -a -t -p'
 abbr -a -- manual man
 abbr -a -- lsram sudo dmidecode -t 17
+abbr -a -- grm git restore --source=HEAD --staged --worktree --
