@@ -191,3 +191,4 @@ abbr -a -- pstree 'pstree -a -t -p'
 abbr -a -- manual man
 abbr -a -- lsram sudo dmidecode -t 17
 abbr -a -- grm git restore --source=HEAD --staged --worktree --
+abbr -a -- cless colorpager
