@@ -11,6 +11,9 @@ function vnc
         rdp
     end
     if contains backup $argv
+        ssh -4 backup -L 4102:localhost:4000 'sleep 1'
+        b ssh -4 backup -L 4102:localhost:4000 'sleep 20'
+        sleep 1
         /usr/NX/bin/nxplayer --session ~/.ssh/backup.nxs
     end
 end

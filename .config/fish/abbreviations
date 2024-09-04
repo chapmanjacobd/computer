@@ -192,3 +192,5 @@ abbr -a -- manual man
 abbr -a -- lsram sudo dmidecode -t 17
 abbr -a -- grm git restore --source=HEAD --staged --worktree --
 abbr -a -- cless colorpager
+abbr -a -- ssh_close_port ssh -O cancel -L 4102:localhost:4000 pakon
+abbr -a -- locate locate -N -i
