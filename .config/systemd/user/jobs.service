@@ -1,0 +1,12 @@
+[Unit]
+Description=Run commands from a line-delimited jobs folder
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fish -c "eval-repeat-dir .local/jobs/"
+Restart=always
+RestartSec=10h
+
+[Install]
+WantedBy=default.target
