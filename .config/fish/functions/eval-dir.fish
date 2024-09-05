@@ -1,3 +1,3 @@
 function eval-dir
-    parallel --plain -j80 --line-buffer --joblog /home/xk/.jobs/joblog_jobs.log repeat eval-file ::: (fd -tf . $argv)
+    parallel --plain -j80 --line-buffer --joblog /home/xk/.jobs/s.(datestamp).log eval-file ::: (fd -tf . $argv)
 end
