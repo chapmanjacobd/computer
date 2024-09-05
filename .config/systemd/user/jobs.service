@@ -4,9 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/fish -c "eval-repeat-dir .local/jobs/"
+ExecStart=/usr/bin/fish -c "eval-dir .local/jobs/"
 Restart=always
-RestartSec=10h
+RestartSec=15m
+RuntimeMaxSec=10h
 
 [Install]
 WantedBy=default.target

@@ -187,10 +187,11 @@ abbr -a -- qr_decode zbarimg
 abbr -a -- t mkcdtemp
 abbr -a -- nmap nmap -Pn
 abbr -a -- evtest sudo python -m evdev.evtest
-abbr -a -- pstree 'pstree -a -t -p'
 abbr -a -- manual man
 abbr -a -- lsram sudo dmidecode -t 17
 abbr -a -- grm git restore --source=HEAD --staged --worktree --
 abbr -a -- cless colorpager
 abbr -a -- ssh_close_port ssh -O cancel -L 4102:localhost:4000 pakon
 abbr -a -- locate locate -N -i
+abbr -a -- pstree pstree -a -t -s -p
+abbr -a -- jo journalctl --user -u jobs.service --follow --output cat

@@ -1,5 +1,3 @@
 function eval-repeat-dir
-    for file in $argv
-        b eval-repeat $file
-    end
+    parallel --plain -j80 --line-buffer --joblog /home/xk/.jobs/joblog_jobs.log eval-repeat ::: (fd -tf . $argv)
 end
