@@ -196,3 +196,4 @@ abbr -a -- locate locate -N -i
 abbr -a -- pstree pstree -a -t -s -p
 abbr -a -- jo journalctl --user -u jobs.service --follow --output cat
 abbr -a -- debug-fish kill -TRAP
+abbr -a -- htop TERM=screen htop
