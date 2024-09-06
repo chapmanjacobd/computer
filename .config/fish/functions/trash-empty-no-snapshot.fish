@@ -2,9 +2,19 @@
 function trash-empty-no-snapshot
     filter_opts $argv
 
-    if test -z "$args"
-        set args (trash-list --trash-dirs)
-    end
+	set args (
+	  if test -z "$args"
+	    trash-list --trash-dirs
+	  else
+	    for dir in (trash-list --trash-dirs)
+	        for arg in $args
+	            if string match -q -r $arg $dir
+                    echo $dir
+                end
+	        end
+	    end
+	  end
+	)
 
     for mnt in $args
         if test -e $mnt/.snapshots/one
@@ -12,10 +22,14 @@ function trash-empty-no-snapshot
         end
     end
 
-    trash-size
-    trash-list >>~/.local/share/trashed.txt
+    for d in $args
+        du -hs $d | grep -v ^0  # trash-size
+        trash-list --trash-dir $d >>~/.local/share/trashed.txt
+    end
 
     if contains -- -f $opts; or gum confirm --default=no 'Empty trash?'
-        command trash-empty -f
+        for d in $args
+            command trash-empty -f --trash-dir $d
+        end
     end
 end
