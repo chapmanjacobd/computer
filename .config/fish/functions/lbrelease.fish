@@ -8,7 +8,7 @@ function lbrelease --argument newver
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
     rg db.execute
 
-    ruff check . --select A002 --select S110
+    ruff check . --select A001 --select A002 --select S110
     lbformat
 
     rg -i --no-heading --no-line-number --fixed-strings -j1 ', 0)' | grep -ivE 'coalesce|noqa'
