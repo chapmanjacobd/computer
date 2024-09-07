@@ -92,6 +92,7 @@
 [alias]
 	history = log --follow -p --
 	utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
+	amend = !git commit --amend --no-edit && git push -f
 [advice]
 	skippedCherryPicks = false
 [branch]
