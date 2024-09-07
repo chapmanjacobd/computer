@@ -7,7 +7,7 @@ Type=simple
 ExecStart=/usr/bin/fish -c "eval-dir .local/jobs/"
 Restart=always
 RestartSec=15m
-RuntimeMaxSec=10h
+RuntimeMaxSec=10m
 
 [Install]
 WantedBy=default.target
