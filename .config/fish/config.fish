@@ -1,8 +1,19 @@
-status job-control full
+status job-control full  # https://github.com/fish-shell/fish-shell/issues/5036
 
 bass source /etc/profile
 
 set NPM_PACKAGES "$HOME/.npm-packages"
+
+if not status --is-interactive
+    return 0
+end
+
+################################################################################                  ##
+################################################################################ interactive zone ##
+################################################################################                  ##
+
+source ~/.config/fish/functions/ls.fish
+
 fzf_configure_bindings --variables
 
 bind \e\[1\;5C forward-bigword
@@ -21,8 +32,6 @@ function insert_previous_command
     commandline --insert -- (history -1)
 end
 bind \e/ insert_previous_command
-
-source ~/.config/fish/functions/ls.fish
 
 source $__fish_config_dir/abbreviations
 
