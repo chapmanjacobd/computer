@@ -50,7 +50,7 @@ SETUVAR fish_color_error:ff0000
 SETUVAR fish_color_escape:00a6b2
 SETUVAR fish_color_history_current:\x2d\x2dbold
 SETUVAR fish_color_host:normal
-SETUVAR fish_color_host_remote:\x1d
+SETUVAR fish_color_host_remote:blue
 SETUVAR fish_color_keyword:\x1d
 SETUVAR fish_color_match:\x2d\x2dbackground\x3dbrblue
 SETUVAR fish_color_normal:normal
