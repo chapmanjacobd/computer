@@ -23,6 +23,15 @@ _launch=Meta+Up,none,fish -c maximize_all
 Toggle Screen Reader On and Off=Meta+Alt+S,Meta+Alt+S,Toggle Screen Reader On and Off
 _k_friendly_name=Accessibility
 
+[kalarm]
+_k_friendly_name=KAlarm
+newAudio=none,none,New Audio Alarm
+newCommand=none,none,New Command Alarm
+newDisplay=none,none,New Display Alarm
+newEmail=none,none,New Email Alarm
+spread=none,none,Spread Windows
+stopAudio=none,none,Stop Play
+
 [kcm_touchpad]
 Disable Touchpad=Touchpad Off,Touchpad Off,Disable Touchpad
 Enable Touchpad=Touchpad On,Touchpad On,Enable Touchpad
@@ -438,6 +447,9 @@ _launch=Alt+T
 [services][fish-20.desktop]
 _launch=Meta+Up
 
+[services][fish-21.desktop]
+_launch=Alt+B
+
 [services][fish-3.desktop]
 _launch=Alt+F
 
@@ -464,9 +476,6 @@ _launch=Alt+G
 
 [services][lb.desktop]
 _launch=Alt+Shift+T
-
-[services][nxplayer.desktop]
-_launch=Alt+B
 
 [services][org.kde.dolphin.desktop]
 _launch=none
