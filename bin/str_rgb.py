@@ -8,8 +8,8 @@ def string_to_rgb(input_string):
     hash_int = int(hash_hex, 16)
 
     hue = hash_int % 360  # Hue is between 0 and 359
-    saturation = 50 + (hash_int // 360) % 50  # Saturation is between 50 and 99
-    lightness = 50 + (hash_int // (360 * 50)) % 50  # Lightness is between 50 and 99
+    saturation = 30 + (hash_int // 360) % 50  # Saturation is between 30 and 79
+    lightness = 30 + (hash_int // (360 * 50)) % 50  # Lightness is between 30 and 79
 
     r, g, b = hsl_to_rgb(hue, saturation, lightness)
 
