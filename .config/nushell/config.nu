@@ -1002,6 +1002,8 @@ def scoopinstall [ ...packages:string] {
 
 def where_any [ query: string ] {
     where {|row|
-        ($row | transpose key value | any {|x| (($x.value | describe) == "string") and ($x.value =~ $query)})
+        ($row | transpose key value | any {|cell|
+            (($cell.value | describe) == "string") and ($cell.value | str contains --ignore-case $query)
+        })
     }
 }
