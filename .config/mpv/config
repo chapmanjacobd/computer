@@ -16,7 +16,7 @@ deband=no
 tscale=oversample
 
 input-ipc-server=~/.config/mpv/socket
-ytdl-raw-options=cookies-from-browser=firefox
+#ytdl-raw-options=cookies-from-browser=firefox
 ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
 
 #vo=gpu

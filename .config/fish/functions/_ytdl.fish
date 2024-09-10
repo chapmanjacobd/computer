@@ -1,5 +1,6 @@
 function _ytdl
-    yt-dlp --cookies-from-browser firefox --user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/98.0" \
+    yt-dlp \
+      # --cookies-from-browser firefox --user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/98.0" \
         -o "%(ie_key,extractor_key,extractor)s/%(uploader,uploader_id)s/%(title).200B_%(view_count)3.2D_[%(id).60B].%(ext)s" \
         --download-archive ~/.local/share/yt_archive.txt --retries 13 --extractor-retries 13 \
         --extractor-args youtubetab:skip=authcheck --embed-metadata \
