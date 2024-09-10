@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=exec
-ExecStart=/usr/bin/ssh -o ServerAliveInterval=60 -o ExitOnForwardFailure=yes -Nn -R 7070:localhost:22 pakon 'sleep 8d'
+ExecStart=/usr/bin/ssh -o ServerAliveInterval=60 -o ExitOnForwardFailure=yes -Nn -R 7070:localhost:22 pakon 'sleep 20m'
 Restart=always
-RestartSec=15
-RuntimeMaxSec=3d
+RestartSec=20
+RuntimeMaxSec=30m
 
 [Install]
 WantedBy=default.target
