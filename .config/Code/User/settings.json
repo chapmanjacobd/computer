@@ -526,5 +526,6 @@
   "terraform.telemetry.enabled": false,
   "vsicons.dontShowNewVersionMessage": true,
   "workbench.welcomePage.walkthroughs.openOnInstall": false,
-  "editor.multiCursorLimit": 20000
+  "editor.multiCursorLimit": 20000,
+  "firedbg.showWelcome": false
 }
