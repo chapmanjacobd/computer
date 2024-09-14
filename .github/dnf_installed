@@ -17,6 +17,7 @@ cargo
 chromaprint-tools
 chromium
 clickhouse-client
+clippy
 cmake
 code
 copyq
