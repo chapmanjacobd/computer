@@ -21,7 +21,6 @@ abbr -a -- gls gitls
 abbr -a -- gp 'git pull'
 abbr -a -- gr 'git reset'
 abbr -a -- grep 'grep -i'
-abbr -a -- gs 'git status'
 abbr -a -- hibernate 'systemctl hibernate'
 abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
 abbr -a -- ipa 'ip a'
@@ -197,3 +196,4 @@ abbr -a -- debug-fish kill -TRAP
 abbr -a -- htop TERM=screen htop
 abbr -a -- wipam git amend
 abbr -a -- pstree pstree -alpts
+abbr -a -- gs git status --untracked
