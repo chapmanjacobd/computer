@@ -1,0 +1,266 @@
+#!/usr/bin/env python
+"""
+npycat: cat utility and swiss army knife for npy and npz files
+"""
+
+import numpy, argparse
+
+def main():
+    parser = argparse.ArgumentParser(
+description="""\
+prints the contents of numpy .npy or .npz files.
+""",
+epilog="""\
+examples:
+  just print the metadata (shape and type) for data.npy
+    npycat data.npy --nodata
+
+  show every number, and the mean and variance, in a 1-d slice of a 5-d tensor
+    npycat tensor.npy[0,0,:,0,1] --noabbrev --mean --var
+""",
+formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument('files', metavar='file', nargs='*',
+            help='filenames with optional slices such as file.npy[:,0]')
+    parser.add_argument('--slice',
+            metavar='slice', default=None,
+            type=parse_slice,
+            help='slice to apply to all files')
+    parser.add_argument('--unpackbits',
+            metavar='axis', nargs='?',
+            default=None, const=-1, type=int,
+            help='unpack single-bits from byte array')
+    parser.add_argument('--key', metavar='key', default=None,
+            help='key to dereference in npz dictionary')
+    add_boolean_argument(parser, 'shape', True,
+            help='show array shape')
+    add_boolean_argument(parser, 'type', True,
+            help='show array data type')
+    add_boolean_argument(parser, 'mean',
+            help='compute mean')
+    add_boolean_argument(parser, 'std',
+            help='compute stdev')
+    add_boolean_argument(parser, 'var',
+            help='compute variance')
+    add_boolean_argument(parser, 'min',
+            help='compute min')
+    add_boolean_argument(parser, 'max',
+            help='compute max')
+    add_boolean_argument(parser, 'l0',
+            help='compute L0 norm, number of nonzeros')
+    add_boolean_argument(parser, 'l1',
+            help='compute L1 norm, sum of absolute values')
+    add_boolean_argument(parser, 'l2',
+            help='compute L2 norm, euclidean size')
+    add_boolean_argument(parser, 'linf',
+            help='compute L-infinity norm, max absolute value')
+    add_boolean_argument(parser, 'meta', True,
+            help='use --nometa to suppress metadata')
+    add_boolean_argument(parser, 'data', True,
+            help='use --nodata to suppress data')
+    add_boolean_argument(parser, 'abbrev', True,
+            help='use --noabbrev to suppress abbreviation of data')
+    add_boolean_argument(parser, 'name', False,
+            help='show filename with metadata')
+    add_boolean_argument(parser, 'kname', True,
+            help='show key name from npz dictionaries')
+    add_boolean_argument(parser, 'raise', False,
+            help='raise errors instead of catching them')
+    args = parser.parse_args()
+    if getattr(args, 'raise'):
+        _worker(args)
+    else:
+        try:
+            _worker(args)
+        except Exception as e:
+            print(e)
+
+def _worker(args):
+    omit_file = None
+    if args.slice is None:
+        slices = [f for f in args.files
+                if f.startswith('[') and f.endswith(']')]
+        if len(slices) == 1:
+            omit_file = slices[0]
+            args.slice = parse_slice(slices[0])
+
+    first = True
+    for filename in args.files:
+        if filename == omit_file:
+            continue
+        dat = try_open_memmap(filename)
+        for key, arr in dat.items() if hasattr(dat, 'items') else [(None, dat)]:
+            if first:
+                first = False
+            else:
+                print('') # print spacer
+            if args.unpackbits is not None:
+                arr = numpy.unpackbits(arr, axis=args.unpackbits)
+            if args.slice is not None:
+                arr = arr[args.slice]
+            metaline = []
+            if args.name:
+                metaline.append(filename)
+            if args.kname is not None and key is not None:
+                metaline.append('%s:' % key)
+            if args.type:
+                metaline.append(str(arr.dtype))
+            if args.shape:
+                if len(arr.shape) > 0:
+                    metaline.append('size=' +
+                            'x'.join(str(s) for s in arr.shape))
+            if args.mean:
+                metaline.append('mean=%f' % arr.mean())
+            if args.std:
+                metaline.append('std=%f' % arr.std())
+            if args.var:
+                metaline.append('var=%f' % arr.var())
+            if args.max:
+                metaline.append('max=%f' % arr.max())
+            if args.min:
+                metaline.append('min=%f' % arr.min())
+            if args.l0:
+                metaline.append('l0=%d' % len(arr.nonzero()[0]))
+            if args.l1:
+                metaline.append('l1=%f' % numpy.abs(arr).sum())
+            if args.l2:
+                metaline.append('l2=%f' % numpy.sqrt(numpy.square(arr).sum()))
+            if args.linf:
+                metaline.append('linf=%f' % max(abs(arr.max()), abs(arr.min())))
+            if args.data:
+                if args.abbrev:
+                    print_abbrev(arr)
+                else:
+                    print_full(arr)
+            if args.meta and metaline:
+                print(' '.join(metaline))
+
+def print_abbrev(data, colwidth=0, screenwidth=None):
+    # Compute some sizes for formatting
+    innermost = False
+    if screenwidth is None:
+        try:
+            r, cols = subprocess.check_output(['stty', 'size']).split()
+            screenwidth = int(cols)
+        except:
+            screenwidth = 80
+        innermost = True
+        colwidth = dict(float64=16, float32=9, float16=7,
+                int64=19, int32=9, int16=5, int8=3,
+                uint64=19, uint32=9, uint16=5, uint8=3).get(
+                        str(data.dtype), 16)
+    if len(data.shape) == 0:
+        if data.dtype == 'O' and data[...] == data[...]:
+            print('None')
+            return  # None case
+        print(abbrev_num(data[...], colwidth, innermost))
+        return
+    dots = '  ... '
+    surround = len(data.shape) > 2 or data.dtype.name == 'object'
+    edges = 1 if len(data.shape) > 2 else 3 if len(data.shape) > 1 else 4
+    if len(data) <= edges * 2 + 1:
+        indexes = [range(len(data))]
+        numparts = len(data)
+        numdots = 0
+    else:
+        indexes = [range(0, edges), [None], range(len(data) - edges, len(data))]
+        numparts = edges * 2
+        numdots = len(dots)
+    if data.dtype.name == 'object' or len(data.shape) > 1:
+        for chunk in indexes:
+            for j in chunk:
+                if j is None:
+                    print(dots)
+                else:
+                    if surround:
+                        print('[')
+                    print_abbrev(data[j], colwidth, screenwidth)
+                    if surround:
+                        print('] %s shape=%s' % (str(data[j].dtype),
+                            'x'.join(str(s) for s in data[j].shape)))
+    elif numparts > 0:
+        fieldwidth = min(colwidth, (screenwidth - numdots) // numparts - 1)
+        print(' '.join([dots if j is None else
+            abbrev_num(data[j], fieldwidth, innermost)
+            for chunk in indexes for j in chunk]))
+
+def print_full(data):
+    if len(data.shape) == 0:
+        print(data[...])
+        return
+    if len(data.shape) > 1:
+        for j in range(len(data)):
+            print_full(data[j])
+            if len(data.shape) > 2:
+                print('')
+    elif (numpy.issubdtype(data.dtype, numpy.integer)
+            or numpy.issubdtype(data.dtype, numpy.bool)):
+        print(' '.join(['%d' % d for d in data]))
+    else:
+        print(' '.join(['%f' % d for d in data]))
+
+def abbrev_num(num, width, strip):
+    if width == 0:
+        return '%g' % num
+    precision = width - 1
+    result = ('%%%d.%dg' % (width, width)) % num
+    while len(result) > width:
+        precision -= len(result) - width
+        result = ('%%%d.%dg' % (width, precision)) % num
+    if strip:
+        result = result.strip()
+    return result
+
+def try_open_memmap(filename):
+    try:
+        return numpy.lib.format.open_memmap(filename, mode='r')
+    except:
+        pass
+    try:
+        return numpy.load(filename)
+    except:
+        if '[' in filename and filename.endswith(']'):
+            filename, bracketed = filename[:-1].split('[', 1)
+            return try_open_memmap(filename)[parse_slice(bracketed)]
+        elif ':' in filename:
+            filename, key = filename.split(':', 1)
+            return try_open_memmap(filename)[key]
+        elif '.' not in filename:
+            from glob import glob
+            candidates = [f for f in glob(filename + '.*')
+                    if f.endswith('.npy') or f.endswith('.npz')]
+            if len(candidates) == 1:
+                return try_open_memmap(candidates[0])
+        raise
+
+def parse_slice(expr):
+    def single_index(s):
+        return int(s) if len(s.strip()) else None
+    def single_slice(expr):
+        if '...' == expr.strip:
+            return Ellipsis
+        pieces = list(map(single_index, expr.split(':')))
+        if len(pieces) == 1:
+            return pieces[0]
+        else:
+            return slice(*pieces)
+    expr = expr.strip()
+    if expr.startswith('[') and expr.endswith(']'):
+        expr = expr[1:-1]
+    result = tuple(map(single_slice, expr.split(',')))
+    return result[0] if len(result) == 1 else result
+
+def add_boolean_argument(parser, name, default=None, **kwargs):
+    """Add a boolean argument to an ArgumentParser instance."""
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--' + name,
+            default=default,
+            action='store_true',
+            **kwargs)
+    group.add_argument('--no-' + name, dest=name, action='store_false',
+            help=argparse.SUPPRESS)
+    group.add_argument('--no' + name, dest=name, action='store_false',
+            help=argparse.SUPPRESS)
+
+if __name__ == '__main__':
+    main()
