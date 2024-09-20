@@ -529,5 +529,8 @@
   "vsicons.dontShowNewVersionMessage": true,
   "workbench.welcomePage.walkthroughs.openOnInstall": false,
   "editor.multiCursorLimit": 20000,
-  "firedbg.showWelcome": false
+  "firedbg.showWelcome": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  }
 }
