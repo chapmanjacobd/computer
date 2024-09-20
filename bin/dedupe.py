@@ -3,8 +3,9 @@ import sys
 
 lines_seen = set()
 for line in sys.stdin:
-    if line in lines_seen:
+    ll = line.lower()
+    if ll in lines_seen:
         continue
 
-    lines_seen.add(line)
+    lines_seen.add(ll)
     sys.stdout.write(line)
