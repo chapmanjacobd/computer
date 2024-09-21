@@ -23,6 +23,8 @@ bind \cy redo
 
 bind \e, backward-kill-bigword yank yank
 
+bind --preset \ct transpose-words
+
 function cmd_to_clipboard
     commandline | head -c -1 | cb
 end
