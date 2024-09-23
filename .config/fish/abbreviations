@@ -199,3 +199,5 @@ abbr -a -- pstree pstree -alpts
 abbr -a -- gs git status --untracked
 abbr -a -- utf8 iconv -f utf-8 -t utf-8 --silent
 abbr -a -- time /bin/time -v
+abbr -a -- failed systemctl --user status --failed
+abbr -a -- reset-failed systemctl --user reset-failed --state transient
