@@ -90,6 +90,8 @@
 [safe]
 	bareRepository = explicit
 [alias]
+	branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
+	unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
 	history = log --follow -p --
 	utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
 	amend = !git commit --amend --no-edit && git push -f
