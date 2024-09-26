@@ -20,6 +20,8 @@ bind \e\[1\;5C forward-bigword
 bind \e\[1\;5D backward-bigword
 bind \b backward-kill-bigword
 bind \cy redo
+bind \ey yank
+bind \e\[99\;6u fish_clipboard_copy
 
 bind \e, backward-kill-bigword yank yank
 
