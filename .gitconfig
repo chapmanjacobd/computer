@@ -98,6 +98,7 @@
 	utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
 	amend = !git commit --amend --no-edit && git push -f
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
+	keep = "!f() { dir=${1:-.}; echo \"*\\n!.gitignore\" > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
 [advice]
 	skippedCherryPicks = false
 [branch]
