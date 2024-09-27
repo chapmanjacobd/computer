@@ -99,6 +99,7 @@
 	amend = !git commit --amend --no-edit && git push -f
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
 	keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
+	divergence = log --reverse --oneline ..main
 [advice]
 	skippedCherryPicks = false
 [branch]
