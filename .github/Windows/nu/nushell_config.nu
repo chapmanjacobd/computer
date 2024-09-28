@@ -2,51 +2,71 @@
 #
 # version = "0.96.1"
 
-$env.EDITOR = nano
-$env.VISUAL = code
+$env.PAGER = 'less -FSRX'
+$env.EDITOR = 'nano'
+$env.VISUAL = 'code'
+source ~/bin/nu/ls_colors.nu
 
 let abbreviations = {
     "cd..": 'cd ..'
-    ls: 'exa --git --long --header --classify --sort=type --group-directories-first'
+    cwd: 'pwd | cb'
+    lss: 'ls --du | sort-by size'
+    lsn: 'ls | sort-by -i name'
+    lst: 'ls | sort-by modified'
+    lse: 'ls | sort-by type'
+    exa: 'exa --git --long --header --classify --sort=type --group-directories-first'
     abbrs: 'code ~/bin/
-        code --add ~/bin/nu/nushell_config.nu'
+code --add ~/bin/nu/nushell_config.nu'
     rm: 'trash'
     gp: 'git pull'
-    gs: 'git status'
+    gs: 'git status --untracked-files'
     ga: 'git add .'
-    grm: 'git restore'
+    grm: 'git restore --worktree --staged'
     gr: 'git reset'
-    gd: 'git diff; git diff --stat'
-    gds: 'git diff --staged; git diff --staged --stat; git status --untracked-files'
+    gf: 'git fetch'
+    gd: 'git diff --ignore-all-space -U0; git diff --stat'
+    gds: 'git diff --staged  --ignore-all-space -U0; git diff --staged --stat; git status --untracked-files'
     wip: 'git reset
-        git add .
-        git --no-pager diff HEAD
-        git --no-pager diff HEAD | grep TODO
-        echo
-        git diff --stat HEAD
-        echo
-        git status'
+git add .
+git --no-pager diff HEAD
+git --no-pager diff HEAD | grep TODO
+echo
+git diff --stat HEAD
+echo
+git status'
     wipp: 'git commit -m wip
-        git pull
-        git push'
+git pull
+git push'
     wipam: 'git commit --amend -m (git log -1 --pretty=format:"%B")
-        git push -f'
+git push -f'
     gc: 'git commit -m ""'
+    skipworktree: 'git update-index --skip-worktree'
     gpu: 'git push'
     winstart: 'cmd.exe /C start'
     pg: 'pg_ctl start
-        psql
-        pg_ctl stop'
+psql  -U postgres
+pg_ctl stop'
     rg: 'rg -i --fixed-strings'
     gitlog: 'git log --oneline --decorate --all --graph --stat'
     gits: 'git log -p -S'
-    less: 'less -FSRXc'
+    less: 'less -FSRX'
     py: 'ipython'
     ipy: 'ipython'
     pgrep: 'pslist'
     pkill: 'pskill'
     pstree: 'pslist -t'
+    run: 'cmd.exe /C start'
+    htop: 'cmd.exe /C start Taskmgr.exe'
+    mkcdtemp: 'cd (mktemp -d)'
+    program_associations: 'ASSOC | to text | lines | reduce -f [] { |line, acc|
+    $line | parse "{ext}={program}" | append $acc
+} | group-by program | transpose key value | each { |row|
+    { program: $row.key, exts: ($row.value | get ext | str join ", ") }
+} | sort-by program'
+    group-by: 'group-by --to-table'
 }
+
+alias excel = ^'C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE'
 
 source ~/bin/nu/completions.nu
 
@@ -54,14 +74,29 @@ let carapace_completer = {|spans|
     carapace $spans.0 nushell ...$spans | from json
 }
 
-let fish_completer = {|spans|
-    fish --command $'complete "--do-complete=($spans | str join " ")"'
-    | $"value(char tab)description(char newline)" + $in
-    | from tsv --flexible --no-infer
-}
-
 let zoxide_completer = {|spans|
     $spans | skip 1 | zoxide query -l ...$in | lines | where {|x| $x != $env.PWD}
+}
+
+def fuzzy-select-fs [ type: string = file ] {
+    let candidates = (
+        ls **/*
+        | where type == $type
+        | get name
+        | sort --ignore-case
+    )
+    if ($candidates | is-empty) {
+        return ""
+    }
+    let choice = $candidates | input list --fuzzy '?'
+    if ($choice | is-empty) {
+        return ""
+    }
+    if $type == "dir" {
+        $"`($choice)(char path_sep)`"
+    } else {
+        $"`($choice)`"
+    }
 }
 
 let external_completer = {|spans|
@@ -336,8 +371,8 @@ $env.config = {
     }
     render_right_prompt_on_last_line: false # true or false to enable or disable right prompt to be rendered on last line of the prompt.
     use_kitty_protocol: false # enables keyboard enhancement protocol implemented by kitty console, only if your terminal support this.
-    highlight_resolved_externals: false # true enables highlighting of external commands in the repl resolved by which.
-    recursion_limit: 50 # the maximum number of times nushell allows recursion before stopping it
+    highlight_resolved_externals: true # true enables highlighting of external commands in the repl resolved by which.
+    recursion_limit: 200 # the maximum number of times nushell allows recursion before stopping it
 
     plugins: {} # Per-plugin configuration. See https://www.nushell.sh/contributor-book/plugins.html#configuration.
 
@@ -363,7 +398,24 @@ $env.config = {
             PWD: [{|before, after| null }] # run if the PWD environment is different since the last repl input
         }
         display_output: "if (term size).columns >= 100 { table -e } else { table }" # run to display the output of a pipeline
-        command_not_found: { null } # return an error message when a command is not found
+        command_not_found: {|cmd_name|
+            try {
+                let attrs = (
+                    ftype | find $cmd_name | to text | lines | reduce -f [] { |line, acc|
+                        $line | parse "{type}={path}" | append $acc
+                    } | group-by path | transpose key value | each { |row|
+                        { path: $row.key, types: ($row.value | get type | str join ", ") }
+                    }
+                )
+                let len = ($attrs | length)
+
+                if $len == 0 {
+                    return null
+                } else {
+                    return ($attrs | table --collapse)
+                }
+            }
+        }
     }
 
     menus: [
@@ -1012,7 +1064,6 @@ $env.config = {
 }
 
 source ~/bin/nu/zoxide.nu
-source ~/bin/nu/ls_colors.nu
 source ~/bin/nu/jalon-git.nu
 source ~/bin/nu/cwdhist.nu
 
@@ -1041,7 +1092,7 @@ def nuconf [] {
 }
 
 def rebasedev [] {
-    taskkill /IM Excel.exe
+    taskkill /IM Excel.exe | complete
     git fetch
     git rebase origin/DEV
 }
@@ -1059,12 +1110,164 @@ def --wrapped openall [...argv: string] {
     }
 }
 
-def scoopinstall [ ...packages:string] {
+def scoopinstall [ ...packages: string] {
     for $package in $packages {
         let exit_status = (do { scoop install $package } | complete)
 
         if $exit_status.exit_code == 0 {
             echo $package | add_newline | save --append ~/bin/scoop_installed.txt
         }
+    }
+}
+
+def commonhistory [] {
+    cat C:\Users\JChapman\AppData\Roaming\nushell\history.txt | lines | uniq -c | sort-by count
+}
+
+def --wrapped msrun [...argv: string] {
+    msys2.cmd -c ([...$argv] | str join ' ')
+}
+def distinct-on [ column: string ] {
+  reduce { |item, acc|
+    if ($acc | any { |storedItem|
+      ($storedItem | get $column) == ($item | get $column)
+    }) {
+      $acc
+    } else {
+      $acc | append $item
+    }
+  }
+}
+def intersection [ a: list<any> b: list<any> ] {
+  let a = $a | uniq | sort
+  let b = $b | uniq | sort
+  let n_a = $a | length
+  let n_b = $b | length
+  mut i = 0
+  mut j = 0
+  mut c = []
+
+  while ($i < $n_a and $j < $n_b) {
+    if ($a | get $i) < ($b | get $j) {
+      $i = $i + 1
+    } else if ($b | get $j) < ($a | get $i) {
+      $j = $j + 1
+    } else {
+      $c = $c ++ ($b | get $j)
+      $i = $i + 1
+      $j = $j + 1
+    }
+  }
+  return $c
+}
+def union [ a: list<any> b: list<any> ] {
+  $a
+  | append $b
+  | uniq
+}
+def column_as_list [ n: any ] {
+  transpose
+  | get $n
+  | transpose
+  | get column1
+  | skip 1
+}
+def column_as_table [ n: any ] {
+  transpose
+  | select $n
+  | transpose
+  | select column1
+  | headers
+}
+def iselect [] {
+    let tgt = $in
+    let cols = ($tgt | columns)
+
+    let choices = ($cols | input list -m "Pick columns to get: ")
+    $tgt | select $choices
+}
+def table-diff [
+  $left: list<any>,
+  $right: list<any>,
+  --keys (-k): list<string> = [],
+] {
+  let left = if ($left | describe) !~ '^table' { $left | wrap value } else { $left }
+  let right = if ($right | describe) !~ '^table' { $right | wrap value } else { $right }
+  let left_selected = ($left | select ...$keys)
+  let right_selected = ($right | select ...$keys)
+  let left_not_in_right = (
+    $left |
+    filter { |row| not (($row | select ...$keys) in $right_selected) }
+  )
+  let right_not_in_left = (
+    $right |
+    filter { |row| not (($row | select ...$keys) in $left_selected) }
+  )
+  (
+    $left_not_in_right | insert side '<='
+  ) ++ (
+    $right_not_in_left | insert side '=>'
+  )
+}
+
+export def pivot-table [
+  table_1? #table to pivot
+  --columns(-c):list #column names for pivoting (new columns)
+  --index(-i):list   #index names for pivoting (first new column)
+  --values(-v):list  #values for pivoting (values in the new columns)
+] {
+  let table_1 = if ($table_1 | is-empty) {$in} else {$table_1}
+
+  $table_1 | polars into-df | polars pivot -o $columns -i $index -v $values
+}
+
+export def ? [...search] {
+  let search = $search | str join " "
+  if ($search | is-empty) {
+    return (help commands)
+  }
+
+  if $search =~ "commands" {
+   if $search =~ "my" {
+     help commands | where category == default
+   } else {
+     help commands
+   }
+  } else if (which $search | get type | get 0) =~ "external" {
+    usage (which $search | get command | get 0)
+  } else {
+    help (which $search | get command | get 0)
+  }
+}
+
+alias type = view source
+alias combine = perl /c/Users/JChapman/scoop/apps/msys2/current/usr/bin/combine
+
+export def "str prepend" [toprepend:string] {
+  $toprepend + $in
+}
+
+def compare [a:string b:string] {
+  open --raw $'($a)' | lines | first 1 | to text | print
+  perl /c/Users/JChapman/scoop/apps/msys2/current/usr/bin/combine $'($a)' not $'($b)'
+  perl /c/Users/JChapman/scoop/apps/msys2/current/usr/bin/combine $'($b)' not $'($a)'
+}
+
+def psub [] {
+  let it = $in
+  let file = mktemp --tmpdir
+  $it | save -f $file
+  $file
+}
+
+def zg [branch: string] {
+    git checkout (git branch --list | fzf --query $branch --select-1 --exit-0 | str trim)
+}
+
+def where_any [ query: string ] {
+    where {|row|
+        ($row | transpose key value | any {|cell|
+            (($cell.value | describe) == "string") and ($cell.value | str contains --ignore-case $query)
+        })
     }
 }

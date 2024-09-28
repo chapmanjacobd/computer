@@ -1,3 +1,4 @@
+
 def "nu-complete eza when" [] {
     [[value]; ["always"] ["auto"] ["never"]]
 }
