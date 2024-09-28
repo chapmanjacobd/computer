@@ -79,6 +79,6 @@
 	column = green
 	separator = cyan
 [diff "excel"]
-    textconv = python3 ~/bin/cmd2stdout.py ~/bin/excel2csv.vbs
+    textconv = nu ~/bin/excel2csv.nu
     cachetextconv = true
     binary = true

@@ -18,17 +18,30 @@ clink autorun install
 clink set clink.logo none
 clink set clink.autostart nu
 clink set history.max_lines 888888
+clink set cmd.auto_answer answer_yes
 
-setx path "%path%;C:\Users\JChapman\bin;C:\Users\JChapman\scoop\apps\msys2\current\usr\bin;C:\Users\JChapman\scoop\apps\msys2\current\mingw64\bin\"
+setx path "%path%;C:\Users\JChapman\bin;C:\Users\JChapman\scoop\apps\msys2\current\usr\bin;C:\Users\JChapman\scoop\apps\msys2\current\mingw64\bin\;C:\Users\JChapman\scoop\persist\rustup\.cargo\bin;C:\Users\JChapman\.cargo\bin"
 
 code --install-extension amodio.restore-editors
 
 setup task scheduler C:\Users\JChapman\scoop\shims\scoop.cmd update --all
 
+pip install pyreadline3
+
 msys2
+pacman -Syuu
 xargs -a pacman_installed.txt pacman -S --needed --noconfirm
 
-pip install pyreadline3
+nu
+plugin add ~\scoop\apps\nu\0.97.1\nu_plugin_polars.exe
+plugin add ~\scoop\apps\nu\0.97.1\nu_plugin_gstat.exe
+plugin add ~\scoop\apps\nu\0.97.1\nu_plugin_query.exe
+
+ssh-keygen -t ed25519 -C <email>
+
+rustup set default-host x86_64-pc-windows-gnu
+rustup toolchain install stable-gnu
+rustup default stable-x86_64-pc-windows-gnu
 ```
 
 ## PowerShell

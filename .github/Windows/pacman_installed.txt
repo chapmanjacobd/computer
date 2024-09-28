@@ -1,2 +1,5 @@
-mingw-w64-x86_64-sqlite3
+bash-completion
 mingw-w64-x86_64-readline
+mingw-w64-x86_64-sqlite3
+moreutils
+parallel
