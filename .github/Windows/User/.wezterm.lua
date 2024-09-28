@@ -67,7 +67,7 @@ wezterm.on('gui-startup', function(cmd)
     if active_screen.width <= 724 then
         window:gui_window():maximize()
     else
-        local menu_bar_height = 80
+        local menu_bar_height = 100
         window:gui_window():set_inner_size(active_screen.width / 2, active_screen.height - menu_bar_height)
         window:gui_window():set_position(active_screen.width / 2, 0)
     end

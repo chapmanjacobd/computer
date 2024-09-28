@@ -6,7 +6,7 @@
 	format = ssh
 [user]
 	signingkey = C:\\Users\\JChapman\\.ssh\\id_ed25519.pub
-	email =
+	email = 
 	name = Jacob Chapman
 [commit]
 	gpgsign = true
@@ -24,7 +24,13 @@
     sort = taggerdate
 [alias]
     history = log --follow -p --
-    brame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
+	create = !git checkout DEV && git checkout -b
+    ccp = "!f() { git create \"$1\"; shift; git cherry-pick \"$@\"; }; f"
+	diffbranch = diff --ignore-all-space -U0 DEV...HEAD
+	delete = branch -D
+	rename = branch -M
+    grame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
+    startover = "!f() { git reset --hard $(git merge-base DEV HEAD); git rebase DEV; }; f"
 [transfer]
     fsckobjects = true
 [fetch]
@@ -48,9 +54,11 @@
     preloadindex = true
     fscache = true
     logallrefupdates = true
-	attributesfile = C:\\Users\\JChapman\\.gitattributes
-	pager = delta --syntax-theme GitHub --max-line-length 1024
+	attributesfile = C:\\Users\\JChapman\\.gitattributes_global
+	pager = delta --syntax-theme GitHub --max-line-length 1024 --pager 'less -FSR'
 	autocrlf = false
+	eol = lf
+	whitespace = blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 [color]
 	ui = auto
 [color "diff-highlight"]
@@ -71,6 +79,6 @@
 	column = green
 	separator = cyan
 [diff "excel"]
-    textconv = python3 ~/bin/cscript2stdout.py ~/bin/excel2csv.vbs
+    textconv = python3 ~/bin/cmd2stdout.py ~/bin/excel2csv.vbs
     cachetextconv = true
     binary = true

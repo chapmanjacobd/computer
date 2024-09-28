@@ -15,7 +15,6 @@
 	fscache = true
 	eol = lf
 	autocrlf = false
-	safecrlf = true
 	logallrefupdates = true
 	attributesfile = /home/xk/.gitattributes_global
 [transfer]

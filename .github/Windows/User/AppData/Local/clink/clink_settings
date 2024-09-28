@@ -1,0 +1,80 @@
+# name: Command to run when injected
+# type: string
+clink.autostart = nu
+
+# name: Selects default key bindings
+# type: enum
+# options: bash,windows
+clink.default_bindings = bash
+
+# name: Controls what startup logo to show
+# type: enum
+# options: none,full,short
+clink.logo = none
+
+# name: Argument color
+# type: color
+color.arg = bold
+
+# name: Argument info color
+# type: color
+color.arginfo = yellow
+
+# name: Shell command completions
+# type: color
+color.cmd = bold
+
+# name: Color for < and > redirection symbols
+# type: color
+color.cmdredir = bold
+
+# name: Color for & and | command separators
+# type: color
+color.cmdsep = bold
+
+# name: Color for comment row
+# type: color
+color.comment_row = bright white on cyan
+
+# name: Description completion color
+# type: color
+color.description = bright cyan
+
+# name: Doskey completions
+# type: color
+color.doskey = bold cyan
+
+# name: Filtered completion color
+# type: color
+color.filtered = bold
+
+# name: Flag color
+# type: color
+color.flag = default
+
+# name: For user-interaction prompts
+# type: color
+color.interact = bold
+
+# name: Message area color
+# type: color
+color.message = default
+
+# name: Unexpected argument color
+# type: color
+color.unexpected = default
+
+# name: The number of history lines to save
+# type: integer
+history.max_lines = 888888
+
+# name: Controls spacing before prompt
+# type: enum
+# options: normal,compact,sparse
+prompt.spacing = compact
+
+# name: Controls when past prompts are collapsed
+# type: enum
+# options: off,always,same_dir
+prompt.transient = same_dir
+
