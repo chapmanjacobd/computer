@@ -101,6 +101,7 @@
 	keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
 	divergence = log --reverse --oneline ..main
 	tags = tag --sort=creatordate --contains
+	reword = commit --amend -m
 [advice]
 	skippedCherryPicks = false
 [branch]
