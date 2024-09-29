@@ -5,5 +5,7 @@ Requires=mnt-d.mount
 [Service]
 Type=simple
 RemainAfterExit=no
+RuntimeMaxSec=6d
+
 ExecStart=
 ExecStart="/usr/bin/fish" "-c" "weekly"
