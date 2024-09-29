@@ -86,8 +86,6 @@
 	date = relative-local
 [url "git@github.com:"]
 	insteadOf = https://github.com/
-[safe]
-	bareRepository = explicit
 [alias]
 	branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
 	unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
