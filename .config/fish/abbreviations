@@ -202,3 +202,4 @@ abbr -a -- failed systemctl --user status --failed
 abbr -a -- reset-failed systemctl --user reset-failed --state transient
 abbr -a -- gpf git push --force-with-lease --force-if-includes
 abbr -a -- gs git status --untracked --short
+abbr -a -- start open
