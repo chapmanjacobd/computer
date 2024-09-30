@@ -9,7 +9,7 @@ def main():
     parser.add_argument('-n', type=int, default=10, help="Number of links to open before sleeping (default: 10)")
     args = parser.parse_args()
 
-    links = sys.stdin.read().splitlines()
+    links = [s.strip() for s in sys.stdin.read().splitlines() if s.strip()]
 
     for i, link in enumerate(links):
         webbrowser.open(link, new=2, autoraise=False)
