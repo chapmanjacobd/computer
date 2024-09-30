@@ -15,7 +15,7 @@ def main():
         webbrowser.open(link, new=2, autoraise=False)
         print(link)
 
-        if (i + 1) % args.n == 0:
+        if i + 1 >= args.n:
             time.sleep(1.5)
 
 if __name__ == "__main__":
