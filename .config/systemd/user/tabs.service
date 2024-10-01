@@ -7,4 +7,4 @@ Requires=firefox.service
 Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
-ExecStart="/usr/bin/fish" "-c" "lb tabs /home/xk/lb/tabs.db"
+ExecStart="/usr/bin/fish" "-c" "lb tabs --max-same-domain 1 /home/xk/lb/tabs.db"
