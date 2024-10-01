@@ -1,3 +1,4 @@
+/.config/flacon/flacon.conf
 /.config/corectrl/
 /.config/gh/
 /.config/google-chrome/
@@ -305,4 +306,3 @@
 /.config/fedoraproject.org/
 /.config/feh/
 /.config/fisherman/
-/.config/flacon/
