@@ -4,7 +4,7 @@ function search_url --description 'Expand a search URL'
 
     for query in $argv[2..-1]
         # Replace unwanted characters with an empty string
-        set -l cleaned_query (string replace -ra '[()\[\]'"',]+" '' $query)
+        set -l cleaned_query (string replace -ra '[()\[\]\'",]+' '' $query | string trim)
         set -l encoded_query (string escape --style=url $cleaned_query)
         echo (string replace "%s" $encoded_query $search_url)
     end
