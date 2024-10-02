@@ -6,5 +6,5 @@ function resume-edit
         python generate.py
         and cp outputs/jchapman_resume.pdf ~/sync/self/credentials/Jacob_Chapman.pdf
     end
-    and with_unli cp ~/sync/self/credentials/Jacob_Chapman.pdf ~/.mnt/web/home/production/admin/public_html/resume.pdf
+    with_unli cp ~/sync/self/credentials/Jacob_Chapman.pdf ~/.mnt/web/home/production/admin/public_html/resume.pdf
 end
