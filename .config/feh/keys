@@ -1,0 +1,11 @@
+remove 
+action_9 Delete
+toggle_pause space
+next_img
+prev_img
+zoom_in
+zoom_out
+next_img Right
+prev_img Left
+zoom_in 4
+zoom_out 5
