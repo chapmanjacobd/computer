@@ -5,7 +5,7 @@ function resume-edit
     open outputs/jchapman_resume.pdf
     while inotifywait -e modify inputs/resume.yaml templates/*/*
         python generate.py
-        and cp outputs/jchapman_resume.pdf ~/sync/self/credentials/Jacob_Chapman.pdf
     end
+    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress -dNOPAUSE -dQUIET -dBATCH -sOutputFile="$HOME/sync/self/credentials/Jacob_Chapman.pdf" outputs/jchapman_resume.pdf
     with_unli cp ~/sync/self/credentials/Jacob_Chapman.pdf ~/.mnt/web/home/production/admin/public_html/resume.pdf
 end
