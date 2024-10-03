@@ -2,6 +2,7 @@
 function resume-edit
     cd ~/github/o/resume/
     code .
+    open outputs/jchapman_resume.pdf
     while inotifywait -e modify inputs/resume.yaml templates/*/*
         python generate.py
         and cp outputs/jchapman_resume.pdf ~/sync/self/credentials/Jacob_Chapman.pdf
