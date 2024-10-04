@@ -13,11 +13,20 @@ function load_fullscreen_state()
     end
 end
 
+function has_video_stream()
+    local tracks = mp.get_property_native("track-list")
+    for _, track in ipairs(tracks) do
+        if track.type == "video" then
+            return true
+        end
+    end
+    return false
+end
 
 function save_fullscreen_state()
     local state = mp.get_property_native("fullscreen")
     local file = io.open(state_file, "w")
-    if file and (state ~= nil) then
+    if file and (state ~= nil) and has_video_stream() then
         if state then
             file:write("yes")
         else
