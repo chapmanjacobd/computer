@@ -1,5 +1,24 @@
 local state_file = mp.command_native({"expand-path", "~~/.fullscreen"})
 
+local has_video_stream = nil
+function check_video_stream()
+    local i = 0
+    local tracks_count = mp.get_property_number("track-list/count")
+    while i < tracks_count do
+        local track_type = mp.get_property(string.format("track-list/%d/type", i))
+        local track_selected = mp.get_property(string.format("track-list/%d/selected", i))
+
+        if track_selected == "yes" and track_type == "video" then
+            has_video_stream = true
+            return
+        end
+
+        i = i + 1
+    end
+
+    has_video_stream = false
+end
+mp.observe_property("track-list", "native", check_video_stream)
 
 function load_fullscreen_state()
     local file = io.open(state_file, "r")
@@ -13,20 +32,11 @@ function load_fullscreen_state()
     end
 end
 
-function has_video_stream()
-    local tracks = mp.get_property_native("track-list")
-    for _, track in ipairs(tracks) do
-        if track.type == "video" then
-            return true
-        end
-    end
-    return false
-end
-
 function save_fullscreen_state()
+    print(has_video_stream)
     local state = mp.get_property_native("fullscreen")
     local file = io.open(state_file, "w")
-    if file and (state ~= nil) and has_video_stream() then
+    if file and (state ~= nil) and has_video_stream then
         if state then
             file:write("yes")
         else
