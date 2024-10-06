@@ -1,4 +1,12 @@
--- load-script ~/.config/mpv/scripts/misc.lua
+-- random seek
+mp.add_key_binding("m", "random-seek-duration", function()
+    local duration = mp.get_property_number("duration")
+    mp.commandv("seek", math.random() * duration, "absolute")
+end)
+mp.add_key_binding("o", "random-seek", function()
+    mp.commandv("seek", math.random() * 10, "relative-percent")
+end)
+
 -- hide subs if same as audio (similar to --subs-with-matching-audio)
 local selected_tracks = {}
 

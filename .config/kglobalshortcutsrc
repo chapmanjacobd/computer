@@ -436,7 +436,7 @@ _launch=Alt+D
 _launch=Alt+C
 
 [services][fish-18.desktop]
-_launch=\tCtrl+Shift+Space
+_launch=Ctrl+Shift+Space
 
 [services][fish-19.desktop]
 _launch=Alt+J
