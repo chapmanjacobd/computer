@@ -33,10 +33,14 @@ function load_fullscreen_state()
 end
 
 function save_fullscreen_state()
-    print(has_video_stream)
+    -- print(has_video_stream)
+    if not has_video_stream then
+        return
+    end
+
     local state = mp.get_property_native("fullscreen")
     local file = io.open(state_file, "w")
-    if file and (state ~= nil) and has_video_stream then
+    if file and (state ~= nil) then
         if state then
             file:write("yes")
         else
