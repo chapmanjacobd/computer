@@ -1,4 +1,4 @@
 # Defined interactively
 function browse_url
-    search_urls.py $argv | open_browser.py
+    library expand-links $argv | open_browser.py
 end
