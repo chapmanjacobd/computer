@@ -8,7 +8,7 @@ set minibar
 set zap
 set mouse
 set autoindent
-set multibuffer
+#set multibuffer
 set tabsize 4
 set constantshow
 set trimblanks
@@ -45,6 +45,11 @@ bind ^z undo main
 bind M-R redo main
 bind M-U undo main
 bind ^H chopwordleft main
+
+unbind M-B all
+unbind M-F all
+bind M-B prevword all
+bind M-F nextword all
 
 bind ^L linter execute
 bind ^T cutrestoffile execute
