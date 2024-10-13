@@ -18,7 +18,7 @@ fzf_configure_bindings --variables
 
 bind \e\[1\;5C forward-word
 bind \e\[1\;5D backward-word
-bind \b backward-kill-word
+bind \b backward-kill-path-component
 
 bind \e\[1\;3C forward-bigword
 bind \e\[1\;3D backward-bigword
