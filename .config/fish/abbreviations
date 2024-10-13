@@ -165,8 +165,6 @@ abbr -a -- timezone_update tzupdate
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
 abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
-abbr -a -- timers systemctl --user list-timers --all --no-pager --no-legend --state=running
-abbr -a -- timerss timers-status
 abbr -a -- punpause-all presume-all
 abbr -a -- punpause-fzf presume-fzf
 abbr -a -- punpause presume
@@ -206,3 +204,4 @@ abbr -a -- start open
 abbr -a -- terminal-color-test msgcat --color=test
 abbr -a -- colors palette
 abbr -a -- splitlines string split \n
+abbr -a -- timers 'systemctl --user list-timers --all --no-pager --no-legend --state=running && timers-status'
