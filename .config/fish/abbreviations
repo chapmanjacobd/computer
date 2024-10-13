@@ -204,4 +204,4 @@ abbr -a -- start open
 abbr -a -- terminal-color-test msgcat --color=test
 abbr -a -- colors palette
 abbr -a -- splitlines string split \n
-abbr -a -- timers 'systemctl --user list-timers --all --no-pager --no-legend --state=running && timers-status'
+abbr -a -- timers 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
