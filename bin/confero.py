@@ -1,15 +1,12 @@
 #!/usr/bin/python3
 import argparse
+import concurrent.futures
 import os
 import random
-import sys
-from collections import defaultdict
-from hashlib import sha1
 from pathlib import Path
-import concurrent.futures
 
 
-def hash_file(file_path, chunk_size=64, num_chunks=100):
+def hash_file(file_path, chunk_size=10, num_chunks=100):
     hashes = set()
     file_size = os.path.getsize(file_path)
     chunk_positions = sorted(random.sample(range(0, file_size - chunk_size), num_chunks))
@@ -18,8 +15,13 @@ def hash_file(file_path, chunk_size=64, num_chunks=100):
         for pos in chunk_positions:
             f.seek(pos)
             chunk = f.read(chunk_size)
-            hashes.add(sha1(chunk, usedforsecurity=False).hexdigest())
+            hashes.add(chunk)
     return hashes
+
+
+def process_file(file_path):
+    file_hash = hash_file(file_path)
+    return file_path, file_hash
 
 
 def jaccard_similarity(set_a, set_b):
@@ -36,7 +38,7 @@ def find_similar_files(file_hashes, threshold=0.7):
             similarity = jaccard_similarity(file_hashes[file_a], file_hashes[file_b])
             if similarity >= threshold:
                 similar_files.append((similarity, file_a, file_b))
-    return similar_files
+    return sorted(similar_files, key=lambda t: t[0])
 
 
 def yield_files(paths):
@@ -49,11 +51,6 @@ def yield_files(paths):
                     yield entry
 
 
-def process_file(file_path):
-    file_hash = hash_file(file_path)
-    return file_path, file_hash
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('paths', nargs='+', type=Path, help="Paths to files or folders to compare.")
@@ -61,8 +58,8 @@ def main():
     args = parser.parse_args()
 
     file_hashes = {}
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = {executor.submit(process_file, path): path for path in yield_files(args.paths)}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        futures = {executor.submit(process_file, str(path)): path for path in yield_files(args.paths)}
 
         for future in concurrent.futures.as_completed(futures):
             path, file_hash = future.result()
@@ -71,7 +68,7 @@ def main():
     similar_files = find_similar_files(file_hashes, args.threshold)
 
     for similarity, file_a, file_b in similar_files:
-        print(f"{similarity:.2f} similarity between {file_a} and {file_b}")
+        print('\t'.join([f"{similarity:.2f}", file_a, file_b]))
 
 
 if __name__ == "__main__":
