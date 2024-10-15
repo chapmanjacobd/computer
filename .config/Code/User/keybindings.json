@@ -39,5 +39,25 @@
   {
     "key": "ctrl+shift+w",
     "command": "-workbench.action.closeWindow"
+  },
+  {
+    "key": "ctrl+backspace",
+    "command": "deleteWordPartLeft",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "alt+backspace",
+    "command": "deleteInsideWord",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "alt+left",
+    "command": "cursorWordLeft",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "alt+right",
+    "command": "cursorWordRight",
+    "when": "editorTextFocus"
   }
 ]
