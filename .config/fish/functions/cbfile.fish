@@ -1,4 +1,4 @@
 # Defined interactively
 function cbfile
-    cb | psub
+    cb | psub $argv
 end
