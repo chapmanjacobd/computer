@@ -539,5 +539,6 @@
   "firedbg.showWelcome": false,
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-  }
+  },
+  "workbench.editor.empty.hint": "hidden"
 }
