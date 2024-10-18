@@ -13,6 +13,7 @@ SleepMode=2
 
 [BatteryManagement]
 BatteryCriticalAction=0
+BatteryLowLevel=25
 
 [LowBattery][Display]
 UseProfileSpecificDisplayBrightness=false
