@@ -1,3 +1,4 @@
+/.config/dolphin-emu/
 /bin/__pycache__/
 /.node_repl_history
 /.config/fedora-plasma-cacherc
@@ -294,4 +295,3 @@
 /.config/devcert/
 /.config/diffuse/
 /.config/Docker Desktop/
-/.config/dolphin-emu/
