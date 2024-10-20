@@ -1,6 +1,6 @@
 # Defined via `source`
 function diff-pairwise
-    set files (fd -tf . $argv)
+    set files (fd -tf . $argv | sort --stable)
 
     for i in (seq 2 (count $files))
         set prev_file $files[(math $i - 1)]
