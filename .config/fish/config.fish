@@ -51,6 +51,8 @@ abbr --add dotdot --regex '^\.\.+$' --function multicd
 function last_history_item; echo $history[1]; end
 abbr -a !! --position anywhere --function last_history_item
 
+abbr -a --set-cursor=! -- for for\ s\ in\ \*\n!\ \$s\nend
+
 function _abbr_zip
     echo zip -qr (datestamp).zip
 end
