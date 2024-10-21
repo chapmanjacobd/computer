@@ -207,3 +207,5 @@ abbr -a -- splitlines string split \n
 abbr -a -- timers 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- teecb 'tee | cb'
 abbr -a -- filecount 'fd -tf | count'
+abbr -a -- cmd commandline --insert
+abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
