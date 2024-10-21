@@ -24,14 +24,19 @@ def html_to_markdown(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
 
     def convert_links(tag):
-        if tag.name == "a":
-            return f"[{tag.get_text()}]({tag["href"]})"
-        return tag.get_text()
+        return f"[{tag.get_text()}]({tag["href"]})"
 
     def convert_code(tag):
-        if tag.name == "code":
-            return f"`{tag.get_text()}`"
-        return tag.get_text()
+        return f"`{tag.get_text()}`"
+
+    def convert_fenced_code(tag):
+        language = tag.get("class", [""])[0].replace("language-", "")
+        code_content = tag.get_text()
+        return f"""
+```{language}
+{code_content}
+```
+"""
 
     markdown_content = soup.get_text()
 
@@ -39,12 +44,17 @@ def html_to_markdown(html_content):
         markdown_content = markdown_content.replace(link.get_text(), convert_links(link))
 
     for code in soup.find_all("code"):
-        markdown_content = markdown_content.replace(code.get_text(), convert_code(code))
+        if code.parent.name == "pre":
+            markdown_content = markdown_content.replace(code.get_text(), convert_fenced_code(code))
+        else:
+            markdown_content = markdown_content.replace(code.get_text(), convert_code(code))
 
     # Clean up any remaining HTML tags
     markdown_content = re.sub(r"<[^>]+>", "", markdown_content)
 
     return markdown_content
+
+
 
 
 def html2simplemd():
