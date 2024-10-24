@@ -60,6 +60,7 @@ pyicu
 pylint
 pymcdm
 pympler
+pypdf
 pypdf_table_extraction
 pytest-icdiff
 pytest-randomly
