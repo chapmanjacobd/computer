@@ -1,0 +1,185 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Getopt::Long qw(:config no_ignore_case bundling);
+
+sub do_help {
+  my $action = shift;
+  print <<'end_help' unless defined($action) and $action eq "version";
+Get the arithmetic mean of inputs, optionally standard deviation and/or sum
+Usage: avg [OPTIONS] [FILE...]
+  -a, --add, --sum      Show sum, hide average unless std dev is to be shown
+  -b, --shell           Output Bourne-shell environment variables AVG and STD
+  -c, --comments	Skip comments (leading hash)
+  -d STR, --delim=STR   String to delimit average and std dev (implies -gmashx)
+  -g, --geometric       Also show the geometric mean
+  -h, --harmean         Also show the harmonic mean
+  -k NUM, --key=NUM     Use given field for calculation (default=1)
+  -m, --median          Also show the median
+  -M, --mode            Also show the mode(s)
+  -n, --newline         Newline delimiter (implies -s)
+  -s, --stdev           Also show standard deviation
+  -S, --space           Shortcut for a space delimiter, -sd' '
+  -t, --tab             Shortcut for a tab delimiter, -sd'	'
+  -v, --verbose         All data (implies -gmashx)
+  -x, --max, --min      Show maximum and minimum values
+  --plus                Show just the mean average plus the standard deviation
+  --minus               Show just the mean average minus the standard deviation
+Example:  grep -w ADVANCE_FEE_2 spam.log |avg -k2
+end_help
+  print "Part of misc-scripts: https://github/adamhotep/misc-scripts\n";
+  print "avg 0.8.20210802.1 Copyright 2005+ by Adam Katz, GPL v2+\n";
+}
+
+my $delim = '';
+my $do_all = my $do_geo = my $do_harm = my $do_line
+  = my $do_max = my $do_median = my $do_mode = my $do_space = my $do_stdev
+  = my $do_sum = my $do_tab = my $skip_comments
+  = my $do_shell = my $help = my $version = my $plus = my $minus = 0;
+my $key = 1;
+
+if (-t 0 and "-h" eq join(" ", @ARGV)) { do_help; exit 0; }
+
+GetOptions("a|add|sum"=>\$do_sum, "b|bourne|shell"=>\$do_shell,
+  "c|comments"=>\$skip_comments, "d|delimeter=s"=>\$delim,
+  "g|geometric-mean|geometricmean|geomean|geommean"=>\$do_geo,
+  "h|harmean|harmmean"=>\$do_harm, "help"=>\$help, "k|key|field=i"=>\$key,
+  "m|median"=>\$do_median, "M|mode"=>\$do_mode, "n|newline|line"=>\$do_line,
+  "s|stdev|stddev|std-dev|standard-deviation!"=>\$do_stdev,
+  "S|space"=>\$do_space, "t|tab"=>\$do_tab, "v|verbose"=>\$do_all,
+  "V|version"=>\$version, "x|maximum|minimum"=>\$do_max,
+  "plus"=>\$plus, "minus"=>\$minus) or exit 2;
+
+if ($help) { do_help; exit 0; }
+if ($version) { do_help "version"; exit 0; }
+
+if ($key < 1) { print STDERR "Bad field number $key\n"; exit 1; }
+$key--; # the regexp used below skips this many keys
+
+$do_geo = $do_harm = $do_max = $do_median = $do_mode = $do_sum = $do_stdev = 1
+  if $do_all or $do_shell or $do_space or $do_tab or $do_line or $delim;
+
+$do_stdev = 1 if $plus or $minus;
+
+my $reciprocal_sum = my $sum = my $count = my $max = my $min = 0;
+my $product = 1;
+my @input = my %seen = ();
+
+while (<>) {
+  next if $skip_comments and /^\s*(?:\S+\s+){0,$key}?#/;
+  next unless /^\s*(?:\S+\s+){$key}(-?\d+(?:\.\d+)?|\.\d+)(?:\D.*)?$/;
+  my $n = 0 + $1; # force storing it as a number
+  if ($do_max) {
+    $min = $max = $n if $count == 1;
+    if ($n < $min) { $min = $n; }
+    elsif ($n > $max) { $max = $n; }
+  }
+  $sum += $n;
+  $reciprocal_sum += 1/$n if $do_harm and $n != 0;
+  $product *= $n if $do_geo;
+  $count++;
+  # we only use the array and hash when needed
+  push(@input, $n) if $do_stdev or $do_median;
+  $seen{$n}++ if $do_mode;
+}
+
+if ($count == 0) { exit 1; }
+if ($do_sum == 1) {
+  $_ = sprintf ("%f", $sum);
+  s/\.?0*$//;
+  unless ($do_stdev or $do_median or $do_mode or $do_harm or $do_geo) {
+    print "$_\n";
+    exit 0;
+  } else { $sum = $_; }
+}
+
+my $avg = $sum / $count;
+
+unless ($do_stdev or $do_median or $do_mode or $do_harm or $do_geo) {
+  printf ("%f\n", $avg);
+  exit 0;
+}
+
+if (!$delim && $do_tab) { $delim = "\t"; }
+elsif (!$delim && $do_space) { $delim = " "; }
+elsif (!$delim && $do_line) { $delim = "\n"; }
+
+my $stdev = 0;
+if ($do_stdev) {
+  foreach my $var (@input) { $stdev += ($avg-$var) ** 2; }
+  $stdev = sqrt($stdev / $count);
+  if ($minus) { printf "%f\n", $avg - $stdev; exit; }
+  if ($plus)  { printf "%f\n", $avg + $stdev; exit; }
+}
+
+my $median = 0;
+if ($do_median) {
+  # round down, then floor. This sets us up for zero-indexing
+  my $halfsize = int(scalar @input / 2 - 0.5);
+  @input = sort {$a <=> $b} @input;
+  $median = $input[$halfsize];
+  if (scalar @input % 2 == 0) {  # even count: average the middle two points
+    $median += $input[$halfsize + 1]; # round up
+    $median /= 2;
+  }
+}
+
+my $mode = 0;
+if ($do_mode) {
+  my $max_count = 0;
+  for my $i (values %seen) {
+    $max_count = $i if $i > $max_count;
+  }
+  my @modes = grep { $seen{$_} == $max_count } keys %seen;
+  if (@modes == 1) {
+    $mode = $modes[0];
+  } else {
+    $mode = "(" . join(", ", @modes) . ")"; # . ' @ ' . $max_count;
+  }
+}
+
+my $harmean = 0;
+$harmean = $count / $reciprocal_sum if $do_harm and $reciprocal_sum != 0;
+
+my $geo = 0;
+$geo = $product ** (1/$count) if $do_geo;
+
+if ($do_shell) {
+  printf ("AVG='%f';\n", $avg);
+  printf ("MED='%f';\n", $median) if $do_median;
+  printf ("MODE='%f';\n", $mode) if $do_mode;
+  printf ("GEO='%f';\n", $geo) if $do_geo;
+  printf ("HAR='%f';\n", $harmean) if $do_harm;
+  printf ("STD='%f';\n", $stdev) if $do_stdev;
+  printf ("MIN='%f';\nMAX='%f';\n", $min, $max) if $do_max;
+  printf ("SUM='%s';\n", $sum) if $do_sum;
+  #printf ("PROD='%s';\n", $product) if $do_geo;
+  print  ("export AVG"
+    . ($do_median ? " MED" : "")
+    . ($do_geo ? " GEO" : "")
+    . ($do_harm ? " HAR" : "")
+    . ($do_stdev ? " STD" : "")
+    . ($do_max ? " MIN MAX" : "")
+    . ($do_sum ? " SUM" : "")
+    . "\n");
+} elsif ($delim) {
+  printf ("%f", $avg);
+  printf ("%s%f", $delim, $median) if $do_median;
+  printf ("%s%f", $delim, $geo) if $do_geo;
+  printf ("%s%f", $delim, $harmean) if $do_harm;
+  printf ("%s%f", $delim, $stdev) if $do_stdev;
+  printf ("%s%s%s%s", $delim, $min, $delim, $max) if $do_max;
+  printf ("%s%s", $delim, $sum) if $do_sum;
+  printf "\n";
+} else {
+  printf ( "Arithmetic Mean:    %f\n", $avg );
+  printf ( "Median:             %f\n", $median ) if $do_median;
+  printf ( "Mode:               %s\n", $mode ) if $do_mode;
+  printf ( "Geometric Mean:     %f\n", $geo ) if $do_geo;
+  printf ( "Harmonic Mean:      %f\n", $harmean ) if $do_harm;
+  printf ( "Standard Deviation: %f\n", $stdev ) if $do_stdev;
+  printf ( "Min:                %s\n", $min ) if $do_max;
+  printf ( "Max:                %s\n", $max ) if $do_max;
+  printf ( "Sum:                %s\n", $sum ) if $do_sum;
+}
