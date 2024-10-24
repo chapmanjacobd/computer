@@ -209,3 +209,4 @@ abbr -a -- teecb 'tee | cb'
 abbr -a -- filecount 'fd -tf | count'
 abbr -a -- cmd commandline --insert
 abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
+abbr -a -- vpipe vipe
