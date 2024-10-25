@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List
 
 import img2pdf
+from natsort import natsorted
 import ocrmypdf
 import pdf2image
 from PIL import Image, ImageEnhance
@@ -15,7 +16,7 @@ from xklb.utils import argparse_utils
 
 def pdf_contrast(args):
     if args.input_path.is_dir():
-        files = sorted(p for p in args.input_path.glob('*') if p.suffix != '.pdf')
+        files = natsorted(p for p in args.input_path.glob('*') if p.suffix != '.pdf')
         input_images = [Image.open(p) for p in files]
     else:
         input_images = pdf2image.convert_from_path(args.input_path)
