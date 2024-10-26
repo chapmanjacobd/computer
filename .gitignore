@@ -1,3 +1,4 @@
+/.config/darktable/
 /.config/dconf/
 /.config/dolphin-emu/
 /bin/__pycache__/
@@ -290,4 +291,3 @@
 /.config/compton/
 /.config/.config/
 /.config/configstore/
-/.config/darktable/
