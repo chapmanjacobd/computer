@@ -3,7 +3,7 @@
 if test -t 0
     if test -z "$argv"
         xsel --clipboard --output
-    else
+    else  # allow cb -t text/html usage, etc
         xclip -sel c -o $argv
     end
 else
