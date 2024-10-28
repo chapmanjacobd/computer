@@ -5,7 +5,7 @@ from wordfreq import zipf_frequency
 
 
 def main():
-    input_words = sys.stdin.read().splitlines()
+    input_words = sys.stdin.read().split()
 
     sorted_words = sorted(input_words, key=lambda word: zipf_frequency(word, 'en'), reverse=True)
 
