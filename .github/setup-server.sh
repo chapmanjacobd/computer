@@ -84,6 +84,7 @@ done
 sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
 sudo dnf install -y xpra
 
+# alternatives: https://github.com/wg-easy/wg-easy https://github.com/juanfont/headscale ZeroTier netbird 
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo dnf install tailscale
 
