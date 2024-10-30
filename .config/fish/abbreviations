@@ -211,3 +211,6 @@ abbr -a -- cmd commandline --insert
 abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
 abbr -a -- vpipe vipe
 abbr -a -- words /usr/share/dict/words
+abbr -a -- power-save sudo cpupower frequency-set -g powersave
+abbr -a -- power-performance sudo cpupower frequency-set -g performance
+abbr -a -- power-balanced sudo cpupower frequency-set -g ondemand
