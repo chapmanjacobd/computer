@@ -48,19 +48,19 @@ rpm-ostree status
 sudo rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo systemctl reboot
 
+sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers
+
 sudo ostree remote add tailscale https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 # TODO: move most of these to flatpaks
-sudo rpm-ostree install tailscale fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom
+sudo rpm-ostree install tailscale fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools
+sudo rpm-ostree install mesa-va-drivers-freeworld.x86_64 mesa-vdpau-drivers-freeworld.x86_64
+
 sudo rpm-ostree install https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum-0.14.5-1.x86_64.rpm
-sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup
 
 sudo rpm-ostree install gstreamer1-plugin-libav gstreamer1-plugins-bad-free-extras gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly gstreamer1-vaapi
 sudo rpm-ostree override remove libavcodec-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install ffmpeg
 
 sudo rpm-ostree update --uninstall rpmfusion-free-release --uninstall rpmfusion-nonfree-release --install rpmfusion-free-release --install rpmfusion-nonfree-release
-
-flatpak remote-modify --user --enable flathub
-flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 sudo systemctl reboot
 
@@ -76,18 +76,32 @@ echo remember to disable key expiry
 sudo tailscale up
 tailscale ip -4
 
-flatpak update
-flatpak install --user -y fedora org.mozilla.firefox
-flatpak install --user -y fedora org.libreoffice.LibreOffice
-flatpak install --user -y fedora com.github.tchx84.Flatseal
-flatpak install --user -y flathub org.freedesktop.Platform.GStreamer.gstreamer-vaapi/x86_64/23.08
-flatpak install --user -y flathub org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
-
 sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
 sudo systemctl set-default multi-user.target
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
+sudo flatpak remote-delete fedora
+flatpak remote-delete fedora
+
+flatpak remote-modify --user --enable flathub || flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+flatpak update
+flatpak install --user -y flathub org.mozilla.firefox
+flatpak install --user -y flathub org.libreoffice.LibreOffice
+flatpak install --user -y flathub com.github.tchx84.Flatseal
+flatpak install --user -y flathub org.freedesktop.Platform.GStreamer.gstreamer-vaapi/x86_64/23.08
+flatpak install --user -y flathub org.freedesktop.Platform.ffmpeg-full/x86_64/24.08
+
 for dep in $(cat .github/cargo_installed); do
     cargo install $dep
 done
+
+sudo sed -i 's/compress=zstd:1/noatime,compress=zstd:2/' /etc/fstab
+
+sudo fwupdmgr refresh --force && \
+sudo fwupdmgr get-updates && \
+sudo fwupdmgr update
+
+distrobox create
+distrobox enter my-distrobox

@@ -84,7 +84,7 @@ done
 sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
 sudo dnf install -y xpra
 
-# alternatives: https://github.com/wg-easy/wg-easy https://github.com/juanfont/headscale ZeroTier netbird 
+# alternatives: https://github.com/wg-easy/wg-easy https://github.com/juanfont/headscale ZeroTier netbird
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo dnf install tailscale
 
@@ -92,3 +92,9 @@ sudo systemctl enable --now tailscaled
 echo remember to disable key expiry
 sudo tailscale up
 tailscale ip -4
+
+sudo sed -i 's/compress=zstd:1/noatime,compress=zstd:2/' /etc/fstab
+
+sudo fwupdmgr refresh --force && \
+sudo fwupdmgr get-updates && \
+sudo fwupdmgr update
