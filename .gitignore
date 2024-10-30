@@ -1,3 +1,6 @@
+/.config/go/telemetry/
+/.config/toolbox/
+/toolbox/
 /.config/darktable/
 /.config/dconf/
 /.config/dolphin-emu/
