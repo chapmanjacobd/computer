@@ -52,7 +52,7 @@ sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi
 
 sudo ostree remote add tailscale https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 # TODO: move most of these to flatpaks
-sudo rpm-ostree install tailscale fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools freerdp-server
+sudo rpm-ostree install tailscale fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools freerdp-server greenboot
 sudo rpm-ostree install mesa-va-drivers-freeworld.x86_64 mesa-vdpau-drivers-freeworld.x86_64
 
 sudo rpm-ostree install https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum-0.14.5-1.x86_64.rpm
