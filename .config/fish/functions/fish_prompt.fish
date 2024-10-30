@@ -90,6 +90,8 @@ function fish_prompt --description 'Write out the prompt'
         printf '%s ' (dayminute)
     else if set -q venv
         printf '(%s) ' $venv
+    else if set -q CONTAINER_ID
+        printf '(%s) ' $CONTAINER_ID
     else
         printf (rand_block_prefix)
         printf (rand_block_prefix)

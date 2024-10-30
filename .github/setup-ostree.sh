@@ -103,5 +103,5 @@ sudo fwupdmgr refresh --force && \
 sudo fwupdmgr get-updates && \
 sudo fwupdmgr update
 
-distrobox create
+distrobox create -n my-distrobox -ap "fish psmisc procps"
 distrobox enter my-distrobox
