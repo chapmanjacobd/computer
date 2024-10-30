@@ -92,6 +92,7 @@ sudo systemctl enable --now tailscaled
 echo remember to disable key expiry
 sudo tailscale up
 tailscale ip -4
+# https://major.io/p/build-tailscale-exit-node-firewalld/
 
 sudo sed -i 's/compress=zstd:1/noatime,compress=zstd:2/' /etc/fstab
 
