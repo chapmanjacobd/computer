@@ -80,13 +80,17 @@ function fish_prompt --description 'Write out the prompt'
         set duration
     end
 
+    set battery_percentage (low_battery_percent)
+    if test -n "$battery_percentage"
+        echo -n "$battery_percentage "
+    end
+
     set_color $color_host
     if test -n "$duration"
         printf '%s ' (dayminute)
     else if set -q venv
         printf '(%s) ' $venv
     else
-        printf (low_battery_percent)
         printf (rand_block_prefix)
         printf (rand_block_prefix)
         printf (rand_block_prefix)
