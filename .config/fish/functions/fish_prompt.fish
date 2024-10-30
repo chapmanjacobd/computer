@@ -86,6 +86,7 @@ function fish_prompt --description 'Write out the prompt'
     else if set -q venv
         printf '(%s) ' $venv
     else
+        printf (low_battery_percent)
         printf (rand_block_prefix)
         printf (rand_block_prefix)
         printf (rand_block_prefix)
