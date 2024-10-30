@@ -45,14 +45,41 @@ sudo systemctl edit --force --full rpm-ostreed-automatic.timer  # change to 3 da
 sudo systemctl enable rpm-ostreed-automatic.timer --now
 rpm-ostree status
 
+sudo ostree remote add tailscale https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo rpm-ostree install tailscale greenboot greenboot-default-health-checks
+sudo rpm-ostree apply-live
+sudo systemctl enable greenboot-task-runner greenboot-healthcheck greenboot-status greenboot-loading-message greenboot-grub2-set-counter greenboot-grub2-set-success greenboot-rpm-ostree-grub2-check-fallback redboot-auto-reboot redboot-task-runner
+
+sudo systemctl enable --now tailscaled
+echo remember to disable key expiry
+sudo tailscale up
+tailscale ip -4
+
+cat << 'EOF' | sudo tee /etc/greenboot/check/required.d/tailscale_status.sh
+#!/bin/bash
+
+vpn_state=$(test -d /proc/sys/net/ipv4/conf/tailscale0)
+
+if [ $? -eq 0 ]; then
+        tailscale_out=$(tailscale status)
+
+    if [ $? -eq 0 ]; then
+        echo "Tailscale up"
+        exit 0
+    fi
+fi
+
+echo "Tailscale DOWN"
+exit 1
+EOF
+
 sudo rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo systemctl reboot
 
 sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers
 
-sudo ostree remote add tailscale https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 # TODO: move most of these to flatpaks
-sudo rpm-ostree install tailscale fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools freerdp-server greenboot
+sudo rpm-ostree install fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools freerdp-server
 sudo rpm-ostree install mesa-va-drivers-freeworld.x86_64 mesa-vdpau-drivers-freeworld.x86_64
 
 sudo rpm-ostree install https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum-0.14.5-1.x86_64.rpm
@@ -70,11 +97,6 @@ sudo chsh xk --shell /bin/fish
 sudo loginctl enable-linger xk
 
 sudo systemctl start btrfsmaintenance-refresh
-
-sudo systemctl enable --now tailscaled
-echo remember to disable key expiry
-sudo tailscale up
-tailscale ip -4
 
 sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
