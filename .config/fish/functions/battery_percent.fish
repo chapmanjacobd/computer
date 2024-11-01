@@ -1,6 +1,6 @@
 # Defined interactively
 function battery_percent
-    if set -q CONTAINER_ID; set -q container
+    if set -q CONTAINER_ID; or set -q container
         return
     end
 
