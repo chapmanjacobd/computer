@@ -23,7 +23,7 @@ function forganize
 
     # ~/d/dump/audio/midi/ && fd -tf -eMID -x mv "{}" "{.}.mid"
 
-    fd . ~/d/dump/porn/audio/ ~/d/dump/audio/ -epng -ejpg -x rm "{}"
+    # fd . ~/d/dump/porn/audio/ ~/d/dump/audio/ -epng -ejpg -x rm "{}"
 
     lb-load
     yes | lb dedupe-media --fs ~/lb/video.db -v --dedupe-cmd dupreplace.fish
