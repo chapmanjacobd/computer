@@ -1,3 +1,4 @@
+/.config/Code/
 /backup/
 /.config/go/telemetry/
 /.config/toolbox/
@@ -288,5 +289,3 @@
 /.config/clight-gui/
 /.config/clipit/
 /.config/cmus/
-/.config/cni/
-/.config/Code/
