@@ -214,3 +214,4 @@ abbr -a -- words /usr/share/dict/words
 abbr -a -- power-save sudo cpupower frequency-set -g powersave
 abbr -a -- power-performance sudo cpupower frequency-set -g performance
 abbr -a -- power-balanced sudo cpupower frequency-set -g ondemand
+abbr -a -- bios systemctl reboot --firmware-setup
