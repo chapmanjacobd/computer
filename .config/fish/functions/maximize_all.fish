@@ -6,5 +6,6 @@ function maximize_all
     end
 
     krohnkite_off
+    sleep 0.5
     krohnkite_on
 end
