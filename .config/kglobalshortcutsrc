@@ -15,10 +15,6 @@ Switch to Last-Used Keyboard Layout=Meta+Alt+L,none,Switch to Last-Used Keyboard
 Switch to Next Keyboard Layout=Meta+Alt+K,none,Switch to Next Keyboard Layout
 _k_friendly_name=Keyboard Layout Switcher
 
-[fish-20.desktop]
-_k_friendly_name=fish -c maximize_all
-_launch=Meta+Up,none,fish -c maximize_all
-
 [kaccess]
 Toggle Screen Reader On and Off=Meta+Alt+S,Meta+Alt+S,Toggle Screen Reader On and Off
 _k_friendly_name=Accessibility
@@ -57,7 +53,7 @@ toggle_mainwindow_visibility=none,none,Show/Hide Konversation
 [ksmserver]
 Halt Without Confirmation=none,,Shut Down Without Confirmation
 Lock Session=Meta+L,Meta+L\tScreensaver,Lock Session
-Log Out=Ctrl+Alt+Del,Ctrl+Alt+Del,Show Logout Prompt
+Log Out=Ctrl+Alt+Del,Ctrl+Alt+Del,Show Logout Screen
 Log Out Without Confirmation=none,,Log Out Without Confirmation
 LogOut=none,,Log Out
 Reboot=none,,Reboot
@@ -325,25 +321,6 @@ playpausemedia=Media Play,Media Play,Play/Pause media playback
 previousmedia=Media Previous,Media Previous,Media playback previous
 stopmedia=Media Stop,Media Stop,Stop media playback
 
-[org.kde.kcalc.desktop]
-_k_friendly_name=KCalc
-_launch=Launch (1),Launch (1),KCalc
-
-[org.kde.konsole.desktop]
-NewTab=none,none,Open a New Tab
-NewWindow=none,none,Open a New Window
-_k_friendly_name=Konsole
-_launch=Ctrl+Alt+T,Ctrl+Alt+T,Konsole
-
-[org.kde.krunner.desktop]
-RunClipboard=Alt+Shift+F2,Alt+Shift+F2,Run command on clipboard contents
-_k_friendly_name=KRunner
-_launch=Alt+Space\tAlt+F2\tSearch,Alt+Space\tAlt+F2\tSearch,KRunner
-
-[org.kde.plasma.emojier.desktop]
-_k_friendly_name=Emoji Selector
-_launch=Meta+.\tMeta+Ctrl+Alt+Shift+Space,Meta+.\tMeta+Ctrl+Alt+Shift+Space,Emoji Selector
-
 [org_kde_powerdevil]
 Decrease Keyboard Brightness=Keyboard Brightness Down,Keyboard Brightness Down,Decrease Keyboard Brightness
 Decrease Screen Brightness=Monitor Brightness Down,Monitor Brightness Down,Decrease Screen Brightness
@@ -357,7 +334,7 @@ PowerOff=Power Off,Power Off,Power Off
 Sleep=Sleep,Sleep,Suspend
 Toggle Keyboard Backlight=Keyboard Light On/Off,Keyboard Light On/Off,Toggle Keyboard Backlight
 Turn Off Screen=none,none,Turn Off Screen
-_k_friendly_name=KDE Power Management System
+_k_friendly_name=Power Management
 powerProfile=Battery\tMeta+B,Battery\tMeta+B,Switch Power Profile
 
 [plasmashell]
@@ -380,10 +357,10 @@ activate widget 14=none,none,Activate Notifications Widget
 activate widget 152=none,none,Activate Application Dashboard Widget
 activate widget 163=none,none,Activate Application Launcher Widget
 activate widget 185=Alt+F1,none,Activate Application Dashboard Widget
-activate widget 219=,none,Activate Network Speed Widget
-activate widget 220=,none,Activate Hard Disk Activity Widget
-activate widget 222=,none,Activate Total CPU Use Widget
-activate widget 224=,none,Activate System Monitor Sensor Widget
+activate widget 219=none,none,Activate Network Speed Widget
+activate widget 220=none,none,Activate Hard Disk Activity Widget
+activate widget 222=none,none,Activate Total CPU Use Widget
+activate widget 224=none,none,Activate System Monitor Sensor Widget
 activate widget 27=none,none,Activate Task Manager Widget
 activate widget 3=none,none,Activate Application Launcher Widget
 activate widget 60=none,none,Activate Icons-only Task Manager Widget
@@ -506,15 +483,6 @@ _launch=Alt+PgDown
 
 [services][xcalib.desktop]
 _launch=Alt+PgUp
-
-[systemsettings.desktop]
-_k_friendly_name=System Settings
-_launch=Tools,Tools,System Settings
-kcm-kscreen=none,none,Display Configuration
-kcm-lookandfeel=none,none,Global Theme
-kcm-users=none,none,Users
-powerdevilprofilesconfig=none,none,Energy Saving
-screenlocker=none,none,Screen Locking
 
 [wacomtablet]
 Map to fullscreen=Meta+Ctrl+F,Meta+Ctrl+F,Map to fullscreen
