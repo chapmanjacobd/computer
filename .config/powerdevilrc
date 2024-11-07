@@ -1,3 +1,6 @@
+[AC][Display]
+TurnOffDisplayIdleTimeoutSec=300
+
 [AC][Performance]
 PowerProfile=performance
 
