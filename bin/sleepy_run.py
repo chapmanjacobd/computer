@@ -75,7 +75,7 @@ if __name__ == "__main__":
     args.exit_signal = getattr(signal, args.signal.upper())
 
     if not args.trigger:
-        args.trigger = ['429 Too Many Requests', '429 Unknown', 'Rate limit']
+        args.trigger = ['429 Too Many Requests', '429 Unknown', 'Rate limit', 'HTTP Error 429']
     args.trigger = [s.encode() for s in args.trigger]
 
     sleepy_run(args)
