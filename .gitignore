@@ -1,3 +1,4 @@
+/.config/chromium/
 /.config/Code/
 /backup/
 /.config/go/telemetry/
@@ -284,5 +285,3 @@
 /.config/cef_user_data/
 /.config/cheat/
 /.config/cherrytree/
-/.config/chromium/
-/.config/ciphey/
