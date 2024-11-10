@@ -4,6 +4,7 @@ function vnc
 
     #vopono -v exec --custom ./custom_openvpn.ovpn --protocol openvpn "firefox"
     if contains pakon $argv
+        ssh -t pakon setsid -f 'fish -c "rdpserve"'
         rdp pakon.curl-amberjack.ts.net:35589
     end
     if contains backup $argv

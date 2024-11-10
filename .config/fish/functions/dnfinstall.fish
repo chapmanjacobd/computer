@@ -1,5 +1,5 @@
 function dnfinstall --wraps='dnf install'
-    if command -v rpm-ostree > /dev/null
+    if command -v rpm-ostree >/dev/null
         sudo rpm-ostree install $argv
         and echo $argv | string split ' ' >>~/.github/ostree_installed
         sort --unique --ignore-case ~/.github/ostree_installed | sponge ~/.github/ostree_installed

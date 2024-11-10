@@ -5,7 +5,7 @@ function maximize_all
         wmctrl -i -r $win -b add,maximized_horz,maximized_vert
     end
 
-    krohnkite_off
+    krohnkite_toggle
     sleep 0.5
-    krohnkite_on
+    krohnkite_toggle
 end

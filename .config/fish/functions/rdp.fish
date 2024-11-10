@@ -2,7 +2,7 @@
 function rdp
     expect -c '
 set timeout -1
-spawn xfreerdp -authentication +auto-reconnect /network:auto -audio -decorations /v:'$argv' /smart-sizing /workarea /bpp:16 /rfx /gdi:hw /gfx:AVC420,rfx /clipboard
+spawn xfreerdp -authentication +auto-reconnect /network:auto -audio -decorations /v:'$argv' /smart-sizing /workarea /clipboard /gfx:avc420,mask:0x1e0
 expect "Domain:"
 send "\r"
 expect "Password:"
