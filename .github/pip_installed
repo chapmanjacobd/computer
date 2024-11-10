@@ -9,6 +9,7 @@ cython
 daff
 datasette
 emoji-country-flag
+evdev
 filprofiler
 freezegun
 frogmouth
