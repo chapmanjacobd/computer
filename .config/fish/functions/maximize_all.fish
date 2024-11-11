@@ -5,7 +5,10 @@ function maximize_all
         wmctrl -i -r $win -b add,maximized_horz,maximized_vert
     end
 
-    krohnkite_toggle
-    sleep 0.5
-    krohnkite_toggle
+    set is_enabled (kreadconfig5 --file kwinrc--group Plugins --key krohnkiteEnabled)
+    if test "$is_enabled" = true
+        krohnkite_off
+        sleep 0.5
+        krohnkite_on
+    end
 end
