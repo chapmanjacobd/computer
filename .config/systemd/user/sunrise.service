@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 7:00:00 run sunrise'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 100
+ExecStart='/usr/bin/fish' '-c' 'sunrise'
+

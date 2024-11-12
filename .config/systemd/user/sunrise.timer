@@ -1,0 +1,10 @@
+[Unit]
+Description='On *-*-* 7:00:00 run sunrise'
+
+[Timer]
+Persistent=yes
+OnCalendar=*-*-* 7:00:00
+
+[Install]
+WantedBy=timers.target
+
