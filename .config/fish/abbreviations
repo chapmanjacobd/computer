@@ -38,7 +38,6 @@ abbr -a -- q exit
 abbr -a -- rm trash-put
 abbr -a -- rmove 'rsync -a --info=progress2 --no-inc-recursive --remove-source-files --backup-dir (date "+%d.%m.%Y")'
 abbr -a -- rmv 'rclone move --delete-empty-src-dirs'
-abbr -a -- sde dnferase
 abbr -a -- sdi dnfinstall
 abbr -a -- sdu 'sudo dnf update'
 abbr -a -- size 'wc -c | numfmt --to=iec'
@@ -216,3 +215,5 @@ abbr -a -- power-performance sudo cpupower frequency-set -g performance
 abbr -a -- power-balanced sudo cpupower frequency-set -g ondemand
 abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | sum'
+abbr -a -- dnferase dnfremove
+abbr -a -- sde dnfremove
