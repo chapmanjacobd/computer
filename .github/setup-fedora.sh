@@ -59,3 +59,5 @@ python -m pip install yt-dlp pipenv catt xklb
 cd ~ && restorecon -vR .
 #reboot
 R --slave -e 'update.packages()'
+
+sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
