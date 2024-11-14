@@ -1,4 +1,8 @@
 # Defined interactively
 function brightness_down
-    brightness_set (math (brightness_get)-3)
+    if test pakon = (hostname)
+        brightness_lg_down
+    else
+        brightness_set (math (brightness_get)-3)
+    end
 end

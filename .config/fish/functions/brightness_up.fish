@@ -1,4 +1,8 @@
 # Defined interactively
 function brightness_up
-    brightness_set (math (brightness_get)+1)
+    if test pakon = (hostname)
+        brightness_lg_up
+    else
+        brightness_set (math (brightness_get)+1)
+    end
 end
