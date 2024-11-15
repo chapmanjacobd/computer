@@ -1,6 +1,6 @@
 function weekly
     dbackups
-    trash ~/d/sync/.stversions/*
+    trash ~/sync/.stversions/*
 
     update_unli_cities_visas
 

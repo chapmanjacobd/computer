@@ -5,8 +5,8 @@ function daily
 
     with_lock copy_to_pakon
 
-    lb mv /mnt/d/sync/video/keep/ /mnt/d/archive/video/keep/
-    mkdir /mnt/d/sync/video/keep/
+    lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
+    mkdir ~/sync/video/keep/
 
     catt volume 0 && catt volume 40
     pip install --upgrade pychromecast

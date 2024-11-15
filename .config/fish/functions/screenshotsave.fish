@@ -1,6 +1,6 @@
 # Defined interactively
 function screenshotsave
-    set target ~/d/sync/image/other/Screenshot_(datestamp)
+    set target ~/sync/image/other/Screenshot_(datestamp)
 
     set i 0
     while test -e "$target$i.jpg"

@@ -1,6 +1,6 @@
 # Defined via `source`
 function dorganize
-    ~/d/sync/world/downloads/
+    ~/sync/world/downloads/
 
     fd -eZIP -eRAR -e7z -eXZ -x fish -c "unardel '{}'"
 
