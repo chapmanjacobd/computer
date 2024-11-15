@@ -1,1 +1,1 @@
-/mnt/d/sync/self/
+sync/self/
