@@ -12,21 +12,35 @@ from xklb.utils import arggroups, argparse_utils, iterables
 from xklb.utils.log_utils import log
 
 IGNORE_DOMAINS = []
+PORN_DOMAINS = [
+    'bitporn.eu',
+    'exoticaz.to',
+    'scenetime.com',
+    'superbits.org',
+    'pussytorrents.org',
+    'happyfappy.org',
+    'plab.site',
+    'empornium.is',
+    'empornium.sx',
+]
 
 
 def get_tracker_dirname(torrent: Torrent):
-    if torrent.source:
-        return torrent.source
     if torrent.announce_urls is None:
-        return
+        return torrent.source
 
     log.debug(torrent.announce_urls)
 
     for tracker in iterables.flatten(torrent.announce_urls):
         url = urlparse(tracker)
-        domain = '.'.join(url.netloc.rsplit(':')[0].rsplit('.', 2)[-2:])
+        domain = '.'.join(url.netloc.rsplit(':')[0].rsplit('.', 2)[-2:]).lower()
         if domain not in IGNORE_DOMAINS:
-            return domain
+            if domain in PORN_DOMAINS:
+                return ''.join(['porn/', domain])
+            else:
+                return ''.join(['seed/', domain])
+
+    return torrent.source
 
 
 def sort_and_move_torrents(args):
@@ -81,6 +95,7 @@ def sort_and_move_torrents(args):
                 size if args.file_count else humanize.naturalsize(size, binary=True),
             )
         else:
+            Path(destination_path).parent.mkdir(exist_ok=True, parents=True)
             shutil.move(torrent_file, destination_path)
             print(destination_path)
 
@@ -102,8 +117,5 @@ if __name__ == '__main__':
     arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
     arggroups.args_post(args, parser)
-
-    if args.out:
-        Path(args.out).mkdir(exist_ok=True, parents=True)
 
     sort_and_move_torrents(args)
