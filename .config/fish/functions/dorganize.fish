@@ -2,7 +2,10 @@
 function dorganize
     ~/sync/world/downloads/
 
-    fd -eZIP -eRAR -e7z -eXZ -x fish -c "unardel '{}'"
+    unardel *.zip 
+    unardel *.rar 
+    unardel *.7z 
+    unardel *.xz
 
     fd -d1 -eEPUB -edjvu -x mv "{}" ~/d/dump/text/ebooks/
     fd -d1 -eHTML -ePDF -x mv "{}" ~/d/dump/text/web/
