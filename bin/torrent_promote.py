@@ -4,10 +4,29 @@ import shutil
 import statistics
 from pathlib import Path
 from typing import List, Tuple
+from urllib.parse import urlparse
 
 import humanize
 from torrentool.api import Torrent
-from xklb.utils import arggroups, argparse_utils
+from xklb.utils import arggroups, argparse_utils, iterables
+from xklb.utils.log_utils import log
+
+IGNORE_DOMAINS = []
+
+
+def get_tracker_dirname(torrent: Torrent):
+    if torrent.source:
+        return torrent.source
+    if torrent.announce_urls is None:
+        return
+
+    log.debug(torrent.announce_urls)
+
+    for tracker in iterables.flatten(torrent.announce_urls):
+        url = urlparse(tracker)
+        domain = '.'.join(url.netloc.rsplit(':')[0].rsplit('.', 2)[-2:])
+        if domain not in IGNORE_DOMAINS:
+            return domain
 
 
 def sort_and_move_torrents(args):
@@ -19,7 +38,7 @@ def sort_and_move_torrents(args):
         else:
             paths.append(p)
 
-    torrent_data: List[Tuple[Path, float]] = []
+    torrent_data: List[Tuple[Path, Path, float]] = []
     for torrent_file in paths:
         torrent = Torrent.from_file(torrent_file)
 
@@ -28,22 +47,30 @@ def sort_and_move_torrents(args):
 
         file_sizes = [f.length for f in torrent.files]
         if args.average:
-            torrent_data.append((torrent_file, statistics.mean(file_sizes)))
+            torrent_size = statistics.mean(file_sizes)
         elif args.median:
-            torrent_data.append((torrent_file, statistics.median(file_sizes)))
+            torrent_size = statistics.median(file_sizes)
         elif args.file_count:
-            torrent_data.append((torrent_file, len(file_sizes)))
+            torrent_size = len(file_sizes)
         else:
-            torrent_data.append((torrent_file, sum(file_sizes)))
+            torrent_size = sum(file_sizes)
+
+        if args.out:
+            dir_name = Path(args.out)
+        else:
+            dir_name = torrent_file.parent / '..' / 'start'
+
+        if args.tracker_dirnames:
+            tracker = get_tracker_dirname(torrent)
+            if tracker:
+                dir_name /= tracker
+        destination_path = dir_name / torrent_file.name
+
+        torrent_data.append((torrent_file, destination_path.resolve(), torrent_size))
 
     sorted_torrents = sorted(torrent_data, key=lambda x: x[1], reverse=args.reverse)
 
-    for torrent_file, size in sorted_torrents[: args.n]:
-        if args.out:
-            destination_path = Path(args.out) / torrent_file.name
-        else:
-            destination_path = torrent_file.parent / '..' / 'start' / torrent_file.name
-
+    for torrent_file, destination_path, size in sorted_torrents[: args.n]:
         if args.simulate or args.print:
             print(
                 'mv',
@@ -63,6 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--out', '-o')
     parser.add_argument('-n', type=int, default=20, help='Number of torrents to move')
 
+    parser.add_argument('--tracker-dirnames', '--trackers', action='store_true')
     parser.add_argument('--reverse', '-r', action='store_true')
     parser.add_argument('--file-count', '--count', action='store_true')
     parser.add_argument(
