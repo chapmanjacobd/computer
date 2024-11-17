@@ -2,9 +2,9 @@
 function dorganize
     ~/sync/world/downloads/
 
-    unardel *.zip 
-    unardel *.rar 
-    unardel *.7z 
+    unardel *.zip
+    unardel *.rar
+    unardel *.7z
     unardel *.xz
 
     fd -d1 -eEPUB -edjvu -x mv "{}" ~/d/dump/text/ebooks/
