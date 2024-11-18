@@ -32,7 +32,7 @@ function lbrelease --argument newver
         pdm lock --group deluxe,test
         sleep 400
         python -m pip install --upgrade xklb
-        python -m pip install --upgrade xklb
+        allpc python -m pip install --upgrade xklb
     else
         return 1
     end
