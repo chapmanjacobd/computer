@@ -355,6 +355,7 @@
     "threadsafe",
     "tifs",
     "tilesets",
+    "timecode",
     "timespec",
     "tokenchars",
     "Topo",
