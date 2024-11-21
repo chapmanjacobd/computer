@@ -230,6 +230,7 @@
     "iloc",
     "inodes",
     "interdimensional",
+    "iowait",
     "ipdb",
     "janky",
     "jsonipc",
