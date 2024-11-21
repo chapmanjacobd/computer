@@ -62,6 +62,7 @@ pyicu
 pylint
 pymcdm
 pympler
+pynput
 pypdf
 pypdf_table_extraction
 pytest
