@@ -3,7 +3,7 @@ function mam_search
     filter_opts $argv
 
     load_env_mam
-    set db ~/d/library/datasets/links/mam/(string replace -a ' ' _ $args).db
+    set db ~/lb/sites/mam/(string replace -a ' ' _ $args).db
 
     ~/lb/
     python -m xklb.scratch.mam_search --audiobooks --books --comics --radio $opts --cookie $MAM_COOKIE "$db" $args

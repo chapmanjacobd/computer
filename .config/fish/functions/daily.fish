@@ -16,9 +16,9 @@ function daily
     # command trash-empty 10 -f
 
     ~/j/social/
-    library tildes ~/d/library/datasets/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
-    for title in (sqlite --no-headers --raw-lines ~/d/library/datasets/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | strip | strip_quotes)
-        sqlite --no-headers --raw-lines ~/d/library/datasets/social/tildes.db "select text from media where path like '%$title'" >$title.html
+    library tildes ~/lb/sites/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
+    for title in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | strip | strip_quotes)
+        sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select text from media where path like '%$title'" >$title.html
     end
     fd -S-12b -tf -x rm
 
