@@ -37,8 +37,7 @@ git status'
     wipp: 'git commit -m wip
 git pull
 git push'
-    wipam: 'git commit --amend -m (git log -1 --pretty=format:"%B")
-git push -f'
+    wipam: 'git amend'
     gc: 'git commit -m ""'
     skipworktree: 'git update-index --skip-worktree'
     gpu: 'git push'

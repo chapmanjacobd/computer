@@ -25,8 +25,7 @@ let abbreviations = {
     wipp: 'git commit -m wip
         git pull
         git push'
-    wipam: 'git commit --amend -m (git log -1 --pretty=format:"%B")
-        git push -f'
+    wipam: 'git amend'
     gc: 'git commit -m ""'
     gpu: 'git push'
     winstart: 'cmd.exe /C start'
