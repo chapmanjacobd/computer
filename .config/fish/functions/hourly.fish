@@ -6,7 +6,8 @@ function hourly
     ~/bin/mam_upload_credit.sh
 
     ~/lb/
-    set max (math -s0 (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)/4)
+    # set max (math -s0 (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)/4)
+    set max (python -m xklb.scratch.mam_slots --cookie $MAM_COOKIE)
     if test $max -gt 0
         for dir in new/
             set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir -n $max | count)
