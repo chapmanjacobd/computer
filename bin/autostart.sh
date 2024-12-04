@@ -12,6 +12,6 @@ xmodmap -e "clear Lock" > /dev/null
 
 sudo setkeycodes 6e 97  # remap Copilot key to RCtrl
 
-run sudo python bin/wheel.py
+run sudo python ~/bin/wheel.py
 
 # b mons.sh -a

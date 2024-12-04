@@ -11,5 +11,5 @@ function standuphorizontally
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
     keepscreenoff && xset +dpms
     #breaktimer disable
-    ~/.config/autostart.sh &
+    ~/bin/autostart.sh &
 end

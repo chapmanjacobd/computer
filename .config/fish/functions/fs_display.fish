@@ -7,5 +7,5 @@ function fs_display --argument target
     krohnkite_off
     keepscreenon && xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
-    ~/.config/autostart.sh &
+    ~/bin/autostart.sh &
 end
