@@ -17,12 +17,12 @@ UUID=9c8df640-a931-41a9-b951-cab7b43b43f4 none                    swap    defaul
 
 UUID=be4a8113-3b94-44b4-a872-8c71b3fa2f39 /mnt/d1    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 UUID=fd94f523-469d-4595-b1c9-0d27347c86a5 /mnt/d3    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=c683f4cb-d22d-425b-aa8f-382fed4b26e3 /mnt/d5    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 
 UUID=13cf0222-1520-4f38-9514-24542355733d /mnt/d2    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
 UUID=b3b68016-bc16-4e15-9061-50898c6c96a0 /mnt/d4    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:3,nofail,x-systemd.mount-timeout=999 0 0
-UUID=9779face-01a7-4884-9c52-5aff03d7c359 /mnt/d5    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:3,nofail,x-systemd.mount-timeout=999 0 0
 UUID=b8128483-1d53-4732-8678-6138cf3843fd /mnt/d6    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:3,nofail,x-systemd.mount-timeout=999 0 0
 
 # /mnt/d4 /mnt/d4ro none bind,ro 0 0
 
-/mnt/d1:/mnt/d2:/mnt/d4:/mnt/d6   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=mfs  0 0
+/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=mfs  0 0
