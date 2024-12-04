@@ -217,3 +217,4 @@ abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
+abbr -a -- mounts lsblk -o NAME,MAJ:MIN,RM,SIZE,RO,FSTYPE,MOUNTPOINT,UUID
