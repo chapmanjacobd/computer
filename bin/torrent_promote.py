@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-from concurrent.futures import ThreadPoolExecutor
 import shutil
 import statistics
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 from urllib.parse import urlparse
 
 import humanize
@@ -72,6 +72,7 @@ def extract_torrent_file(args, torrent_file):
     destination_path = dir_name / torrent_file.name
 
     return (torrent_file, destination_path.resolve(), torrent_size)
+
 
 def sort_and_move_torrents(args):
     paths: List[Path] = []
