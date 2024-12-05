@@ -1,4 +1,5 @@
 [Added Associations]
+application/epub+zip=okularApplication_epub.desktop;calibre-ebook-viewer.desktop;calibre-ebook-edit.desktop;org.kde.ark.desktop;
 application/json=code.desktop;
 application/sql=code.desktop;
 application/vnd.sqlite3=org.qgis.qgis.desktop;
@@ -32,6 +33,7 @@ x-scheme-handler/http=firefox.desktop;userapp-Firefox-AWU3D2.desktop;
 x-scheme-handler/https=firefox.desktop;userapp-Firefox-AWU3D2.desktop;
 
 [Default Applications]
+application/epub+zip=okularApplication_epub.desktop;
 application/json=code.desktop;
 application/sql=code.desktop;
 application/vnd.sqlite3=org.qgis.qgis.desktop;
@@ -79,4 +81,5 @@ x-scheme-handler/x-github-client=github-desktop.desktop
 x-scheme-handler/x-github-desktop-auth=github-desktop.desktop
 
 [Removed Associations]
+application/epub+zip=calibre-gui.desktop;
 application/x-bittorrent=tixati.desktop;wine-extension-torrent.desktop;
