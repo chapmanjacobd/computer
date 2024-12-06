@@ -72,8 +72,8 @@ for state in interesting_states:
                     'progress': strings.safe_percent(t.progress),
                     'eta': strings.duration(t.eta) if t.eta < 8640000 else None,
                     'remaining': strings.file_size(t.amount_left),
-                    'num_seeds': t.num_seeds,
-                    # 'num_leechs': t.num_leechs,
+                    'num_seeds': f"{t.num_complete} ({t.num_seeds})",
+                    # 'num_leechs': f"{t.num_incomplete} ({t.num_leechs})",
                     # 'comment': t.comment,
                 }
                 for t in torrents
@@ -84,7 +84,6 @@ print()
 
 categories = []
 for state, torrents in torrents_by_state.items():
-    files = list(iterables.flatten(t.files for t in torrents))
     remaining = sum(t.amount_left for t in torrents)
     categories.append(
         {
@@ -92,10 +91,10 @@ for state, torrents in torrents_by_state.items():
             'count': len(torrents),
             'size': strings.file_size(sum(t.total_size for t in torrents)),
             'remaining': strings.file_size(remaining) if remaining else None,
-            'file_count': len(files),
+            'file_count': sum(len(t.files) for t in torrents) if args.verbose >= 1 else None,  # a bit slow
         }
     )
-printing.table(categories)
+printing.table(iterables.list_dict_filter_bool(categories))
 print()
 
 transfer = qbt_client.transfer_info()
