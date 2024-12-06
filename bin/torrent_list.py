@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from xklb.mediafiles.torrents_start import start_qBittorrent
+from xklb.mediafiles import torrents_start
 from xklb.utils import arggroups, argparse_utils, iterables, printing, strings
 
 parser = argparse_utils.ArgumentParser()
@@ -7,7 +7,7 @@ arggroups.qBittorrent(parser)
 arggroups.debug(parser)
 args = parser.parse_args()
 
-qbt_client = start_qBittorrent(args)
+qbt_client = torrents_start.start_qBittorrent(args)
 all_torrents = qbt_client.torrents_info()
 
 torrents_by_state = {}
@@ -15,20 +15,22 @@ for torrent in all_torrents:
     torrents_by_state.setdefault(torrent.state, []).append(torrent)
 
 interesting_states = [
-    ['stoppedUP', 'queuedUP'],
-    ['stoppedDL'],
-    ['forcedMetaDL', 'metaDL'],
-    ['forcedDL', 'stalledDL'],
-    # ['forcedUP', 'stalledUP'],  # not very interesting
-    # ['uploading'],
-    ['downloading'],
-    ['missingFiles'],
-    ['error'],
+    'stoppedUP',
+    'queuedUP',
+    'stoppedDL',
+    'forcedMetaDL',
+    'metaDL',
+    'forcedDL',
+    'stalledDL',
+    # 'forcedUP', 'stalledUP', 'uploading',  # not very interesting
+    'downloading',
+    'missingFiles',
+    'error',
 ]
 
 tbl = []
-for states in interesting_states:
-    torrents = [t for state in states for t in torrents_by_state.get(state) or []]
+for state in interesting_states:
+    torrents = torrents_by_state.get(state)
     if not torrents:
         continue
 
@@ -40,7 +42,7 @@ for states in interesting_states:
         tbl.extend(
             [
                 {
-                    'state': '+'.join(states),
+                    'state': state,
                     'name': printing.path_fill(t.name, width=76),
                     'seen_complete': strings.relative_datetime(t.seen_complete) if t.seen_complete > 0 else None,
                     'last_activity': strings.relative_datetime(t.last_activity),
@@ -54,8 +56,8 @@ print()
 
 
 tbl = []
-for states in interesting_states:
-    torrents = [t for state in states for t in torrents_by_state.get(state) or []]
+for state in interesting_states:
+    torrents = torrents_by_state.get(state)
     if not torrents:
         continue
 
@@ -65,7 +67,7 @@ for states in interesting_states:
         tbl.extend(
             [
                 {
-                    'state': '+'.join(states),
+                    'state': state,
                     'name': printing.path_fill(t.name, width=76),
                     'progress': strings.safe_percent(t.progress),
                     'eta': strings.duration(t.eta) if t.eta < 8640000 else None,
@@ -83,11 +85,13 @@ print()
 categories = []
 for state, torrents in torrents_by_state.items():
     files = list(iterables.flatten(t.files for t in torrents))
+    remaining = sum(t.amount_left for t in torrents)
     categories.append(
         {
             'state': state,
             'count': len(torrents),
-            'size': strings.file_size(sum(f.size for f in files)),
+            'size': strings.file_size(sum(t.total_size for t in torrents)),
+            'remaining': strings.file_size(remaining) if remaining else None,
             'file_count': len(files),
         }
     )
