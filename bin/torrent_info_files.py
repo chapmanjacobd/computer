@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from xklb.mediafiles import torrents_start
-from xklb.utils import arggroups, argparse_utils, printing, processes
+from xklb.utils import arggroups, argparse_utils, printing, processes, strings
 
 parser = argparse_utils.ArgumentParser()
 arggroups.qBittorrent(parser)
@@ -12,15 +12,7 @@ args = parser.parse_args()
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
 
-torrents = [
-    t
-    for t in torrents
-    if all(
-        (term in t.get('hash', '') or term in t.get('name', '') or term in t.get('save_path', ''))
-        for term in args.search_terms
-    )
-]
-
+torrents = [t for t in torrents if strings.glob_match(args.search_terms, [t.name, t.save_path, t.hash])]
 
 if not torrents:
     processes.no_media_found()
