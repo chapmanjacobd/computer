@@ -4,5 +4,6 @@ function allpc
         echo $pc
         ssh $pc $argv
         or $argv
+        echo
     end
 end
