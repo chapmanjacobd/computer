@@ -492,6 +492,9 @@ _launch=Alt+G
 [services][lb.desktop]
 _launch=Alt+Shift+T
 
+[services][net.local.fish.desktop]
+_launch=Alt+0
+
 [services][org.kde.dolphin.desktop]
 _launch=none
 
