@@ -3,8 +3,6 @@ function daily
     sticky_config
     popline ~/.gitignore
 
-    with_lock copy_to_pakon
-
     lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
     mkdir ~/sync/video/keep/
 
