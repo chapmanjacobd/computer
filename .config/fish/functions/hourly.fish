@@ -17,7 +17,7 @@ function hourly
             set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir --reverse -n $max | count)
             set max (math $max-$filled)
         end
-        for dir in nonvip_new/ lowseeds_small/
+        for dir in nonvip_new/
             set filled (ssh backup torrent_promote.py .local/data/rtorrent/watch/$dir -n $max | count)
             set max (math $max-$filled)
         end
