@@ -5,12 +5,7 @@ function torganize
     lb mv ~/Downloads/*.torrent ~/.local/data/qbittorrent/queue/
     lb-dev torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v
 
-    b lb-dev computer-update computers.local.db
-    b lb-dev computer-update computers.remote.db
-    wait
-
-    # lb-dev allocate-torrents computers.local.db torrents.db -v --dl-limit 8Mi --up-limit 1.5Mi -E XXX pussytorrents.org plab.site bitporn.eu scenetime.com superbits.org exoticaz.to happyfappy.org empornium.is empornium.sx
-    # lb-dev allocate-torrents computers.remote.db torrents.db -v --dl-limit 8Mi --up-limit 1.5Mi --flex -s XXX pussytorrents.org plab.site bitporn.eu scenetime.com superbits.org exoticaz.to happyfappy.org empornium.is empornium.sx
+    # torstart
 
     #torrent_promote.py --trackers -n9999 -o ~/.local/data/qbittorrent/ ~/Downloads/
 
