@@ -1,3 +1,5 @@
+/.cargo/
+/.cargo/registry/
 /seeding
 /downloading
 /.config/powerdevilrc
@@ -269,4 +271,3 @@
 /.bash_history
 /.boto
 /.cache/
-/.cargo/
