@@ -1,3 +1,4 @@
+/.cache/
 /.cargo/
 /.cargo/registry/
 /seeding
@@ -270,4 +271,3 @@
 /.aws/
 /.bash_history
 /.boto
-/.cache/
