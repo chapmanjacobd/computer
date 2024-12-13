@@ -19,7 +19,7 @@ function weekly
     lb-refresh
     lb-rebuild-fts
 
-    pip install --upgrade yt-dlp gallery-dl praw xklb
+    pip install --upgrade yt-dlp gallery-dl praw library
 
     ~/lb/sites/social/
     reddit-user-to-sqlite user BuonaparteII

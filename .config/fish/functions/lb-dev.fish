@@ -1,5 +1,5 @@
 # Defined interactively
 function lb-dev
     ~/lb/
-    python -m xklb.lb $argv
+    python -m library.lb $argv
 end

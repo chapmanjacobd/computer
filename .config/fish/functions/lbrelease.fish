@@ -1,9 +1,9 @@
 function lbrelease --argument newver
     ~/lb/
-    set oldver (awk -F'"' '/^__version__/{print $2}' xklb/__main__.py)
+    set oldver (awk -F'"' '/^__version__/{print $2}' library/__main__.py)
 
     #PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring poetry update
-    sed -i "s|$oldver|$newver|" xklb/__main__.py
+    sed -i "s|$oldver|$newver|" library/__main__.py
 
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
     rg db.execute
@@ -12,7 +12,7 @@ function lbrelease --argument newver
     lbformat
 
     rg -i --no-heading --no-line-number --fixed-strings -j1 ', 0)' | grep -ivE 'coalesce|noqa'
-    python -m xklb.readme >.github/README.md
+    python -m library.readme >.github/README.md
     # git reset tests/cassettes/
     # git restore tests/cassettes/
 
@@ -31,8 +31,8 @@ function lbrelease --argument newver
         pip install --upgrade pip pdm
         pdm lock --group deluxe,test
         sleep 400
-        python -m pip install --upgrade xklb
-        allpc python -m pip install --upgrade xklb
+        python -m pip install --upgrade library
+        allpc python -m pip install --upgrade library
     else
         return 1
     end
