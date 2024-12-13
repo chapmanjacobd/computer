@@ -53,7 +53,7 @@ python -m pip install --upgrade pip
 for dep in $(cat .github/pip_installed); do
     python -m pip install $dep
 done
-python -m pip install yt-dlp pipenv catt xklb
+python -m pip install yt-dlp pipenv catt library
 
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
 cd ~ && restorecon -vR .
