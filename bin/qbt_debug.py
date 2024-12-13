@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from xklb.mediafiles import torrents_start
 from xklb.utils import arggroups, argparse_utils
 
