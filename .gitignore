@@ -1,3 +1,4 @@
+/.boto
 /.cache/
 /.cargo/
 /.cargo/registry/
@@ -270,4 +271,3 @@
 /.audacity-data/
 /.aws/
 /.bash_history
-/.boto
