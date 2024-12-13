@@ -30,6 +30,18 @@ else
   PUB_KEY_PATH=$KEY_PATH".pub"
   cat $PUB_KEY_PATH
 
+  echo ""
+  # Will create config if it does not exist
+  echo "Updating ~/.ssh/config"
+  DATE_TIME=$(date +"%Y-%m-%d at %r")
+  echo "
+  # New Key Generated on $DATE_TIME
+  Host github.com-$REPO_NAME
+    HostName github.com
+    User git
+    IdentityFile $KEY_PATH" >> ~/.ssh/config
+  echo ""
+
   echo "Here is your hostname's alias to interact with the repository using SSH:"
   echo "git clone git@github.com-$REPO_NAME:$REPO_OWNER_NAME/$REPO_NAME.git"
 fi
