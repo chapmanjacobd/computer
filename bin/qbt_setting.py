@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from xklb.mediafiles import torrents_start
-from xklb.utils import arggroups, argparse_utils, printing, strings, objects
+from library.mediafiles import torrents_start
+from library.utils import arggroups, argparse_utils, printing, strings, objects
 
 def parse_args():
     parser = argparse_utils.ArgumentParser()

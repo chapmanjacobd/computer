@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import argparse
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import os
 import tempfile
 import zipfile
@@ -8,10 +8,10 @@ from collections import Counter, OrderedDict
 from pathlib import Path
 
 import rarfile
-from xklb.mediafiles import process_ffmpeg
-from xklb.folders.rel_mv import rel_move
-from xklb.utils import objects, arggroups
-from xklb.utils.log_utils import log
+from library.mediafiles import process_ffmpeg
+from library.folders.rel_mv import rel_move
+from library.utils import objects, arggroups
+from library.utils.log_utils import log
 
 # fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar_heshui.py --unlink {}
 

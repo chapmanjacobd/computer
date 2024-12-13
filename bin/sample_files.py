@@ -4,7 +4,7 @@ import random
 import sys
 from typing import Dict, List
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('--files', type=int, default=1, help='Print N random files per directory')

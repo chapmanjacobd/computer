@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import argparse
 
-from xklb.utils.processes import cmd_interactive
+from library.utils.processes import cmd_interactive
 
 def start_rstudio(input_path, max_cols=3):
     plot_name = Path(input_path).stem

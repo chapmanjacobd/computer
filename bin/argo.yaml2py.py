@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 from hera.workflows.models import Workflow
 from rich import print
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def main():

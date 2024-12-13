@@ -3,7 +3,7 @@ import os
 import shutil
 from pathlib import Path
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 EXCLUDED_EXTENSIONS = {".rar", ".exe", ".sfv"}
 

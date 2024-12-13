@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import os
 import shlex
 import subprocess
 from pathlib import Path
-from xklb.files import sample_compare
+from library.files import sample_compare
 
-from xklb.utils import file_utils
-from xklb.utils.log_utils import log
+from library.utils import file_utils
+from library.utils.log_utils import log
 import glob
 
 '''

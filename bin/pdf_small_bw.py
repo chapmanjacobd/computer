@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 from natsort import natsorted
-from xklb.utils import argparse_utils, processes
+from library.utils import argparse_utils, processes
 
 
 def convert_images_to_pdf(directory, resize):

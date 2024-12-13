@@ -14,7 +14,7 @@
  Apache License 2.0
 """
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import Tkinter as tk
 import os
 from shutil import copyfile, move

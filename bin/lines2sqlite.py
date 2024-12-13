@@ -2,7 +2,7 @@
 import sqlite3
 import sys
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def main():

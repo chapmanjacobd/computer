@@ -7,7 +7,7 @@ import geopandas as gpd
 from google.cloud import storage
 from osgeo import gdal
 from shapely.geometry import box
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('gcs_folder', help='Top level folder in GCS bucket to search')

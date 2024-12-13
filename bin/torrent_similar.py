@@ -4,8 +4,8 @@ from pathlib import Path
 
 import humanize
 from torrentool.api import Torrent
-from xklb.text import cluster_sort
-from xklb.utils import arggroups, argparse_utils
+from library.text import cluster_sort
+from library.utils import arggroups, argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('--small', action='store_true')

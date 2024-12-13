@@ -30,7 +30,7 @@ Copyright (c) 2016-2021 Jean-Denis Girard <jd.girard@sysnux.pf>
 """
 
 import argparse
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import subprocess
 import sys
 import time

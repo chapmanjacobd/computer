@@ -4,7 +4,7 @@ import subprocess
 from collections import defaultdict
 
 import psutil
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def list_partitions(device):

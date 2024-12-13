@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import argparse
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import json
 from pathlib import Path
 
-from xklb.createdb import site_add
-from xklb.utils import db_utils, objects
-from xklb.utils.log_utils import log
+from library.createdb import site_add
+from library.utils import db_utils, objects
+from library.utils.log_utils import log
 
 
 def parse_args() -> argparse.Namespace:

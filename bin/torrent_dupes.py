@@ -4,8 +4,8 @@ from pathlib import Path
 
 from rich import inspect
 from torrentool.api import Torrent
-from xklb.utils import argparse_utils, strings
-from xklb.utils.printing import print_overwrite
+from library.utils import argparse_utils, strings
+from library.utils.printing import print_overwrite
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')

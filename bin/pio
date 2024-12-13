@@ -6,7 +6,7 @@ import statistics
 import time
 
 import humanize
-from xklb.utils.processes import exit_nicely
+from library.utils.processes import exit_nicely
 
 signal.signal(signal.SIGINT, exit_nicely)
 

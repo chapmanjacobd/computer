@@ -2,7 +2,7 @@
 import sqlite3
 
 from sqlite_utils import Database
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def strip_enclosing_quotes(s):

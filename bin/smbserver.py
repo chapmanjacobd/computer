@@ -17,7 +17,7 @@ import sys
 from impacket import smbserver, version
 from impacket.examples import logger
 from impacket.ntlm import compute_lmhash, compute_nthash
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 if __name__ == '__main__':
     # Init the example's logger theme

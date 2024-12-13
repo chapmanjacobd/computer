@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import json
 import sys
 from datetime import datetime

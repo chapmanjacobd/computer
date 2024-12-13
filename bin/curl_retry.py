@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 
 import tenacity
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def curl(curl_cmd):

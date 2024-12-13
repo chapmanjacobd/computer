@@ -5,7 +5,7 @@ import subprocess
 from concurrent.futures import ProcessPoolExecutor
 
 from rich import print
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('pids', metavar='N', type=int, nargs='+', help='PID(s) to compare')

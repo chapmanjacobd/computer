@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 from torrentool.api import Torrent
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def check_torrents(torrent_folder: Path, files_folder: Path):

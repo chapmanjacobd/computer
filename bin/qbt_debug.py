@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from xklb.mediafiles import torrents_start
-from xklb.utils import arggroups, argparse_utils
+from library.mediafiles import torrents_start
+from library.utils import arggroups, argparse_utils
 
 from torrentool.api import Torrent
 

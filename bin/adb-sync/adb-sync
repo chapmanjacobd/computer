@@ -17,7 +17,7 @@
 """Sync files from/to an Android device."""
 
 from __future__ import unicode_literals
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import glob
 import locale
 import os

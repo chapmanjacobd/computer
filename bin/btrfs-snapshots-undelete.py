@@ -6,7 +6,7 @@ from pathlib import Path
 from struct import unpack
 from sys import exit, stderr  # pylint: disable=redefined-builtin
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 printerr = stderr.write
 

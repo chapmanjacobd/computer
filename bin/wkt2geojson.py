@@ -2,7 +2,7 @@
 import sys
 
 import geopandas as gpd
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('--s_srs', '-s_srs', default='EPSG:4326', help='SRS of source vector')

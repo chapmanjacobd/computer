@@ -9,8 +9,8 @@ from urllib.parse import urlparse
 
 import humanize
 from torrentool.api import Torrent
-from xklb.utils import arggroups, argparse_utils, iterables
-from xklb.utils.log_utils import log
+from library.utils import arggroups, argparse_utils, iterables
+from library.utils.log_utils import log
 
 IGNORE_DOMAINS = []
 PORN_DOMAINS = [

@@ -2,7 +2,7 @@
 import difflib
 from pathlib import Path
 
-from xklb.utils import argparse_utils, strings
+from library.utils import argparse_utils, strings
 
 
 def search_in_file(args, path):

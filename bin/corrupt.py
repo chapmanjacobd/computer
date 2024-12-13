@@ -2,7 +2,7 @@
 # https://github.com/joshsegall/corrupt
 
 import argparse
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 import random
 import string
 import sys

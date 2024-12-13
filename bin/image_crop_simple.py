@@ -3,7 +3,7 @@ import os
 
 import cv2
 import numpy as np
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def crop_rectangles(image_path, output_folder):

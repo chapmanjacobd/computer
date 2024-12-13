@@ -2,7 +2,7 @@
 import sys
 
 import humanize
-from xklb.utils import nums
+from library.utils import nums
 
 total = 0
 for line in sys.stdin:

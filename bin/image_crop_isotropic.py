@@ -6,7 +6,7 @@ import numpy as np
 import skimage.color
 import skimage.measure
 import skimage.morphology
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def crop_rectangles(image_path, output_folder):

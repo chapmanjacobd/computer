@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import qbittorrentapi
-from xklb.utils import devices
+from library.utils import devices
 
 qb = qbittorrentapi.Client(host='127.0.0.1', port=8080)
 

@@ -11,7 +11,7 @@ import ocrmypdf
 import pdf2image
 from PIL import Image, ImageEnhance
 from tqdm import tqdm
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 
 def pdf_contrast(args):

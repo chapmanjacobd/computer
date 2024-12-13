@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 tasks = ['sync', 'dump', 'check', 'library', 'archive']
 categories = {

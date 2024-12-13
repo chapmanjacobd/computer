@@ -1,4 +1,4 @@
 #!/bin/sh
 
-# pip install xklb
+# pip install library
 library czkawka-dedupe $@

@@ -3,7 +3,7 @@ import argparse
 import re
 
 from bs4 import BeautifulSoup
-from xklb.utils import arggroups, argparse_utils
+from library.utils import arggroups, argparse_utils
 
 
 def parse_args():

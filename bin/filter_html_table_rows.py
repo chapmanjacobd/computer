@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from bs4 import BeautifulSoup
-from xklb.utils import argparse_utils
+from library.utils import argparse_utils
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument("filepath", help="HTML file path")
