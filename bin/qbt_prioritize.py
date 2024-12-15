@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import pandas as pd
 from library.mediafiles import torrents_start
-from library.utils import arggroups, argparse_utils, printing, strings, objects
+from library.playback.torrents_info import qbt_get_tracker
+from library.utils import arggroups, argparse_utils, iterables
+from library.utils.pd_utils import rank_dataframe
 
 
 def parse_args():
@@ -14,34 +16,12 @@ def parse_args():
     return args
 
 
-def rank_dataframe(df, column_weights):
-    ranks = df[column_weights.keys()].apply(
-        lambda x: x.rank(
-            method="min",
-            na_option="bottom",
-            ascending=column_weights.get(x.name, {}).get("direction") == "asc",
-        )
-        * column_weights.get(x.name, {}).get("weight", 1),
-    )
-
-    unranked_columns = set(df.select_dtypes(include=["number"]).columns) - set(ranks.columns)
-    if unranked_columns:
-        print(
-            "Unranked columns:\n"
-            + "\n".join([f"""    "{s}": {{ 'direction': 'desc' }}, """ for s in unranked_columns]),
-        )
-
-    scaled_ranks = (ranks - 1) / (len(ranks.columns) - 1)
-    scaled_df = df.iloc[scaled_ranks.sum(axis=1).sort_values().index]
-    return scaled_df.reset_index(drop=True)
-
-
 args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
 
 
-torrents = qbt_client.torrents_info(status_filter="all")
+torrents = qbt_client.torrents_info(tag="library")
 print(len(torrents), 'total')
 torrents = [t for t in torrents if t.state_enum.is_downloading]
 print(len(torrents), 'downloading')
@@ -52,6 +32,7 @@ df = pd.DataFrame(
         "size": [t.size for t in torrents],
         "progress": [t.progress for t in torrents],
         "remaining": [t.amount_left for t in torrents],
+        "tracker_count": iterables.value_counts([qbt_get_tracker(qbt_client, t) for t in torrents]),
     }
 )
 
@@ -59,6 +40,7 @@ df = pd.DataFrame(
 ranked_df = rank_dataframe(
     df,
     column_weights={
+        "tracker_count": {"direction": "asc", "weight": 12},
         "remaining": {"direction": "asc", "weight": 7},
         "progress": {"direction": "desc", "weight": 6},
         "size": {"direction": "asc", "weight": 3},
@@ -66,4 +48,4 @@ ranked_df = rank_dataframe(
 )
 
 for t in ranked_df.itertuples():
-    qbt_client.torrents_bottom_priority(torrent_hashes=[t.hash])
+    qbt_client.torrents_bottom_priority(torrent_hashes=[t.hash])  # type: ignore
