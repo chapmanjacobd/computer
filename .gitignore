@@ -1,3 +1,4 @@
+/.aws
 /.boto
 /.cache/
 /.cargo/
@@ -269,4 +270,3 @@
 /.android/
 /.android-sdk/
 /.audacity-data/
-/.aws/
