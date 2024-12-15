@@ -57,9 +57,9 @@ df = pd.DataFrame(
 ranked_df = rank_dataframe(
     df,
     column_weights={
-        "size": {"direction": "asc", "weight": 3},
+        "remaining": {"direction": "asc", "weight": 7},
         "progress": {"direction": "desc", "weight": 6},
-        "remaining": {"direction": "desc", "weight": 7},
+        "size": {"direction": "asc", "weight": 3},
     },
 )
 
