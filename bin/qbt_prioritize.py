@@ -14,8 +14,27 @@ def parse_args():
     return args
 
 
-SIZE_WEIGHT = 0.30
-PROGRESS_WEIGHT = 0.70
+def rank_dataframe(df, column_weights):
+    ranks = df[column_weights.keys()].apply(
+        lambda x: x.rank(
+            method="min",
+            na_option="bottom",
+            ascending=column_weights.get(x.name, {}).get("direction") == "asc",
+        )
+        * column_weights.get(x.name, {}).get("weight", 1),
+    )
+
+    unranked_columns = set(df.select_dtypes(include=["number"]).columns) - set(ranks.columns)
+    if unranked_columns:
+        print(
+            "Unranked columns:\n"
+            + "\n".join([f"""    "{s}": {{ 'direction': 'desc' }}, """ for s in unranked_columns]),
+        )
+
+    scaled_ranks = (ranks - 1) / (len(ranks.columns) - 1)
+    scaled_df = df.iloc[scaled_ranks.sum(axis=1).sort_values().index]
+    return scaled_df.reset_index(drop=True)
+
 
 args = parse_args()
 
@@ -25,7 +44,22 @@ qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info(status_filter="all")
 torrents = [t for t in torrents if t.state_enum in ["stoppedDL", "metaDL", "stalledDL", "downloading"]]
 
-torrents.sort(key=lambda t: (SIZE_WEIGHT * t.size) + (PROGRESS_WEIGHT * t.progress * 100))
+df = pd.DataFrame(
+    {
+        "hash": [t.hash for t in torrents],
+        "size": [t.size for t in torrents],
+        "progress": [t.progress for t in torrents],
+    }
+)
 
-for t in torrents:
+
+ranked_df = rank_dataframe(
+    df,
+    column_weights={
+        "size": {"direction": "asc", "weight": 3},
+        "progress": {"direction": "desc", "weight": 7},
+    },
+)
+
+for t in ranked_df.itertuples():
     qbt_client.torrents_bottom_priority(torrent_hashes=[t.hash])
