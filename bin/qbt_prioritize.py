@@ -43,7 +43,7 @@ qbt_client = torrents_start.start_qBittorrent(args)
 
 torrents = qbt_client.torrents_info(status_filter="all")
 print(len(torrents), 'total')
-torrents = [t for t in torrents if t.state_enum in ["stoppedDL", "metaDL", "stalledDL", "downloading"]]
+torrents = [t for t in torrents if t.state_enum.is_downloading]
 print(len(torrents), 'downloading')
 
 df = pd.DataFrame(
