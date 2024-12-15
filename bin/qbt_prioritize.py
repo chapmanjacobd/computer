@@ -49,6 +49,7 @@ df = pd.DataFrame(
         "hash": [t.hash for t in torrents],
         "size": [t.size for t in torrents],
         "progress": [t.progress for t in torrents],
+        "remaining": [t.amount_left for t in torrents],
     }
 )
 
@@ -57,7 +58,8 @@ ranked_df = rank_dataframe(
     df,
     column_weights={
         "size": {"direction": "asc", "weight": 3},
-        "progress": {"direction": "desc", "weight": 7},
+        "progress": {"direction": "desc", "weight": 6},
+        "remaining": {"direction": "desc", "weight": 7},
     },
 )
 
