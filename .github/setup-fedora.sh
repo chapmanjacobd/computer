@@ -61,3 +61,9 @@ cd ~ && restorecon -vR .
 R --slave -e 'update.packages()'
 
 sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+
+echo '
+[commands]
+apply_updates = yes
+' | sudo tee -a /etc/dnf/automatic.conf
+sudo systemctl enable --now dnf5-automatic.timer
