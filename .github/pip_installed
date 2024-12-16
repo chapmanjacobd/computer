@@ -35,6 +35,7 @@ jellex
 keyring
 keyrings.google-artifactregistry-auth
 klara
+library
 line_profiler
 lux
 memray
@@ -105,6 +106,5 @@ vulture
 waybackpy
 wheel
 xattr
-library
 xxhash
 yt-dlp
