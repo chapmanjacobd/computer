@@ -94,6 +94,8 @@ sudo tailscale up
 tailscale ip -4
 # https://major.io/p/build-tailscale-exit-node-firewalld/
 
+sudo systemctl enable --now qbittorrent-nox@xk.service
+
 sudo sed -i 's/compress=zstd:1/noatime,compress=zstd:2/' /etc/fstab
 
 sudo fwupdmgr refresh --force && \
