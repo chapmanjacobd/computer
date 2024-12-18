@@ -18,6 +18,7 @@ git
 git-delta
 git-lfs
 go-lang
+hddtemp
 heif-pixbuf-loader
 htop
 inotify-tools
