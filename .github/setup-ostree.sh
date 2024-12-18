@@ -8,14 +8,18 @@ if [ -z "$desired_hostname" ]; then
     exit 1
 fi
 
+sudo visudo
+
 sudo hostnamectl hostname $desired_hostname
 sudo localectl set-keymap us-colemak_dh
 
 ssh-keygen -t ed25519 -q -N '' </dev/zero || true
 cat .ssh/id_ed25519.pub >> .ssh/authorized_keys
-sudo visudo
 
 echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts
+
+sudo systemctl disable --now zezere_ignition.timer
+sudo systemctl disable --now zezere_ignition.service
 
 cat /home/xk/.github/etc/nanorc | sudo tee /etc/nanorc
 
@@ -51,8 +55,8 @@ sudo rpm-ostree apply-live
 sudo systemctl enable greenboot-task-runner greenboot-healthcheck greenboot-status greenboot-loading-message greenboot-grub2-set-counter greenboot-grub2-set-success greenboot-rpm-ostree-grub2-check-fallback redboot-auto-reboot redboot-task-runner
 
 sudo systemctl enable --now tailscaled
-echo remember to disable key expiry
 sudo tailscale up
+echo remember to disable key expiry
 tailscale ip -4
 
 cat << 'EOF' | sudo tee /etc/greenboot/check/required.d/tailscale_status.sh
@@ -76,19 +80,19 @@ EOF
 sudo rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo systemctl reboot
 
-sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers
+# For GUI:
+# sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers
 
 # TODO: move most of these to flatpaks
-sudo rpm-ostree install fish fzf zoxide tmux exa kitty ffmpeg python3-pip git android-tools detox dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors go-lang distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools freerdp-server qbittorrent-nox
-
-sudo systemctl enable --now qbittorrent-nox@xk.service
-
-sudo rpm-ostree install mesa-va-drivers-freeworld.x86_64 mesa-vdpau-drivers-freeworld.x86_64
+# For GUI:
+# sudo rpm-ostree install tmux kitty freerdp-server mesa-va-drivers-freeworld.x86_64 mesa-vdpau-drivers-freeworld.x86_64
+# sudo rpm-ostree override remove libavcodec-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install ffmpeg
 
 sudo rpm-ostree install https://github.com/charmbracelet/gum/releases/download/v0.14.5/gum-0.14.5-1.x86_64.rpm
+sudo rpm-ostree install fish fzf zoxide exa kitty-terminfo ffmpeg python3-pip git android-tools dnscrypt-proxy expect git-lfs htop inotify-tools libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli postgresql-devel sqlite-devel fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted cargo git-delta lm_sensors hddtemp ipmitool distrobox bfs earlyoom libavcodec-freeworld ffmpegthumbnailer heif-pixbuf-loader libheif-freeworld libheif-tools golang qbittorrent-nox
 
-sudo rpm-ostree install gstreamer1-plugin-libav gstreamer1-plugins-bad-free-extras gstreamer1-plugins-bad-freeworld gstreamer1-plugins-ugly gstreamer1-vaapi
-sudo rpm-ostree override remove libavcodec-free libavfilter-free libavformat-free libavutil-free libpostproc-free libswresample-free libswscale-free --install ffmpeg
+sudo systemctl reboot
+sudo systemctl enable --now qbittorrent-nox@xk.service
 
 sudo rpm-ostree update --uninstall rpmfusion-free-release --uninstall rpmfusion-nonfree-release --install rpmfusion-free-release --install rpmfusion-nonfree-release
 
@@ -130,5 +134,3 @@ sudo fwupdmgr update
 
 distrobox create -n my-distrobox -ap "fish psmisc procps"
 distrobox enter my-distrobox
-
-systemctl --user enable --now qbittorrent-nox@xk.service

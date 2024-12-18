@@ -15,4 +15,3 @@ if you wanna be my lover you gotta get with my friends:
     git reset HEAD --hard  # mi casa, su casa? sin casa: this will delete everything in your home folder
     bash .github/setup-server.sh
     bash .github/setup-fedora.sh
-
