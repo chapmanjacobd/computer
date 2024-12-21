@@ -5,7 +5,7 @@
 [rerere]
 	enabled = true
 [push]
-	default = current
+	default = upstream
 	autosetupremote = true
 	followtags = true
 [core]
