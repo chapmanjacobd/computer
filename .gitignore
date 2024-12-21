@@ -1,3 +1,4 @@
+/.wine/
 /.bash_history
 /.aws
 /.boto
@@ -267,4 +268,3 @@
 /.wget-hsts
 /net.downloadhelper.coapp*
 /.Xauthority
-/.wine/
