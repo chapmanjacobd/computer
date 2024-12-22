@@ -1,8 +1,8 @@
 #!/usr/bin/python3
+import argparse
+
 from library.mediafiles import torrents_start
 from library.utils import arggroups, argparse_utils
-
-from torrentool.api import Torrent
 
 
 def parse_args():
@@ -28,6 +28,9 @@ torrents = [t.state == 'error' for t in torrents]
 
 if not torrents:
     exit()
+
+raise
+# TODO print error reasons
 
 torrent_hashes = [torrent.hash for torrent in torrents]
 
