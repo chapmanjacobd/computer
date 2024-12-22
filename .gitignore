@@ -1,3 +1,4 @@
+/.Xauthority
 /.wine/
 /.bash_history
 /.aws
@@ -267,4 +268,3 @@
 /.vscode/
 /.wget-hsts
 /net.downloadhelper.coapp*
-/.Xauthority
