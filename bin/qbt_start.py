@@ -24,13 +24,13 @@ parser.add_argument("--recheck", action="store_true", help="Recheck the torrents
 args = parser.parse_args()
 
 torrents = qbt_client.torrents_info()
-torrents = [t.state == 'error' for t in torrents]
+torrents = [t for t in torrents if t.state == 'error']
 
 if not torrents:
     exit()
 
-raise
-# TODO print error reasons
+for t in torrents:
+    print('\t'.join([t.name, t.content_path]))
 
 torrent_hashes = [torrent.hash for torrent in torrents]
 
