@@ -2,8 +2,9 @@ function forganize
     morganize
     dorganize
 
-    allpc library torrents-stop-incomplete --min-days-downloading 20 --move processing --delete-rows -y -v
-    allpc library torrents-stop --min-seeders 3 --min-days-stalled-seed 3 --min-days-seeding 45 --move processing --delete-rows -y -v
+    set processing_dir (path basename (newpath /mnt/d/processing))
+    allpc library torrents-stop-incomplete --min-days-downloading 20 --move $processing_dir --delete-rows -y -v
+    allpc library torrents-stop --min-seeders 3 --min-days-stalled-seed 3 --min-days-seeding 45 --move $processing_dir --delete-rows -y -v
 
     #trash-size
     #trash-empty
