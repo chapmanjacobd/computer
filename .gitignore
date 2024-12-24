@@ -1,3 +1,4 @@
+/.wget-hsts
 /.Xauthority
 /.config/soffice.binrc
 /.wine/
@@ -267,4 +268,3 @@
 /.vscode-R/
 /.vscode-oss/
 /.vscode/
-/.wget-hsts
