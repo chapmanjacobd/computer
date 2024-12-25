@@ -96,6 +96,8 @@ sudo systemctl enable --now qbittorrent-nox@xk.service
 
 sudo rpm-ostree update --uninstall rpmfusion-free-release --uninstall rpmfusion-nonfree-release --install rpmfusion-free-release --install rpmfusion-nonfree-release
 
+echo 'unqualified-search-registries = ["docker.io"]' | sudo tee /etc/containers/registries.conf
+
 sudo systemctl reboot
 
 fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher (cat ~/.config/fish/fish_plugins)'

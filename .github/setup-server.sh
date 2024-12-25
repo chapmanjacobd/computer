@@ -88,6 +88,8 @@ sudo dnf install -y xpra
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo dnf install tailscale
 
+echo 'unqualified-search-registries = ["docker.io"]' | sudo tee /etc/containers/registries.conf
+
 sudo systemctl enable --now tailscaled
 echo remember to disable key expiry
 sudo tailscale up
