@@ -8,6 +8,7 @@ from library.utils import arggroups, argparse_utils
 def parse_args():
     parser = argparse_utils.ArgumentParser()
     arggroups.qBittorrent(parser)
+    parser.add_argument("--recheck", action="store_true", help="Recheck the torrents instead of starting them.")
     arggroups.debug(parser)
 
     args = parser.parse_args()
@@ -18,10 +19,6 @@ def parse_args():
 args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--recheck", action="store_true", help="Recheck the torrents instead of starting them.")
-args = parser.parse_args()
 
 torrents = qbt_client.torrents_info()
 torrents = [t for t in torrents if t.state == 'error']
