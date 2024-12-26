@@ -1,3 +1,4 @@
+/.vscode-oss/
 /.wget-hsts
 /.Xauthority
 /.config/soffice.binrc
@@ -266,4 +267,3 @@
 /.projectM/presets
 /.projectM/playlist
 /.vscode-R/
-/.vscode-oss/
