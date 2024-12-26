@@ -220,3 +220,4 @@ abbr -a -- sde dnfremove
 abbr -a -- mounts lsblk -o NAME,MAJ:MIN,RM,SIZE,RO,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- partition sudo sgdisk -n 0:0:0 -t 0:8300
 abbr -a -- ext4 sudo mkfs.ext4 -T largefile -m 0 -e continue
+abbr -a -- trash-dirs trash-list --trash-dirs
