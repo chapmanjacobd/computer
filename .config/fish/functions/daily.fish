@@ -1,7 +1,6 @@
 function daily
     ~/
     sticky_config
-    popline ~/.gitignore
 
     lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
     mkdir ~/sync/video/keep/
