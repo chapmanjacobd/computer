@@ -1,10 +1,10 @@
-*.avi
-*.mka
-*.mkv
-*.mov
-*.mp4
-*.wmv
 .syncthing.*
+/*.avi
+/*.mka
+/*.mkv
+/*.mov
+/*.mp4
+/*.wmv
 /*.bak
 /*.db*
 /*.desktop
