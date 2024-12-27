@@ -1,3 +1,4 @@
+/.vscode-R/
 /.vscode-oss/
 /.wget-hsts
 /.Xauthority
@@ -266,4 +267,3 @@
 /.viminfo
 /.projectM/presets
 /.projectM/playlist
-/.vscode-R/
