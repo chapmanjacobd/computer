@@ -24,7 +24,7 @@ services:
     env_file:
       - .env
     ports:
-      - '127.0.0.1:2283:2283'
+      - "${IP_ADDR}:2283:2283"
     depends_on:
       - redis
       - database

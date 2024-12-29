@@ -1,4 +1,5 @@
 /.config/containers/compose/
+/.config/containers/templates/*/data/
 /.android/
 .syncthing.*
 /*.avi
