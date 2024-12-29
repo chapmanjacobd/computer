@@ -19,8 +19,8 @@ services:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/usr/src/app/upload:Z
       - /etc/localtime:/etc/localtime:ro
-      - ${PICTURES_1}:${PICTURES_1}:ro,z
-      - ${PICTURES_2}:${PICTURES_2}:ro,z
+      - ${PICTURES_1}:${PICTURES_1}:z
+      - ${PICTURES_2}:${PICTURES_2}:z
     env_file:
       - .env
     ports:
