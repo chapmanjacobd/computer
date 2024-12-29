@@ -136,3 +136,5 @@ sudo fwupdmgr update
 
 distrobox create -n my-distrobox -ap "fish psmisc procps"
 distrobox enter my-distrobox
+
+sudo podman-compose systemd -a create-unit
