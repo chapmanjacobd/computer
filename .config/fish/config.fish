@@ -20,14 +20,14 @@ bind \e\[1\;5C forward-word
 bind \e\[1\;5D backward-word
 bind \b backward-kill-word
 
-bind \e\[1\;3C forward-bigword
-bind \e\[1\;3D backward-bigword
-bind \e\x7F backward-kill-bigword
+bind \e\[1\;3C forward-token
+bind \e\[1\;3D backward-token
+bind \e\x7F backward-kill-token
 bind \cy redo
 bind \ey yank
 bind \e\[99\;6u fish_clipboard_copy
 
-bind \e, kill-selection backward-kill-bigword yank yank
+bind \e, kill-selection backward-kill-token yank yank
 
 bind --preset \ct transpose-words
 
