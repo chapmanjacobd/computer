@@ -1,3 +1,4 @@
+/.config/virt-viewer/
 /.config/swtpm*
 /.config/var/lib/
 /.config/libvirt/

@@ -221,6 +221,7 @@ util-linux
 valgrind
 vdpauinfo
 virt-install
+virt-manager
 virt-viewer
 vmtouch
 wget
