@@ -25,5 +25,4 @@ def generate_random_emoji():
             if is_emoji(combined):
                 return combined
 
-while True:
-    print(generate_random_emoji())
+print(generate_random_emoji())
