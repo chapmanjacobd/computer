@@ -1,3 +1,6 @@
+/.config/swtpm*
+/.config/var/lib/
+/.config/libvirt/
 /.config/containers/compose/
 /.config/containers/templates/*/data/
 /.android/

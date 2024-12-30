@@ -103,6 +103,7 @@ libicu
 libicu-devel
 libmediainfo
 libnatpmp
+libvirt
 libyaml-devel
 lsb
 lshw
@@ -218,6 +219,8 @@ usbutils
 util-linux
 valgrind
 vdpauinfo
+virt-install
+virt-viewer
 vmtouch
 wget
 wine
