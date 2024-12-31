@@ -1,3 +1,5 @@
+/.config/containers/podman*
+/.config/containers/podman/machine/
 /.config/virt-viewer/
 /.config/swtpm*
 /.config/var/lib/

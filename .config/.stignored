@@ -22,3 +22,5 @@
 /swtpm*
 /var/lib/
 /libvirt/
+/containers/podman/machine/
+/containers/podman-*

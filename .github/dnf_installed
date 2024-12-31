@@ -143,7 +143,9 @@ pg_top
 plasma-workspace-x11
 playerctl
 pngquant
+podman-bootc
 podman-compose
+podman-machine
 powertop
 procps
 progress
