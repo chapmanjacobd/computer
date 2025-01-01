@@ -10,7 +10,6 @@ function is_vertical_video --argument file
     #    breakpoint
     #end
 
-
     if test $width -lt $height
         return 0
     else
