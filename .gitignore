@@ -1,3 +1,4 @@
+/.github/bootc/server/authorized_keys
 /.config/containers/podman*
 /.config/containers/podman/machine/
 /.config/virt-viewer/

@@ -1,0 +1,20 @@
+FROM quay.io/fedora/fedora-bootc:41
+
+RUN sed -i 's/^CREATE_MAIL_SPOOL=yes/CREATE_MAIL_SPOOL=no/' /etc/default/useradd && \
+    echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/wheel-nopasswd
+
+RUN useradd -G wheel xk; \
+    mkdir -m 0700 -p /var/root/.ssh && \
+    mkdir -m 0700 -p /var/home/xk/.ssh
+
+COPY authorized_keys /var/root/.ssh/authorized_keys
+COPY authorized_keys /var/home/xk/.ssh/authorized_keys
+
+RUN dnf install -y kitty-terminfo tmux firewalld ripgrep
+
+# RUN dnf -y install cloud-init && \
+#     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
+#     rm -rf /var/{cache,log} /var/lib/{dnf,rhsm}
+# COPY usr/ /usr/
+
+RUN bootc container lint
