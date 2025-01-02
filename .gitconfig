@@ -84,8 +84,6 @@
 	log = 50
 [log]
 	date = relative-local
-[url "git@github.com:"]
-	insteadOf = https://github.com/
 [alias]
 	branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
 	unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
