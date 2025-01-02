@@ -43,7 +43,7 @@ sudo dnf install -y mpv ffmpeg python3 python3-pip git android-tools R ImageMagi
 
 #setxkbmap us -variant altgr-intl -option caps:backspace
 
-sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring
+sudo dnf erase kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror docker autokey kontact dolphin Kontact dolphin kwrite calligra* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring ksshaskpass
 # sudo dnf erase plasma-discover
 
 # sudo systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target

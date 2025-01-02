@@ -81,7 +81,7 @@ sudo rpm-ostree install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free
 sudo systemctl reboot
 
 # For GUI:
-# sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers
+# sudo rpm-ostree override remove firefox firefox-langpacks krfb krfb-libs akonadi-server akonadi-server-mysql mariadb-server mariadb-common kwrite bolt plasma-thunderbolt dolphin dolphin-plugins mariadb-gssapi-server mariadb-errmsg mariadb mariadb-cracklib-password-check mariadb-backup mesa-va-drivers ksshaskpass
 
 # TODO: move most of these to flatpaks
 # For GUI:
