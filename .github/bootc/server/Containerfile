@@ -31,10 +31,8 @@ RUN systemctl mask systemd-oomd && systemctl enable earlyoom
 RUN systemctl disable bootc-fetch-apply-updates.timer
 RUN systemctl enable fstrim.timer
 
-RUN dd if=/dev/zero of=/swapfile bs=1M count=1024 && \
-    chmod 600 /swapfile && \
-    mkswap /swapfile
-RUN echo '/swapfile none swap sw 0 0' >> /etc/fstab
+COPY etc/ /etc/
+RUN systemctl enable /etc/systemd/system/create_swap.service
 
 RUN dnf -y install cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
