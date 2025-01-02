@@ -3,18 +3,42 @@ FROM quay.io/fedora/fedora-bootc:41
 RUN sed -i 's/^CREATE_MAIL_SPOOL=yes/CREATE_MAIL_SPOOL=no/' /etc/default/useradd && \
     echo "%wheel        ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/wheel-nopasswd
 
-RUN useradd -G wheel xk; \
+RUN useradd -G wheel xk && \
     mkdir -m 0700 -p /var/root/.ssh && \
     mkdir -m 0700 -p /var/home/xk/.ssh
-
 COPY authorized_keys /var/root/.ssh/authorized_keys
 COPY authorized_keys /var/home/xk/.ssh/authorized_keys
 
-RUN dnf install -y kitty-terminfo tmux firewalld ripgrep
+RUN dnf install -y \
+	https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+	https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
-# RUN dnf -y install cloud-init && \
-#     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
-#     rm -rf /var/{cache,log} /var/lib/{dnf,rhsm}
-# COPY usr/ /usr/
+RUN dnf install -y greenboot greenboot-default-health-checks && \
+    systemctl enable greenboot-grub2-set-counter \
+    greenboot-grub2-set-success greenboot-healthcheck \
+    greenboot-loading-message greenboot-rpm-ostree-grub2-check-fallback \
+    redboot-auto-reboot redboot-task-runner
+
+RUN dnf install -y firewalld && \
+    systemctl enable firewalld && \
+    firewall-offline-cmd --add-service=http && \
+    firewall-offline-cmd --add-service=https
+
+COPY packages .
+RUN dnf install -y $(cat packages)
+RUN systemctl mask systemd-oomd && systemctl enable earlyoom
+
+RUN systemctl disable bootc-fetch-apply-updates.timer
+RUN systemctl enable fstrim.timer
+
+RUN dd if=/dev/zero of=/swapfile bs=1M count=1024 && \
+    chmod 600 /swapfile && \
+    mkswap /swapfile
+RUN echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+RUN dnf -y install cloud-init && \
+    ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \
+    rm -rf /var/{cache,log} /var/lib/{dnf,rhsm}
+COPY usr/ /usr/
 
 RUN bootc container lint
