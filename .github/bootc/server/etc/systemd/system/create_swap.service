@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=oneshot
 ExecStart=/bin/bash -c "dd if=/dev/zero of=/var/swap bs=1M count=1024 && chmod 600 /var/swap && mkswap /var/swap && swapon /var/swap"
+ExecStartPost=/bin/bash -c "echo '/var/swap none swap sw 0 0' >> /etc/fstab"
 ExecStartPost=/bin/rm -f /etc/systemd/system/create-swap.service
 ExecStartPost=/bin/systemctl disable create-swap.service
 
