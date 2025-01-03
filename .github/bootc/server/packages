@@ -22,7 +22,10 @@ nginx
 nmon
 parallel
 pg_top
+postgis
 postgresql
+postgresql-contrib
+postgresql-plpython3
 pspg
 python3-pip
 ripgrep
