@@ -1,3 +1,4 @@
+/processing/
 /.github/bootc/*/output/
 /.github/bootc/server/authorized_keys
 /.config/containers/podman*

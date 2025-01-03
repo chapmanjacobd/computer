@@ -11,6 +11,7 @@ fzf
 git
 git-delta
 git-lfs
+host
 htop
 kitty-terminfo
 lshw
