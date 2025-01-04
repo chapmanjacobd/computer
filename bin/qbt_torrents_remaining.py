@@ -19,6 +19,8 @@ qbt_client = torrents_start.start_qBittorrent(args)
 
 torrents = qbt_client.torrents_info()
 
-torrents = sorted(torrents, key=lambda x: x.remaining)
+torrents = [t for t in torrents if t.state_enum.is_downloading]
+torrents = sorted(torrents, key=lambda x: x.amount_left)
+
 for t in torrents:
-    print('\t'.join([t.name, strings.file_size(t.remaining)]))
+    print('\t'.join([t.name, strings.file_size(t.amount_left)]))
