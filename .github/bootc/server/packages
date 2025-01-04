@@ -1,5 +1,10 @@
+bash-completion
 bfs
+btrfsmaintenance
+cpufrequtils
 curl
+dnf-automatic
+dnf-plugins-extras-tracer
 earlyoom
 exa
 expect
@@ -13,6 +18,7 @@ git-delta
 git-lfs
 host
 htop
+jq
 kitty-terminfo
 lshw
 moreutils
