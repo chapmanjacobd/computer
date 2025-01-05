@@ -26,13 +26,14 @@ RUN dnf install -y firewalld && \
 
 COPY packages .
 RUN dnf install -y $(cat packages)
+RUN dnf remove -y qemu-\*
 RUN systemctl mask systemd-oomd && systemctl enable earlyoom
 
 RUN systemctl disable bootc-fetch-apply-updates.timer
-RUN systemctl enable fstrim.timer
+RUN systemctl enable fstrim.timer certbot-renew.timer
 
 COPY etc/ /etc/
-RUN systemctl enable /etc/systemd/system/create_swap.service
+RUN systemctl enable create_swap nginx
 
 RUN dnf -y install cloud-init && \
     ln -s ../cloud-init.target /usr/lib/systemd/system/default.target.wants && \

@@ -1,6 +1,7 @@
 bash-completion
 bfs
 btrfsmaintenance
+certbot-nginx
 cpufrequtils
 curl
 dnf-automatic
