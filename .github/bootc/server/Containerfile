@@ -27,8 +27,9 @@ RUN dnf install -y firewalld && \
 COPY packages .
 RUN dnf install -y $(cat packages)
 RUN dnf remove -y qemu-\*
-RUN systemctl mask systemd-oomd && systemctl enable earlyoom
+RUN dnf install -y qemu-guest-agent.service
 
+RUN systemctl mask systemd-oomd && systemctl enable earlyoom
 RUN systemctl disable bootc-fetch-apply-updates.timer
 RUN systemctl enable fstrim.timer certbot-renew.timer
 

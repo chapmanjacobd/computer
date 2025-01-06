@@ -26,9 +26,11 @@ moreutils
 nano
 ncdu
 nginx
+nginx-mod-fancyindex
 nmon
 parallel
 pg_top
+policycoreutils-python-utils
 postgis
 postgresql
 postgresql-contrib
