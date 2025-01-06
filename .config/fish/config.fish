@@ -29,7 +29,7 @@ bind \e\[99\;6u fish_clipboard_copy
 
 bind \e, kill-selection backward-kill-token yank yank
 
-bind --preset \ct transpose-words
+bind ctrl-t transpose-words
 
 function cmd_to_clipboard
     commandline | head -c -1 | cb
