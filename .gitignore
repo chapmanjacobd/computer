@@ -1,3 +1,7 @@
+/.emacs.d/eln-cache/
+/.emacs.d/elpa/
+/.emacs.d/elpa/gnupg/
+/.emacs.d/elpa/archives/
 /processing/
 /.github/bootc/*/output/
 /.github/bootc/server/authorized_keys
