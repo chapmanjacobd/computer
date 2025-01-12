@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-import argparse
 
 from library.mediafiles import torrents_start
+from library.playback.torrents_info import qbt_get_tracker
 from library.utils import arggroups, argparse_utils
 
 
@@ -27,7 +27,9 @@ if not torrents:
     exit()
 
 for t in torrents:
-    print('\t'.join([t.name, t.content_path]))
+    msg = '; '.join(tr.msg for tr in torrents[0].trackers if tr.msg != 'This torrent is private')
+    tracker = qbt_get_tracker(qbt_client, t)
+    print('\t'.join([tracker, msg, t.content_path]))
 
 torrent_hashes = [torrent.hash for torrent in torrents]
 
