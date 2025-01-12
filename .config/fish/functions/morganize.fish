@@ -12,7 +12,7 @@ function morganize
         s sorted "$f"
     end
 
-    for f in ~/j/lists/people.*
+    for f in ~/j/lists/people.*list
         dedupe "$f" | sort_by_last_name.py | sponge "$f"
     end
 end
