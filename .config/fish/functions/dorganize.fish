@@ -14,7 +14,7 @@ function dorganize
     fd -d1 -eJPG -ePNG -eWEBP -eGIF -eAVIF -x mv "{}" ~/d/dump/image/
 
     lb relmv --ext mid . ~/d/dump/audio/midi/
-    lb relmv --ext srt,ass,vtt . ~/d/dump/video/
+    lb relmv --ext srt,ass,vtt,sub,idx . ~/d/dump/video/
     lb relmv --ext mp3,wav . ~/d/dump/audio/
 
     remove_empty_directories
