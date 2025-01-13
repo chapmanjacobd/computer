@@ -156,6 +156,7 @@ perl-Image-ExifTool
 pg_top
 plasma-workspace-x11
 playerctl
+plocate
 pngquant
 podman-bootc
 podman-compose
