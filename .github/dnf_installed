@@ -114,7 +114,9 @@ libicu
 libicu-devel
 libmediainfo
 libnatpmp
+liburing-devel
 libyaml-devel
+libzstd-devel
 lsb
 lshw
 lutris
@@ -124,6 +126,7 @@ mediainfo
 megatools
 meld
 mesa-dri-drivers
+meson
 mhonarc
 miniupnpc
 mktorrent
@@ -136,6 +139,7 @@ mupdf
 ncurses-devel
 netsniff-ng
 nicotine+
+ninja-build
 nmap
 nomacs
 nu
