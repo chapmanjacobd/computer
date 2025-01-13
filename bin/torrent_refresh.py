@@ -32,5 +32,5 @@ if restart_torrents:
 torrent_hashes = [t.infohash_v2 or t.infohash_v1 for t in error_torrents]
 qb.torrents_pause(torrent_hashes=torrent_hashes)
 
-if error_torrents and devices.confirm("Press Enter to resume"):
+if error_torrents and devices.confirm("Continue?"):
     qb.torrents_resume(torrent_hashes=torrent_hashes)
