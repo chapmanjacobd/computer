@@ -4,7 +4,6 @@ function weekly
 
     update_unli_cities_visas
 
-    lb copy-play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/ --target-prefix /mnt/d/
     mrmusic
     #mrvideo
     mrporn

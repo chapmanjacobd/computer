@@ -1,4 +1,6 @@
 function mrmusic
+    lb copy-play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/ --target-prefix /mnt/d/
+
     lb mv ~/sync/audio/weekly/ /mnt/d/check/audio/
 
     lb relmv (
