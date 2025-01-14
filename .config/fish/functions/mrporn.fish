@@ -8,12 +8,12 @@ function mrporn
     lb mv ~/sync/porn/video/dump/porn/video/ /mnt/d/dump/porn/video/
 
     lb relmv (
-        lb wt ~/lb/tax.db --portrait -L 24 -u play_count,time_created -p f -E 69_Taxes_Keep -E /keep/ --local
+        lb wt ~/lb/fs/tax.db --portrait -L 24 -u play_count,time_created -p f -E 69_Taxes_Keep -E /keep/ --local
     ) ~/sync/porn/video/
 
     lb relmv (
-        lb wt ~/lb/tax.db -E 69_Taxes_Keep -E /keep/ --local -FC=+4 -FC=-16 -p bf | shuf | head -n 8
+        lb wt ~/lb/fs/tax.db -E 69_Taxes_Keep -E /keep/ --local -FC=+4 -FC=-16 -p bf | shuf | head -n 8
     ) ~/sync/porn/video/
 
-    lb fsadd --video ~/lb/tax.db ~/sync/porn/video/
+    lb fsadd --video ~/lb/fs/tax.db ~/sync/porn/video/
 end

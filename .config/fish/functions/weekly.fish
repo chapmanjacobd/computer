@@ -34,14 +34,14 @@ function weekly
     fd -S-12b -tf -x rm
     lb mergedbs --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
 
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db ~/lb/audio.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/71_Mealtime_Videos.db ~/lb/video.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/63_Sounds.db ~/lb/tax_sounds.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/69_Taxes.db ~/lb/tax.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db ~/lb/fs/audio.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/71_Mealtime_Videos.db ~/lb/fs/video.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/63_Sounds.db ~/lb/fs/tax_sounds.db
+    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/69_Taxes.db ~/lb/fs/tax.db
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/91_New_Art.db ~/lb/fs/91_New_Art.db
 
-    lb merge-online-local ~/lb/video.db --yes
-    lb merge-online-local ~/lb/audio.db --yes
+    lb merge-online-local ~/lb/fs/video.db --yes
+    lb merge-online-local ~/lb/fs/audio.db --yes
 
     tubeupdate
     for db in ~/lb/sites/*.db ~/lb/sites/manual/*.db

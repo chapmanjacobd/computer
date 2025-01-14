@@ -1,6 +1,6 @@
 # Defined interactively
 function tubeupdate
-    for db in ~/lb/video.db ~/lb/audio.db ~/lb/tax_sounds.db ~/lb/tax.db
+    for db in ~/lb/fs/video.db ~/lb/fs/audio.db ~/lb/fs/tax_sounds.db ~/lb/fs/tax.db
         lb dedupe-db $db playlists --bk extractor_playlist_id
         sleepy_run.py -- python -u -m library.lb tubeupdate $db
     end

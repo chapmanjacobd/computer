@@ -22,17 +22,17 @@ function forganize
 
     lb-refresh
     lb-rebuild-fts
-    #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/check/porn/video/ -pf | xargs -P 20 -I{} rm {}
-    #lb wt ~/lb/tax.db -l inf --local-media-only -d-0.8 -pfd
+    #lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 --keep-dir /mnt/d/check/porn/video/ -pf | xargs -P 20 -I{} rm {}
+    #lb wt ~/lb/fs/tax.db -l inf --local-media-only -d-0.8 -pfd
 
     # ~/d/dump/audio/midi/ && fd -tf -eMID -x mv "{}" "{.}.mid"
 
     # fd . ~/d/dump/porn/audio/ ~/d/dump/audio/ -epng -ejpg -x rm "{}"
 
     lb-load
-    yes | lb dedupe-media --fs ~/lb/video.db -v --dedupe-cmd dupreplace.fish
-    yes | lb dedupe-media --fs ~/lb/tax.db -v
-    yes | lb dedupe-media --fs ~/lb/audio.db -v
+    yes | lb dedupe-media --fs ~/lb/fs/video.db -v --dedupe-cmd dupreplace.fish
+    yes | lb dedupe-media --fs ~/lb/fs/tax.db -v
+    yes | lb dedupe-media --fs ~/lb/fs/audio.db -v
 
     ~/d/
     for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
