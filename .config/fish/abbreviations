@@ -226,3 +226,4 @@ abbr -a -- gitroot 'cd (git rev-parse --show-cdup)'
 abbr -a -- arp arp -n
 abbr -a -- gc git_clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
+abbr -a -- qbt_torrents.py lb torrents
