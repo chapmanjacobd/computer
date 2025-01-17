@@ -1,18 +1,30 @@
 #!/usr/bin/python3
 import time
 
-import qbittorrentapi
-from library.utils import devices
+from library.mediafiles import torrents_start
+from library.utils import arggroups, argparse_utils, devices
 
-qb = qbittorrentapi.Client(host='127.0.0.1', port=8080)
 
-torrents = qb.torrents_info('stalled_downloading')
+def parse_args():
+    parser = argparse_utils.ArgumentParser()
+    arggroups.qBittorrent(parser)
+    arggroups.debug(parser)
+
+    args = parser.parse_args()
+    arggroups.args_post(args, parser)
+    return args
+
+
+args = parse_args()
+
+qbt_client = torrents_start.start_qBittorrent(args)
+torrents = qbt_client.torrents_info()
 torrents = [t for t in torrents if t.num_leechs == 0 and t.num_seeds == 0]
 
 error_torrents = []
 restart_torrents = []
 for t in torrents:
-    errors = [tr.msg for tr in qb.torrents_trackers(t.infohash_v2 or t.infohash_v1)]
+    errors = [tr.msg for tr in qbt_client.torrents_trackers(t.hash)]
     if any("torrent not found in your history" in s.lower() for s in errors):
         error_torrents.append(t)
     elif any("slot limit" in s.lower() for s in errors):
@@ -22,15 +34,15 @@ for torrent in error_torrents:
     print(torrent.comment)
 
 
-torrent_hashes = [t.infohash_v2 or t.infohash_v1 for t in restart_torrents]
+torrent_hashes = [t.hash for t in restart_torrents]
 if restart_torrents:
-    qb.torrents_pause(torrent_hashes=torrent_hashes)
+    qbt_client.torrents_pause(torrent_hashes=torrent_hashes)
     time.sleep(15)
-    qb.torrents_resume(torrent_hashes=torrent_hashes)
+    qbt_client.torrents_resume(torrent_hashes=torrent_hashes)
 
 
-torrent_hashes = [t.infohash_v2 or t.infohash_v1 for t in error_torrents]
-qb.torrents_pause(torrent_hashes=torrent_hashes)
+torrent_hashes = [t.hash for t in error_torrents]
+qbt_client.torrents_pause(torrent_hashes=torrent_hashes)
 
 if error_torrents and devices.confirm("Continue?"):
-    qb.torrents_resume(torrent_hashes=torrent_hashes)
+    qbt_client.torrents_resume(torrent_hashes=torrent_hashes)
