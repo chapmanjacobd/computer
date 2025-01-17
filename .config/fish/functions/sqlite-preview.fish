@@ -5,7 +5,7 @@ function sqlite-preview
         for table in (sqlite-tables "$db") (sqlite-views "$db")
             if not string match -q '*_fts_*' $table; and not string match -q '*_fts' $table; and not string match -q sqlite_stat1 $table
                 echo \#\#\# $table \((sqlite-count "$db" "$table") rows\)
-                sqlite-utils rows --limit 5 --fmt github "$db" "$table"
+                lb tables "$db" -t "$table" -L 5
                 echo
             end
         end
