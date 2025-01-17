@@ -21,7 +21,7 @@ def get_max_rowids(db: sqlite_utils.Database):
 def print_new_rows(db, max_rowids):
     for table_name, last_max_rowid in max_rowids.items():
         new_rows = list(
-            db.query(f"SELECT rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (last_max_rowid or 0,))
+            db.query(f"SELECT rowid as rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (last_max_rowid or 0,))
         )
         if new_rows:
             print(f"{table_name}:")
