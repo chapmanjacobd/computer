@@ -197,7 +197,6 @@ abbr -a -- time /bin/time -v
 abbr -a -- failed systemctl --user status --failed
 abbr -a -- reset-failed systemctl --user reset-failed --state transient
 abbr -a -- gpf git push --force-with-lease --force-if-includes
-abbr -a -- gs git status --untracked --short
 abbr -a -- start open
 abbr -a -- terminal-color-test msgcat --color=test
 abbr -a -- colors palette
@@ -227,3 +226,4 @@ abbr -a -- arp arp -n
 abbr -a -- gc git_clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
+abbr -a -- gs git status --short --untracked
