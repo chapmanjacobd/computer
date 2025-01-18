@@ -49,6 +49,7 @@ qbittorrent-nox
 ripgrep
 rpmfusion-free-release-tainted
 rpmfusion-nonfree-release-tainted
+sg3_utils
 sqlite-devel
 syncthing
 tmux
