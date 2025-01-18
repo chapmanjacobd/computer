@@ -6,7 +6,7 @@ function smartlba
         set ss (sudo blockdev --getss $dev)
         for att in Total_LBAs_Written Total_LBAs_Read
             set val (sudo smartctl -a $dev | grep $att | awk '{print $10}')
-            printf "%s\t%s\n" $att (echo "$val*$ss" | bc)
+            printf "%s\t%s\n" $att (math "$val*$ss")
         end | numfmt --to=iec --invalid ignore --field=2
     end
 end
