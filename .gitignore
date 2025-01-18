@@ -1,3 +1,4 @@
+/.local/build/
 /.config/internetarchive/ia.ini
 /.emacs.d/eln-cache/
 /.emacs.d/elpa/
