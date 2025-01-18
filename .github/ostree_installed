@@ -53,5 +53,6 @@ sqlite-devel
 syncthing
 tmux
 trash-cli
+xcb-util-cursor
 xsel
 zoxide
