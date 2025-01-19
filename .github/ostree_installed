@@ -42,6 +42,7 @@ oniguruma-devel
 parallel
 pg_top
 postgresql-devel
+progress
 pspg
 python-devel
 python3-pip
