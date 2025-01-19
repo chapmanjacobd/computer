@@ -187,7 +187,6 @@ abbr -a -- lsram sudo dmidecode -t 17
 abbr -a -- grm git restore --source=HEAD --staged --worktree --
 abbr -a -- cless colorpager
 abbr -a -- ssh_close_port ssh -O cancel -L 4102:localhost:4000 pakon
-abbr -a -- locate locate -N -i
 abbr -a -- debug-fish kill -TRAP
 abbr -a -- htop TERM=screen htop
 abbr -a -- wipam git amend
@@ -227,3 +226,4 @@ abbr -a -- gc git_clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
+abbr -a -- locate allpc locate -N -i
