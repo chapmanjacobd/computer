@@ -226,4 +226,4 @@ abbr -a -- gc git_clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
-abbr -a -- locate "allpc locate -N -i (cb | tr -d '(' | tr -d ')')"
+abbr -a -- locate 'allpc locate -N -i (cb | unquote)'
