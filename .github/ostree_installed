@@ -21,8 +21,10 @@ go-lang
 hddtemp
 heif-pixbuf-loader
 htop
+iftop
 inotify-tools
 intel-media-driver
+iotop
 kitty
 libacl-devel
 libattr-devel
@@ -53,6 +55,7 @@ rpmfusion-nonfree-release-tainted
 sg3_utils
 sqlite-devel
 syncthing
+sysstat
 tmux
 trash-cli
 unar
