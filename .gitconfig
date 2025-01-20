@@ -73,7 +73,7 @@
 [credential]
 	helper = cache
 [help]
-	autocorrect = 30
+	autocorrect = prompt
 [difftool "vscode"]
 	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
