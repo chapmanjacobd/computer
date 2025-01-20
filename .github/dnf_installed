@@ -54,6 +54,7 @@ ffmpeg-libs
 fftw-devel
 flacon
 fpart
+fpsync
 freerdp
 freerdp-server
 gamemode
