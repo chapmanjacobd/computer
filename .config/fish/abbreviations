@@ -209,7 +209,6 @@ abbr -a -- vpipe vipe
 abbr -a -- words /usr/share/dict/words
 abbr -a -- power-save sudo cpupower frequency-set -g powersave
 abbr -a -- power-performance sudo cpupower frequency-set -g performance
-abbr -a -- power-balanced sudo cpupower frequency-set -g ondemand
 abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | sum'
 abbr -a -- dnferase dnfremove
@@ -227,3 +226,4 @@ abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
 abbr -a -- locate 'allpc locate -N -i (cb | unquote)'
+abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
