@@ -54,6 +54,8 @@ for package in (cat ~/.github/dnf_installed)
     sudo dnf install -y $package
 end
 
+sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+
 # sudo usermod -aG docker xk
 # mkdir -p ~/.docker/cli-plugins/
 # curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
