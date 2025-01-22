@@ -1,0 +1,10 @@
+[Unit]
+Description=Autostart Fish Script
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/autostart.fish
+
+[Install]
+WantedBy=default.target
