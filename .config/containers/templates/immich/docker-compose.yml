@@ -17,10 +17,12 @@ services:
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     volumes:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload:Z
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-      - ${PICTURES_1}:${PICTURES_1}:z
-      - ${PICTURES_2}:${PICTURES_2}:z
+      - ${PICTURES_1}:${PICTURES_1}
+      - ${PICTURES_2}:${PICTURES_2}
+    security_opt:
+      - label=disable
     env_file:
       - .env
     ports:
@@ -41,7 +43,9 @@ services:
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     volumes:
-      - model-cache:/cache:Z
+      - model-cache:/cache
+    security_opt:
+      - label=disable
     env_file:
       - .env
     restart: always
@@ -58,6 +62,8 @@ services:
   database:
     container_name: immich_postgres
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    security_opt:
+      - label=disable
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
@@ -65,7 +71,7 @@ services:
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
       # Do not edit the next line. If you want to change the database storage location on your system, edit the value of DB_DATA_LOCATION in the .env file
-      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data:Z
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
     healthcheck:
       test: >-
         pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
