@@ -43,6 +43,7 @@ nmon
 oniguruma-devel
 parallel
 pg_top
+podman-compose
 postgresql-devel
 progress
 pspg
