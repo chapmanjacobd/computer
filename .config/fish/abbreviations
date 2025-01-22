@@ -227,3 +227,4 @@ abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
 abbr -a -- locate 'allpc locate -N -i (cb | unquote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
+abbr -a -- sysedit systemctl edit --full
