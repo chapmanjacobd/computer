@@ -1,0 +1,16 @@
+# /etc/systemd/user/podman-compose@.service
+
+[Unit]
+Description=%i rootless pod (podman-compose)
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/containers/compose/projects/%i.env
+ExecStartPre=-/usr/bin/podman-compose up --no-start
+ExecStartPre=/usr/bin/podman pod start pod_%i
+ExecStart=/usr/bin/podman-compose wait
+ExecStop=/usr/bin/podman pod stop pod_%i
+TimeoutSec=1800s
+
+[Install]
+WantedBy=default.target
