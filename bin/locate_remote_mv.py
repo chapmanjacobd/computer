@@ -61,14 +61,22 @@ def locate_remote(args, hostname):
 
             if devices.confirm(f'Move from {hostname}?'):
                 for d in files:
+                    remote_path = d['path']
                     local_path = Path(args.prefix) / path_utils.parent(d['path']) / path_utils.basename(d['path'])
                     local_path.parent.mkdir(exist_ok=True)
 
-                    print(d['path'])
+                    if (
+                        os.path.exists(remote_path)
+                        and os.path.exists(local_path)
+                        and os.path.samefile(remote_path, local_path)
+                    ):
+                        continue
+
+                    print(remote_path)
                     print("-->", local_path)
-                    sftp.get(d['path'], bytes(local_path))
+                    sftp.get(remote_path, bytes(local_path))
                     os.utime(local_path, (d['time_modified'], d['time_modified']))
-                    sftp.remove(d['path'])
+                    sftp.remove(remote_path)
 
 
 def main():
