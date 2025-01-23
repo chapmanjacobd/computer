@@ -9,6 +9,7 @@ from statistics import mean
 from library.utils import arggroups, devices, path_utils, printing, remote_processes, strings
 from library.utils.log_utils import log
 
+
 def locate_remote(args, hostname):
     import paramiko
 
@@ -17,7 +18,7 @@ def locate_remote(args, hostname):
         ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
         ssh.connect(hostname)
 
-        r = remote_processes.cmd(ssh, "locate", "-N", "-i", *args.query, strict=False)
+        r = remote_processes.cmd(ssh, "locate", "--existing", "--literal", "--ignore-case", *args.query, strict=False)
         paths = r.stdout.splitlines()
         if not paths:
             return
