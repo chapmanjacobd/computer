@@ -1,5 +1,4 @@
 abbr -a -- ? '~/'
-abbr -a -- arpa 'arp -a'
 abbr -a -- asciiterm 'termtosvg --screen-geometry=100x10 --min-frame-duration=200 --max-frame-duration=5000 --template=solarized_light'
 abbr -a -- bead 'bat -r 0:10'
 abbr -a -- bsubvdel 'sudo btrfs subvolume delete --commit-each'
@@ -229,3 +228,4 @@ abbr -a -- locate 'allpc locate -N -i (cb | unquote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- sysedit systemctl edit --full
 abbr -a -- services systemctl list-units --type=service --all
+abbr -a -- arpa sudo arp-scan 192.168.1.0/24
