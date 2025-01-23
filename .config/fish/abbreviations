@@ -232,3 +232,4 @@ abbr -a -- drd valgrind --tool=drd
 abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | unquote)'
 abbr -a -- locate 'locate -N -i (cb | unquote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
+abbr -a -- powerinfo cpupower frequency-info
