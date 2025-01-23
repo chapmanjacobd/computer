@@ -28,9 +28,8 @@ def print_new_rows(args, max_rowids):
             )
         )
         if new_rows:
-            if len(max_rowid) >= args.delay:
-                print(f"{table_name}:")
-                printing.table(new_rows)
+            print(f"{table_name}:")
+            printing.table(new_rows)
 
             max_rowids[table_name] = max(row['rowid'] for row in new_rows)
 
