@@ -13,7 +13,7 @@ def get_initial_rowids(args):
     for table_name in tables:
         cursor = args.db.execute(f"SELECT MAX(rowid) FROM {table_name};")
         max_rowid = cursor.fetchone()[0]
-        max_rowids[table_name] = max_rowid
+        max_rowids[table_name] = max_rowid or 0
 
     return max_rowids
 
@@ -23,15 +23,15 @@ def print_new_rows(args, max_rowids):
         # `rowid as rowid` is required due to SQLite rewriting the "rowid"
         # in the query/resultset with any rowid-equivalent (auto-incremental column name)
         new_rows = list(
-            args.db.query(
-                f"SELECT rowid as rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (max_rowid or 0,)
-            )
+            args.db.query(f"SELECT rowid as rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (max_rowid,))
         )
         if new_rows:
             print(f"{table_name}:")
             printing.table(new_rows)
 
             max_rowids[table_name] = max(row['rowid'] for row in new_rows)
+
+    return max_rowids
 
 
 def sqlite_tail(db_path):
@@ -41,7 +41,7 @@ def sqlite_tail(db_path):
 
     try:
         while True:
-            print_new_rows(args, max_rowids)
+            max_rowids = print_new_rows(args, max_rowids)
             time.sleep(1)
     except KeyboardInterrupt:
         print("Exiting...")
