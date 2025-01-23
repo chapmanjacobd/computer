@@ -19,8 +19,11 @@ def get_initial_rowids(args):
 
 
 def print_new_rows(args, max_rowids):
-    for table_name, max_rowids in max_rowids.items():
-        last_max_rowid = max_rowids[-(args.delay + 1)]
+    for table_name, max_rowid in max_rowids.items():
+        if len(max_rowid) > args.delay:
+            last_max_rowid = max_rowid[-(args.delay + 1)]
+        else:
+            last_max_rowid = max_rowid[-1]
 
         new_rows = list(
             args.db.query(
@@ -28,8 +31,9 @@ def print_new_rows(args, max_rowids):
             )
         )
         if new_rows:
-            print(f"{table_name}:")
-            printing.table(new_rows)
+            if len(max_rowid) >= args.delay:
+                print(f"{table_name}:")
+                printing.table(new_rows)
 
             max_rowids[table_name].append(max(row['rowid'] for row in new_rows))
 
