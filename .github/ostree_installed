@@ -44,6 +44,7 @@ nmon
 oniguruma-devel
 parallel
 pg_top
+plocate
 podman-compose
 postgresql-devel
 progress
