@@ -13,21 +13,16 @@ def get_initial_rowids(args):
     for table_name in tables:
         cursor = args.db.execute(f"SELECT MAX(rowid) FROM {table_name};")
         max_rowid = cursor.fetchone()[0]
-        max_rowids[table_name] = [max_rowid]
+        max_rowids[table_name] = max_rowid
 
     return max_rowids
 
 
 def print_new_rows(args, max_rowids):
     for table_name, max_rowid in max_rowids.items():
-        if len(max_rowid) > args.delay:
-            last_max_rowid = max_rowid[-(args.delay + 1)]
-        else:
-            last_max_rowid = max_rowid[-1]
-
         new_rows = list(
             args.db.query(
-                f"SELECT rowid as rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (last_max_rowid or 0,)
+                f"SELECT rowid as rowid, * FROM {table_name} WHERE rowid > ? ORDER BY rowid;", (max_rowid or 0,)
             )
         )
         if new_rows:
@@ -55,7 +50,6 @@ def sqlite_tail(db_path):
 
 if __name__ == "__main__":
     parser = argparse_utils.ArgumentParser()
-    parser.add_argument("--delay", type=int, default=0, help="Delay read until write-N")
     parser.add_argument("database")
     args = parser.parse_args()
 
