@@ -1,0 +1,90 @@
+#!/usr/bin/python3
+import argparse
+from copy import deepcopy
+import os
+import stat
+from pathlib import Path
+from statistics import mean
+
+from library.utils import arggroups, devices, path_utils, printing, remote_processes, strings
+from library.utils.log_utils import log
+
+def locate_remote(args, hostname):
+    import paramiko
+
+    with paramiko.SSHClient() as ssh:
+        ssh.load_system_host_keys()
+        ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
+        ssh.connect(hostname)
+
+        r = remote_processes.cmd(ssh, "locate", "-N", "-i", *args.query, strict=False)
+        paths = r.stdout.splitlines()
+        if not paths:
+            return
+
+        files = []
+        with ssh.open_sftp() as sftp:
+            for path in paths:
+                try:
+                    file_stat = sftp.lstat(path)
+                except FileNotFoundError:
+                    log.debug('%s not found. Skipping!', path)
+                    continue
+
+                if file_stat.st_mode and not stat.S_ISREG(file_stat.st_mode):
+                    continue
+                files.append({"path": path, "size": file_stat.st_size, "time_modified": file_stat.st_mtime})
+
+            if not files:
+                return
+
+            files = sorted(files, key=lambda d: d['size'])
+
+            table = deepcopy(files)
+            table.append(
+                {
+                    "path": 'Total',
+                    "size": sum(f["size"] for f in files),
+                    "time_modified": mean(f["time_modified"] for f in files),
+                }
+            )
+            table = [
+                {
+                    **d,
+                    "size": strings.file_size(d['size']),
+                    "time_modified": strings.relative_datetime(d['time_modified']),
+                }
+                for d in table
+            ]
+            printing.table(table)
+
+            if devices.confirm(f'Move from {hostname}?'):
+                for d in files:
+                    local_path = Path(args.prefix) / path_utils.parent(d['path']) / path_utils.basename(d['path'])
+                    local_path.parent.mkdir(exist_ok=True)
+
+                    print(d['path'])
+                    print("-->", local_path)
+                    sftp.get(d['path'], bytes(local_path))
+                    os.utime(local_path, (d['time_modified'], d['time_modified']))
+                    sftp.remove(d['path'])
+
+
+def main():
+    parser = argparse.ArgumentParser(description="SSH into hosts, locate files, and move them.")
+    parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
+    parser.add_argument("--prefix", default="~/d/sync/video/", help="Local directory to move files to")
+    arggroups.debug(parser)
+
+    parser.add_argument("query", nargs="+", help="Query for the locate command")
+    args = parser.parse_args()
+
+    args.prefix = os.path.expanduser(args.prefix)
+    os.makedirs(args.prefix, exist_ok=True)
+
+    for hostname in args.hosts:
+        locate_remote(args, hostname)
+
+
+if __name__ == "__main__":
+    main()
