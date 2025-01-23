@@ -224,7 +224,6 @@ abbr -a -- gc git_clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
-abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- sysedit systemctl edit --full
 abbr -a -- services systemctl list-units --type=service --all
 abbr -a -- arpa sudo arp-scan 192.168.1.0/24
@@ -232,3 +231,4 @@ abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
 abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | unquote)'
 abbr -a -- locate 'locate -N -i (cb | unquote)'
+abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
