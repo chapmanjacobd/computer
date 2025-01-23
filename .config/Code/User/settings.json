@@ -549,5 +549,10 @@
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
   "workbench.editor.empty.hint": "hidden",
-  "lldb.suppressUpdateNotifications": true
+  "lldb.suppressUpdateNotifications": true,
+  "remote.SSH.experimental.chat": false,
+  "chat.commandCenter.enabled": false,
+  "github.copilot.chat.generateTests.codeLens": true,
+  "github.copilot.chat.useProjectTemplates": false,
+  "github.copilot.editor.enableAutoCompletions": false
 }

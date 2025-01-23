@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import argparse
-from copy import deepcopy
 import os
 import stat
+from copy import deepcopy
 from pathlib import Path
 from statistics import mean
 
