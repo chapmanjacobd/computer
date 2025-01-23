@@ -231,3 +231,4 @@ abbr -a -- services systemctl list-units --type=service --all
 abbr -a -- arpa sudo arp-scan 192.168.1.0/24
 abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
+abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | unquote)'
