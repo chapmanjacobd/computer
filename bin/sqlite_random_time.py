@@ -33,7 +33,6 @@ def main():
         LIMIT 1
     )
     """
-
     printing.table(list(db.query(query)))
 
 
