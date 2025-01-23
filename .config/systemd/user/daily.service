@@ -1,6 +1,6 @@
 [Unit]
 Description=/usr/bin/fish -c daily
-Requires=mnt-d.mount
+After=network-online.target var-mnt-d.mount mnt-d.mount
 
 [Service]
 Type=simple

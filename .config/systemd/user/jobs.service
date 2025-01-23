@@ -1,7 +1,7 @@
 [Unit]
 Description=Run commands from a line-delimited jobs folder
-Wants=network-online.target mnt-d.mount
-After=network-online.target mnt-d.mount
+Wants=network-online.target
+After=network-online.target var-mnt-d.mount mnt-d.mount
 
 [Service]
 Type=simple
