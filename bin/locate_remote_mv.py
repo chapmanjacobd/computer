@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 import argparse
 import os
+import shlex
 import stat
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
 
 from library.utils import arggroups, devices, path_utils, printing, remote_processes, strings
+from library.utils.iterables import flatten
 from library.utils.log_utils import log
 
 
@@ -83,10 +85,14 @@ def main():
     parser = argparse.ArgumentParser(description="SSH into hosts, locate files, and move them.")
     parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
     parser.add_argument("--prefix", default="~/d/sync/video/", help="Local directory to move files to")
+    parser.add_argument("--flex", action='store_true', help="Split query on spaces")
     arggroups.debug(parser)
 
     parser.add_argument("query", nargs="+", help="Query for the locate command")
     args = parser.parse_args()
+
+    if args.flex:
+        args.query = list(flatten(s for xs in args.query for s in shlex.split(xs) if s))
 
     args.prefix = os.path.expanduser(args.prefix)
     os.makedirs(args.prefix, exist_ok=True)
