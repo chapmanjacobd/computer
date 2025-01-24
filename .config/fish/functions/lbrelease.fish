@@ -32,7 +32,9 @@ function lbrelease --argument newver
         pdm lock --group deluxe,test
         sleep 400
         python -m pip install --upgrade library
+        allpc pip install --upgrade pip
         allpc python -m pip install --upgrade library
+        allpc pip install --upgrade --pre yt-dlp[default]
     else
         return 1
     end
