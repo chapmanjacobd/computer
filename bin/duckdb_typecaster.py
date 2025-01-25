@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import argparse
+from typing import Dict, List, Tuple
+
 import duckdb
-from typing import List, Dict, Tuple
 from tabulate import tabulate
 
 SUPPORTED_TYPES = [
