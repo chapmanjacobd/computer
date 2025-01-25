@@ -1,3 +1,4 @@
+/.duckdb/extensions/
 /.config/qBittorrent/qBittorrent-data.conf
 /.local/build/
 /.config/internetarchive/ia.ini
