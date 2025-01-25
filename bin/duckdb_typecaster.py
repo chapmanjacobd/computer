@@ -13,27 +13,27 @@ SUPPORTED_TYPES = [
     "UBIGINT",
     "UHUGEINT",
     # signed
-    "INT1",
-    "INT2",
-    "INT4",
-    "INT8",
+    "TINYINT",
+    "SMALLINT",
+    "INTEGER",
+    "BIGINT",
     "HUGEINT",  # 16
-    "FLOAT4",
+    "FLOAT",
     "DECIMAL",  # 8
-    "FLOAT8",
+    "DOUBLE",
     # time
+    "TIMESTAMP WITH TIME ZONE",
+    "TIMESTAMP",
     "DATE",
     "TIME",
-    "TIMESTAMP",
-    "TIMESTAMPTZ",
     "INTERVAL",
     # misc
     "BOOLEAN",
     "UUID",
     # strings / bytes
-    "VARCHAR",
-    "BLOB",
-    "BITSTRING",
+    # "VARCHAR",
+    # "BLOB",
+    # "BITSTRING",
 ]
 
 
@@ -51,24 +51,27 @@ def count_valid_casts(conn, table_name: str, col_name: str, target_type: str, ro
 
 
 def infer_column_types(conn, table_name: str, rows: int) -> Dict[str, List[Tuple[str, int]]]:
-    """
-    Infer column types by attempting to cast to different types and counting valid rows.
-    Returns a dictionary with the top 3 matches for each column.
-    """
     columns = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
     inferred_types = {}
 
     for col in columns:
         col_name = col[1]
+        col_type = col[2]
+        col_is_pk = col[5]
+        if col_is_pk:
+            continue
+
         print(f"Analyzing column: {col_name}...")
         type_matches = []
 
         for dtype in SUPPORTED_TYPES:
             valid_rows = count_valid_casts(conn, table_name, col_name, dtype, rows)
-            type_matches.append((dtype, valid_rows))
+            if valid_rows > 1:
+                type_matches.append((dtype, valid_rows))
 
-        type_matches.sort(key=lambda x: x[1], reverse=True)
-        inferred_types[col_name] = type_matches[:3]
+        if type_matches and col_type != type_matches[0][0]:
+            type_matches.sort(key=lambda x: x[1], reverse=True)
+            inferred_types[col_name] = type_matches
 
     return inferred_types
 
@@ -76,9 +79,6 @@ def infer_column_types(conn, table_name: str, rows: int) -> Dict[str, List[Tuple
 def generate_alter_statements(
     table_name: str, inferred_types: Dict[str, List[Tuple[str, int]]], force: bool = False
 ) -> List[str]:
-    """
-    Generate ALTER TABLE statements to modify column types based on the top match.
-    """
     alter_statements = []
     for col_name, matches in inferred_types.items():
         if matches:
@@ -109,7 +109,7 @@ def main():
     print("\nTop 3 inferred types for each column:")
     for col_name, matches in inferred_types.items():
         print(f"\nColumn: {col_name}")
-        print(tabulate(matches, headers=["Type", "Valid Rows"], tablefmt="pretty"))
+        print(tabulate(matches[:3], headers=["Type", "Valid Rows"], tablefmt="pretty"))
 
     alter_statements = generate_alter_statements(args.table_name, inferred_types, args.force)
     print("\nGenerated ALTER TABLE statements:")
