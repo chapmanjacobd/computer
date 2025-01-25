@@ -9,6 +9,7 @@ charset-normalizer
 cython
 daff
 datasette
+duckdb
 emoji-country-flag
 evdev
 filprofiler
