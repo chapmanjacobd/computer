@@ -1,18 +1,55 @@
 #!/usr/bin/python3
+import sys
+from time import sleep
 import evdev
 from evdev import UInput
 from evdev import ecodes as e
 
-device = None
-for path in evdev.list_devices():
-    dev = evdev.InputDevice(path)
-    if 'mouse' in dev.name.lower():
+
+def list_mice():
+    mice = []
+    for path in evdev.list_devices():
+        dev = evdev.InputDevice(path)
+        # if 'mouse' in dev.name.lower():
         capabilities = dev.capabilities()
-        if e.REL_WHEEL in capabilities.get(e.EV_REL, []):
-            device = dev
-            break
-if device is None:
-    raise RuntimeError("No mouse found that has a wheel.")
+        if e.EV_REL in capabilities and e.REL_WHEEL in capabilities[e.EV_REL]:
+            mice.append(dev)
+    return mice
+
+
+def select_mouse(mice):
+    if not mice:
+        print("No mouse wheels found!")
+        exit(1)
+    elif len(mice) == 1:
+        return mice[0]
+
+    arg = sys.argv[1] if len(sys.argv) > 1 else None
+    if arg:
+        if arg.isnumeric():
+            return mice[int(arg) - 1]
+        else:
+            return [dev for dev in mice if arg in dev.name][0]
+
+    print("Available mice:")
+    for i, dev in enumerate(mice):
+        print(f"{i + 1}: {dev.name} (path: {dev.path})")
+
+    while True:
+        try:
+            choice = int(input("Select-a-mouse: ")) - 1
+            if 0 <= choice < len(mice):
+                return mice[choice]
+            else:
+                print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+        sleep(1)
+
+
+mice = list_mice()
+device = select_mouse(mice)
+
 print(f"Listening for events on {device.name}")
 
 ui = UInput(
