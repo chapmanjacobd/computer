@@ -34,6 +34,11 @@ def locate_remote(args, hostname):
                     log.debug('%s not found. Skipping!', path)
                     continue
 
+                exclude_cond = all if args.strict_exclude else any
+                if args.exclude and exclude_cond(ex in path.lower() for ex in args.exclude):
+                    log.debug("matched path-exclude: %s", path)
+                    continue
+
                 if file_stat.st_mode and not stat.S_ISREG(file_stat.st_mode):
                     continue
                 files.append({"path": path, "size": file_stat.st_size, "time_modified": file_stat.st_mtime})
@@ -62,8 +67,9 @@ def locate_remote(args, hostname):
             printing.table(table)
 
             if devices.confirm(f'Move from {hostname}?'):
-                selected_paths = processes.fzf_select([d['path'] for d in files])
-                files = [d for d in files if d['path'] in selected_paths]
+                if len(files) > 1:
+                    selected_paths = processes.fzf_select([d['path'] for d in files])
+                    files = [d for d in files if d['path'] in selected_paths]
 
                 for d in files:
                     remote_path = d['path']
@@ -86,9 +92,12 @@ def locate_remote(args, hostname):
 
 def main():
     parser = argparse.ArgumentParser(description="SSH into hosts, locate files, and move them.")
+    parser.add_argument("--exclude", '-E', nargs="+", default=[], action="extend", help="Exclude matching paths")
+    parser.add_argument("--strict-exclude", action="store_true", help="All exclude args must resolve true")
+
+    parser.add_argument("--flex", action='store_true', help="Split query on spaces")
     parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
     parser.add_argument("--prefix", default="~/d/sync/video/", help="Local directory to move files to")
-    parser.add_argument("--flex", action='store_true', help="Split query on spaces")
     arggroups.debug(parser)
 
     parser.add_argument("query", nargs="+", help="Query for the locate command")
@@ -96,6 +105,7 @@ def main():
 
     if args.flex:
         args.query = list(flatten(s for xs in args.query for s in shlex.split(xs) if s))
+    args.exclude = [s.lower() for s in args.exclude]
 
     args.prefix = os.path.expanduser(args.prefix)
     os.makedirs(args.prefix, exist_ok=True)
