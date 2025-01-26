@@ -23,7 +23,7 @@ qbt_client = torrents_start.start_qBittorrent(args)
 
 torrents = qbt_client.torrents_info(tag="library")
 print(len(torrents), 'total')
-torrents = [t for t in torrents if t.state_enum.is_downloading]
+torrents = [t for t in torrents if not t.state_enum.is_complete]
 print(len(torrents), 'downloading')
 
 df = pd.DataFrame(
@@ -42,10 +42,12 @@ ranked_df = rank_dataframe(
     column_weights={
         "tracker_count": {"direction": "asc", "weight": 12},
         "remaining": {"direction": "asc", "weight": 7},
-        "progress": {"direction": "desc", "weight": 6},
         "size": {"direction": "asc", "weight": 3},
     },
 )
 
-for t in ranked_df.itertuples():
-    qbt_client.torrents_bottom_priority(torrent_hashes=[t.hash])  # type: ignore
+ranked = ranked_df.to_dict('records')
+ranked = sorted(ranked, key=lambda d: (d["progress"] == 0, d["progress"] < 0.03, d["progress"] < 0.1))
+
+for d in ranked:
+    qbt_client.torrents_bottom_priority(torrent_hashes=[d["hash"]])
