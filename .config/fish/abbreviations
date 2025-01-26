@@ -234,3 +234,4 @@ abbr -a -- locate 'locate -N -i (cb | unquote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- powerinfo cpupower frequency-info
 abbr -a -- tags git tag -n9 --sort=-creatordate
+abbr -a -- top TERM=screen htop
