@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from statistics import mean
 
-from library.utils import arggroups, devices, path_utils, printing, remote_processes, strings
+from library.utils import arggroups, devices, path_utils, printing, processes, remote_processes, strings
 from library.utils.iterables import flatten
 from library.utils.log_utils import log
 
@@ -62,6 +62,9 @@ def locate_remote(args, hostname):
             printing.table(table)
 
             if devices.confirm(f'Move from {hostname}?'):
+                selected_paths = processes.fzf_select([d['path'] for d in files])
+                files = [d for d in files if d['path'] in selected_paths]
+
                 for d in files:
                     remote_path = d['path']
                     local_path = Path(args.prefix) / path_utils.parent(d['path']) / path_utils.basename(d['path'])
