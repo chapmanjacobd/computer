@@ -1,0 +1,57 @@
+#!/usr/bin/python3
+import argparse
+import os
+import shlex
+import stat
+from copy import deepcopy
+from pathlib import Path
+from statistics import mean
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
+
+from library.utils import arggroups, devices, path_utils, printing, processes, remote_processes, strings
+from library.utils.iterables import flatten
+from library.utils.log_utils import log
+
+
+def run_remote(args, hostname):
+    import paramiko
+
+    with paramiko.SSHClient() as ssh:
+        ssh.load_system_host_keys()
+        ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
+        ssh.connect(hostname)
+
+        r = remote_processes.cmd(ssh, *args.query, strict=False)
+        return r
+
+
+def main():
+    parser = argparse.ArgumentParser(description="SSH into hosts and execute commands (GNU parallel supplement)")
+    parser.add_argument("--flex", action='store_true', help="Split query on spaces")
+    parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
+    arggroups.debug(parser)
+
+    parser.add_argument("query", nargs="+", help="Query for the locate command")
+    args = parser.parse_args()
+
+    if args.flex:
+        args.query = list(flatten(s for xs in args.query for s in shlex.split(xs) if s))
+
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(run_remote, args, hostname): hostname for hostname in args.hosts}
+        for future in as_completed(futures):
+            hostname = futures[future]
+            print(f"{hostname}:")
+            try:
+                r = future.result()
+                if r.stderr:
+                    print(r.stderr, file=sys.stderr)
+                if r.stdout:
+                    print(r.stdout)
+            except Exception as exc:
+                print(exc, file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
