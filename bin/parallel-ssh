@@ -1,17 +1,11 @@
 #!/usr/bin/python3
 import argparse
-import os
 import shlex
-import stat
-from copy import deepcopy
-from pathlib import Path
-from statistics import mean
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from library.utils import arggroups, devices, path_utils, printing, processes, remote_processes, strings
+from library.utils import arggroups, remote_processes
 from library.utils.iterables import flatten
-from library.utils.log_utils import log
 
 
 def run_remote(args, hostname):

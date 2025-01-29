@@ -85,6 +85,13 @@
 [log]
 	date = relative-local
 [alias]
+    create = !git switch $(git config --get init.defaultBranch) && git switch -c
+    ccp = "!f() { git create \"$1\"; shift; git cherry-pick \"$@\"; }; f"
+    delete = branch -D
+    rename = branch -M
+    grame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
+    startover = "!f() { git reset --hard $(git merge-base main HEAD); git rebase main; }; f"
+    diffbranch = diff --ignore-all-space -U0 DEV...HEAD
 	branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
 	unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
 	conflicts = !git diff --name-only --diff-filter U
