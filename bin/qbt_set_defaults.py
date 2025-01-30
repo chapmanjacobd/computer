@@ -17,7 +17,6 @@ def parse_args():
     parser.add_argument("--up-limit", "--ul-limit", "--upload-limit", type=nums.human_to_bytes, help="Upload limit")
     arggroups.debug(parser)
 
-    arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
     arggroups.args_post(args, parser)
     return args
