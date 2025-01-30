@@ -6,7 +6,7 @@ set preserve_insertion_order = false;
 
 .bail on
 .changes on
-.columns
-.maxrows 1
+#.columns
+#.maxrows 1
 .nullvalue <null>
 .timer on
