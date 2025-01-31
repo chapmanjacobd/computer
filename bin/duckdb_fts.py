@@ -1,8 +1,81 @@
 #!/usr/bin/python3
 import argparse
+import itertools
+import shlex
+import shutil
+import sys
+from collections.abc import Iterable, Iterator
 
 import duckdb
-from library.utils import arggroups, argparse_utils, printing
+from tabulate import tabulate
+
+TERMINAL_SIZE = shutil.get_terminal_size(fallback=(150, 50))
+
+
+def extended_view(iterable):
+    print_index = True
+    if isinstance(iterable, dict):
+        print_index = False
+        iterable = [iterable]
+
+    if hasattr(iterable, "__iter__") and not hasattr(iterable, "__len__"):  # generator
+        try:
+            first_item = next(iter(iterable))
+        except StopIteration:
+            return  # if the generator is empty, return early
+        iterable = itertools.chain([first_item], iterable)
+        max_key_length = max(len(key) for key in first_item.keys())
+    else:
+        max_key_length = max(len(key) for item in iterable for key in item.keys())
+
+    for index, item in enumerate(iterable, start=1):
+        if print_index:
+            print(f"-[ RECORD {index} ]-------------------------------------------------------------")
+        for key, value in item.items():
+            formatted_key = f"{key.ljust(max_key_length)} |"
+            print(formatted_key, value)
+        if print_index:
+            print()
+
+
+def table(tbl, **kwargs) -> None:
+    table_text = tabulate(tbl, tablefmt="simple", headers="keys", showindex=False, **kwargs)
+    if not table_text:
+        return
+
+    longest_line = max(len(s) for s in table_text.splitlines())
+    try:
+        if longest_line > TERMINAL_SIZE.columns:
+            extended_view(tbl)
+        else:
+            print(table_text)
+    except BrokenPipeError:
+        sys.stdout = None
+        sys.exit(141)
+
+
+def flatten(xs: Iterable) -> Iterator:
+    for x in xs:
+        if isinstance(x, dict):
+            yield x
+        elif isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        elif isinstance(x, bytes):
+            yield x.decode("utf-8")
+        else:
+            yield x
+
+
+class ArgparseList(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        items = getattr(namespace, self.dest, None) or []
+
+        if isinstance(values, str):
+            items.extend(values.split(","))  # type: ignore
+        else:
+            items.extend(flatten(s.split(",") for s in values))  # type: ignore
+
+        setattr(namespace, self.dest, items)
 
 
 def build_query(table_name, include_words=None, exclude_words=None, min_include=None, max_exclude=None):
@@ -54,24 +127,28 @@ def build_query(table_name, include_words=None, exclude_words=None, min_include=
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Search columns in a DuckDB table with optional include/exclude words and score thresholds."
+        description="Search columns in a DuckDB table with optional include/exclude words and score thresholds"
     )
-    parser.add_argument("-E", "--exclude", nargs="+", help="Words to exclude from the search")
-    parser.add_argument("-s", "--include", nargs="+", help="Words to include in the search")
-    parser.add_argument("--min-include", type=float, help="Minimum score threshold for include words (use >= instead of IS NOT NULL)")
-    parser.add_argument("--max-exclude", type=float, help="Maximum score threshold for exclude words (use < instead of IS NULL)")
+    parser.add_argument("--include", "-s", nargs="+", help="Words to include in the search")
+    parser.add_argument("--exclude", "-E", nargs="+", help="Words to exclude from the search")
+    parser.add_argument("--min-include", type=float, help="Minimum score threshold for include words")
+    parser.add_argument("--max-exclude", type=float, help="Maximum score threshold for exclude words")
     parser.add_argument("--create-index", '--create', action='store_true', help="Create or recreate the fts index")
     parser.add_argument("--limit", '-l', '-L', type=int, default=40, help="Limit printed rows")
-    arggroups.debug(parser)
 
     parser.add_argument("database", help="Database to query")
     parser.add_argument("table", help="Table to query")
     parser.add_argument("--pk", required=True, help="Column to use as pk")
-    parser.add_argument("columns", action=argparse_utils.ArgparseList, help="Columns to search")
+    parser.add_argument("columns", action=ArgparseList, help="Columns to search")
     args = parser.parse_args()
 
     if any(s in args.table for s in ['\\', '/', '.parquet']):
-        raise ValueError("fts requires duckdb format. Parquet will not work")
+        raise TypeError("fts requires duckdb format. Parquet will not work")
+
+    if args.include:
+        args.include = [shlex.quote(s) for s in args.include]
+    if args.exclude:
+        args.exclude = [shlex.quote(s) for s in args.exclude]
 
     conn = duckdb.connect(database=args.database or ':memory:')
     if args.create_index:
@@ -86,7 +163,7 @@ def main():
     if args.limit and count > args.limit:
         result = result.sample(n=args.limit)
 
-    printing.table(result.to_dict(orient='records'))
+    table(result.to_dict(orient='records'))
     print(count, 'matches')
 
 
