@@ -146,9 +146,9 @@ def main():
         raise TypeError("fts requires duckdb format. Parquet will not work")
 
     if args.include:
-        args.include = [shlex.quote(s) for s in args.include]
+        args.include = [s.replace("'", "\'") for s in args.include]
     if args.exclude:
-        args.exclude = [shlex.quote(s) for s in args.exclude]
+        args.exclude = [s.replace("'", "\'") for s in args.exclude]
 
     conn = duckdb.connect(database=args.database or ':memory:')
     if args.create_index:
