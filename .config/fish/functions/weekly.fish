@@ -48,9 +48,6 @@ function weekly
         lb linksupdate $db
     end
 
-    eval-shuf-repeat ~/.jobs/dl_video.sh
-    eval-shuf-repeat ~/.jobs/dl_audio.sh
-
     ~/d/dump/image/art/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/91_New_Art-instagram.txt | shuf | head -15 | psub)
 
