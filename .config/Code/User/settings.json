@@ -227,6 +227,7 @@
     "hstack",
     "iframe",
     "iinfo",
+    "ILIKE",
     "iloc",
     "inodes",
     "interdimensional",
