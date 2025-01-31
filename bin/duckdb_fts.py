@@ -78,50 +78,47 @@ class ArgparseList(argparse.Action):
         setattr(namespace, self.dest, items)
 
 
-def build_query(table_name, include_words=None, exclude_words=None, min_include=None, max_exclude=None):
+def build_query(args):
+    table_name = args.table
     conditions = []
     select_parts = ["*"]
 
-    if include_words:
+    if args.include:
         include_conditions = []
         include_scores = []
-        for word in include_words:
-            if min_include is not None:
-                cond = f"fts_main_{table_name}.match_bm25(path, '{word}') >= {min_include}"
+        for word in args.include:
+            if args.min_include is not None:
+                cond = f"fts_main_{table_name}.match_bm25(path, '{word}') >= {args.min_include}"
             else:
                 cond = f"fts_main_{table_name}.match_bm25(path, '{word}') IS NOT NULL"
             include_conditions.append(cond)
             include_scores.append(f"fts_main_{table_name}.match_bm25(path, '{word}')")
         conditions.append("\n(" + "\n OR ".join(include_conditions) + ")")
-        include_sum = " + ".join(include_scores)
-        select_parts.append(f"({include_sum}) AS include_score")
-    else:
-        include_sum = "0"
 
-    if exclude_words:
+        if args.score:
+            include_sum = " + ".join(include_scores)
+            select_parts.append(f"({include_sum}) AS include_score")
+
+
+    if args.exclude:
         exclude_conditions = []
         exclude_scores = []
-        for word in exclude_words:
-            if max_exclude is not None:
-                cond = f"COALESCE(fts_main_{table_name}.match_bm25(path, '{word}'), 0) < {max_exclude}"
+        for word in args.exclude:
+            if args.max_exclude is not None:
+                cond = f"COALESCE(fts_main_{table_name}.match_bm25(path, '{word}'), 0) < {args.max_exclude}"
             else:
                 cond = f"fts_main_{table_name}.match_bm25(path, '{word}') IS NULL"
             exclude_conditions.append(cond)
             exclude_scores.append(f"fts_main_{table_name}.match_bm25(path, '{word}')")
         conditions.append("\n(" + "\n AND ".join(exclude_conditions) + ")")
-        exclude_sum = " + ".join(exclude_scores)
-        select_parts.append(f"({exclude_sum}) AS exclude_score")
-    else:
-        exclude_sum = "0"
 
-    if include_words or exclude_words:
-        total_include = include_sum if include_words else "0"
-        total_exclude = exclude_sum if exclude_words else "0"
-        select_parts.append(f"({total_include} - {total_exclude}) AS total_score")
+        if args.score:
+            exclude_sum = " + ".join(exclude_scores)
+            select_parts.append(f"({exclude_sum}) AS exclude_score")
 
     where_clause = "\n WHERE " + " AND ".join(conditions) if conditions else ""
     select_clause = ", ".join(select_parts)
-    query = f"SELECT {select_clause} FROM {table_name}{where_clause}"
+    query = f"SELECT {select_clause}\n FROM {table_name}{where_clause}"
     return query
 
 
@@ -131,6 +128,7 @@ def main():
     )
     parser.add_argument("--include", "-s", nargs="+", help="Words to include in the search")
     parser.add_argument("--exclude", "-E", nargs="+", help="Words to exclude from the search")
+    parser.add_argument("--score", action='store_true', help="Calculate match score")
     parser.add_argument("--min-include", type=float, help="Minimum score threshold for include words")
     parser.add_argument("--max-exclude", type=float, help="Maximum score threshold for exclude words")
     parser.add_argument("--create-index", '--create', action='store_true', help="Create or recreate the fts index")
@@ -155,7 +153,7 @@ def main():
         columns_for_fts = ", ".join([f"'{col}'" for col in args.columns])
         conn.execute(f"PRAGMA create_fts_index('{args.table}', '{args.pk}', {columns_for_fts}, overwrite=1);")
 
-    query = build_query(args.table, args.include, args.exclude, args.min_include, args.max_exclude)
+    query = build_query(args)
     print("Generated Query:", query)
 
     result = conn.execute(query).df()
