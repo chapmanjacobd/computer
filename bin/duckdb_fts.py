@@ -30,7 +30,7 @@ def build_query(table_name, include_words=None, exclude_words=None, min_include=
         exclude_scores = []
         for word in exclude_words:
             if max_exclude is not None:
-                cond = f"fts_main_{table_name}.match_bm25(path, '{word}') < {max_exclude}"
+                cond = f"COALESCE(fts_main_{table_name}.match_bm25(path, '{word}'), 0) < {max_exclude}"
             else:
                 cond = f"fts_main_{table_name}.match_bm25(path, '{word}') IS NULL"
             exclude_conditions.append(cond)
@@ -61,6 +61,7 @@ def main():
     parser.add_argument("--min-include", type=float, help="Minimum score threshold for include words (use >= instead of IS NOT NULL)")
     parser.add_argument("--max-exclude", type=float, help="Maximum score threshold for exclude words (use < instead of IS NULL)")
     parser.add_argument("--create-index", '--create', action='store_true', help="Create or recreate the fts index")
+    parser.add_argument("--limit", '-l', '-L', type=int, default=40, help="Limit printed rows")
     arggroups.debug(parser)
 
     parser.add_argument("database", help="Database to query")
@@ -82,7 +83,8 @@ def main():
 
     result = conn.execute(query).df()
     count = len(result)
-    result = result.sample(n=40)
+    if args.limit and count > args.limit:
+        result = result.sample(n=args.limit)
 
     printing.table(result.to_dict(orient='records'))
     print(count, 'matches')
