@@ -15,6 +15,7 @@ function dorganize
 
     lb relmv --ext mid . ~/d/dump/audio/midi/
     lb relmv --ext srt,ass,vtt,sub,idx . ~/d/dump/video/
+    fd -ersrc -x rm
     lb relmv --ext mp3,wav . ~/d/dump/audio/
 
     remove_empty_directories
