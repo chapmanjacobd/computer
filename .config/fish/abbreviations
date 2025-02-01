@@ -172,7 +172,6 @@ abbr -a -- sponge_rsync rsink
 abbr -a -- timeout timeout --preserve-status --signal INT 20m
 abbr -a -- massif valgrind --tool=massif
 abbr -a -- ash ssh
-abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn,notice
 abbr -a -- insect numbat
 abbr -a -- slurp string join \'\ \'
 abbr -a -- unslurp string split \'\ \'
@@ -235,3 +234,4 @@ abbr -a -- powerinfo cpupower frequency-info
 abbr -a -- tags git tag -n9 --sort=-creatordate
 abbr -a -- top TERM=screen htop
 abbr -a -- pstree pstree -alpTs
+abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn
