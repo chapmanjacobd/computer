@@ -3,7 +3,7 @@ function torganize
     rsync -auh --remove-sent-files ~/Downloads/\[(seq 0 9)*.torrent backup:.local/data/rtorrent/watch/new/
 
     lb mv ~/Downloads/*.torrent ~/.local/data/qbittorrent/queue/
-    lb-dev torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v --delete-files
+    lb torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v --delete-files
 
     # torstart
 

@@ -1,6 +1,6 @@
 # Defined interactively
 function redditadd --argument reddit_db
-    lb-dev redditadd --subreddits -v $reddit_db $argv[2..-1]
+    lb redditadd --subreddits -v $reddit_db $argv[2..-1]
 
     ~/github/xk/reddit_mining/links/
     for subreddit in $argv[2..-1]

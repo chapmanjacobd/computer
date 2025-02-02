@@ -13,7 +13,7 @@ function weekly
     mam_update
 
     for f in /home/xk/.local/share/nicotine/usershares/*
-        lb-dev nicotine-import ~/lb/sites/todo/soulseek/(path basename $f).db $f
+        lb nicotine-import ~/lb/sites/todo/soulseek/(path basename $f).db $f
     end
 
     lb-refresh
