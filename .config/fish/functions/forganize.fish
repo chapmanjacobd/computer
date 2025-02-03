@@ -2,7 +2,7 @@ function forganize
     morganize
     dorganize
 
-    set processing_dir (path basename (newpath /mnt/d/processing))
+    set processing_dir processing_(datestamp)
     allpc library torrents-stop-incomplete --min-days-downloading 20 --move $processing_dir --delete-rows -y -v
     allpc library torrents-stop --min-seeders 3 --min-days-stalled-seed 3 --min-days-seeding 45 --move $processing_dir --delete-rows -y -v
 
