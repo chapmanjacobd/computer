@@ -1,5 +1,6 @@
 .prompt 'd> '
 
+#set default_block_size = '131072';
 set checkpoint_threshold = '32MB';
 set enable_view_dependencies = true;
 set preserve_insertion_order = false;
