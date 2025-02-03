@@ -3,9 +3,10 @@ function forganize
     dorganize
 
     set processing_dir processing_(datestamp)
-    allpc library torrents --min-seeders 3 --min-days-stalled-seed 3 --min-days-seeding 45 --move $processing_dir --delete-rows -y -v
+    allpc library torrents --complete --seeders=+4 --time-stalled=+3days --time-active=+45days --stop --move $processing_dir --delete-rows -v
     # stop incomplete
-    allpc library torrents --min-days-downloading 20 --move $processing_dir --delete-rows -y -v
+    allpc library torrents --incomplete --time-unseeded=+90days --time-active=+60days --time-stalled=+30days --delete-incomplete --stop --move $processing_dir --delete-rows -v
+    allpc library torrents --incomplete --time-active=+45days --inactive --progress=0 --stop --delete-rows -v
 
     #trash-size
     #trash-empty
