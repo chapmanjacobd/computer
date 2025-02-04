@@ -9,5 +9,6 @@ set preserve_insertion_order = false;
 .changes on
 #.columns
 #.maxrows 1
+.maxrows 200
 .nullvalue <null>
 .timer on
