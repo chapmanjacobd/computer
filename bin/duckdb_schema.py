@@ -72,7 +72,7 @@ def infer_column_types(conn: duckdb.DuckDBPyConnection, table_name: str, rows: i
             type_matches.sort(key=lambda x: x[1], reverse=True)
             inferred_types[col_name] = type_matches
         else:
-            inferred_types[col_name] = (col_type, 0)
+            inferred_types[col_name] = [(col_type, 0)]
 
     return inferred_types
 
