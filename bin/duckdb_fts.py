@@ -152,6 +152,8 @@ def main():
     if args.create_index:
         columns_for_fts = ", ".join([f"'{col}'" for col in args.columns])
         conn.execute(f"PRAGMA create_fts_index('{args.table}', '{args.pk}', {columns_for_fts}, overwrite=1);")
+        if not any([args.include, args.exclude]):
+            raise SystemExit(0)
 
     query = build_query(args)
     print("Generated Query:", query)
