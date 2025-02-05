@@ -1,5 +1,7 @@
 # Defined via `source`
-function sqlite2duckdb -a sqlite_db -a duckdb_db
+function sqlite2duckdb -a sqlite_db
+    set duckdb_db (path change-extension duckdb $sqlite_db)
+
     duckdb -c "
         SET sqlite_all_varchar=true;
 
