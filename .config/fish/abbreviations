@@ -127,7 +127,6 @@ abbr -a -- trashrestore trash-restore-d
 abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/fs/video.db (cb)'
 abbr -a -- osq osqueryi
-abbr -a -- df 'df -h | sort --human-numeric-sort -k2'
 abbr -a -- revsort rightsort
 abbr -a -- pcontinue presume
 abbr -a -- lsgpu lsgpu -p
@@ -235,3 +234,4 @@ abbr -a -- tags git tag -n9 --sort=-creatordate
 abbr -a -- top TERM=screen htop
 abbr -a -- pstree pstree -alpTs
 abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k3'
