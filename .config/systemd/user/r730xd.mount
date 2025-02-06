@@ -1,0 +1,16 @@
+[Unit]
+Description=SSHFS r730xd
+
+Before=remote-fs.target
+
+[Mount]
+What=r730xd:
+Where=/home/xk/.mnt/r730xd
+Type=fuse.sshfs
+Options=_netdev,nodev,nosuid,noatime,follow_symlinks,intr,dirsync,ServerAliveInterval=10,reconnect,max_conns=4,delay_connect
+# no_readahead
+# auto_cache
+# dir_cache=yes,dcache_max_size=80000,dcache_timeout=60,dcache_stat_timeout=1,dcache_clean_interval=300 
+
+[Install]
+WantedBy=remote-fs.target
