@@ -8,5 +8,7 @@ delete-if-audiobook
 --local-media-only
 --fetch-siblings
 if-audiobook
+--fetch-siblings-max
+2
 /home/xk/lb/audio.db"
 end
