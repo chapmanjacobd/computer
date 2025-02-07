@@ -32,6 +32,7 @@ max_active_uploads = current_count + 10_000
 qbt_client.app_set_preferences(
     {
         "preallocate_all": True,
+        "recheck_completed_torrents": True,
         "add_stopped_enabled": False,
         "dl_limit": args.dl_limit,
         "up_limit": args.up_limit or args.dl_limit,
