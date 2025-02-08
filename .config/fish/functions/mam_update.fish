@@ -19,6 +19,3 @@ function mam_update
 
     mam_db_dl ~/lb/sites/mam/mam.db
 end
-
-# mam_search individual and then
-# lb merge-dbs using id as bk
