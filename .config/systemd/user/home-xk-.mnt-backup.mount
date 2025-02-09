@@ -10,4 +10,4 @@ Type=fuse.sshfs
 Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,direct_io,delay_connect
 
 [Install]
-WantedBy=remote-fs.target
+WantedBy=default.target
