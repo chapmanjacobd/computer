@@ -97,7 +97,7 @@ def main():
 
     parser.add_argument("--flex", action='store_true', help="Split query on spaces")
     parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
-    parser.add_argument("--prefix", default="~/d/sync/video/", help="Local directory to move files to")
+    parser.add_argument("--prefix", default="~/sync/video/", help="Local directory to move files to")
     arggroups.debug(parser)
 
     parser.add_argument("query", nargs="+", help="Query for the locate command")
