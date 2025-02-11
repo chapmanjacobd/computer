@@ -236,3 +236,4 @@ abbr -a -- pstree pstree -alpTs
 abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k3'
 abbr -a -- btrfs_new_uuid btrfstune -u
+abbr -a -- fdisk sudo fdisk -l
