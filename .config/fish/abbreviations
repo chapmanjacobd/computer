@@ -237,3 +237,4 @@ abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k3'
 abbr -a -- btrfs_new_uuid btrfstune -u
 abbr -a -- fdisk sudo fdisk -l
+abbr -a -- iostat iostat -xh 4
