@@ -1,0 +1,85 @@
+#!/usr/bin/python3
+import argparse
+import shlex
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from library.utils import arggroups, remote_processes, strings
+from library.utils.iterables import flatten
+from library.utils.log_utils import log
+
+
+def run_remote(args, hostname):
+    import paramiko
+
+    with paramiko.SSHClient() as ssh:
+        ssh.load_system_host_keys()
+        ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
+        ssh.connect(hostname)
+
+        r = remote_processes.cmd(ssh, *args.query, strict=False)
+        return r
+
+
+def main():
+    parser = argparse.ArgumentParser(description="SSH into hosts and execute commands (GNU parallel supplement)")
+    parser.add_argument("--flex", action='store_true', help="Split query on spaces")
+    parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
+    arggroups.debug(parser)
+
+    parser.add_argument("query", nargs="+", help="Query for the locate command")
+    args = parser.parse_args()
+
+    if args.flex:
+        args.query = list(flatten(s for xs in args.query for s in shlex.split(xs) if s))
+
+    stdout_outputs = {}
+    stderr_outputs = {}
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(run_remote, args, hostname): hostname for hostname in args.hosts}
+        for future in as_completed(futures):
+            hostname = futures[future]
+            log.info("Completed on host %s", hostname)
+            try:
+                r = future.result()
+
+                stdout = r.stdout or ""
+                stderr = r.stderr or ""
+                stdout_lines = [s.strip() for s in stdout.strip().splitlines()]
+                stderr_lines = [s.strip() for s in stderr.strip().splitlines()]
+                for line in stdout_lines:
+                    stdout_outputs.setdefault(line, []).append(hostname)
+                for line in stderr_lines:
+                    stderr_outputs.setdefault(line, []).append(hostname)
+
+            except Exception as exc:
+                print(exc, file=sys.stderr)
+                print()
+
+    print('Unique:')
+    for stdout_line, hosts in stdout_outputs.items():
+        if len(hosts) == 1:
+            host_list_str = ", ".join(hosts)
+            formatted_line = strings.format_two_columns(host_list_str, stdout_line.strip())
+            print(formatted_line, end='')
+    for stderr_line, hosts in stderr_outputs.items():
+        if len(hosts) == 1:
+            host_list_str = ", ".join(hosts)
+            formatted_line = strings.format_two_columns(host_list_str, stderr_line.strip())
+            print(formatted_line, file=sys.stderr, end='')
+
+    print('Duplicates:')
+    for stdout_line, hosts in stdout_outputs.items():
+        if len(hosts) > 1:
+            host_list_str = ", ".join(hosts)
+            formatted_line = strings.format_two_columns(host_list_str, stdout_line.strip())
+            print(formatted_line, end='')
+    for stderr_line, hosts in stderr_outputs.items():
+        if len(hosts) > 1:
+            host_list_str = ", ".join(hosts)
+            formatted_line = strings.format_two_columns(host_list_str, stderr_line.strip())
+            print(formatted_line, file=sys.stderr, end='')
+
+
+if __name__ == "__main__":
+    main()
