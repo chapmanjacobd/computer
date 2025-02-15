@@ -238,3 +238,4 @@ abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-so
 abbr -a -- btrfs_new_uuid btrfstune -u
 abbr -a -- fdisk sudo fdisk -l
 abbr -a -- iostat iostat -xh 4
+abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --metadata --human-readable --error-on-no-transfer --checkers 18 --no-update-modtime --timeout=45s --ignore-existing --check-first
