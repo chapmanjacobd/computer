@@ -38,6 +38,9 @@ def create_combined_file(file_list, output_dir, start_file):
         for file_path_to_concat in file_list:
             f.write(f"file '{file_path_to_concat}'\n")
 
+    log.info("""%s
+##> %s""", '\n  '.join(file_list), start_file)
+
     command = [
         'ffmpeg',
         '-nostdin',
@@ -79,12 +82,11 @@ def combine_audio_in_group(file_group, output_dir):
     if not file_group:
         return None
 
-    sorted_group = natsorted(file_group)
     current_group_files = []
     current_duration = 0
     start_file = None
 
-    for filepath in sorted_group:
+    for filepath in file_group:
         duration = processes.FFProbe(filepath).duration
 
         if duration is None:
@@ -127,6 +129,7 @@ def process_directory(directory_path):
     total_files_processed = 0
     for file_group in group_files_by_prefix(directory_path):
         if len(file_group) > 20:
+            file_group = natsorted(file_group)
             log.info(f"Found {len(file_group)} matching files in group {file_group[0]}, processing...")
             combine_audio_in_group(file_group, directory_path)
             total_files_processed += len(file_group)
