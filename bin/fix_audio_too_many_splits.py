@@ -127,11 +127,11 @@ def process_directory(directory_path):
     total_files_processed = 0
     for file_group in group_files_by_prefix(directory_path):
         if len(file_group) > 20:
-            log.info(f"Found {len(file_group)} matching files in group, processing...")
+            log.info(f"Found {len(file_group)} matching files in group {file_group[0]}, processing...")
             combine_audio_in_group(file_group, directory_path)
             total_files_processed += len(file_group)
         else:
-            log.info(f"Found {len(file_group)} matching files, skipping group (< 20).")
+            log.info(f"Found {len(file_group)} matching files, skipping group {file_group[0]} (< 20)")
     log.info(
         f"Finished processing directory {directory_path}. Total files in processed groups: {total_files_processed}"
     )
