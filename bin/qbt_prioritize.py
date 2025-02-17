@@ -32,6 +32,7 @@ df = pd.DataFrame(
         "size": [t.size for t in torrents],
         "progress": [t.progress for t in torrents],
         "remaining": [t.amount_left for t in torrents],
+        "tracker": [qbt_get_tracker(qbt_client, t) for t in torrents],
         "tracker_count": iterables.value_counts([qbt_get_tracker(qbt_client, t) for t in torrents]),
     }
 )
@@ -47,7 +48,15 @@ ranked_df = rank_dataframe(
 )
 
 ranked = ranked_df.to_dict('records')
-ranked = sorted(ranked, key=lambda d: (d["progress"] == 0, d["progress"] < 0.03, d["progress"] < 0.1))
+ranked = sorted(
+    ranked,
+    key=lambda d: (
+        d["progress"] == 0,
+        d["tracker"] not in ["jptv.club"],
+        d["progress"] < 0.03,
+        d["progress"] < 0.1,
+    ),
+)
 
 for d in ranked:
     qbt_client.torrents_bottom_priority(torrent_hashes=[d["hash"]])
