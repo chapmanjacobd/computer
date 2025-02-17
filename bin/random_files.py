@@ -25,9 +25,10 @@ def fast_glob(args, path_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max-folders", type=int, default=150, help="Maximum number of unique folders to process.")
+    parser.add_argument("--max-files", type=int, help="Maximum number of files")
+    parser.add_argument("--max-folders", type=int, default=150, help="Maximum number of unique folders to process")
     parser.add_argument(
-        "--max-files-per-dir", type=int, default=1, help="Maximum number of random files to choose per directory."
+        "--max-files-per-dir", type=int, default=1, help="Maximum number of random files to choose per directory"
     )
     parser.add_argument(
         "--ext",
@@ -49,16 +50,21 @@ def main():
         print(f"Error: Root directory '{args.root_directory}' does not exist.")
         raise SystemExit(1)
 
+    num_files = 0
     unique_directories = set()
     for dirpath, _dirnames, _filenames in os.walk(args.root_directory):
-        unique_directories.add(dirpath)
-        if len(unique_directories) > args.max_folders:
-            break
-
         files_in_dir = fast_glob(args, dirpath)
         if files_in_dir:
+            unique_directories.add(dirpath)
+            if args.max_folders and len(unique_directories) > args.max_folders:
+                break
+
             for file_path in random.sample(files_in_dir, min(len(files_in_dir), args.max_files_per_dir)):
                 print(file_path)
+
+                num_files += 1
+                if args.max_files and num_files > args.max_files:
+                    break
 
 
 if __name__ == "__main__":
