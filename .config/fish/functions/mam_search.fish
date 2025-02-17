@@ -7,6 +7,4 @@ function mam_search
 
     ~/lb/
     python -m library.scratch.mam_search --audiobooks --books --comics --radio $opts --cookie $MAM_COOKIE "$db" $args
-
-    mam_db_dl "$db"
 end
