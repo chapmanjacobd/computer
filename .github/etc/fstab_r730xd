@@ -1,0 +1,24 @@
+
+#
+# /etc/fstab
+# Created by anaconda on Tue Dec 17 18:06:56 2024
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+UUID=f3647f84-e347-4341-bd86-5e4e67b0f5a2 /                       ext4    defaults        1 1
+UUID=85999a6a-4195-4512-b17d-adfd5cdba6a0 /boot                   ext4    defaults        1 2
+UUID=D991-E3D7          /boot/efi               vfat    umask=0077,shortname=winnt 0 2
+UUID=a61aadf0-165f-4ed5-9849-8b86391ec4d3 /home                   ext4    defaults        1 2
+
+UUID=45c0abcb-5303-41ed-8058-97bf78b7dacf  /mnt/d                  btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+
+UUID=be4a8113-3b94-44b4-a872-8c71b3fa2f39 /mnt/b1    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=807a8f41-c59d-4b30-ab67-6658d0cb45ee /mnt/b2    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=fd94f523-469d-4595-b1c9-0d27347c86a5 /mnt/b3    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=6f16d3fe-c67d-4ebe-9067-89228468d8fb /mnt/b4    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=c56f8d8c-49a9-471e-b171-cd8b71b95775 /mnt/b5    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=e94d03fc-56f8-446d-b36b-5e385e2e356d /mnt/b6    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
