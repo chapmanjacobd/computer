@@ -6,7 +6,7 @@ function forganize
     allpc library torrents --complete --seeders=+4 --time-stalled=+3days --time-active=+45days --stop --move $processing_dir --delete-rows -v
     # stop incomplete
     allpc library torrents --incomplete --time-unseeded=+90days --time-active=+60days --time-stalled=+30days --delete-incomplete --stop --move $processing_dir --delete-rows -v
-    allpc library torrents --incomplete --time-active=+45days --inactive --progress=0 --stop --delete-rows -v
+    allpc library torrents --incomplete --time-active=+45days --inactive --progress=0 --stop -v
 
     #trash-size
     #trash-empty
