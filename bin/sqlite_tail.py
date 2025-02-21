@@ -11,6 +11,9 @@ def get_initial_rowids(args):
 
     max_rowids = {}
     for table_name in tables:
+        if table_name in ['sqlite_stat1'] or '_fts' in table_name:
+            continue
+
         cursor = args.db.execute(f"SELECT MAX(rowid) FROM {table_name};")
         max_rowid = cursor.fetchone()[0]
         max_rowids[table_name] = max_rowid or 0
