@@ -24,6 +24,7 @@ def run_remote(args, hostname):
 def main():
     parser = argparse.ArgumentParser(description="SSH into hosts and execute commands (GNU parallel supplement)")
     parser.add_argument("--flex", action='store_true', help="Split query on spaces")
+    parser.add_argument("--duplicates", "--dups", action='store_true', help="Only show duplicates")
     parser.add_argument("--hosts", nargs="+", help="Hosts to SSH into")
     arggroups.debug(parser)
 
@@ -56,17 +57,18 @@ def main():
                 print(exc, file=sys.stderr)
                 print()
 
-    print('Unique:')
-    for stdout_line, hosts in stdout_outputs.items():
-        if len(hosts) == 1:
-            host_list_str = ", ".join(hosts)
-            formatted_line = strings.format_two_columns(host_list_str, stdout_line.strip())
-            print(formatted_line, end='')
-    for stderr_line, hosts in stderr_outputs.items():
-        if len(hosts) == 1:
-            host_list_str = ", ".join(hosts)
-            formatted_line = strings.format_two_columns(host_list_str, stderr_line.strip())
-            print(formatted_line, file=sys.stderr, end='')
+    if not args.duplicates:
+        print('Unique:')
+        for stdout_line, hosts in stdout_outputs.items():
+            if len(hosts) == 1:
+                host_list_str = ", ".join(hosts)
+                formatted_line = strings.format_two_columns(host_list_str, stdout_line.strip())
+                print(formatted_line, end='')
+        for stderr_line, hosts in stderr_outputs.items():
+            if len(hosts) == 1:
+                host_list_str = ", ".join(hosts)
+                formatted_line = strings.format_two_columns(host_list_str, stderr_line.strip())
+                print(formatted_line, file=sys.stderr, end='')
 
     print('Duplicates:')
     for stdout_line, hosts in stdout_outputs.items():
