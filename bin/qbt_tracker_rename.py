@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 
 for torrent in torrent_list:
     for x in torrent.trackers:

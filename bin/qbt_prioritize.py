@@ -31,9 +31,9 @@ df = pd.DataFrame(
         "hash": [t.hash for t in torrents],
         "progress": [t.progress for t in torrents],
         "remaining": [t.amount_left for t in torrents],
-        "num_complete": [t.num_complete  for t in torrents],
-        "num_incomplete": [t.num_incomplete  for t in torrents],
-        "num_leechs": [t.num_leechs  for t in torrents],
+        "num_complete": [t.num_complete for t in torrents],
+        "num_incomplete": [t.num_incomplete for t in torrents],
+        "num_leechs": [t.num_leechs for t in torrents],
         "tracker": [qbt_get_tracker(qbt_client, t) for t in torrents],
         "tracker_count": iterables.value_counts([qbt_get_tracker(qbt_client, t) for t in torrents]),
     }

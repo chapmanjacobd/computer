@@ -1,7 +1,8 @@
 #!/usr/bin/python3
-from library import usage
 from library.mediafiles.torrents_start import start_qBittorrent
 from library.utils import arggroups, argparse_utils, nums
+
+from library import usage
 
 
 def parse_args():
