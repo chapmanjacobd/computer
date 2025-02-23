@@ -32,7 +32,6 @@ for host in args.hosts:
         torrents.append({'host': host, 'torrent_name': t.name, 'files_sizes': [f.size for f in t.files]})
 
 
-comparison_results = []
 for i in range(len(torrents)):
     for j in range(i + 1, len(torrents)):
         torrent1 = torrents[i]
@@ -55,9 +54,7 @@ for i in range(len(torrents)):
         if ratio >= 0.9:  # 10% tolerance
             similarity = iterables.similarity(files1, files2)
             if similarity > 0.73:
-                comparison_results.append(
-                    {
-                        't1': torrent1,
-                        't2': torrent2,
-                    }
-                )
+                print(similarity)
+                print(torrent1['host'], torrent1['torrent_name'], sep='\t')
+                print(torrent2['host'], torrent2['torrent_name'], sep='\t')
+                print()
