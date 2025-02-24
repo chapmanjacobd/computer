@@ -5,12 +5,12 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from collections import defaultdict
-
-from natsort import natsorted
 
 from library.utils import arggroups, processes
 from library.utils.log_utils import log
+from natsort import natsorted
 
 
 def group_files_by_prefix(directory_path):
@@ -38,8 +38,12 @@ def create_combined_file(file_list, output_dir, start_file):
         for file_path_to_concat in file_list:
             f.write(f"file '{file_path_to_concat}'\n")
 
-    log.info("""%s
-##> %s""", '\n  '.join(file_list), start_file)
+    log.info(
+        """%s
+##> %s""",
+        '\n  '.join(file_list),
+        start_file,
+    )
 
     command = [
         'ffmpeg',
@@ -62,11 +66,17 @@ def create_combined_file(file_list, output_dir, start_file):
         "asetpts=STARTPTS+N",
         temp_filepath,
     ]
-    subprocess.run(command, check=True, capture_output=True)
-    os.remove(concat_list_path)
+    r = subprocess.run(command, capture_output=True)
+    os.unlink(concat_list_path)
 
-    output_filepath = start_file
-    shutil.move(temp_filepath, output_filepath)
+    if r.returncode == 0:
+        output_filepath = start_file
+        shutil.move(temp_filepath, output_filepath)
+    else:
+        print(r.stdout)
+        print(r.stderr, file=sys.stderr)
+        os.unlink(temp_filepath, missing_ok=True)
+        return
 
     return output_filepath
 
@@ -75,7 +85,7 @@ def unlink_merged_files(file_list):
     assert os.path.exists(file_list[0])
 
     for filepath in file_list[1:]:
-        os.remove(filepath)
+        os.unlink(filepath)
 
 
 def combine_audio_in_group(file_group, output_dir):
