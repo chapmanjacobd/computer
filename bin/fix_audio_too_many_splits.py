@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 from collections import defaultdict
+from pathlib import Path
 
 from library.utils import arggroups, processes
 from library.utils.log_utils import log
@@ -72,11 +73,14 @@ def create_combined_file(file_list, output_dir, start_file):
     if r.returncode == 0:
         output_filepath = start_file
         shutil.move(temp_filepath, output_filepath)
+    elif "Error during demuxing: Invalid data found when processing input" in r.stdout.decode('utf-8'):
+        log.info('Error during demuxing. Skipping...')
+        Path(temp_filepath).unlink(missing_ok=True)
+        return
     else:
         print(r.stdout)
         print(r.stderr, file=sys.stderr)
-        os.unlink(temp_filepath, missing_ok=True)
-        return
+        r.check_returncode()
 
     return output_filepath
 
