@@ -33,6 +33,7 @@ def create_combined_file(file_list, output_dir, start_file):
     output_format = os.path.splitext(os.path.basename(start_file))[1][1:]
     output_filename = f"{output_filename_base}_combined.temp.{output_format}"
     temp_filepath = os.path.join(output_dir, output_filename)
+    output_filepath = os.path.join(output_dir, os.path.basename(start_file))
 
     concat_list_path = os.path.join(output_dir, "concat_list_temp.txt")
     with open(concat_list_path, 'w') as f:
@@ -71,7 +72,6 @@ def create_combined_file(file_list, output_dir, start_file):
     os.unlink(concat_list_path)
 
     if r.returncode == 0:
-        output_filepath = start_file
         shutil.move(temp_filepath, output_filepath)
     elif "Error during demuxing: Invalid data found when processing input" in r.stderr.decode('utf-8'):
         log.info('Error during demuxing. Skipping...')
@@ -101,7 +101,8 @@ def combine_audio_in_group(file_group, output_dir):
     start_file = None
 
     for filepath in file_group:
-        duration = processes.FFProbe(filepath).duration
+        probe = processes.FFProbe(filepath)
+        duration = probe.duration
 
         if duration is None:
             continue
