@@ -4,10 +4,11 @@
 	email = 7908073+chapmanjacobd@users.noreply.github.com
 [rerere]
 	enabled = true
+	autoupdate = true
 [push]
 	default = upstream
 	autosetupremote = true
-	followtags = true
+	followTags = true
 [core]
 	pager = delta --syntax-theme GitHub --max-line-length 1024 # --keep-plus-minus-markers
 	excludesfile = /home/xk/.gitignore_global
@@ -32,6 +33,7 @@
 	difftool = delta
     colormoved = zebra
 	context = 5
+	mnemonicPrefix = true
 [delta]
     navigate = true
 [diff "sqlite3"]
