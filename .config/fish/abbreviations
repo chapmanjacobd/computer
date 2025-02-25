@@ -198,7 +198,6 @@ abbr -a -- colors palette
 abbr -a -- splitlines string split \n
 abbr -a -- timers 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- teecb 'tee | cb'
-abbr -a -- filecount 'fd -tf | count'
 abbr -a -- cmd commandline --insert
 abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
 abbr -a -- vpipe vipe
@@ -239,3 +238,4 @@ abbr -a -- btrfs_new_uuid btrfstune -u
 abbr -a -- fdisk sudo fdisk -l
 abbr -a -- iostat iostat -xh 4
 abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --metadata --human-readable --error-on-no-transfer --checkers 18 --no-update-modtime --timeout=45s --ignore-existing --check-first
+abbr -a -- fc filecount
