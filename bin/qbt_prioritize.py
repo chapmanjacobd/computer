@@ -43,11 +43,11 @@ df = pd.DataFrame(
 ranked_df = rank_dataframe(
     df,
     column_weights={
-        "remaining": {"direction": "asc", "weight": 15},
-        "num_complete": {"direction": "asc", "weight": 5},
+        "remaining": {"weight": 15},
+        "num_complete": {"weight": 5},
         "num_leechs": {"direction": "desc", "weight": 4},
         "num_incomplete": {"direction": "desc", "weight": 3},
-        "tracker_count": {"direction": "asc", "weight": 2},
+        "tracker_count": {"weight": 2, "bin": 4},
         "progress": {"direction": "desc", "weight": 1},
     },
 )
