@@ -73,7 +73,7 @@ def create_combined_file(file_list, output_dir, start_file):
     if r.returncode == 0:
         output_filepath = start_file
         shutil.move(temp_filepath, output_filepath)
-    elif "Error during demuxing: Invalid data found when processing input" in r.stdout.decode('utf-8'):
+    elif "Error during demuxing: Invalid data found when processing input" in r.stderr.decode('utf-8'):
         log.info('Error during demuxing. Skipping...')
         Path(temp_filepath).unlink(missing_ok=True)
         return
