@@ -111,6 +111,7 @@
 [branch]
 	sort = -committerdate
 [tag]
-	sort = taggerdate
+	sort = -taggerdate
 [commit]
 	template = /home/xk/.gitmessage
+	verbose = true
