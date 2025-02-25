@@ -16,7 +16,7 @@ def move_na_files(input_dir, output_dir):
 
             na_dir = os.path.join(root, "na")
             for filename in os.listdir(na_dir):
-                if not filename[:5].lower().endswith(media_extensions):
+                if not filename[-5:].lower().endswith(media_extensions):
                     continue
 
                 filepath = os.path.join(na_dir, filename)
