@@ -56,8 +56,8 @@ ranked = ranked_df.to_dict('records')
 ranked = sorted(
     ranked,
     key=lambda d: (
-        d["progress"] > 0,
         d["tracker"] in ["jptv.club", "avistaz.to"],
+        d["progress"] > 0,
         d["progress"] > 0.03,
         d["progress"] > 0.1,
     ),
