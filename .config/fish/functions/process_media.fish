@@ -1,6 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function process_media
-    for s in (fd -td -d2 processing /mnt/) (fd -td -d1 processing /home/xk/)
-        tmux-append lb shrink -vy $s
-    end
+    lb shrink -vy (fd -td -d2 processing /mnt/) (fd -td -d1 processing /home/xk/) --move ../processed/ --move-broken ../processed-broken/
 end
