@@ -26,11 +26,15 @@ bind alt-left prevd-or-backward-token
 bind alt-backspace backward-kill-token
 bind alt-delete kill-token
 
-bind \cy redo
-bind \ey yank
 bind \e\[99\;6u fish_clipboard_copy
 
 bind \e, kill-selection backward-kill-token yank yank
+
+bind ctrl-y redo  # for ctrl-z
+bind alt-y yank
+bind ctrl-u yank
+bind ctrl-l kill-line
+bind ctrl-k backward-kill-line
 
 bind ctrl-t transpose-words
 
