@@ -1,6 +1,7 @@
 # Defined interactively
 function torganize
     parallel sshpc {} qbt_prioritize.py ::: pakon backup r730xd len hk
+    ~/bin/qbt_file_sizes.py -v 127.0.0.1:8080 backup:8888 r730xd:8888 hk:8888 len:8888
 
     rsync -auh --remove-sent-files ~/Downloads/\[(seq 0 9)*.torrent backup:.local/data/rtorrent/watch/new/
 
@@ -13,10 +14,4 @@ function torganize
     lb computer-add ~/lb/computers.remote.db hk -v
 
     tor-refresh
-
-    # torstart
-
-    #torrent_promote.py --trackers -n9999 -o ~/.local/data/qbittorrent/ ~/Downloads/
-
-    #rsync -auh --remove-sent-files ~/Downloads/*.torrent backup:.local/data/qbittorrent/seed_pause/others/
 end
