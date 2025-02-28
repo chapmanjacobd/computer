@@ -1,7 +1,9 @@
 #!/usr/bin/python3
+import sqlite3
+
 import qbittorrentapi
-from library.playback.torrents_info import qbt_get_tracker
-from library.utils import arggroups, argparse_utils, iterables
+
+from library.utils import arggroups, argparse_utils, strings
 from library.utils.log_utils import log
 
 
@@ -10,7 +12,7 @@ def parse_args():
     arggroups.qBittorrent(parser)
     arggroups.debug(parser)
 
-    parser.add_argument('hosts', nargs="+")
+    arggroups.database(parser)
     args = parser.parse_args()
     arggroups.args_post(args, parser)
     return args
@@ -18,10 +20,34 @@ def parse_args():
 
 args = parse_args()
 
-torrents = []
-for host in args.hosts:
-    host, port = host.split(':')
+with args.db.conn:
+    try:
+        args.db.conn.execute("ALTER TABLE media ADD COLUMN allocated INTEGER")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name: allocated" in str(e):
+            pass
+        else:
+            raise
 
+disks = list(
+    args.db.query(
+        """
+        SELECT
+            computers.path host
+            , disks.path mountpoint
+            , disks.free
+        FROM media AS disks
+        JOIN playlists AS computers ON computers.id = disks.playlists_id
+        """
+    )
+)
+
+disks_by_host = {}
+for d in disks:
+    disks_by_host.setdefault(d['host'], []).append(d)
+
+for host, host_disks in disks_by_host.items():
+    port = 8080 if host == 'pakon' else 8888
     qbt_client = qbittorrentapi.Client(
         host=host,
         port=port,
@@ -29,38 +55,49 @@ for host in args.hosts:
         password=args.password,
     )
 
-    for t in qbt_client.torrents_info():
-        torrents.append(
-            {
-                'host': host,
-                'torrent_name': t.name,
-                'total_size': t.total_size,
-                'files_sizes': [f.size for f in t.files],
-                'tracker': qbt_get_tracker(qbt_client, t),
-            }
+    torrents = qbt_client.torrents_info()
+    torrents = [t for t in torrents if not t.state_enum.is_complete]
+
+    host_disks = sorted(host_disks, key=len, reverse=True)
+    torrents_by_disk = {}
+    for t in torrents:
+        for d in host_disks:
+            if t.content_path.startswith(d['mountpoint']):
+                torrents_by_disk.setdefault(d['mountpoint'], []).append(t)
+                break
+
+    for disk in host_disks:
+        mountpoint = disk['mountpoint']
+        if mountpoint not in torrents_by_disk:
+            continue
+
+        disk_torrents = torrents_by_disk[mountpoint]
+        remaining = sum(t.amount_left for t in disk_torrents)
+
+        if remaining > disk['free']:
+            log.warning(
+                '%s %s allocation exceeds free space by %s',
+                host,
+                mountpoint,
+                strings.file_size(abs(disk['free'] - remaining)),
+            )
+
+        log.info(
+            '%s %s has %s torrents (%s allocated)', host, mountpoint, len(disk_torrents), strings.file_size(remaining)
         )
 
-
-for i in range(len(torrents)):
-    for j in range(i + 1, len(torrents)):
-        t1 = torrents[i]
-        t2 = torrents[j]
-
-        files1 = t1['files_sizes']
-        files2 = t2['files_sizes']
-
-        if len(files1) == 0:
-            log.warning('Empty torrent %s', t1)
-            continue
-        if len(files2) == 0:
-            log.warning('Empty torrent %s', t2)
-            continue
-
-        size_ratio = min(t1['total_size'], t2['total_size']) / max(t1['total_size'], t2['total_size'])
-        if size_ratio >= 0.73:
-            similarity = iterables.similarity(files1, files2)
-            if similarity > 0.50:
-                print(similarity)
-                print(t1['host'], t1['torrent_name'], t1['tracker'], sep='\t')
-                print(t2['host'], t2['torrent_name'], t2['tracker'], sep='\t')
-                print()
+        with args.db.conn:
+            args.db.conn.execute(
+                """
+                UPDATE media
+                SET allocated = :allocated
+                WHERE 1=1
+                AND playlists_id = (SELECT id from playlists WHERE path = :host)
+                AND path = :mountpoint
+            """,
+                {
+                    'host': host,
+                    'mountpoint': mountpoint,
+                    'allocated': remaining,
+                },
+            )
