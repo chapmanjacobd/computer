@@ -19,7 +19,7 @@ args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
-torrents = [t for t in torrents if t.num_leechs == 0 and t.num_seeds == 0]
+torrents = [t for t in torrents if not t.state_enum.is_complete and t.num_leechs == 0 and t.num_seeds == 0]
 
 error_torrents = []
 restart_torrents = []
