@@ -16,14 +16,14 @@ source ~/.config/fish/functions/ls.fish
 
 fzf_configure_bindings --variables
 
-bind ctrl-left forward-word
-bind ctrl-right backward-word
 bind ctrl-backspace backward-kill-word
-
-bind alt-right nextd-or-forward-token
-bind alt-left prevd-or-backward-token
+bind ctrl-left backward-word
+bind ctrl-right forward-word
+bind ctrl-delete kill-word
 
 bind alt-backspace backward-kill-token
+bind alt-right nextd-or-forward-token
+bind alt-left prevd-or-backward-token
 bind alt-delete kill-token
 
 bind \e\[99\;6u fish_clipboard_copy
