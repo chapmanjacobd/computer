@@ -58,7 +58,9 @@ ranked = sorted(
     key=lambda d: (
         d["progress"] > 0,
         d["progress"] > 0.03,
-        d["progress"] > 0.1,
+        d["remaining"] < 3719453952/16,
+        d["remaining"] < 3719453952/4,
+        d["remaining"] < 3719453952,
         d["tracker"] in ["jptv.club", "avistaz.to"],
     ),
     reverse=True,
