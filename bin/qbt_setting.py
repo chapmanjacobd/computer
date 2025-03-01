@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from library.mediafiles import torrents_start
-from library.utils import arggroups, argparse_utils, objects, printing, strings
+from library.utils import arggroups, argparse_utils, objects, printing, processes, strings
 
 
 def parse_args():
@@ -20,10 +20,22 @@ args = parse_args()
 qbt_client = torrents_start.start_qBittorrent(args)
 preferences = qbt_client.app_preferences()
 
-existing = objects.dict_filter_similar_key(preferences, args.key)
+existing = {k: v for k, v in preferences.items() if args.key in k}
+if len(existing) == 0:
+    processes.exit_error(f'No matches for {args.key} in {preferences.keys()}')
+
+if args.value and len(existing.keys()) > 1:
+    selected_keys = processes.fzf_select(existing.keys(), multi=False)
+    existing = {k: v for k, v in existing.items() if k in selected_keys}
+    args.key = selected_keys[0]
 
 printing.extended_view(existing)
 print()
+
+if args.key not in existing:
+    processes.exit_error(f'{args.key} not in {existing.keys()}')
+if args.value == '':
+    processes.exit_error('Value not set')
 
 new_pref = {args.key: args.value}
 printing.extended_view(new_pref)

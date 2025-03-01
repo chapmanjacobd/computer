@@ -34,6 +34,7 @@ qbt_client.app_set_preferences(
         "preallocate_all": True,
         "recheck_completed_torrents": True,
         "add_stopped_enabled": False,
+        "connection_speed": 20,
         "dl_limit": args.dl_limit,
         "up_limit": args.up_limit or args.dl_limit,
         "alt_dl_limit": args.dl_limit // 3,
@@ -43,6 +44,13 @@ qbt_client.app_set_preferences(
         "max_active_torrents": max_active_uploads + 1,
         "max_active_checking_torrents": 3,
         "slow_torrent_inactive_timer": 80,
+        "refresh_interval": 5000,
+        "save_resume_data_interval": 120,
+        "memory_working_set_limit": 5000,
+        "disk_io_type": 2,  # POSIX-compliant
+        "schedule_from_hour": 9,
+        "schedule_to_hour": 22,
+        "scheduler_enabled": False,
         # divide by 10 but also bps -> kbps
         "slow_torrent_dl_rate_threshold": (args.dl_limit) // 10_000,  # type: ignore
         "slow_torrent_ul_rate_threshold": (args.up_limit or args.dl_limit) // 10_000,  # type: ignore
