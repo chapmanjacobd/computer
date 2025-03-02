@@ -2,6 +2,7 @@
 import pandas as pd
 from library.mediafiles import torrents_start
 from library.playback.torrents_info import qbt_get_tracker
+from library.text import regex_sort
 from library.utils import arggroups, argparse_utils, iterables
 from library.utils.pd_utils import rank_dataframe
 
@@ -9,9 +10,12 @@ from library.utils.pd_utils import rank_dataframe
 def parse_args():
     parser = argparse_utils.ArgumentParser()
     arggroups.qBittorrent(parser)
+    arggroups.text_filtering(parser)
+    arggroups.regex_sort(parser)
     arggroups.debug(parser)
 
     args = parser.parse_args()
+    arggroups.regex_sort_post(args)
     arggroups.args_post(args, parser)
     return args
 
@@ -20,51 +24,53 @@ args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
 
-
 torrents = qbt_client.torrents_info(tag="library")
 print(len(torrents), 'total')
 torrents = [t for t in torrents if not t.state_enum.is_complete]
 print(len(torrents), 'downloading')
 
-df = pd.DataFrame(
-    {
-        "hash": [t.hash for t in torrents],
-        "progress": [t.progress for t in torrents],
-        "remaining": [t.amount_left for t in torrents],
-        "num_complete": [t.num_complete for t in torrents],
-        "num_incomplete": [t.num_incomplete for t in torrents],
-        "num_leechs": [t.num_leechs for t in torrents],
-        "tracker": [qbt_get_tracker(qbt_client, t) for t in torrents],
-        "tracker_count": iterables.value_counts([qbt_get_tracker(qbt_client, t) for t in torrents]),
-    }
-)
+media = []
+for t in torrents:
+    media.append(
+        {
+            "name": t.name,
+            "hash": t.hash,
+            "progress": t.progress,
+            "remaining": t.amount_left,
+            "num_complete": t.num_complete,
+            "num_leechs": t.num_leechs,
+            "tracker": qbt_get_tracker(qbt_client, t),
+        }
+    )
 
+media = list(regex_sort.sort_dicts(args, media, search_columns=['name', 'tracker']))
+media = iterables.list_dict_value_counts(media, "tracker")
 
-ranked_df = rank_dataframe(
+df = pd.DataFrame(media)
+df = rank_dataframe(
     df,
     column_weights={
-        "remaining": {"weight": 15},
         "num_complete": {"weight": 5},
-        "num_leechs": {"direction": "desc", "weight": 4},
-        "num_incomplete": {"direction": "desc", "weight": 3},
-        "tracker_count": {"weight": 2, "bin": 4},
-        "progress": {"direction": "desc", "weight": 1},
+        "num_leechs": {"weight": 4, "direction": "desc"},
+        "remaining": {"bin": 4, "weight": 3},
+        "tracker_count": {"bin": 6, "weight": 2},
+        "progress": {"bin": 8, "weight": 1, "direction": "desc"},
     },
 )
+media = df.to_dict('records')
 
-ranked = ranked_df.to_dict('records')
-ranked = sorted(
-    ranked,
+media = sorted(
+    media,
     key=lambda d: (
         d["progress"] > 0,
         d["progress"] > 0.03,
-        d["remaining"] < 3719453952/16,
-        d["remaining"] < 3719453952/4,
+        d["remaining"] < 3719453952 // 16,
+        d["remaining"] < 3719453952 // 4,
         d["remaining"] < 3719453952,
         d["tracker"] in ["jptv.club", "avistaz.to"],
     ),
     reverse=True,
 )
 
-for d in ranked:
+for d in media:
     qbt_client.torrents_bottom_priority(torrent_hashes=[d["hash"]])
