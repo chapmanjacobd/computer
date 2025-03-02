@@ -52,7 +52,7 @@ qbt_client.app_set_preferences(
         "schedule_to_hour": 22,
         "scheduler_enabled": False,
         # divide by 10 but also bps -> kbps
-        "slow_torrent_dl_rate_threshold": (args.dl_limit) // 10_000,  # type: ignore
-        "slow_torrent_ul_rate_threshold": (args.up_limit or args.dl_limit) // 10_000,  # type: ignore
+        "slow_torrent_dl_rate_threshold": (args.dl_limit) // 30_000,  # type: ignore
+        "slow_torrent_ul_rate_threshold": (args.up_limit or args.dl_limit) // 30_000,  # type: ignore
     }
 )
