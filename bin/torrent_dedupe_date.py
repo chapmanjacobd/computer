@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from library.utils import arg_utils, arggroups, argparse_utils
+from library.utils import arg_utils, arggroups, argparse_utils, strings
 from torrentool.api import Torrent
 
 parser = argparse_utils.ArgumentParser()
@@ -23,17 +23,20 @@ def extract_date(filename):
         return match.group(1)
     return None
 
+paths = list(arg_utils.gen_paths(args, ['.torrent']))
 
 clusters = defaultdict(list)
-for path in list(arg_utils.gen_paths(args, ['.torrent'])):
+for path in paths:
     path = Path(path)
     date = extract_date(path.stem)
     if date:
         clusters[date].append(path)
 
+originals = 0
 for date, files in clusters.items():
-    print(date, len(files))
     if len(files) > 1:
+        print(len(files), date, sep='\t')
+
         sizes = {}
         for file in files:
             try:
@@ -51,5 +54,9 @@ for date, files in clusters.items():
             except OSError as e:
                 print(f"Error removing {file_to_remove}: {e}")
         else:
-            print(sizes)
-            print('would remove', file_to_remove)
+            for path, size in sizes.items():
+                print('\t', strings.file_size(size), path)
+            print('\t', 'would remove', file_to_remove)
+        originals+=1
+print()
+print('Files:', len(paths), 'Originals:', originals, 'Unique:', len(clusters) - originals)
