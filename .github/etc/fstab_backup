@@ -15,8 +15,8 @@ UUID=1CA2-79D0          /boot/efi               vfat    umask=0077,shortname=win
 UUID=ec7341f2-0522-4c2b-9e9a-4f7d15baafd5 /home                   btrfs   subvol=home00,compress=zstd:1 0 0
 UUID=9c8df640-a931-41a9-b951-cab7b43b43f4 none                    swap    defaults        0 0
 
-UUID=be4a8113-3b94-44b4-a872-8c71b3fa2f39 /mnt/d1    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
-UUID=fd94f523-469d-4595-b1c9-0d27347c86a5 /mnt/d3    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=2c6d54d3-9c99-4b3f-bfa6-8c0a791f7d6a /mnt/b1    btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+
 UUID=c683f4cb-d22d-425b-aa8f-382fed4b26e3 /mnt/d5    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 
 UUID=13cf0222-1520-4f38-9514-24542355733d /mnt/d2    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:2,nofail,x-systemd.mount-timeout=999 0 0
@@ -25,4 +25,4 @@ UUID=b8128483-1d53-4732-8678-6138cf3843fd /mnt/d6    btrfs defaults,users,noatim
 
 # /mnt/d4 /mnt/d4ro none bind,ro 0 0
 
-/mnt/d1:/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=mfs  0 0
+/mnt/d2:/mnt/d4:/mnt/d5:/mnt/d6   /mnt/d   mergerfs defaults,fsname=mergerfs2,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=epmfs  0 0
