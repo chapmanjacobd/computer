@@ -5,7 +5,7 @@ Before=remote-fs.target
 
 [Mount]
 What=backup:
-Where=/home/xk/.mnt/backup
+Where=/net/backup
 Type=fuse.sshfs
 Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,direct_io,delay_connect
 

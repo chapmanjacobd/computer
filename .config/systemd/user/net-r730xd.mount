@@ -5,7 +5,7 @@ Before=remote-fs.target
 
 [Mount]
 What=r730xd:
-Where=/home/xk/.mnt/r730xd
+Where=/net/r730xd
 Type=fuse.sshfs
 Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,direct_io,delay_connect
 
