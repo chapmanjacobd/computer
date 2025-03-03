@@ -1,14 +1,6 @@
 # Defined interactively
 function diskstatus
     for mnt in / (mergerfs_disk_mounts)
-        echo
-        echo MOUNTPOINT: $mnt
-        echo ---
-        sudo btrfs fi usage -T $mnt
-        echo
-    end
-
-    for mnt in / (mergerfs_disk_mounts)
         sudo btrfs device stats $mnt
     end
 
