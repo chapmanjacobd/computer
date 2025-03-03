@@ -14,5 +14,7 @@ function torganize
     qbt_computers_remaining.py ~/lb/computers.remote.db
 
     tor-refresh
+
+    lb playlists ~/lb/torrents.db -pa
     echo torrent-maintenance
 end
