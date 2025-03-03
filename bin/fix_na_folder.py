@@ -21,7 +21,12 @@ def move_na_files(input_dir, output_dir):
 
                 filepath = os.path.join(na_dir, filename)
                 if os.path.isfile(filepath):
-                    probe = processes.FFProbe(filepath)
+                    try:
+                        probe = processes.FFProbe(filepath)
+                    except processes.UnplayableFile:
+                        print("Unplayable", filepath)
+                        os.unlink(filepath)
+                        continue
                     artist = objects.traverse_obj(probe.audio_streams, [0, "tags", "artist"])
 
                     if artist:
