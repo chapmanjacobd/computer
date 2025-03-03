@@ -56,7 +56,6 @@ for t in torrents:
     print("Progress:", strings.percent(t.progress))
     print(f"Seeders: {t.num_seeds} ({t.num_complete}), Leechers: {t.num_leechs} ({t.num_incomplete})")
     print(t.content_path)
-
-    if devices.confirm("Tag?"):
-        qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
     print()
+
+    qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
