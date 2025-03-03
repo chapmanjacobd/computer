@@ -50,7 +50,7 @@ for t in torrents:
     print("Added on:", strings.relative_datetime(t.added_on))
     print("Time active:", strings.duration(t.time_active))
     print("Last activity:", strings.relative_datetime(t.last_activity))
-    print("Progress:", strings.safe_percent(t.progress))
+    print("Progress:", strings.percent(t.progress))
     print(f"Seeders: {t.num_seeds} ({t.num_complete}), Leechers: {t.num_leechs} ({t.num_incomplete})")
     print(t.content_path)
 

@@ -16,9 +16,9 @@ def search_in_file(args, path):
                 ).ratio()
 
                 if args.maximum_similarity >= similarity_ratio >= args.minimum_similarity:
-                    output = f"{strings.safe_percent(similarity_ratio)}\t{path}\t{line_text}"
+                    output = f"{strings.percent(similarity_ratio)}\t{path}\t{line_text}"
                     if args.line_number:
-                        output = f"{strings.safe_percent(similarity_ratio)}\t{path}:{line_number}\t{line_text}"
+                        output = f"{strings.percent(similarity_ratio)}\t{path}:{line_number}\t{line_text}"
                     print(output)
 
 

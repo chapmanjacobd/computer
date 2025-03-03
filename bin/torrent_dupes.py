@@ -23,7 +23,7 @@ for i in range(len_torrents):
     torrent_path1 = torrents[i][0]
     torrent1 = torrents[i][1]
 
-    print_overwrite('Checking', i, 'of', len_torrents, f"({strings.safe_percent(i/len_torrents)})")
+    print_overwrite('Checking', i, 'of', len_torrents, f"({strings.percent(i/len_torrents)})")
     for j in range(i + 1, len(torrents)):
         torrent_path2 = torrents[j][0]
         torrent2 = torrents[j][1]
@@ -45,7 +45,7 @@ for i in range(len_torrents):
 
             similarity = match_count / len(torrent1.files)
             if similarity > 0.3:
-                print(torrent_path1, torrent_path2, 'are similar', strings.safe_percent(similarity))
+                print(torrent_path1, torrent_path2, 'are similar', strings.percent(similarity))
                 inspect(torrent1)
                 inspect(torrent2)
 

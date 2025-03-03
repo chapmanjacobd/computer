@@ -67,7 +67,7 @@ media = sorted(
         d["remaining"] < 3719453952 // 16,
         d["remaining"] < 3719453952 // 4,
         d["remaining"] < 3719453952,
-        d["tracker"] in ["jptv.club", "avistaz.to"],
+        d["tracker"] in ["privatehd.to", "avistaz.to"],
     ),
     reverse=True,
 )
