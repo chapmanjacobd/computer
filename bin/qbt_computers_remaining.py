@@ -2,7 +2,6 @@
 import sqlite3
 
 import qbittorrentapi
-
 from library.utils import arggroups, argparse_utils, strings
 from library.utils.log_utils import log
 

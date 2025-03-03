@@ -230,6 +230,7 @@
     "iinfo",
     "ILIKE",
     "iloc",
+    "infohash",
     "inodes",
     "interdimensional",
     "iowait",
