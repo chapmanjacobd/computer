@@ -67,6 +67,8 @@ media = sorted(
         d["remaining"] < 3719453952 // 16,
         d["remaining"] < 3719453952 // 4,
         d["remaining"] < 3719453952,
+        d["remaining"] < 3719453952 * 4,
+        d["remaining"] < 3719453952 * 16,
         d["tracker"] in ["privatehd.to", "avistaz.to"],
     ),
     reverse=True,
