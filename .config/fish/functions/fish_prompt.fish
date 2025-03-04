@@ -130,7 +130,7 @@ function fish_prompt --description 'Write out the prompt'
         string replace // / (string replace -r '^'"$reporoot"'($|/)' (basename "$reporoot")':$1/' $argv)
     end
 
-    if string match -q '*/.mnt/*' $PWD
+    if string match -q '/net/*' $PWD
         set vcs_prompt ''
     else
         set vcs_prompt (__fish_vcs_prompt)
