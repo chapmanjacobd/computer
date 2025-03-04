@@ -19,7 +19,7 @@ def is_trumped_torrent(t):
         if any(
             s == msg
             for s in [
-                'Not Found',
+               # 'Not Found',  # ambiguous, network error
             ]
         ):
             print(t.name, 'error matched', msg)
