@@ -1,12 +1,9 @@
 # Defined interactively
 function hourly
-    ssh backup torrent_promote.py --out .local/data/qbittorrent/seed/jptvclub/ .local/data/jptv.club/ -n1
-
     load_env_mam
     ~/bin/mam_upload_credit.sh
 
     ~/lb/
-    # set max (math -s0 (python -m library.scratch.mam_slots --cookie $MAM_COOKIE)/4)
     set max (python -m library.scratch.mam_slots --max 4 --cookie $MAM_COOKIE)
     if test $max -gt 0
         for dir in new/
