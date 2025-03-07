@@ -3,6 +3,7 @@
 import argparse
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -38,7 +39,8 @@ def create_combined_file(file_list, output_dir, start_file):
     concat_list_path = os.path.join(output_dir, "concat_list_temp.txt")
     with open(concat_list_path, 'w') as f:
         for file_path_to_concat in file_list:
-            f.write(f"file '{file_path_to_concat}'\n")
+            quoted_path = shlex.quote(file_path_to_concat)
+            f.write(f"file {quoted_path}\n")
 
     log.info(
         """%s
