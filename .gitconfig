@@ -100,10 +100,11 @@
 	edit-conflicts = !git conflicts | xargs -r $(git var GIT_EDITOR)
 	history = log --follow -p --
 	utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
-	amend = "!f() { tags=$(git tag --points-at HEAD); git commit --amend --no-edit; for tag in $tags; do git tag -f $tag HEAD; done; git push -f --force-with-lease --force-if-includes && git push -f --tags; }; f"
+	amend = !fish -c git_amend
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
 	keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
 	divergence = log --reverse --oneline ..main
+	tagged = describe --tags --exact-match
 	tags = tag --sort=creatordate --contains
 	reword = commit --amend -m
 [advice]
