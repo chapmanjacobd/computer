@@ -26,6 +26,8 @@ bind alt-right nextd-or-forward-token
 bind alt-left prevd-or-backward-token
 bind alt-delete kill-token
 
+bind alt-r history-token-search-backward
+
 bind \e\[99\;6u fish_clipboard_copy
 
 bind \e, kill-selection backward-kill-token yank yank
