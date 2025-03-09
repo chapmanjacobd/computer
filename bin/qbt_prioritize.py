@@ -39,6 +39,7 @@ for t in torrents:
             "remaining": t.amount_left,
             "num_complete": t.num_complete,
             "num_leechs": t.num_leechs,
+            "num_files": len(t.files),
             "tracker": qbt_get_tracker(qbt_client, t),
         }
     )
@@ -53,6 +54,7 @@ df = rank_dataframe(
         "num_complete": {"weight": 5},
         "num_leechs": {"weight": 4, "direction": "desc"},
         "remaining": {"bin": 4, "weight": 3},
+        "num_files": {"weight": 2, "direction": "desc"},
         "tracker_count": {"bin": 6, "weight": 2},
         "progress": {"bin": 8, "weight": 1, "direction": "desc"},
     },
