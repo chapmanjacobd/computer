@@ -34,7 +34,7 @@ qbt_client.app_set_preferences(
         "preallocate_all": True,
         "recheck_completed_torrents": False,
         "add_stopped_enabled": False,
-        "connection_speed": 20,
+        "connection_speed": 45,
         "dl_limit": args.dl_limit,
         "up_limit": args.up_limit or args.dl_limit,
         "alt_dl_limit": args.dl_limit // 3,
