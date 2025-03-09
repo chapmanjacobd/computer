@@ -233,7 +233,6 @@ abbr -a -- tags git tag -n9 --sort=-creatordate
 abbr -a -- top TERM=screen htop
 abbr -a -- pstree pstree -alpTs
 abbr -a -- dmesg sudo dmesg --human --nopager --decode --level emerg,alert,crit,err,warn
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k3'
 abbr -a -- btrfs_new_uuid btrfstune -u
 abbr -a -- fdisk sudo fdisk -l
 abbr -a -- iostat iostat -xh 4
@@ -241,3 +240,4 @@ abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --me
 abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ppaused | less -FSRXc'
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6'
