@@ -8,13 +8,11 @@ def parse_args():
     parser = argparse_utils.ArgumentParser(usage=usage.torrents_start)
     arggroups.qBittorrent(parser)
     parser.add_argument(
-        "--dl-limit",
-        "--download-limit",
-        required=True,
-        type=nums.human_to_bytes,
-        help="Download limit. If set then a few additional global preferences will also be changed",
+        "--download-limit", "--dl-limit", required=True, type=nums.human_to_bytes, help="Global download limit"
     )
-    parser.add_argument("--up-limit", "--ul-limit", "--upload-limit", type=nums.human_to_bytes, help="Upload limit")
+    parser.add_argument(
+        "--upload-limit", "--up-limit", "--ul-limit", type=nums.human_to_bytes, help="Global upload limit"
+    )
     arggroups.debug(parser)
 
     args = parser.parse_args()
@@ -35,10 +33,10 @@ qbt_client.app_set_preferences(
         "recheck_completed_torrents": False,
         "add_stopped_enabled": False,
         "connection_speed": 50,
-        "dl_limit": args.dl_limit,
-        "up_limit": args.up_limit or args.dl_limit,
-        "alt_dl_limit": args.dl_limit // 3,
-        "alt_up_limit": (args.up_limit or args.dl_limit) // 3,
+        "dl_limit": args.download_limit,
+        "up_limit": args.upload_limit or args.download_limit,
+        "alt_dl_limit": args.download_limit // 3,
+        "alt_up_limit": (args.upload_limit or args.download_limit) // 3,
         "max_active_downloads": 2,
         "max_active_uploads": max_active_uploads,
         "max_active_torrents": max_active_uploads + 1,
@@ -52,7 +50,7 @@ qbt_client.app_set_preferences(
         "schedule_to_hour": 22,
         "scheduler_enabled": False,
         # divide by 50 but also bps -> kbps
-        "slow_torrent_dl_rate_threshold": (args.dl_limit) // 50_000,  # type: ignore
-        "slow_torrent_ul_rate_threshold": (args.up_limit or args.dl_limit) // 50_000,  # type: ignore
+        "slow_torrent_dl_rate_threshold": (args.download_limit) // 50_000,  # type: ignore
+        "slow_torrent_ul_rate_threshold": (args.upload_limit or args.download_limit) // 50_000,  # type: ignore
     }
 )
