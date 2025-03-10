@@ -240,4 +240,4 @@ abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --me
 abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ppaused | less -FSRXc'
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6'
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6,6 -k5,5'
