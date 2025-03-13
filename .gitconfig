@@ -107,6 +107,7 @@
 	tagged = describe --tags --exact-match
 	tags = tag --sort=creatordate --contains
 	reword = commit --amend -m
+	head = show HEAD
 [advice]
 	skippedCherryPicks = false
 [branch]
