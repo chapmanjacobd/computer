@@ -27,10 +27,10 @@ def is_dead_torrent(t):
     no_peers = (
         t.progress == 0
         and (t.num_complete == 0 and t.num_incomplete == 0)
-        and (t.last_activity is None or current_time - last_activity > timedelta(days=30))
+        and (t.last_activity is None or current_time - last_activity > timedelta(days=31))
     )
-    low_progress = (t.progress < 0.1) and (time_active > timedelta(days=45))
-    stuck = (t.progress >= 0.10) and (time_active > timedelta(days=60))
+    low_progress = (t.progress < 0.1) and (time_active > timedelta(days=46))
+    stuck = (t.progress >= 0.10) and (time_active > timedelta(days=61))
 
     return no_peers or low_progress or stuck
 
