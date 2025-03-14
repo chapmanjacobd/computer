@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import sqlite3
-import os
 import argparse
 
 parser = argparse.ArgumentParser(description='Convert SQLite database columns to BLOB type.')
