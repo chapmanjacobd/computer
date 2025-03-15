@@ -55,5 +55,5 @@ for t in torrents:
     print(t.content_path)
 
     if devices.confirm("Delete torrent and files?"):
-        qbt_client.torrents_delete(True, torrent_hashes=[t.hash])
+        qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
     print()

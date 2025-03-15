@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from library.mediafiles import torrents_start
 from library.playback import torrents_info
-from library.utils import arggroups, argparse_utils, strings
+from library.utils import arggroups, argparse_utils, devices, strings
 
 
 def parse_args():
@@ -19,7 +19,7 @@ def is_trumped_torrent(t):
         if any(
             s == msg
             for s in [
-               # 'Not Found',  # ambiguous, network error
+                # 'Not Found',  # ambiguous, network error
             ]
         ):
             print(t.name, 'error matched', msg)
@@ -58,4 +58,6 @@ for t in torrents:
     print(t.content_path)
     print()
 
-    qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
+    if devices.confirm("Delete torrent and files?"):
+        qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
+    print()
