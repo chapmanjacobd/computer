@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from library.mediafiles import torrents_start
 from library.playback import torrents_info
-from library.utils import arggroups, argparse_utils, devices, strings
+from library.utils import arggroups, argparse_utils, strings
 
 
 def parse_args():
