@@ -1,6 +1,13 @@
 #!/usr/bin/python3
+from collections import defaultdict
 from library.mediafiles import torrents_start
 from library.utils import arggroups, argparse_utils, printing
+
+import qbittorrentapi
+from library.playback.torrents_info import qbt_get_tracker
+from library.utils import arggroups, argparse_utils, iterables
+from library.utils.log_utils import log
+
 
 
 def parse_args():
@@ -8,6 +15,7 @@ def parse_args():
     arggroups.qBittorrent(parser)
     arggroups.debug(parser)
 
+    parser.add_argument('hosts', nargs="+")
     args = parser.parse_args()
     arggroups.args_post(args, parser)
     return args
@@ -15,7 +23,34 @@ def parse_args():
 
 args = parse_args()
 
-qbt_client = torrents_start.start_qBittorrent(args)
-torrents = qbt_client.torrents_info()
+torrents = defaultdict(list)
+for host in args.hosts:
+    host, port = host.split(':')
 
-printing.pipe_print('\n'.join([t.hash for t in torrents]))
+    qbt_client = qbittorrentapi.Client(
+        host=host,
+        port=port,
+        username=args.username,
+        password=args.password,
+    )
+
+    for t in qbt_client.torrents_info():
+        torrents[t.hash].append((t.progress, host, port))
+
+for hash, tg in torrents.items():
+    if len(tg) == 1:
+        continue
+
+    tg = sorted(tg, key=lambda x: x[0], reverse=True)
+    for t in tg[1:]:
+        progress, host, port = t
+
+        qbt_client = qbittorrentapi.Client(
+            host=host,
+            port=port,
+            username=args.username,
+            password=args.password,
+        )
+
+        print('Deleting from', host)
+        qbt_client.torrents_delete(True, [hash])
