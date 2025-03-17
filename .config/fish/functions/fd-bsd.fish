@@ -1,4 +1,4 @@
-# Defined interactively
+# Defined via `source`
 function fd-bsd
-    fd --exec-batch printf '%s\n' $argv
+    fd $argv --exec-batch printf '%s\n'
 end
