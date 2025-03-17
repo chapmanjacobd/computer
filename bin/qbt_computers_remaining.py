@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import sqlite3
 
 import qbittorrentapi
@@ -61,7 +62,7 @@ for host, host_disks in disks_by_host.items():
     torrents_by_disk = {}
     for t in torrents:
         for d in host_disks:
-            if t.content_path.startswith(d['mountpoint']):
+            if (t.content_path or t.save_path).startswith(d['mountpoint'] + os.sep):
                 torrents_by_disk.setdefault(d['mountpoint'], []).append(t)
                 break
 
