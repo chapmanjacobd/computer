@@ -54,6 +54,6 @@ for t in torrents:
     print(f"Seeders: {t.num_seeds} ({t.num_complete}), Leechers: {t.num_leechs} ({t.num_incomplete})")
     print(t.content_path)
 
-    if devices.confirm("Delete torrent and files?"):
+    if devices.confirm("Remove and delete incomplete?"):
         qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
     print()

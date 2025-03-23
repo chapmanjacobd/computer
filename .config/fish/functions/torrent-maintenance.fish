@@ -10,7 +10,7 @@ function torrent-maintenance
 
     for s in pakon backup r730xd len hk
         # remove previously tagged items
-        ssh $s library torrents --complete --tagged library-trumped --stop --move processing(datestamp) --delete-rows
+        ssh $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing(datestamp) --delete-rows
     end
 
 end
