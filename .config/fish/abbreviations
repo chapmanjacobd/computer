@@ -24,7 +24,6 @@ abbr -a -- hibernate 'systemctl hibernate'
 abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
 abbr -a -- ipa 'ip a'
 abbr -a -- lbmu 'lb mu (mergerfs_disk_mounts)'
-abbr -a -- less 'less -FSRXc'
 abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
 abbr -a -- mvl 'mvl -s""'
@@ -241,3 +240,4 @@ abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ppaused | less -FSRXc'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6,6 -k5,5'
+abbr -a -- less ov
