@@ -195,7 +195,6 @@ abbr -a -- start open
 abbr -a -- terminal-color-test msgcat --color=test
 abbr -a -- colors palette
 abbr -a -- splitlines string split \n
-abbr -a -- timers 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- teecb 'tee | cb'
 abbr -a -- cmd commandline --insert
 abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
@@ -241,3 +240,5 @@ abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ppaused | less -FSRXc'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6,6 -k5,5'
 abbr -a -- less ov
+abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
+abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
