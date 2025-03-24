@@ -259,16 +259,8 @@ KeyBind:
         - "ctrl+alt+f"
     raw_format:
         - "ctrl+alt+g"
-    vertical_header:
-        - "ctrl+alt+b"
-    header_column:
-        - "ctrl+alt+d"
-    fixed_column:
-        - "alt+f"
     shrink_column:
         - "alt+x"
-    toggle_ruler:
-        - "alt+shift+F9"
     plain_mode:
         - "ctrl+F7"
     rainbow_mode:
