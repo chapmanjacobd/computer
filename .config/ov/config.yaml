@@ -163,13 +163,13 @@ KeyBind:
         - ">"
         - "G"
     left:
-        - "left"
-    right:
-        - "right"
-    half_left:
         - "ctrl+left"
-    half_right:
+    right:
         - "ctrl+right"
+    half_left:
+        - "left"
+    half_right:
+        - "right"
     page_up:
         - "PageUp"
         - "b"
