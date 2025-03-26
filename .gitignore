@@ -1,3 +1,4 @@
+/.config/glogg/
 *.duckdb
 /.duckdb/extensions/
 /.config/qBittorrent/qBittorrent-data.conf
