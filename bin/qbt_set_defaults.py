@@ -37,7 +37,7 @@ qbt_client.app_set_preferences(
         "up_limit": args.upload_limit or args.download_limit,
         "alt_dl_limit": args.download_limit // 3,
         "alt_up_limit": (args.upload_limit or args.download_limit) // 3,
-        "max_active_downloads": 2,
+        "max_active_downloads": 1,
         "max_active_uploads": max_active_uploads,
         "max_active_torrents": max_active_uploads + 1,
         "max_active_checking_torrents": 4,
