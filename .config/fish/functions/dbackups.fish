@@ -5,7 +5,7 @@ function dbackups
         notify-send 'Turn on the backup server'
     end
 
-    rsync -ah --info=progress2 --no-inc-recursive --exclude video --exclude audio ~/sync/ backup:~/sync/
+    rsync -ah --info=progress2 --no-inc-recursive --exclude video --exclude audio ~/sync/ backup:~/d/sync/
     # rsync -ah --info=progress2 --no-inc-recursive /mnt/d/archive/ backup:/mnt/d/archive/
 
     ~/
