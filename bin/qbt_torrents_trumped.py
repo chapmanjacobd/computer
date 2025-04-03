@@ -17,13 +17,13 @@ def parse_args():
 def is_trumped_torrent(t):
     for _tr, msg in torrents_info.get_error_messages(t):
         if any(
-            s == msg
+            s in msg.lower()
             for s in [
-                # 'Not Found',  # ambiguous, network error
+                'not found in your history',
             ]
         ):
-            print(t.name, 'error matched', msg)
-            return True
+            return False
+
         if any(
             s in msg.lower()
             for s in [
@@ -35,6 +35,7 @@ def is_trumped_torrent(t):
         ):
             print(t.name, 'error matched', msg)
             return True
+
     return False
 
 
