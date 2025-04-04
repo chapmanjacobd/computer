@@ -250,7 +250,6 @@ wine
 winetricks
 wmctrl
 xautomation
-xbindkeys
 xcalib
 xcb-util-cursor
 xclip
