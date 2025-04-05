@@ -13,4 +13,7 @@ function torrent-maintenance
         ssh $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing(datestamp) --delete-rows
     end
 
+    allqb lb-dev torrents --tracker=privtracker.com --dl --time-stalled=+5days --time-unseeded=+4days --time-active=+5days --stop --delete-incomplete --move processing(datestamp) --delete-rows
+    allpc lb-dev torrents --ul --no-any-exists --move processed --delete-rows -v
+    allqb lb torrents --dl --no-queued --force-start; allqb lb torrents --dl --downloaded=+0 --force-start; allqb lb torrents --ul --no-force-start
 end
