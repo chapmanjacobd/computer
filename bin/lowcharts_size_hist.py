@@ -1,4 +1,6 @@
+#!/usr/bin/python3
 import argparse
+import sys
 from pathlib import Path
 from typing import List, Tuple
 
@@ -67,7 +69,10 @@ def format_histogram(bin_counts: np.ndarray, bin_edges: np.ndarray, bar_char: st
 
 
 def main(args: argparse.Namespace):
-    data = [int(line.strip()) for line in Path(args.path).read_text().splitlines() if line.strip().isdigit()]
+    if args.path == '-':
+        data = [int(line.strip()) for line in sys.stdin.readlines() if line.strip().isdigit()]
+    else:
+        data = [int(line.strip()) for line in Path(args.path).read_text().splitlines() if line.strip().isdigit()]
 
     if not data:
         print("No data received.  Make sure the input file contains only integers representing file sizes in bytes.")
@@ -87,6 +92,6 @@ if __name__ == "__main__":
     parser.add_argument("-w", "--width", type=int, default=50, help="Maximum width of the histogram")
     parser.add_argument("--bar", type=str, default="#", help="Character to use for the histogram bars")
 
-    parser.add_argument("path", type=str, help="Path to the file containing file sizes in bytes (one per line)")
+    parser.add_argument("path", help="Path to the file containing file sizes in bytes (one per line)")
     args = parser.parse_args()
     main(args)
