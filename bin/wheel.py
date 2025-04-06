@@ -34,17 +34,8 @@ def select_mouse(mice):
     print("Available mice:")
     for i, dev in enumerate(mice):
         print(f"{i + 1}: {dev.name} (path: {dev.path})")
+    exit(len(mice))
 
-    while True:
-        try:
-            choice = int(input("Select-a-mouse: ")) - 1
-            if 0 <= choice < len(mice):
-                return mice[choice]
-            else:
-                print("Invalid selection. Please try again.")
-        except ValueError:
-            print("Please enter a valid number.")
-        sleep(1)
 
 
 mice = list_mice()
