@@ -43,5 +43,5 @@ if restart_torrents:
 torrent_hashes = [t.hash for t in error_torrents]
 qbt_client.torrents_pause(torrent_hashes=torrent_hashes)
 
-if error_torrents and devices.confirm("Continue?"):
-    qbt_client.torrents_resume(torrent_hashes=torrent_hashes)
+if error_torrents:
+    qbt_client.torrents_add_tags('library-refresh', torrent_hashes=torrent_hashes)
