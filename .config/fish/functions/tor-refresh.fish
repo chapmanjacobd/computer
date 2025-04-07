@@ -1,5 +1,6 @@
 # Defined interactively
 function tor-refresh
+    set call_dir (pwd)
     tempdir
     for s in pakon backup r730xd len hk
         set urls (ssh -t $s qbt_torrents_refresh.py)
@@ -9,4 +10,5 @@ function tor-refresh
         end
     end
     trash-put (pwd)
+    cd $call_dir
 end
