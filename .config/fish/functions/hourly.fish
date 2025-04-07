@@ -20,4 +20,5 @@ function hourly
         end
     end
 
+    torganize
 end
