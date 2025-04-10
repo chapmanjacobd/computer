@@ -503,6 +503,9 @@ _launch=Alt+Shift+T
 [services][net.local.fish.desktop]
 _launch=Alt+0
 
+[services][net.local.pkill.desktop]
+_launch=Alt+9
+
 [services][org.kde.dolphin.desktop]
 _launch=none
 
