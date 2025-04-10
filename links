@@ -1,8 +1,5 @@
-lb openlinks ~/mc/music.db -w 'play_count=0' -rs --prefix https://music.youtube.com/search?q=%
-lb openlinks ~/mc/tv.db -w 'play_count=0' -rs -c p1
-lb openlinks ~/mc/cine.db -w 'play_count=0' -rs --prefix https://www.google.com/search?q=% https://rutracker.org/forum/tracker.php?max=1&nm=%
-lb openlinks ~/mc/links.db -w 'play_count=0' -rs
-#lb openlinks ~/lb/sites/manual/yatv.net.db -w 'play_count=0' -rs -E BJ -s (random 4 58)분
-#lb openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' -rs -c p1
-firefox --new-tab (ssh pakon lb-dev openlinks ~/lb/sites/manual/yatv.net.db -w 'play_count=0' -rs -E BJ -s (random 4 58)분 --browser print)
-firefox --new-tab (ssh pakon lb-dev openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' -rs -c p1 --browser print)
+lb openlinks ~/mc/music.db -w 'play_count=0' -rs --prefix https://music.youtube.com/search?q=% --browser
+lb openlinks ~/mc/tv.db -w 'play_count=0' -rs -c p1 --browser
+lb openlinks ~/mc/cine.db -w 'play_count=0' -rs --prefix https://www.google.com/search?q=% https://rutracker.org/forum/tracker.php?max=1&nm=% --browser
+lb openlinks ~/mc/links.db -w 'play_count=0' -rs --browser
+lb openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' -rs -c p1 --browser
