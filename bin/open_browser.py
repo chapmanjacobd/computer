@@ -3,7 +3,7 @@ import argparse
 import time
 import webbrowser
 
-from library.utils import arg_utils, arggroups
+from library.utils import file_utils, arggroups
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
 
-    links = list(arg_utils.gen_paths(args))
+    links = list(file_utils.gen_paths(args))
 
     for i, link in enumerate(links):
         webbrowser.open(link, new=2, autoraise=False)
