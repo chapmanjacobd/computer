@@ -1,3 +1,3 @@
 function lt
-    /home/xk/.local/bin/lb (lt_args) -r $argv
+    systemd-inhibit /home/xk/.local/bin/lb (lt_args) -r $argv
 end
