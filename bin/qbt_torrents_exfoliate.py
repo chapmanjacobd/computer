@@ -39,21 +39,8 @@ args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
+
 torrents = [t for t in torrents if is_dead_torrent(t)]
-
-print(len(torrents), 'found')
-print()
 for t in torrents:
-    print(t.name)
-    print(t.comment)
-    print("State:", t.state)
-    print("Added on:", strings.relative_datetime(t.added_on))
-    print("Time active:", strings.duration(t.time_active))
-    print("Last activity:", strings.relative_datetime(t.last_activity))
-    print("Progress:", strings.percent(t.progress))
-    print(f"Seeders: {t.num_seeds} ({t.num_complete}), Leechers: {t.num_leechs} ({t.num_incomplete})")
-    print(t.content_path)
-
-    if devices.confirm("Remove and delete incomplete?"):
-        qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
-    print()
+    print(strings.percent(t.progress), t.name, t.comment)
+    qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
