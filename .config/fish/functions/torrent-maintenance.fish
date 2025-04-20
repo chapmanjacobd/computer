@@ -16,7 +16,7 @@ function torrent-maintenance
     allpc lb torrents --tracker=privtracker.com --dl --time-stalled=+8days --time-active=+10days --stop --delete-incomplete --move processing(datestamp) --delete-rows
     allpc lb torrents --ul --no-any-exists --move processed --delete-rows -v -pa
 
-    allqb lb torrents --dl --no-queued --force-start -pa
-    allqb lb torrents --dl --downloaded=+0 --force-start -pa
-    allqb lb torrents --ul --no-force-start -pa
+    allqb lb torrents --dl --no-queued --force-start -pa >/dev/null
+    allqb lb torrents --dl --downloaded=+0 --force-start -pa >/dev/null
+    allqb lb torrents --ul --no-force-start -pa >/dev/null
 end
