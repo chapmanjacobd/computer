@@ -1,0 +1,15 @@
+#!/bin/env numbat
+
+@aliases(servings)
+unit serving
+
+let original_recipe_servings = 2 servings
+let desired_servings = 3 servings
+
+fn scale(quantity) =
+    quantity × desired_servings / original_recipe_servings
+
+print("Milk:          {scale(500 ml)}")
+print("Flour:         {scale(250 g)}")
+print("Sugar:         {scale(2 cups)}")
+print("Baking powder: {scale(4 tablespoons)}")
