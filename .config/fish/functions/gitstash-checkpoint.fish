@@ -1,5 +1,5 @@
 # Defined interactively
-function wipc
+function gitstash-checkpoint
     git add .
     git stash push --keep-index
 end
