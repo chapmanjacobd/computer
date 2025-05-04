@@ -9,5 +9,6 @@ function archive
         end
     end
 
+    echo "$path"
     mv "$argv" "$path"
 end
