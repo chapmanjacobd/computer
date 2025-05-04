@@ -33,7 +33,7 @@ abbr -a -- p 'pipenv shell'
 abbr -a -- pgrep 'pgrep -fa'
 abbr -a -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'
 abbr -a -- q exit
-abbr -a -- rm trash-put
+abbr -a -- rm trash
 abbr -a -- rmove 'rsync -a --info=progress2 --no-inc-recursive --remove-source-files --backup-dir (date "+%d.%m.%Y")'
 abbr -a -- rmv 'rclone move --delete-empty-src-dirs'
 abbr -a -- sdi dnfinstall

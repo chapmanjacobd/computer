@@ -2,7 +2,7 @@
 function clean_home
     ~/
     rmdir * 2>/dev/null
-    trash-put .config/ksmserverrc .xsession-errors .config/libaccounts-glib 2>/dev/null
+    trash .config/ksmserverrc .xsession-errors .config/libaccounts-glib 2>/dev/null
     fd -d1 -tf -eDESKTOP -x trash
     fd -d2 -tf -H '.syncthing.*.tmp' -x trash
 

@@ -2,5 +2,5 @@
 function ar
     set target (string replace '/' '' $argv)
     tar cf "$target".tzst -I zstd "$target"
-    and trash-put "$target"
+    and trash "$target"
 end

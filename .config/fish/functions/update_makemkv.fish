@@ -1,7 +1,7 @@
 # Defined interactively
 function update_makemkv
     ~/bin/
-    trash-put makemkv*
+    trash makemkv*
     wget https://www.makemkv.com/download/makemkv-bin-1.17.2.tar.gz
     wget https://www.makemkv.com/download/makemkv-oss-1.17.2.tar.gz
     unar makemkv*gz

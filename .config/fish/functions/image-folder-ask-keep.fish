@@ -8,7 +8,7 @@ function image-folder-ask-keep
             if confirm keep
                 b lb relmv "$d" ~/d/library/porn/image/
             else
-                b trash-put "$d"
+                b trash "$d"
             end
         end
     end

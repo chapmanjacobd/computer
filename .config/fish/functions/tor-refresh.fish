@@ -9,6 +9,6 @@ function tor-refresh
             ssh -t $s lb torrents --tagged library-refresh --untag library-refresh --start
         end
     end
-    trash-put (pwd)
+    trash (pwd)
     cd $call_dir
 end

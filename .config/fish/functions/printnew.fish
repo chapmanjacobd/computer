@@ -8,5 +8,5 @@ function printnew
         cat $curr >>$prev
         sleep 1
     end
-    trash-put $prev $curr
+    trash $prev $curr
 end

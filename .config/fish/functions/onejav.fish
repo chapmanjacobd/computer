@@ -6,5 +6,5 @@ function onejav
 
     set files (fd --max-results 50)
     dragondrop --on-top --all-compact $files
-    trash-put $files
+    trash $files
 end
