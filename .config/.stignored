@@ -24,3 +24,6 @@
 /libvirt/
 /containers/podman/machine/
 /containers/podman-*
+/xsettingsd/xsettingsd.conf
+/gtk-3.0/settings.ini
+/gtk-4.0/settings.ini
