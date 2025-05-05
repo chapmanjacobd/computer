@@ -117,3 +117,7 @@
 [commit]
 	template = /home/xk/.gitmessage
 	verbose = true
+[receive "fsck"]
+	zeroPaddedFilemode = warn
+[fetch "fsck"]
+	zeroPaddedFilemode = ignore
