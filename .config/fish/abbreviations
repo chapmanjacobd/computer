@@ -237,7 +237,6 @@ abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --me
 abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ppaused | less -FSRXc'
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -Th | sort --human-numeric-sort -k6,6 -k5,5'
 abbr -a -- less ov
 abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
@@ -248,3 +247,4 @@ abbr -a -- zj z j
 abbr -a -- wipc gitstash-checkpoint
 abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human-numeric-sort -k6,6 -k5,5'
