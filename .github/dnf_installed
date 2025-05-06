@@ -31,6 +31,7 @@ ddrescue
 digikam
 dnf-plugin-system-upgrade
 dnf-utils
+dracut-config-rescue
 dub
 earlyoom
 easyeffects
