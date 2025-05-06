@@ -91,6 +91,7 @@ ImageMagick-devel
 iotop
 java-latest-openjdk
 java-latest-openjdk-devel
+jemalloc
 jq
 kcolorchooser
 kdeplasma-addons
@@ -174,6 +175,7 @@ pv
 pybind11-devel
 python-devel
 python3
+python3-brotli
 python3-btrfs
 python3-devel
 python3-evdev
