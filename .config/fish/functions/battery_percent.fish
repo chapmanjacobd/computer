@@ -7,6 +7,6 @@ function battery_percent
     if command -vq upower
         upower -i (upower -e | grep 'BAT') | grep percentage | awk '{print $2}'
     else
-        acpi -b | awk -F '[:, %]' '{for (i=1; i<=NF; i++) if ($i ~ /^[0-9]+$/) {print $i; exit}}'
+        acpi -b | grep -oP '\d+%' | sed 's/%//g' | head -1
     end
 end
