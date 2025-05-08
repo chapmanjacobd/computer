@@ -25,6 +25,7 @@ hddtemp
 heif-pixbuf-loader
 htop
 iftop
+ImageMagick
 inotify-tools
 intel-media-driver
 iotop
