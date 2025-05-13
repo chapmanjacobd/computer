@@ -1,0 +1,2 @@
+[project]
+dependencies = ["pip", "setuptools", "wheel"]
