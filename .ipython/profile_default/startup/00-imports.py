@@ -26,7 +26,7 @@ def argparse_log():
 
     sys.excepthook = ultratb.FormattedTB(
         mode="Verbose" if args.verbose > 0 else "Context",
-        color_scheme="Neutral",
+        theme_name="Neutral",
         call_pdb=1,
         debugger_cls=TerminalPdb,
     )
