@@ -2,7 +2,7 @@
 import argparse
 import os
 from collections import defaultdict
-
+from library.utils.log_utils import log
 
 def find_case_conflicts(root_dir):
     conflicts = defaultdict(list)
@@ -38,25 +38,24 @@ def choose_preferred_path(paths):
 
 def merge_conflicts(conflicts_map):
     if not conflicts_map:
-        print("No case conflicts found.")
+        log.warning("No case conflicts found.")
         return
 
-    print("\n--- Initiating Conflict Resolution ---")
     for lower_name, paths in conflicts_map.items():
-        print(f"\nConflict detected for '{lower_name}':")
+        log.warning(f"\nConflict detected for '{lower_name}':")
         for i, p in enumerate(paths):
-            print(f"  [{i+1}] {p}")
+            log.warning(f"  [{i+1}] {p}")
 
         preferred_path = choose_preferred_path(paths)
         if not os.path.exists(preferred_path):
-            print(f"  Warning: Preferred path '{preferred_path}' no longer exists. Skipping this conflict.")
+            log.warning(f"  Warning: Preferred path '{preferred_path}' no longer exists. Skipping this conflict.")
             continue
 
         for current_path in paths:
             if current_path == preferred_path:
                 continue  # Skip the chosen path
             if not os.path.exists(current_path):
-                print(f"  '{current_path}' no longer exists, skipping.")
+                log.info(f"  '{current_path}' no longer exists, skipping.")
                 continue
 
             print("lb mv", current_path, preferred_path)
@@ -73,24 +72,24 @@ def main():
     root_directory = args.directory
 
     if not os.path.isdir(root_directory):
-        print(f"Error: '{root_directory}' is not a valid directory.")
+        log.error(f"Error: '{root_directory}' is not a valid directory.")
         return
 
-    print(f"Scanning '{root_directory}' for case conflicts...")
     conflicts = find_case_conflicts(root_directory)
 
     if not conflicts:
-        print("No case conflicts found in the specified directory.")
+        log.warning("No case conflicts found in the specified directory.")
         return
-
-    print("\n--- Identified Case Conflicts ---")
-    for lower_name, paths in conflicts.items():
-        print(f"Conflicts for '{lower_name}':")
-        for p in paths:
-            print(f"  - {p}")
 
     if args.run:
         merge_conflicts(conflicts)
+    else:
+        print("\n--- Identified Case Conflicts ---")
+        for lower_name, paths in conflicts.items():
+            print(f"Conflicts for '{lower_name}':")
+            for p in paths:
+                print(f"  - {p}")
+
 
 
 if __name__ == "__main__":
