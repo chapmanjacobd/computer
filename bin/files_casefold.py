@@ -2,7 +2,10 @@
 import argparse
 import os
 from collections import defaultdict
+
+from library.utils import processes
 from library.utils.log_utils import log
+
 
 def find_case_conflicts(root_dir):
     conflicts = defaultdict(list)
@@ -58,7 +61,7 @@ def merge_conflicts(conflicts_map):
                 log.info(f"  '{current_path}' no longer exists, skipping.")
                 continue
 
-            print("lb mv", current_path, preferred_path)
+            processes.cmd("lb", "mv", current_path, preferred_path)
 
 
 def main():
@@ -89,7 +92,6 @@ def main():
             print(f"Conflicts for '{lower_name}':")
             for p in paths:
                 print(f"  - {p}")
-
 
 
 if __name__ == "__main__":

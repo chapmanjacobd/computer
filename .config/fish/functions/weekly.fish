@@ -8,6 +8,8 @@ function weekly
     #mrvideo
     mrporn
     #mrrelax
+    files_casefold.py ~/sync/ --run
+
     morganize
 
     mam_update
@@ -57,7 +59,7 @@ function weekly
     ~/d/dump/porn/image/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
 
-    timeout --preserve-status --signal INT 3d lb redditupdate --lookback 8 ~/lb/reddit/61_Photos_Unsorted.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
+    # timeout --preserve-status --signal INT 3d lb redditupdate --lookback 8 ~/lb/reddit/61_Photos_Unsorted.db
+    # lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
 
 end
