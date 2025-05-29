@@ -87,7 +87,10 @@ def locate_remote(args, hostname):
                     print("-->", local_path)
                     sftp.get(remote_path, bytes(local_path))
                     os.utime(local_path, (d['time_modified'], d['time_modified']))
-                    sftp.remove(remote_path)
+                    try:
+                        sftp.remove(remote_path)
+                    except OSError:
+                        print(hostname, "could not remove", remote_path)
 
 
 def main():
