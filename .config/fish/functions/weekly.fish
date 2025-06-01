@@ -8,6 +8,7 @@ function weekly
     #mrvideo
     mrporn
     #mrrelax
+    lb christen --run ~/sync/
     files_casefold.py ~/sync/ --run
 
     morganize
