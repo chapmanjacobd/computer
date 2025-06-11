@@ -54,7 +54,6 @@ abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -- wts 'wt -p -u duration -s'
 abbr -a -- xpaste 'xclip -selection clipboard -o'
 abbr -a -- yt.ogg yta
-abbr -a -- python ipython --pdb
 abbr -a -- icat kitty +kitten icat
 abbr -a -- str string
 abbr -a -- abbr abbrsave
@@ -87,7 +86,6 @@ abbr -a -- ch clean_home
 abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
 abbr -a -- py python
-abbr -a -- ipy ipython --pdb
 abbr -a -- sql sqlite --no-headers --raw-lines
 abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/fs/video.db
 abbr -a -- gstat git diff --stat
@@ -248,3 +246,4 @@ abbr -a -- wipc gitstash-checkpoint
 abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human-numeric-sort -k6,6 -k5,5'
+abbr -a -- ipy ipython --pdb
