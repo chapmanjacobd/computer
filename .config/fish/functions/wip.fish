@@ -15,7 +15,7 @@ function wip
     git --no-pager diff HEAD
     git --no-pager diff HEAD | grep TODO
     echo
-    git diff --stat HEAD
+    git --no-pager diff --stat HEAD
     echo
     git status
     if set -q _flag_yes; or gum confirm --default=no
