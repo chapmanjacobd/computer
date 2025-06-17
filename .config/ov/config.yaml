@@ -1,10 +1,10 @@
-# QuitSmall: false # Quit if the file size is smaller than the terminal size.
+QuitSmall: true # Quit if the file size is smaller than the terminal size.
 # IsWriteOriginal: false # Write the original content when exiting.
 # BeforeWriteOriginal: 0 # Write the number of lines before the current location when exiting.
 # AfterWriteOriginal: 0 # Write the number of lines after the current location when exiting.
 #
 # CaseSensitive: false # Case sensitive search.
-# SmartCaseSensitive: false # Case sensitive search if the search string contains uppercase characters.
+SmartCaseSensitive: true # Case sensitive search if the search string contains uppercase characters.
 # RegexpSearch: false # Regular expression search.
 # Incsearch: true # Incremental search.
 #
