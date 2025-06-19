@@ -9,16 +9,14 @@ function torrent-maintenance
         qbt_torrents_exfoliate.py --host $s
         qbt_torrents_trumped.py --host $s
     end
-
     for s in pakon backup r730xd len hk
         # remove previously tagged items
         ssh $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing(datestamp) --delete-rows -pa
     end
 
-    allpc lb torrents --tracker=privtracker.com --dl --time-stalled=+8days --time-active=+10days --stop --delete-incomplete --move processing(datestamp) --delete-rows
     allpc lb torrents --ul --no-any-exists --move processed --delete-rows -v -pa
 
-    allqb lb torrents --dl --no-queued --force-start -pa >/dev/null
-    allqb lb torrents --dl --downloaded=+0 --force-start -pa >/dev/null
+    allqb lb torrents --dl --no-queued --start -pa >/dev/null
+    allqb lb torrents --dl --downloaded=+0 --time-active=+1days --force-start -pa >/dev/null
     allqb lb torrents --ul --no-force-start -pa >/dev/null
 end
