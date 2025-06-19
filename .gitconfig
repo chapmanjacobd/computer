@@ -10,7 +10,7 @@
     autosetupremote = true
     followTags = true
 [core]
-    pager = "delta --syntax-theme GitHub --max-line-length 1024 | ov --section-delimiter='^(added:|removed:|renamed:|Δ)' --section-header --pattern '•' --header 3"
+    pager = "delta --syntax-theme GitHub --max-line-length 1024 | ov --section-delimiter='^(added:|removed:|renamed:|Δ)' --section-header --pattern '•'"
     # --keep-plus-minus-markers
     excludesfile = /home/xk/.gitignore_global
     preloadindex = true
