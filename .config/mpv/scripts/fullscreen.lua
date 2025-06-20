@@ -1,5 +1,5 @@
 function toggle_fullscreen_and_focus()
-    local is_fullscreen = mp.get_property_boolean("fullscreen")
+    local is_fullscreen = mp.get_property("fullscreen") == "yes"
 
     mp.commandv("cycle", "fullscreen")
 
