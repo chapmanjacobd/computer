@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env -S python -S
+
 import colorsys
 import hashlib
 import sys
