@@ -247,3 +247,4 @@ abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human-numeric-sort -k6,6 -k5,5'
 abbr -a -- ipy ipython --pdb
+abbr -a -- github gh repo view --web
