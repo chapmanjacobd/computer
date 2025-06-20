@@ -1,4 +1,4 @@
 # Defined interactively
 function print
-    string replace ' ' \n -- $argv
+    printf "%s\n" $argv
 end
