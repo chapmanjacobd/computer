@@ -1,4 +1,4 @@
 # Defined interactively
-function echon
+function print
     string replace ' ' \n -- $argv
 end
