@@ -1,6 +1,6 @@
 status job-control full  # https://github.com/fish-shell/fish-shell/issues/5036
 
-# bass source /etc/profile
+bass source /etc/profile
 
 set NPM_PACKAGES "$HOME/.npm-packages"
 
