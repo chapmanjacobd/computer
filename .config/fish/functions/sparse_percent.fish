@@ -1,4 +1,4 @@
 # Defined interactively
 function sparse_percent
-    math 1-(find "$argv" -printf '%S\n') | percent_from_float
+    find $argv -type f -printf '%S\n' | per_line "math 1-" | percent_from_float
 end
