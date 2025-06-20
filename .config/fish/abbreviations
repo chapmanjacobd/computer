@@ -249,3 +249,4 @@ abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human
 abbr -a -- ipy ipython --pdb
 abbr -a -- github gh repo view --web
 abbr -a -- echon print
+abbr -a -- cwd 'pwd | cb'
