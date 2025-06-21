@@ -28,7 +28,6 @@ abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
 abbr -a -- mvl 'mvl -s""'
 abbr -a -- ncdu 'NO_COLOR=1 ncdu'
-abbr -a -- nicotine 'flatpak run org.nicotine_plus.Nicotine'
 abbr -a -- p 'pipenv shell'
 abbr -a -- pgrep 'pgrep -fa'
 abbr -a -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'
