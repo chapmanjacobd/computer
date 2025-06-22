@@ -7,6 +7,8 @@ function watts
         if test $status -ne 0
             return 1
         end
+
+        sleep 5
     end
 
     set -l PERCENT (apcaccess -pLOADPCT | sed 's/Percent//')
