@@ -1,12 +1,12 @@
 function toggle_fullscreen_and_focus()
-    local is_fullscreen = mp.get_property("fullscreen") == "yes"
+    local was_fullscreen = mp.get_property("fullscreen") == "yes"
 
     mp.commandv("cycle", "fullscreen")
 
-    if is_fullscreen then
-        mp.commandv("run", "fish", "-c", "focus_under_mouse")
-    else
+    if was_fullscreen then
         mp.commandv("run", "fish", "-c", "focus_follows_mouse")
+    else
+        mp.commandv("run", "fish", "-c", "focus_under_mouse")
     end
 end
 
