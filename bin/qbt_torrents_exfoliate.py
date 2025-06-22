@@ -16,7 +16,13 @@ def parse_args():
 
 
 def is_dead_torrent(t):
-    if t.state_enum.is_complete or t.state_enum.is_stopped or 'queued' in t.state:
+    if (
+        t.state_enum.is_complete
+        or t.state_enum.is_stopped
+        or t.state_enum.is_errored
+        or t.state_enum.is_checking
+        or 'queued' in t.state
+    ):
         return False
 
     current_time = datetime.now()
