@@ -5,5 +5,5 @@ function mam_search
     load_env_mam
 
     ~/lb/
-    python -m library.scratch.mam_search --audiobooks --radio $opts --cookie $MAM_COOKIE ~/lb/sites/mam/mam.db $args
+    python ~/bin/mam_search.py --audiobooks --radio $opts --cookie $MAM_COOKIE ~/lb/sites/mam/mam.db $args
 end
