@@ -10,6 +10,7 @@ from library.utils import arggroups, argparse_utils, file_utils
 def parse_args():
     parser = argparse_utils.ArgumentParser()
     arggroups.qBittorrent(parser)
+    parser.add_argument('--exclude', '-E', default=[], action=argparse_utils.ArgparseList)
     arggroups.debug(parser)
 
     args = parser.parse_args()
@@ -28,10 +29,13 @@ fs_files = set()
 known = defaultdict(int)
 for t in torrents:
     t_folders = [t.save_path, t.download_path, t.content_path]
-    t_folders = [os.path.realpath(s) for s in t_folders]
+    t_folders = [os.path.realpath(s) for s in t_folders if s]
 
     for t_folder in t_folders:
-        if Path(t_folder).exists():
+        if t_folder in args.exclude:
+            print(t.name, f't_folder {t_folder} excluded:')
+            print({'save_path': t.save_path, 'download_path': t.download_path, 'content_path': t.content_path})
+        elif Path(t_folder).exists():
             if Path(t_folder).is_file():
                 fs_files.add(t_folder)
             elif t_folder not in fs_folders:
@@ -52,12 +56,12 @@ for t in torrents:
 
 duplicates = [p for p, count in known.items() if count > 1]
 if duplicates:
-    print('DUPLICATES')
+    print('DUPLICATES:', len(duplicates))
     print(duplicates)
     print()
 
 orphans = fs_files - set(known.keys())
 if orphans:
-    print('ORPHANS')
-    print(orphans)
+    print('ORPHANS:', len(orphans))
+    Path('orphans.txt').write_text('\n'.join(orphans))
     print()
