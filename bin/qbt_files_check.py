@@ -11,6 +11,7 @@ def parse_args():
     parser = argparse_utils.ArgumentParser()
     arggroups.qBittorrent(parser)
     parser.add_argument('--exclude', '-E', default=[], action=argparse_utils.ArgparseList)
+    parser.add_argument('--dirs', action='store_true')
     arggroups.debug(parser)
 
     args = parser.parse_args()
@@ -36,12 +37,15 @@ for t in torrents:
             print(t.name, f't_folder {t_folder} excluded:')
             print({'save_path': t.save_path, 'download_path': t.download_path, 'content_path': t.content_path})
         elif Path(t_folder).exists():
-            if Path(t_folder).is_file():
-                fs_files.add(t_folder)
-            elif t_folder not in fs_folders:
-                fs_folders.add(t_folder)
-                folder_files, _, _ = file_utils.rglob(t_folder, quiet=True)
-                fs_files |= folder_files
+            if args.dirs:
+                print(t_folder)
+            else:
+                if Path(t_folder).is_file():
+                    fs_files.add(t_folder)
+                elif t_folder not in fs_folders:
+                    fs_folders.add(t_folder)
+                    folder_files, _, _ = file_utils.rglob(t_folder, quiet=True)
+                    fs_files |= folder_files
 
     t_folder_count = defaultdict(int)
     for t_folder in t_folders:
