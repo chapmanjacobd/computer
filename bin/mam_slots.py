@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from library.utils import arggroups, argparse_utils, web
 
 
