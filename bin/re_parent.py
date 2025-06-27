@@ -36,6 +36,9 @@ def main():
         if mount_path is None:
             mount_path = Path(path_utils.mountpoint(source_path))
 
+        if str(mount_path) in ("/", "/home", "/var/home"):
+            mountpoint = Path().home()
+
         relative_src_parts = Path(source_path).parts[len(mount_path.parts) :]
         dest_path = str(Path(mount_path, args.re_parent.lstrip(os.sep), *relative_src_parts))
 
@@ -51,8 +54,12 @@ def main():
             log.info("No rename needed %s (skipping)", source_path)
             continue
 
-        src, dest = devices.clobber(args, source_path, dest_path)
-        file_utils.rename_move_file(src, dest, args.simulate)
+        try:
+            src, dest = devices.clobber(args, source_path, dest_path)
+            file_utils.rename_move_file(src, dest, args.simulate)
+        except PermissionError:
+            log.info("Permission Error %s (skipping)", source_path)
+            continue
 
 
 if __name__ == "__main__":
