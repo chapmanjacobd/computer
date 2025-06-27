@@ -2,9 +2,9 @@
 import argparse
 import os
 import re
+from pathlib import Path
 
-from library.utils import arggroups, argparse_utils, consts, devices
-from library.utils.file_utils import rename_move_file
+from library.utils import arggroups, argparse_utils, consts, devices, file_utils, path_utils
 from library.utils.log_utils import log
 
 
@@ -25,6 +25,7 @@ def main():
         "Can include backreferences (e.g., \\1, \\g<name>) for parts captured in the search_pattern. "
         "You can also specify new directory components here (e.g., 'new_subdir/\\1.ext').",
     )
+    parser.add_argument('--re-parent', '--reparent')
     arggroups.clobber(parser)
     arggroups.debug(parser)
 
@@ -47,6 +48,12 @@ def main():
             log.warning("Does not exist %s (skipping)", source_path)
             continue
 
+        if args.re_parent:
+            src = Path(source_path)
+            mount_path = Path(path_utils.mountpoint(src))
+            relative_src_parts = src.parts[len(mount_path.parts) :]
+            source_path = str(Path(mount_path, args.re_parent, *relative_src_parts))
+
         dest_path = REGEX_SEARCH.sub(args.replace_pattern, source_path)
 
         if args.verbose >= consts.LOG_INFO:
@@ -58,7 +65,7 @@ def main():
             continue
 
         src, dest = devices.clobber(args, source_path, dest_path)
-        rename_move_file(src, dest, args.simulate)
+        file_utils.rename_move_file(src, dest, args.simulate)
 
 
 if __name__ == "__main__":
