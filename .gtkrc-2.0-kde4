@@ -1,3 +1,5 @@
+gtk-cursor-blink-time=1000
+gtk-cursor-blink=1
 gtk-enable-event-sounds=0
 gtk-sound-theme-name="oxygen"
 gtk-cursor-theme-size=88
