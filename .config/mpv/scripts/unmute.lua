@@ -18,7 +18,7 @@ local function fade_out_volume(target_volume, current_step, start_volume)
     else -- Fading in
         new_volume = math.min(new_volume, target_volume)
     end
-    
+
     mp.set_property("volume", new_volume)
 
     mp.add_timeout(fade_interval, function()
@@ -46,13 +46,7 @@ local timer = nil
 local threshold = 0.150
 
 local function unmute_player()
-    if mp.get_property_native("mute") == true or mp.get_property_native("volume") == 0 then
-        mp.set_property("mute", "no")
-        local current_volume = mp.get_property_native("volume")
-        fade_in_volume(80, 1, current_volume)
-        mp.set_property("volume", "80")
-        -- mp.osd_message("Unmuted!")
-    end
+    mp.set_property("volume", "80")
     timer = nil
 end
 
