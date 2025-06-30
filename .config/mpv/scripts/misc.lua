@@ -1,9 +1,9 @@
 -- random seek
-mp.add_key_binding("m", "random-seek-duration", function()
+mp.add_key_binding("shift+i", "random-seek-duration", function()
     local duration = mp.get_property_number("duration")
     mp.commandv("seek", math.random() * duration, "absolute")
 end)
-mp.add_key_binding("o", "random-seek", function()
+mp.add_key_binding("shift+o", "random-seek", function()
     mp.commandv("seek", math.random() * 10, "relative-percent")
 end)
 
