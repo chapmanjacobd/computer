@@ -24,3 +24,4 @@ wt JUDGMENT PS4
 wt Mohanagar -O
 wt ~/d/75_Moviequeue/from_backup/ -d-30 -O
 wtm ~/lb/fs/video.db -rs -d-2
+wtm ~/lb/fs/video.db --fstack --fs -rs -d-1 --volume 0
