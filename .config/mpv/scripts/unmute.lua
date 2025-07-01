@@ -51,20 +51,24 @@ local function unmute_player()
 end
 
 local function on_focus_change(name, value)
-    if value == true then -- mpv window is focused
-        if timer == nil then -- Start timer only if not already running
-            timer = mp.add_timeout(threshold, unmute_player)
-        end
-    else -- mpv window lost focus
-        if timer ~= nil then -- Cancel the timer if it's running
-            timer:kill()
-            timer = nil
-        end
+    local dwidth = mp.get_property_number("dwidth")
 
-        if mp.get_property_native("fullscreen") == true then
-            local current_volume = mp.get_property_native("volume")
-            fade_out_volume(0, 1, current_volume)
-            -- mp.set_property("volume", "0")
+    if (dwidth and dwidth > 0) then -- skip script on non-windowed mpv
+        if value == true then -- mpv window is focused
+            if timer == nil then -- Start timer only if not already running
+                timer = mp.add_timeout(threshold, unmute_player)
+            end
+        else -- mpv window lost focus
+            if timer ~= nil then -- Cancel the timer if it's running
+                timer:kill()
+                timer = nil
+            end
+
+            if mp.get_property_native("fullscreen") == true then
+                local current_volume = mp.get_property_native("volume")
+                fade_out_volume(0, 1, current_volume)
+                -- mp.set_property("volume", "0")
+            end
         end
     end
 end
