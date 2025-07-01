@@ -10,6 +10,7 @@ keepaspect
 geometry=100%:100%
 autofit=30%x24%
 quiet=yes
+mute=no
 audio-display=no
 
 deband=no
@@ -64,10 +65,9 @@ audio-file-auto=no
 
 [image]
 profile=nodir
-profile=opengl-hq
 mute=yes
 scale=ewa_lanczossharp
-background=0.1
+background-color=0.12
 input-conf=~~/input-image.conf
 video-unscaled=yes
 title="mvi - ${?media-title:${media-title}}${!media-title:No file}"
@@ -76,13 +76,3 @@ loop-file=yes
 
 [extension.gif]
 interpolation=no
-
-# Ignore aspect ratio information for PNG and JPG, because it's universally bust
-[extension.png]
-video-aspect=no
-
-[extension.jpg]
-video-aspect=no
-
-[extension.jpeg]
-profile=extension.jpg
