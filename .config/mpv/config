@@ -73,6 +73,8 @@ video-unscaled=yes
 title="mvi - ${?media-title:${media-title}}${!media-title:No file}"
 image-display-duration=inf
 loop-file=yes
+audio=no
+speed=0.5
 
 [extension.gif]
 interpolation=no
