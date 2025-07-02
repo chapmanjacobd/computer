@@ -59,18 +59,18 @@ audio-channels=2
 profile-cond=eof_reached
 save-position-on-quit=no
 
-[nodir]
-sub-auto=no
-audio-file-auto=no
+[audio]
+video=no
+title="mpa - ${?media-title:${media-title}}${!media-title:No file}"
 
 [image]
-profile=nodir
-mute=yes
+sub-auto=no
+audio-file-auto=no
 scale=ewa_lanczossharp
 background-color=0.12
 input-conf=~~/input-image.conf
 video-unscaled=yes
-title="mvi - ${?media-title:${media-title}}${!media-title:No file}"
+title="mpi - ${?media-title:${media-title}}${!media-title:No file}"
 image-display-duration=inf
 loop-file=yes
 audio=no
