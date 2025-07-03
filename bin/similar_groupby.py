@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import argparse
+from collections import defaultdict
 import difflib
 import sys
 
@@ -34,29 +35,28 @@ def main():
     if not lines:
         processes.no_media_found()
 
-    groups = []
+    groups = defaultdict(int)
     for line in lines:
         found_group = False
-        for group in groups:
-            if args.stable:
-                representative_line = group[0]  # first example
-            else:
-                representative_line = group[-1]  # most recent match
-
-            matcher = difflib.SequenceMatcher(None, s(args, line), s(args, representative_line))
+        for group, count in groups.items():
+            matcher = difflib.SequenceMatcher(None, s(args, line), s(args, group))
             if args.maximum_similarity >= matcher.ratio() >= args.minimum_similarity:
-                group.append(line)
                 found_group = True
+                if args.stable:
+                    # keep first example
+                    groups[group] += 1
+                else:
+                    # replace example with most recent match
+                    groups[line] = count + 1
+                    del groups[group]
                 break
 
         if not found_group:
-            groups.append([line])  # add a new group
+            groups[line] = 1  # add a new group
 
     table_data = []
-    for group in groups:
-        count = len(group)
-        first_example = group[0]
-        table_data.append([count, first_example])
+    for group, count in groups.items():
+        table_data.append([count, group[:200]])  # first 200 chars
     table_data.sort(key=lambda x: x[0], reverse=True)
     headers = ["Count", "Example"]
 
