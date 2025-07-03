@@ -1,4 +1,4 @@
 # Defined interactively
-function len
+function chars
     wc -c
 end
