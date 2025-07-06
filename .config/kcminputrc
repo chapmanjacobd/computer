@@ -12,8 +12,8 @@ X11LibInputXAccelProfileFlat=true
 XLbInptAccelProfileFlat=false
 XLbInptPointerAcceleration=0.8
 XLbInptScrollOnButtonDown=true
-cursorSize=88
-cursorTheme=Bibata-Modern-Ice
+cursorSize=48
+cursorTheme=Breeze_Light
 
 [Tmp]
 update_info=delete_cursor_old_default_size.upd:DeleteCursorOldDefaultSize

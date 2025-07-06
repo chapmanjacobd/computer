@@ -20,9 +20,6 @@ def main():
     parser.add_argument('--minimum-similarity', '-m', type=float, default=0.3)
     parser.add_argument('--maximum-similarity', '-M', type=float, default=1.0)
 
-    parser.add_argument(
-        "lines", nargs="*", default=argparse_utils.STDIN_DASH, action=argparse_utils.ArgparseArgsOrStdinGen
-    )
     parser.add_argument('input_path', type=argparse.FileType('r'), nargs='?', default=sys.stdin)
     args = parser.parse_args()
 
