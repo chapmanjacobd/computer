@@ -47,7 +47,10 @@ local threshold = 0.150
 
 local function unmute_player()
     if mp.get_property_number("volume") == 0 then
-        mp.set_property("volume", "80")
+        mp.set_property_number("volume", 80)
+    end
+    if mp.get_property_bool("pause") then
+        mp.set_property_bool("pause", false)
     end
     timer = nil
 end
