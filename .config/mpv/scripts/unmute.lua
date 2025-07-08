@@ -46,7 +46,9 @@ local timer = nil
 local threshold = 0.150
 
 local function unmute_player()
-    mp.set_property("volume", "80")
+    if mp.get_property_number("volume") == 0 then
+        mp.set_property("volume", "80")
+    end
     timer = nil
 end
 
