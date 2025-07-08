@@ -53,4 +53,4 @@ function check_paused(name, is_paused)
 end
 
 mp.observe_property("seeking", "bool", engage_ducking)
-mp.observe_property("pause", "bool", check_paused)
+-- mp.observe_property("pause", "bool", check_paused)

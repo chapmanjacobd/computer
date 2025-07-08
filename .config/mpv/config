@@ -9,6 +9,7 @@ ontop=yes
 keepaspect
 geometry=100%:100%
 autofit=30%x24%
+cursor-autohide=550
 quiet=yes
 mute=no
 audio-display=no
