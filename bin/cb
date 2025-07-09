@@ -2,7 +2,11 @@
 
 if test -t 0
     if test -z "$argv"
-        xsel --clipboard --output
+        if test -n "$WAYLAND_DISPLAY"
+            wl-paste --no-newline
+        else
+            xsel --clipboard --output
+        end
     else  # allow cb -t text/html usage, etc
         xclip -sel c -o $argv
     end
