@@ -12,3 +12,9 @@ end
 
 mp.add_key_binding('f', "toggle_fullscreen_and_focus", toggle_fullscreen_and_focus)
 mp.add_key_binding('MBTN_LEFT_DBL', "toggle_fullscreen_and_focus", toggle_fullscreen_and_focus)
+
+mp.observe_property("eof-reached", "bool", function(name, value)
+    if value then
+        mp.set_property_native("fullscreen", false)
+    end
+end)
