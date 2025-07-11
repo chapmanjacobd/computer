@@ -25,6 +25,7 @@ def parse_args():
     parser.add_argument("--radio", action=argparse.BooleanOptionalAction, default=False)
 
     parser.add_argument("--search-in", default="torrents")
+    parser.add_argument("--series-id", "--seriesID", type=int)
 
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--cookie", required=True)
@@ -112,6 +113,9 @@ def wrangle_request_data(args):
         "description": "true",
         "thumbnail": "false",
     }
+
+    if args.series_id:
+        query_data["tor"]["seriesID"] = args.series_id
 
     if args.cookbooks:
         query_data["tor"]["cat"].extend([107])
