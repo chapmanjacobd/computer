@@ -49,7 +49,8 @@ local function unmute_player()
     if mp.get_property_number("volume") == 0 then
         mp.set_property_number("volume", 80)
     end
-    if mp.get_property_bool("pause") then
+
+    if mp.get_property_native("fullscreen") and mp.get_property_bool("pause") then
         mp.set_property_bool("pause", false)
     end
     timer = nil
@@ -70,7 +71,7 @@ local function on_focus_change(name, value)
             timer = nil
         end
 
-        if mp.get_property_native("fullscreen") == true then
+        if mp.get_property_native("fullscreen") then
             local current_volume = mp.get_property_native("volume")
             fade_out_volume(0, 1, current_volume)
             -- mp.set_property("volume", "0")
