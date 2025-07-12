@@ -275,7 +275,7 @@ Window Fullscreen=none,,Make Window Fullscreen
 Window Grow Horizontal=none,,Expand Window Horizontally
 Window Grow Vertical=none,,Expand Window Vertically
 Window Lower=none,,Lower Window
-Window Maximize=Meta+PgUp,Meta+PgUp,Maximize Window
+Window Maximize=Meta+Up\tMeta+PgUp,Meta+PgUp,Maximize Window
 Window Maximize Horizontal=none,,Maximize Window Horizontally
 Window Maximize Vertical=none,,Maximize Window Vertically
 Window Minimize=Meta+PgDown,Meta+PgDown,Minimize Window
@@ -461,9 +461,6 @@ _launch=Alt+J
 
 [services][fish-2.desktop]
 _launch=Alt+T
-
-[services][fish-20.desktop]
-_launch=Meta+Up
 
 [services][fish-21.desktop]
 _launch=Alt+B
