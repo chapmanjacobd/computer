@@ -6,7 +6,7 @@ function tor-refresh
         set urls (ssh -t $s qbt_torrents_refresh.py)
         if test -n "$urls"
             lb links --cookies-from-browser firefox --path-include /download/torrent/ --download $urls
-            ssh -t $s lb torrents --tagged library-refresh --untag library-refresh --start
+            ssh -T $s lb torrents --tagged library-refresh --untag library-refresh --start
         end
     end
     trash (pwd)
