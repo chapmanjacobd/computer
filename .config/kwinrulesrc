@@ -11,6 +11,8 @@ wmclassmatch=1
 
 [1]
 Description=ignore mpv alt-tab
+above=true
+aboverule=2
 fsplevel=3
 fsplevelrule=2
 skiptaskbar=true
