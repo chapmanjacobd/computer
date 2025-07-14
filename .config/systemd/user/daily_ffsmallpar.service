@@ -1,9 +1,0 @@
-[Unit]
-Description='On *-*-* 23:15:00 run ffsmallpar'
-
-[Service]
-Type=simple
-RemainAfterExit=no
-TimeoutStartSec=infinity
-ExecStartPre=/bin/sleep 100
-ExecStart='/usr/bin/fish' '-c' '~/d/library/porn/video/ && ffsmallpar'
