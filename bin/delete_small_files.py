@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 import argparse
 import os
+from collections import Counter
 from pathlib import Path
 
-from library.utils import processes, strings
+from library.utils import devices, printing, processes, strings
 
 
 def print_info(p):
@@ -25,23 +26,25 @@ def print_info(p):
 
 
 def clean_directory(args, directory):
+    small_files = set()
+
     for root, _dirs, files in os.walk(directory):
         for file in files:
             p = os.path.join(root, file)
             file_size_mb = os.path.getsize(p) / (1024 * 1024)
-            file_extension = os.path.splitext(file)[1].lower()
 
-            if file_size_mb < args.max_size_mb:
-                print_info(p)
+            print_info(p)
+            if file_size_mb > args.max_size_mb:
+                print('Skipping large file', p)
+            else:
+                small_files.add(p)
 
-                if file_extension in args.small_file_extensions:
-                    os.remove(p)
-                else:
-                    response = input(f"Confirm erasure of '{p}'? (y/n): ").lower()
-                    if response == 'y':
-                        os.remove(p)
-                    else:
-                        print(f"Skipping: {p}")
+    extensions = Counter([os.path.splitext(file)[1].lower() for file in small_files])
+    printing.table(extensions)
+    if devices.confirm('Delete?'):
+        for p in small_files:
+            print_info(p)
+            os.remove(p)
 
 
 def get_dir_size(path):
@@ -54,9 +57,7 @@ def get_dir_size(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Remove empty folders and small files, with confirmation for non-whitelisted files."
-    )
+    parser = argparse.ArgumentParser()
     parser.add_argument("directories", metavar="DIRECTORY", type=str, nargs='+', help="The target directory to clean.")
     parser.add_argument(
         "--max-size-mb",
@@ -70,17 +71,8 @@ def main():
         default=5.0,
         help="Maximum size in MB for a directory to be processed. Directories larger than this will be skipped.",
     )
-    parser.add_argument(
-        "--small-file-extensions",
-        nargs='*',
-        default=['.ds_store', '.sfv', '.nfo', '.srr'],
-        help="List of file extensions (e.g., .ds_store) to be removed if under --max-size-mb (case-insensitive).",
-        metavar="EXT",
-    )
 
     args = parser.parse_args()
-
-    args.small_file_extensions = [ext.lower() for ext in args.small_file_extensions]
 
     for directory in args.directories:
         if not os.path.isdir(directory):
