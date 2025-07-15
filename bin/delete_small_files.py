@@ -4,7 +4,7 @@ import os
 from collections import Counter
 from pathlib import Path
 
-from library.utils import devices, printing, processes, strings
+from library.utils import arggroups, devices, printing, processes, strings
 
 
 def print_info(p):
@@ -33,14 +33,13 @@ def clean_directory(args, directory):
             p = os.path.join(root, file)
             file_size_mb = os.path.getsize(p) / (1024 * 1024)
 
-            print_info(p)
             if file_size_mb > args.max_size_mb:
                 print('Skipping large file', p)
             else:
                 small_files.add(p)
 
     extensions = Counter([os.path.splitext(file)[1].lower() for file in small_files])
-    printing.table(extensions)
+    printing.table([extensions])
     if devices.confirm('Delete?'):
         for p in small_files:
             print_info(p)
@@ -72,6 +71,7 @@ def main():
         help="Maximum size in MB for a directory to be processed. Directories larger than this will be skipped.",
     )
 
+    arggroups.debug(parser)
     args = parser.parse_args()
 
     for directory in args.directories:
