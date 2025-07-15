@@ -38,9 +38,12 @@ def clean_directory(args, directory):
             else:
                 small_files.add(p)
 
+    if not small_files:
+        return
+
     extensions = Counter([os.path.splitext(file)[1].lower() for file in small_files])
     printing.table([extensions])
-    if devices.confirm('Delete?'):
+    if len(small_files) < 10 or devices.confirm('Delete?'):
         for p in small_files:
             print_info(p)
             os.remove(p)
@@ -79,10 +82,11 @@ def main():
             print(f"Error: Directory '{directory}' not found.")
             continue
 
-        dir_size_mb = get_dir_size(directory) / (1024 * 1024)
+        dir_size = get_dir_size(directory)
+        dir_size_mb = dir_size / (1024 * 1024)
         if args.max_dir_size_mb and dir_size_mb > args.max_dir_size_mb:
             print(
-                f"Skipping directory '{directory}' as its size ({dir_size_mb:.2f} MB) "
+                f"Skipping directory '{directory}' as its size ({strings.file_size(dir_size)}) "
                 f"exceeds the maximum allowed ({args.max_dir_size_mb:.2f} MB)."
             )
             continue
