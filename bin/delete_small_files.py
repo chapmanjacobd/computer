@@ -4,7 +4,7 @@ import os
 from collections import Counter
 from pathlib import Path
 
-from library.utils import arggroups, devices, printing, processes, strings
+from library.utils import arggroups, devices, path_utils, printing, processes, strings
 
 
 def print_info(p):
@@ -35,6 +35,8 @@ def clean_directory(args, directory):
 
             if file_size_mb > args.max_size_mb:
                 print('Skipping large file', p)
+            elif os.path.splitext(file)[1].lower() in ('.srt', '.vtt'):
+                pass
             else:
                 small_files.add(p)
 
@@ -92,6 +94,7 @@ def main():
             continue
 
         clean_directory(args, directory)
+        path_utils.bfs_removedirs(directory)
 
 
 if __name__ == "__main__":
