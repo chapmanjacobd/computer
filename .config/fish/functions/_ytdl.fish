@@ -1,6 +1,6 @@
 function _ytdl
     yt-dlp \
-        -o "%(ie_key,extractor_key,extractor)s/%(uploader,uploader_id,channel,channel_id,creator,artist,author,album)s/%(title).200B_%(view_count)3.2D_[%(id).60B].%(ext)s" \
+        -o "%(ie_key,extractor_key,extractor)s/%(uploader,uploader_id,channel,channel_id,creator,artist,author,playlist_uploader,playlist_uploader_id,playlist_channel,playlist_channel_id)s - %(album,playlist_title,playlist,playlist_id,webpage_url_basename)s/%(title).200B_%(view_count)3.2D_[%(id).60B].%(ext)s" \
         --download-archive ~/.local/share/yt_archive.txt --retries 13 --extractor-retries 13 \
         --extractor-args youtubetab:skip=authcheck --embed-metadata \
         --no-progress --sleep-requests 1 \
