@@ -4,7 +4,7 @@ import os
 from collections import Counter
 from pathlib import Path
 
-from library.utils import arggroups, devices, path_utils, printing, processes, strings
+from library.utils import arggroups, consts, devices, path_utils, printing, processes, strings
 
 
 def print_info(p):
@@ -35,8 +35,11 @@ def clean_directory(args, directory):
 
             if file_size_mb > args.max_size_mb:
                 print('Skipping large file', p)
-            elif os.path.splitext(file)[1].lower() in ('.srt', '.vtt'):
-                pass
+            elif (
+                os.path.splitext(file)[1].lower().lstrip('.')
+                in consts.SUBTITLE_EXTENSIONS | consts.CALIBRE_EXTENSIONS | consts.ARCHIVE_EXTENSIONS
+            ):
+                print('Skipping subtitle/eBook/archive file', p)
             else:
                 small_files.add(p)
 
