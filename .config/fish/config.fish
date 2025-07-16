@@ -103,6 +103,9 @@ abbr -a ltc --function _abbr_ltc
 
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
+
+abbr_random_line wt ~/watch
+
 zoxide init fish | source
 
 set fish_color_host_remote (~/bin/str_rgb.py $hostname)
