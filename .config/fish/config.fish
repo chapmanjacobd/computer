@@ -82,10 +82,10 @@ abbr_random_line ltv ~/listen
 abbr_random_line lnv ~/links
 
 function _abbr_ltc
-    if grep Bedroom ~/.config/catt/catt.cfg >/dev/null
-        echo 'cr && lt -c -t Bedroom'
+    if test (hostname) = len
+        echo 'catt_set_default Bedroom; cr && lt -c -t Bedroom'
     else
-        echo 'cr && lt -c'
+        echo 'catt_set_default Xylo and Orchestra; cr && lt -c'
     end
 end
 abbr -a ltc --function _abbr_ltc
