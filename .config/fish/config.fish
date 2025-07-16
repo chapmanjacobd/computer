@@ -77,20 +77,9 @@ function _abbr_parallel
 end
 abbr -a parallel --function _abbr_parallel
 
-function _abbr_wtv
-    echo (cat ~/watch | strip | shuf -n 1)
-end
-abbr -a wtv --function _abbr_wtv
-
-function _abbr_ltv
-    echo (cat ~/listen | strip | shuf -n 1)
-end
-abbr -a ltv --function _abbr_ltv
-
-function _abbr_lnv
-    echo (cat ~/links | strip | shuf -n 1)
-end
-abbr -a lnv --function _abbr_lnv
+abbr_random_line wtv ~/watch
+abbr_random_line ltv ~/listen
+abbr_random_line lnv ~/links
 
 function _abbr_ltc
     if grep Bedroom ~/.config/catt/catt.cfg >/dev/null
@@ -102,9 +91,6 @@ end
 abbr -a ltc --function _abbr_ltc
 
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
-
-
-abbr_random_line wt ~/watch
 
 zoxide init fish | source
 
