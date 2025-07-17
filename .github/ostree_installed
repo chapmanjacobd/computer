@@ -29,6 +29,7 @@ ImageMagick
 inotify-tools
 intel-media-driver
 iotop
+kernel-tools
 kitty
 libacl-devel
 libattr-devel
