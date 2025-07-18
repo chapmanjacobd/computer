@@ -251,4 +251,4 @@ abbr -a -- cwd 'pwd | cb'
 abbr -a -- taxes wtm /home/xk/lb/tax.db --local --start '35%' -u size desc --cols path,title,size,time_modified -L inf -rs -m 2 --fstack --volume 0
 abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
-abbr -a -- printer lpr
+abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
