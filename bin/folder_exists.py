@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import os
+import os.path
 import sys
 
 
@@ -9,6 +10,9 @@ def process_folders(args):
         folder_path = line.strip()
         if not folder_path:  # Skip empty lines
             continue
+
+        if args.all and not os.path.isdir(folder_path):
+            folder_path = os.path.dirname(folder_path)
 
         if os.path.isdir(folder_path):
             try:
@@ -25,7 +29,7 @@ def process_folders(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--verbose", action="store_true", help="Print messages for skipped directories to stderr.")
+    parser.add_argument("--all", "-a", action="store_true", help="Include parent folders of file paths")
     args = parser.parse_args()
 
     process_folders(args)
