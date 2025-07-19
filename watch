@@ -1,4 +1,4 @@
-wt 'Babylon 5' -m 3 (poplinehead /mnt/d/75_Moviequeue/Babylon\ 5/TV\ and\ Movies/B5_Watch_Order_JMS_Official.txt)
+wt 'Babylon 5' -m 3 Babylon 5 (poplinehead '/mnt/d9/dump/video/other/75_Moviequeue/Babylon 5/TV and Movies/B5_Watch_Order_JMS_Official.txt')
 wt 'Mary Hartman' S01 -u path
 wt --sort 'ntile(1000) over (order by size/duration) desc' --fetch-siblings each
 wt -C --sort-groups-by 'deleted/played desc, deleted desc'
