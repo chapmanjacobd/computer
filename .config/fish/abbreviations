@@ -243,7 +243,6 @@ abbr -a -- zj z j
 abbr -a -- wipc gitstash-checkpoint
 abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human-numeric-sort -k6,6 -k5,5'
 abbr -a -- ipy ipython --pdb
 abbr -a -- github gh repo view --web
 abbr -a -- echon print
@@ -252,3 +251,4 @@ abbr -a -- taxes wtm /home/xk/lb/tax.db --local --start '35%' -u size desc --col
 abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort --human-numeric-sort -k6,6 -k5,5r'
