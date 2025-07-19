@@ -251,4 +251,4 @@ abbr -a -- taxes wtm /home/xk/lb/tax.db --local --start '35%' -u size desc --col
 abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6h -k5,5hr'
+abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6g -k5,5hr'
