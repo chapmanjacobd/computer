@@ -3,6 +3,7 @@ import argparse
 import os
 from collections import Counter
 from pathlib import Path
+import charset_normalizer
 
 from library.utils import arggroups, consts, devices, path_utils, printing, processes, strings
 
@@ -13,14 +14,18 @@ def print_info(p):
 
     try:
         b = Path(p).read_bytes()
-
-        try:
-            decoded_text = b.decode('utf-8')
-            print(decoded_text)
-        except UnicodeDecodeError:
-            print(b[0:250].hex(' ', 4))
     except IOError as e:
         print(f"Error reading file '{p}': {e}")
+        return
+
+    detection_result = charset_normalizer.from_bytes(b).best()
+    if detection_result:
+        try:
+            print(str(detection_result))
+        except Exception as e:
+            print(b[0:250].hex(' ', 4))
+    else:
+        print(b[0:250].hex(' ', 4))
 
     print()
 
