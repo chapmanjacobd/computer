@@ -138,7 +138,6 @@ abbr -a -- magnets1337 'lb links (cb) --path-include magnet: | ssh backup tee -a
 abbr -a -- gdt git diff --text
 abbr -a -- gdts git diff --text --staged
 abbr -a -- gdst git diff --text --staged
-abbr -a -- du du --block-size=1 --summarize
 abbr -a -- eda lb eda
 abbr -a -- pstat pidstat -l --dec=0 3 1 -r
 abbr -a -- uuid lsblk -f
@@ -252,3 +251,4 @@ abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6g -k5,5hr'
+abbr -a -- du 'du --block-size=1 --summarize --total -h'
