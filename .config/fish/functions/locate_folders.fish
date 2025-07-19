@@ -1,4 +1,4 @@
 # Defined via `source`
 function locate_folders
-    plocate $argv | folder_exists.py | cb
+    plocate $argv | path dirname | unique | folder_exists.py
 end
