@@ -57,7 +57,7 @@ def analyze_torrent_content(files):
     for category in category_counts:
         count_weight = category_counts[category] / total_files
         size_weight = category_sizes[category] / total_size if total_size > 0 else 0
-        category_scores[category] = count_weight * size_weight
+        category_scores[category] = count_weight * (size_weight * 4)
 
     sorted_categories = sorted(category_scores.items(), key=lambda item: item[1], reverse=True)
     if not sorted_categories:
