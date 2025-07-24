@@ -41,7 +41,7 @@ def clean_directory(args, directory):
             if file_size_mb > args.max_size_mb:
                 print('Skipping large file', p)
             elif (
-                os.path.splitext(file)[1].lower().lstrip('.')
+                os.path.splitext(file)[1].lstrip('.').lower()
                 in consts.SUBTITLE_EXTENSIONS | consts.CALIBRE_EXTENSIONS | consts.ARCHIVE_EXTENSIONS
             ):
                 print('Skipping subtitle/eBook/archive file', p)

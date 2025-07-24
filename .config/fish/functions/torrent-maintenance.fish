@@ -4,13 +4,14 @@ function torrent-maintenance
 
     tor-refresh
 
+    # tag items
     for s in 127.0.0.1:8080 backup:8888 r730xd:8888 hk:8888 len:8888
         qbt_torrents_exfoliate.py --host $s
         qbt_torrents_trumped.py --host $s
     end
+    # remove tagged items
     for s in pakon backup r730xd len hk
-        # remove previously tagged items
-        ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing(datestamp) --delete-rows -pa
+        ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing/(datestamp) --delete-rows -pa
     end
 
     allpc lb torrents --ul --no-any-exists --move processed --delete-rows -v -pa
