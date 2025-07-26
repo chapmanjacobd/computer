@@ -1,4 +1,4 @@
 # Defined interactively
 function datestamp
-    date "+%Y-%m-%d_"(dayminute)
+    date "+%Y-%m-%d_%H%M"
 end

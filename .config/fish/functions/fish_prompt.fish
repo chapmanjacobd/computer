@@ -87,7 +87,7 @@ function fish_prompt --description 'Write out the prompt'
 
     set_color $color_host
     if test -n "$duration"
-        printf '%s ' (dayminute)
+        printf '%s ' (date '+%H%M')
     else if set -q venv
         printf '(%s) ' $venv
     else if set -q CONTAINER_ID
