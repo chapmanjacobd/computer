@@ -56,7 +56,6 @@ for host, host_disks in disks_by_host.items():
     )
 
     torrents = qbt_client.torrents_info()
-    torrents = [t for t in torrents if not t.state_enum.is_complete]
 
     host_disks = sorted(host_disks, key=len, reverse=True)
     torrents_by_disk = {}
