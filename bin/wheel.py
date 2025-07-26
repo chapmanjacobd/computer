@@ -89,6 +89,12 @@ with device.grab_context():  # get exclusive access
                 else:  # Middle Click
                     ui.write(event.type, event.code, event.value)
                     ui.syn()
+            elif event.code == e.BTN_EXTRA:
+                ui.write(e.EV_KEY, e.KEY_PAGEUP, event.value)
+                ui.syn()
+            elif event.code == e.BTN_SIDE:
+                ui.write(e.EV_KEY, e.KEY_PAGEDOWN, event.value)
+                ui.syn()
             else:  # other keys
                 ui.write(event.type, event.code, event.value)
                 ui.syn()
