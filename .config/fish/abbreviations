@@ -253,3 +253,4 @@ abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6g 
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- scsi 'lsblk -S -o name,disk-seq'
 abbr -a -- disks 'lsblk -o NAME,SIZE,MODEL,SERIAL -S'
+abbr -a -- tr trU
