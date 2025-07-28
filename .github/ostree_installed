@@ -3,6 +3,7 @@ android-tools
 bfs
 btrfsmaintenance
 cargo
+cups
 detox
 distrobox
 dnscrypt-proxy
@@ -48,6 +49,7 @@ nmon
 oniguruma-devel
 ov
 parallel
+perl-Image-ExifTool
 pg_top
 plocate
 podman-compose
