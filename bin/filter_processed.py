@@ -2,7 +2,7 @@
 import argparse
 import os
 
-from library.utils import arggroups, file_utils, processes, consts
+from library.utils import arggroups, consts, file_utils, processes
 
 
 def is_processed(filepath):
@@ -20,11 +20,11 @@ def is_processed(filepath):
         else:
             if probe.has_video:
                 for s in probe.video_streams:
-                    if s.codec_name == 'av1':
+                    if s['codec_name'] == 'av1':
                         return True
             else:
                 for s in probe.audio_streams:
-                    if s.codec_name == 'opus':
+                    if s['codec_name'] == 'opus':
                         return True
 
     return False
@@ -40,7 +40,8 @@ def main():
     args = parser.parse_args()
     arggroups.args_post(args, parser)
 
-    if args.n: args.processed = False
+    if args.n:
+        args.processed = False
 
     for p in file_utils.gen_paths(args):
         if is_processed(p) is args.processed:
