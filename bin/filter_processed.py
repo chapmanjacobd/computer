@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import os
+from subprocess import TimeoutExpired
 
 from library.utils import arggroups, consts, file_utils, processes
 
@@ -15,7 +16,7 @@ def is_processed(filepath):
     elif ext in consts.VIDEO_EXTENSIONS | consts.AUDIO_ONLY_EXTENSIONS:
         try:
             probe = processes.FFProbe(filepath)
-        except processes.UnplayableFile:
+        except (processes.UnplayableFile, TimeoutExpired):
             return False
         else:
             if probe.has_video:
