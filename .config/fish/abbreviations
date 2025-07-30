@@ -254,3 +254,4 @@ abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- scsi 'lsblk -S -o name,disk-seq'
 abbr -a -- disks 'lsblk -o NAME,SIZE,MODEL,SERIAL -S'
 abbr -a -- tr trU
+abbr -a -- html_table 'lb tables --type html (cb_htmlfile)'
