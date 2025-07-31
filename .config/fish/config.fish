@@ -32,11 +32,11 @@ bind \e\[99\;6u fish_clipboard_copy
 
 bind \e, kill-selection backward-kill-token yank yank
 
-bind ctrl-Z redo
+bind ctrl-y redo
 bind alt-y yank
 bind ctrl-u yank
-bind ctrl-l kill-line
-bind ctrl-k backward-kill-line
+bind ctrl-k kill-line
+bind ctrl-l backward-kill-line
 
 bind ctrl-t transpose-words
 
