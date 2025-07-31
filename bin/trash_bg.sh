@@ -1,7 +1,7 @@
 #!/bin/bash
 
 case "$1" in
-    /net/*)
+    /net/* | */.Trash/* | */.Trash-1000/*)
         /bin/setsid -f rm "$1"
         ;;
 
