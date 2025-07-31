@@ -23,9 +23,10 @@ wt Horizon Zero Dawn Walkthrough -O
 wt JUDGMENT PS4
 wt Mohanagar -O
 wt ~/d/75_Moviequeue/from_backup/ -d-30 -O
-wtm ~/lb/fs/video.db -rs -d-2
-wtm ~/lb/fs/video.db --fstack --fs -rs -d-1 --volume 0
+wt ~/lb/fs/video.db -rs -d-2
+wt ~/lb/fs/video.db --fstack --fs -rs -d-1 --volume 0
 wt -db ~/lb/fs/video.db -rs -m 3 --fstack -s (popline .jobs/reviews)/
 wt -u priority -d-7
 wt -db ~/lb/fs/video.big.db -u priority --fetch-siblings each
-wtm ~/lb/fs/tax.db -E /mnt/d1/ -E /mnt/d10/ --local -rs -L inf -S+600 -m 2 --fstack --mute
+wt -m 4 --fstack -db ~/lb/fs/tax.net.db --trash-cmd rm --keep-dir keep -rs -L inf -S+500 -m 3 --fstack --mute --pause
+wt -m 4 --fstack -db ~/lb/fs/tax.db --keep-dir /home/xk/d/library/porn/video/ -E /mnt/d1/ -E /mnt/d10/ --local -rs -L inf -S+500 -m 3 --fstack --mute --pause
