@@ -9,6 +9,7 @@
     default = upstream
     autosetupremote = true
     followTags = true
+    useForceIfIncludes = true
 [core]
     pager = delta --syntax-theme GitHub --max-line-length 1024  # --keep-plus-minus-markers
     excludesfile = /home/xk/.gitignore_global
@@ -107,6 +108,7 @@
     tagged = describe --tags --exact-match
     tags = tag --sort=creatordate --contains
     reword = commit --amend -m
+    pushf = push --force-with-lease --force-if-includes
     head = show HEAD
 [advice]
     skippedCherryPicks = false
