@@ -7,7 +7,7 @@ function git
         set -l has_force false
         set -l remaining_args
         for arg in $cmd_args[2..-1]
-            if test "$arg" = -f -o "$arg" = --force
+            if test "$arg" = -f; or test "$arg" = --force
                 set has_force true
             else
                 set remaining_args $remaining_args $arg
