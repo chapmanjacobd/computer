@@ -14,7 +14,7 @@ function torrent-maintenance
         ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing/(datestamp) --delete-rows -pa
     end
 
-    allpc lb torrents --ul --no-any-exists --move processed --delete-rows -v -pa
+    allpc lb torrents --ul --no-any-exists --no-checking --no-errored --move processing --delete-rows -v -pa
 
     allqb lb torrents --dl --no-queued --start -pa >/dev/null
     allqb lb torrents --dl --downloaded=+0 --time-active=+1days --force-start -pa >/dev/null
