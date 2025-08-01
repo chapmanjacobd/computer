@@ -245,7 +245,6 @@ abbr -a -- ipy ipython --pdb
 abbr -a -- github gh repo view --web
 abbr -a -- echon print
 abbr -a -- cwd 'pwd | cb'
-abbr -a -- taxes wtm /home/xk/lb/tax.db --local --start '35%' -u size desc --cols path,title,size,time_modified -L inf -rs -m 2 --fstack --volume 0
 abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
@@ -256,3 +255,4 @@ abbr -a -- disks 'lsblk -o NAME,SIZE,MODEL,SERIAL -S'
 abbr -a -- tr trU
 abbr -a -- html_table 'lb tables --type html (cb_htmlfile)'
 abbr -a -- wtm wt -m 4 --fstack
+abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
