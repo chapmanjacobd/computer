@@ -94,6 +94,7 @@ igt-gpu-tools
 ImageMagick-devel
 ImageMagick-heic
 iotop
+ipmitool
 java-latest-openjdk
 java-latest-openjdk-devel
 jemalloc
