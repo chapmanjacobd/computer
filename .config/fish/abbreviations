@@ -199,7 +199,6 @@ abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
-abbr -a -- mounts lsblk -o NAME,MAJ:MIN,RM,SIZE,RO,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- partition sudo sgdisk -n 0:0:0 -t 0:8300
 abbr -a -- ext4 sudo mkfs.ext4 -T largefile -m 0 -e continue
 abbr -a -- trash-dirs trash-list --trash-dirs
@@ -251,8 +250,9 @@ abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6g -k5,5hr'
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- scsi 'lsblk -S -o name,disk-seq'
-abbr -a -- disks 'lsblk -o NAME,SIZE,MODEL,SERIAL -S'
 abbr -a -- tr trU
 abbr -a -- html_table 'lb tables --type html (cb_htmlfile)'
 abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
+abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
+abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
