@@ -1,7 +1,7 @@
 # Defined via `source`
-function btrfs_add_temp_device --argument-names btrfs_mnt --argument-names new_mnt
+function btrfs_temp_device_add --argument-names btrfs_mnt --argument-names new_mnt
     if test (count $argv) -ne 2
-        echo "Usage: btrfs_add_temp_device <btrfs_mountpoint> <new_mountpoint>"
+        echo "Usage: btrfs_temp_device_add <btrfs_mountpoint> <new_mountpoint>"
         return 1
     end
 
@@ -29,6 +29,4 @@ function btrfs_add_temp_device --argument-names btrfs_mnt --argument-names new_m
         echo "Error: Failed to add device to Btrfs."
         return 1
     end
-
-    btrfs filesystem df "$btrfs_mnt"
 end

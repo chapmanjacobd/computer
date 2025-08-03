@@ -1,7 +1,7 @@
 # Defined via `source`
-function btrfs_remove_temp_device --argument-names btrfs_mount
+function btrfs_temp_device_remove --argument-names btrfs_mount
     if test (count $argv) -ne 1
-        echo "Usage: btrfs_remove_temp_device <btrfs_mountpoint>"
+        echo "Usage: btrfs_temp_device_remove <btrfs_mountpoint>"
         return 1
     end
 
