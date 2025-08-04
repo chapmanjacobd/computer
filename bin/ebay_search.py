@@ -3,6 +3,9 @@ import webbrowser
 import argparse
 import urllib.parse
 
+sep = "."
+
+
 def generate_ebay_url(term_groups):
     base_url = "https://www.ebay.com/sch/i.html"
 
@@ -12,7 +15,7 @@ def generate_ebay_url(term_groups):
 
     formatted_parts = []
     for group in term_groups:
-        formatted_group = "(" + ",".join([item.replace(" ", "+") for item in group]) + ")"
+        formatted_group = "(" + ",".join(group) + ")"
         formatted_parts.append(formatted_group)
     combined_nkw = "".join(formatted_parts)
 
@@ -21,20 +24,19 @@ def generate_ebay_url(term_groups):
 
     return full_url
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Converts lists of search terms into an eBay search URL and opens it. "
-                    "Terms are grouped by a separator."
+        "Terms are grouped by a separator."
     )
     parser.add_argument(
         "search_terms",
         nargs="+",
-        help='All search terms, separated into groups by separator. '
-             'Example: 2TB 3TB; U.3 "SATA M.2"; SSD'
+        help=f'''All search terms, separated into groups by separator.
+    Example: 2TB 3TB{sep} U.3 "SATA M.2"{sep} SSD''',
     )
     args = parser.parse_args()
-
-    sep = ";"
 
     term_groups = []
     current_group = []
@@ -45,13 +47,14 @@ def main():
             current_group = []  # start a new group
         else:
             current_group.append(term.rstrip(sep))
-    if current_group: # last group
+    if current_group:  # last group
         term_groups.append(current_group)
 
     url = generate_ebay_url(term_groups)
     if url:
         print(url)
         webbrowser.open(url)
+
 
 if __name__ == "__main__":
     main()
