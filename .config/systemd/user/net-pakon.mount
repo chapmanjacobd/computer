@@ -7,7 +7,7 @@ Before=remote-fs.target
 What=pakon:
 Where=/net/pakon
 Type=fuse.sshfs
-Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,direct_io,delay_connect
+Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,delay_connect
 
 [Install]
 WantedBy=default.target
