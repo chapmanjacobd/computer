@@ -19,7 +19,7 @@ function wip
     echo
     git status
     if set -q _flag_yes; or gum confirm --default=no
-        gitupdate .
+        git commit -m "$(wip_message.py)"
         git pull
         git push
     end
