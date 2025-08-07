@@ -53,7 +53,72 @@ def get_diff_stats(filename):
     return {}
 
 
+def track_moved(added_lines: list[str], removed_lines: list[str]):
+    moved = []
+    added = list(added_lines)
+    removed = list(removed_lines)
+
+    for line in list(added_lines):
+        if line in removed:
+            moved.append(line)
+            added.remove(line)
+            removed.remove(line)
+
+    return added, removed, moved
+
+def get_diff_line(filename):
+    try:
+        result = subprocess.run(
+            ['git', 'diff', '--staged', '--unified=0', filename],
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding='utf-8'
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error getting diff lines for {filename}: {e}", file=sys.stderr)
+    else:
+        added_lines = []
+        removed_lines = []
+        for line in result.stdout.splitlines():
+            if line.startswith('+') and not line.startswith('+++'):
+                line = line[1:]  # strip the +/- prefix
+                added_lines.append(line.strip().replace('\n', ' '))
+            elif line.startswith('-') and not line.startswith('---'):
+                line = line[1:]  # strip the +/- prefix
+                removed_lines.append(line.strip().replace('\n', ' '))
+
+        added, removed, moved = track_moved(added_lines, removed_lines)
+
+        parts = []
+        if added:
+            added_text = " ".join(added)
+            if len(added_text) <= 80:
+                parts.append(f"Added '{added_text}'")
+            else:
+                parts.append(f"Added {len(added)} lines")
+        if removed:
+            removed_text = " ".join(removed)
+            if len(removed_text) <= 80:
+                parts.append(f"Deleted '{removed_text}'")
+            else:
+                parts.append(f"Deleted {len(removed)} lines")
+        if moved:
+            moved_text = " ".join(moved)
+            if len(moved_text) <= 80:
+                parts.append(f"Moved '{moved_text}'")
+            else:
+                parts.append(f"Moved {len(moved)} lines")
+
+        return "; ".join(parts)
+
 def format_single_file_message(filename):
+    diff_line = get_diff_line(filename)
+    if diff_line:
+        is_short_change = len(diff_line) < 80
+        if is_short_change:
+            return f"{os.path.basename(filename)}: {diff_line}"
+
     diff_stats = get_diff_stats(filename)
     if diff_stats:
         parts = []
