@@ -83,12 +83,12 @@ def get_diff_line(filename):
         for line in result.stdout.splitlines():
             if line.startswith('+') and not line.startswith('+++'):
                 line = line[1:]  # strip the +/- prefix
-                line = line.replace('\n', ' ').strip()
+                line = line.replace('\n', '⏎').strip()
                 if line:
                     added_lines.append(line)
             elif line.startswith('-') and not line.startswith('---'):
                 line = line[1:]  # strip the +/- prefix
-                line = line.replace('\n', ' ').strip()
+                line = line.replace('\n', '⏎').strip()
                 if line:
                     removed_lines.append(line)
 
