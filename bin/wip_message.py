@@ -66,6 +66,7 @@ def track_moved(added_lines: list[str], removed_lines: list[str]):
 
     return added, removed, moved
 
+
 def get_diff_line(filename):
     try:
         result = subprocess.run(
@@ -73,7 +74,7 @@ def get_diff_line(filename):
             capture_output=True,
             text=True,
             check=True,
-            encoding='utf-8'
+            encoding='utf-8',
         )
     except subprocess.CalledProcessError as e:
         print(f"Error getting diff lines for {filename}: {e}", file=sys.stderr)
@@ -83,12 +84,17 @@ def get_diff_line(filename):
         for line in result.stdout.splitlines():
             if line.startswith('+') and not line.startswith('+++'):
                 line = line[1:]  # strip the +/- prefix
-                added_lines.append(line.strip().replace('\n', ' '))
+                line = line.replace('\n', ' ').strip()
+                if line:
+                    added_lines.append(line)
             elif line.startswith('-') and not line.startswith('---'):
                 line = line[1:]  # strip the +/- prefix
-                removed_lines.append(line.strip().replace('\n', ' '))
+                line = line.replace('\n', ' ').strip()
+                if line:
+                    removed_lines.append(line)
 
         added, removed, moved = track_moved(added_lines, removed_lines)
+        # print(added, removed, moved)
 
         parts = []
         if added:
@@ -111,6 +117,7 @@ def get_diff_line(filename):
                 parts.append(f"Moved {len(moved)} lines")
 
         return "; ".join(parts)
+
 
 def format_single_file_message(filename):
     diff_line = get_diff_line(filename)
