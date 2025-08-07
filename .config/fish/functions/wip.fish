@@ -18,6 +18,7 @@ function wip
     git --no-pager diff --stat HEAD
     echo
     git status
+    wip_message.py
     if set -q _flag_yes; or gum confirm --default=no
         git commit -m "$(wip_message.py)"
         git pull
