@@ -1,11 +1,11 @@
 function sponge_filter_matched \
-  --argument-names command
+    --argument-names command
 
-  for pattern in $sponge_regex_patterns
-    if string match --regex --quiet $pattern -- $command
-      return
+    for pattern in $sponge_regex_patterns
+        if string match --regex --quiet $pattern -- $command
+            return
+        end
     end
-  end
 
-  return 1
+    return 1
 end
