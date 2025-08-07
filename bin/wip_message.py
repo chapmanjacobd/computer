@@ -83,12 +83,12 @@ def get_diff_line(filename):
         for line in result.stdout.splitlines():
             if line.startswith('+') and not line.startswith('+++'):
                 line = line[1:]  # strip the +/- prefix
-                line = line.replace('\n', '⏎').strip()
+                line = line.strip()
                 if line:
                     added_lines.append(line)
             elif line.startswith('-') and not line.startswith('---'):
                 line = line[1:]  # strip the +/- prefix
-                line = line.replace('\n', '⏎').strip()
+                line = line.strip()
                 if line:
                     removed_lines.append(line)
 
@@ -97,19 +97,19 @@ def get_diff_line(filename):
 
         parts = []
         if added:
-            added_text = " ".join(added)
+            added_text = "⏎".join(added)
             if len(added_text) <= 80:
                 parts.append(f"Added text '{added_text}'")
             else:
                 parts.append(f"Added {len(added)} lines")
         if removed:
-            removed_text = " ".join(removed)
+            removed_text = "⏎".join(removed)
             if len(removed_text) <= 80:
                 parts.append(f"Deleted text '{removed_text}'")
             else:
                 parts.append(f"Deleted {len(removed)} lines")
         if moved:
-            moved_text = " ".join(moved)
+            moved_text = "⏎".join(moved)
             if len(moved_text) <= 80:
                 parts.append(f"Moved text '{moved_text}'")
             else:
@@ -121,7 +121,7 @@ def get_diff_line(filename):
 def format_single_file_message(filename):
     diff_line = get_diff_line(filename)
     if diff_line:
-        is_short_change = len(diff_line) < 80
+        is_short_change = len(diff_line) < 120
         if is_short_change:
             return f"{os.path.basename(filename)}: {diff_line}"
 
