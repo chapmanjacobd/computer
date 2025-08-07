@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
+import os
+import re
 import subprocess
 import sys
-import os
-import argparse
 from collections import defaultdict
-import re
+
 
 def get_staged_files():
     try:
@@ -14,7 +14,7 @@ def get_staged_files():
             capture_output=True,
             text=True,
             check=True,
-            encoding='utf-8'
+            encoding='utf-8',
         )
     except subprocess.CalledProcessError as e:
         print(f"Error calling git: {e}", file=sys.stderr)
@@ -29,10 +29,11 @@ def get_staged_files():
 
     for i in range(0, len(staged_files_list) - 1, 2):
         status = staged_files_list[i].strip()
-        filename = staged_files_list[i+1]
+        filename = staged_files_list[i + 1]
         files_by_status[status].append(filename)
 
     return files_by_status
+
 
 def get_diff_stats(filename):
     try:
@@ -41,18 +42,16 @@ def get_diff_stats(filename):
             capture_output=True,
             text=True,
             check=True,
-            encoding='utf-8'
+            encoding='utf-8',
         )
         match = re.match(r'(\d+)\s+(\d+)\s+.*', result.stdout)
         if match:
-            return {
-                'added': int(match.group(1)),
-                'deleted': int(match.group(2))
-            }
+            return {'added': int(match.group(1)), 'deleted': int(match.group(2))}
 
     except subprocess.CalledProcessError as e:
         print(f"Error getting diff for {filename}: {e}", file=sys.stderr)
     return {}
+
 
 def format_single_file_message(filename):
     diff_stats = get_diff_stats(filename)
@@ -67,6 +66,7 @@ def format_single_file_message(filename):
             return f"{os.path.basename(filename)}: {', '.join(parts)}"
 
     return os.path.basename(filename)
+
 
 def format_files_for_message(files):
     if not files:
@@ -85,6 +85,7 @@ def format_files_for_message(files):
             message_parts.extend([os.path.basename(f) for f in file_list])
 
     return ', '.join(message_parts)
+
 
 def build_commit_message(files_by_status):
     all_files = [f for files in files_by_status.values() for f in files]
@@ -114,7 +115,9 @@ def build_commit_message(files_by_status):
 def main():
     files_by_status = get_staged_files()
     message = build_commit_message(files_by_status)
-    print(message)
+    if message:
+        print(message)
+
 
 if __name__ == "__main__":
     main()
