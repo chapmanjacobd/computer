@@ -94,19 +94,19 @@ def get_diff_line(filename):
         if added:
             added_text = " ".join(added)
             if len(added_text) <= 80:
-                parts.append(f"Added '{added_text}'")
+                parts.append(f"Added text '{added_text}'")
             else:
                 parts.append(f"Added {len(added)} lines")
         if removed:
             removed_text = " ".join(removed)
             if len(removed_text) <= 80:
-                parts.append(f"Deleted '{removed_text}'")
+                parts.append(f"Deleted text '{removed_text}'")
             else:
                 parts.append(f"Deleted {len(removed)} lines")
         if moved:
             moved_text = " ".join(moved)
             if len(moved_text) <= 80:
-                parts.append(f"Moved '{moved_text}'")
+                parts.append(f"Moved text '{moved_text}'")
             else:
                 parts.append(f"Moved {len(moved)} lines")
 
