@@ -54,15 +54,14 @@ def get_diff_stats(filename):
 
 
 def track_moved(added_lines: list[str], removed_lines: list[str]):
-    moved = []
     added = list(added_lines)
     removed = list(removed_lines)
-
+    moved = []
     for line in list(added_lines):
         if line in removed:
-            moved.append(line)
             added.remove(line)
             removed.remove(line)
+            moved.append(line)
 
     return added, removed, moved
 
