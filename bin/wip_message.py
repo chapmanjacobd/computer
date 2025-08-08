@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import difflib
 import os
 import re
 import subprocess
@@ -56,6 +57,7 @@ def get_diff_stats(filename):
 def track_moved(added_lines: list[str], removed_lines: list[str]):
     added = list(added_lines)
     removed = list(removed_lines)
+    modified = []
     moved = []
     for line in list(added_lines):
         if line in removed:
@@ -63,7 +65,25 @@ def track_moved(added_lines: list[str], removed_lines: list[str]):
             removed.remove(line)
             moved.append(line)
 
-    return added, removed, moved
+    remaining_added = list(added)
+    for added_line in remaining_added:
+        best_match = None
+        highest_ratio = 0.0
+
+        for removed_line in list(removed):
+            s = difflib.SequenceMatcher(None, added_line, removed_line)
+            ratio = s.ratio()
+            if ratio > highest_ratio:
+                highest_ratio = ratio
+                best_match = removed_line
+
+        if highest_ratio > 0.8:
+            modified.append(added_line)
+            added.remove(added_line)
+            if best_match in removed:
+                removed.remove(best_match)
+
+    return added, removed, modified, moved
 
 
 def get_diff_line(filename):
@@ -92,7 +112,7 @@ def get_diff_line(filename):
                 if line:
                     removed_lines.append(line)
 
-        added, removed, moved = track_moved(added_lines, removed_lines)
+        added, removed, modified, moved = track_moved(added_lines, removed_lines)
         # print(added, removed, moved)
 
         parts = []
@@ -108,6 +128,12 @@ def get_diff_line(filename):
                 parts.append(f"Deleted text '{removed_text}'")
             else:
                 parts.append(f"Deleted {len(removed)} lines")
+        if modified:
+            modified_text = "⏎".join(modified)
+            if len(modified_text) <= 80:
+                parts.append(f"Modified text to '{modified_text}'")
+            else:
+                parts.append(f"Modified {len(modified)} lines")
         if moved:
             moved_text = "⏎".join(moved)
             if len(moved_text) <= 80:
@@ -151,7 +177,7 @@ def format_files_for_message(files):
     message_parts = []
     for folder, file_list in folders.items():
         if len(file_list) > 3:
-            message_parts.append(f"{len(file_list)} files from {folder}")
+            message_parts.append(f"{len(file_list)} files in {folder}")
         else:
             message_parts.extend([os.path.basename(f) for f in file_list])
 
