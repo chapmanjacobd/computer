@@ -170,15 +170,17 @@ def build_commit_message(files_by_status):
     }
 
     message_parts = []
+    for status, prefix in prefix_map.items():
+        if status in files_by_status:
+            formatted_list = format_files_for_message(files_by_status[status])
+            if formatted_list:
+                message_parts.append(f"{prefix} {formatted_list}")
+
     for status, files in files_by_status.items():
         if status.startswith('R'):
             formatted_list = format_files_for_message(files)
             if formatted_list:
                 message_parts.append(f"Renamed {formatted_list}")
-        elif status in prefix_map:
-            formatted_list = format_files_for_message(files)
-            if formatted_list:
-                message_parts.append(f"{prefix_map[status]} {formatted_list}")
 
     return '; '.join(message_parts)
 
