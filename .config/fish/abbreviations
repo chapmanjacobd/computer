@@ -256,3 +256,4 @@ abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
+abbr -a -- unardel lb unardel -v
