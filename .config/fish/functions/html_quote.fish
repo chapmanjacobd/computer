@@ -1,4 +1,4 @@
 # Defined via `source`
 function html_quote
-    cb | wrap | sed 's/^/> /'
+    cb | sed 's/^/> /'
 end
