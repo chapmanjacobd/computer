@@ -10,6 +10,7 @@ tries = 5
 http2-request-window = 15
 tcp-fastopen = on
 max-redirect = 5
+check-certificate = quiet
 trust-server-names = on
 content-disposition = on
 robots = off
