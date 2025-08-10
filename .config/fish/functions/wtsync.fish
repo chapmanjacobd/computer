@@ -1,4 +1,4 @@
 # Defined interactively
 function wtsync
-    lb relmv (wt $argv -pf) ~/sync/video/ -v
+    lb relmv (wtd $argv -pf) ~/sync/video/ -v
 end
