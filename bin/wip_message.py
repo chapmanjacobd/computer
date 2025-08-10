@@ -39,7 +39,7 @@ def get_staged_files():
 def get_diff_stats(filename):
     try:
         result = subprocess.run(
-            ['git', 'diff', '--staged', '--numstat', filename],
+            ['git', 'diff', '--staged', '--numstat', "--", ":/" + filename],
             capture_output=True,
             text=True,
             check=True,
@@ -89,7 +89,7 @@ def track_moved(added_lines: list[str], removed_lines: list[str]):
 def get_diff_line(filename):
     try:
         result = subprocess.run(
-            ['git', 'diff', '--staged', '--unified=0', filename],
+            ['git', 'diff', '--staged', '--unified=0', "--", ":/" + filename],
             capture_output=True,
             text=True,
             check=True,

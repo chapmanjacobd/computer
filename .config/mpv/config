@@ -84,10 +84,6 @@ speed=0.5
 [extension.gif]
 interpolation=no
 
-# [pakon]
-# profile-desc=cond:os.getenv("HOSTNAME") == "pakon"
-
-
 [live]
 no-resume-playback
 ytdl-raw-options-append='playlist-items=1'

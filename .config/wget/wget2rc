@@ -1,5 +1,5 @@
-progress = none
 verbose = off
+progress = none
 server-response = on
 
 timeout = 80
