@@ -18,8 +18,12 @@ deband=no
 tscale=oversample
 
 input-ipc-server=~/.config/mpv/socket
-ytdl-raw-options=cookies-from-browser=firefox
+
 ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
+ytdl-raw-options=cookies-from-browser=firefox
+ytdl-raw-options-append='abort-on-error='
+ytdl-raw-options-append='strip-emojis-in-title='
+ytdl-raw-options-append='sub-lang=en'
 
 #vo=gpu
 #hwdec=auto-copy
@@ -79,3 +83,16 @@ speed=0.5
 
 [extension.gif]
 interpolation=no
+
+# [pakon]
+# profile-desc=cond:os.getenv("HOSTNAME") == "pakon"
+
+
+[live]
+no-resume-playback
+ytdl-raw-options-append='playlist-items=1'
+
+[webcam]
+no-resume-playback
+untimed
+profile=low-latency
