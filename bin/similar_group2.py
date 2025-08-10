@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 
 from tabulate import tabulate
 
-from library.utils import argparse_utils, processes, strings, iterables
+from library.utils import argparse_utils, strings
 
 
 def main():
@@ -27,55 +27,47 @@ def main():
     def s(line: str) -> str:
         return strings.path_to_sentence(line.lower() if args.ignore_case else line)
 
-    lines: List[Dict[str, Any]] = []
-    for i, line in enumerate(args.input_path_left.readlines()):
-        line  = line.strip()
-        if line:
-            lines.append({'original_line': line, 'lineno': i + 1, 'source': 'left'})
-
-    for i, line in enumerate(args.input_path_right.readlines()):
-        line  = line.strip()
-        if line:
-            lines.append({'original_line': line, 'lineno': i + 1, 'source': 'right'})
-
-    if not lines:
-        processes.no_media_found()
-
     groups: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for line_data in lines:
-        found_group = False
-        current_line_text = s(args, line_data['original_line'])
 
-        for canonical_line, group_list in groups.items():
-            canonical_line_text = s(args, canonical_line)
-            matcher = difflib.SequenceMatcher(None, current_line_text, canonical_line_text)
+    left_lines = args.input_path_left.readlines()
+    for i, line in enumerate(left_lines):
+        line = line.strip()
+        if line:
+            line_data = {'original_line': line, 'lineno': i + 1, 'source': 'left'}
+            groups[line].append(line_data)
 
-            if args.maximum_similarity >= matcher.ratio() >= args.minimum_similarity:
-                found_group = True
-                groups[canonical_line].append(line_data)
-                break
-        if not found_group:
-            groups[line_data['original_line']] = [line_data]
+    right_lines = args.input_path_right.readlines()
+    for i, line in enumerate(right_lines):
+        line = line.strip()
+        if line:
+            found_group = False
+            line_data = {'original_line': line, 'lineno': i + 1, 'source': 'right'}
+            current_line_text = s(line)
+
+            for canonical_line, group_list in groups.items():
+                canonical_line_text = s(canonical_line)
+                matcher = difflib.SequenceMatcher(None, current_line_text, canonical_line_text)
+
+                if args.maximum_similarity >= matcher.ratio() >= args.minimum_similarity:
+                    found_group = True
+                    groups[canonical_line].append(line_data)
+                    break  # Move to the next line from the right file
+            if not found_group:
+                groups[line].append(line_data)
 
     table_data = []
     for canonical_line, group_list in groups.items():
         min_lineno = min(item['lineno'] for item in group_list)
 
-        in_left = 'X' if any(item['source'] == 'left' for item in group_list) else ''
-        in_right = 'X' if any(item['source'] == 'right' for item in group_list) else ''
-
-        if len(group_list) > 1:
-            group_lines = ['L ' if item['source'] == 'left' else 'R ' + item['original_line'] for item in group_list]
-        else:
-            group_lines = [item['original_line'] for item in group_list]
+        group_lines = [(f'L{item['lineno']} ' if item['source'] == 'left' else f'R{item['lineno'] } ') + item['original_line'] for item in group_list]
         combined_lines = "\n".join(group_lines)
 
-        table_data.append([min_lineno, in_left, in_right, combined_lines])
+        table_data.append([min_lineno, combined_lines])
 
     # Sort the table data by the minimum line number to preserve a sense of original order
     table_data.sort(key=lambda x: x[0])
 
-    headers = ["Original Line Number", "Left File", "Right File", "Similar Lines"]
+    headers = ["Original Line Number", "Similar Lines"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 
