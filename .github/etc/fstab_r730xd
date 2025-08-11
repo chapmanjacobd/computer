@@ -9,7 +9,8 @@
 # After editing this file, run 'systemctl daemon-reload' to update systemd
 # units generated from this file.
 #
-UUID=f3647f84-e347-4341-bd86-5e4e67b0f5a2 /                       ext4    defaults        1 1
+# Updated by bootc-fstab-edit.service
+UUID=f3647f84-e347-4341-bd86-5e4e67b0f5a2 / ext4 defaults,ro 1 1
 UUID=85999a6a-4195-4512-b17d-adfd5cdba6a0 /boot                   ext4    defaults        1 2
 UUID=D991-E3D7          /boot/efi               vfat    umask=0077,shortname=winnt 0 2
 UUID=a61aadf0-165f-4ed5-9849-8b86391ec4d3 /home                   ext4    defaults        1 2
@@ -26,3 +27,5 @@ UUID=b7796d88-8833-41aa-b9dc-7264641d038a /mnt/b7    btrfs defaults,users,noatim
 UUID=3810c031-7149-45ed-b983-189152480a8d /mnt/b8    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=56ae30fd-bf8e-4a90-9903-c06a06af4989 /mnt/b9    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 UUID=28a07509-a98a-41ac-a45a-af877e6ec5c0 /mnt/b10   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+
+UUID=b7d8d3f4-a3c1-49b6-9c9e-05d88bc82131 /mnt/x01    ext4  defaults,users,noatime,nodiratime,commit=80,nofail,x-systemd.mount-timeout=999 0 0
