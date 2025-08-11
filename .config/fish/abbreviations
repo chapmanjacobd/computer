@@ -257,3 +257,4 @@ abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/l
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- unardel lb unardel -v
+abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
