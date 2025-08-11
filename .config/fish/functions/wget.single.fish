@@ -1,4 +1,4 @@
 # Defined interactively
 function wget.single
-    wget --span-hosts $argv
+    wget --span-hosts "$argv"
 end
