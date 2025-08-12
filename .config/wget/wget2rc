@@ -20,3 +20,4 @@ force-directories = on
 adjust-extension = on
 page-requisites = on
 convert-links = on
+cut-file-get-vars = on
