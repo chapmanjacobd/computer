@@ -5,7 +5,6 @@ import os
 import time
 
 import requests
-from library.utils.log_utils import log
 
 
 def get_syncthing_api_url(args, endpoint):
@@ -25,7 +24,7 @@ def syncthing_api_call(args, endpoint, method="GET", data=None):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        log.exception("API call to %s failed %s", url, e)
+        print("API call to %s failed %s", url, e)
         return None
 
 
@@ -100,7 +99,7 @@ def main(args):
                             deleted_files.add(file_status['local']['blocksHash'])
 
                     except Exception as e:
-                        log.exception(f"Error processing file '{file_name}'")
+                        print(f"Error processing file '{file_name}'")
                         continue
 
             time.sleep(args.interval)
