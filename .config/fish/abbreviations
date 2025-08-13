@@ -258,3 +258,4 @@ abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- unardel lb unardel -v
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
+abbr -a -- autoclicker repeatdelay 0.1 xdotool click 1
