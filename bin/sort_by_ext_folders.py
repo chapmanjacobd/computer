@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import os
-import shutil
 from collections import defaultdict
 from pathlib import Path
 
+from library.folders import merge_mv
 from library.utils import arggroups, argparse_utils, consts
 
 
@@ -82,8 +82,8 @@ def sort_by_ext(args):
         files = [sp for sp in folder.rglob("*") if not sp.is_dir()]
         primary_category = analyze_folder(files)
 
-        if args.destination:
-            parent = args.destination
+        if args.move:
+            parent = args.move
         else:
             parent = os.path.dirname(folder)
             for _ in range(args.depth):
@@ -94,16 +94,36 @@ def sort_by_ext(args):
             os.makedirs(target_directory)
 
         target_path = os.path.join(target_directory, os.path.basename(folder))
-        shutil.move(folder, target_path)
+        merge_mv.move(args, [str(folder)], target_path)
 
 
 if __name__ == '__main__':
     parser = argparse_utils.ArgumentParser()
-    parser.add_argument("--destination", "--dest")
     parser.add_argument("--depth", "-D", type=int, default=0)
+
+    parser.add_argument("--move", "--destination", type=Path, help="Directory to move folders/files")
+    arggroups.mmv_folders(parser)
+    parser.add_argument(
+        "--move-sizes",
+        action="append",
+        help="""Move files with --move constrained by file sizes (uses the same syntax as fd-find)""",
+    )
+    parser.add_argument("--move-limit", type=int, help="Limit number of files transferred")
+    parser.add_argument(
+        "--move-exclude",
+        nargs="+",
+        action="extend",
+        default=[],
+        help="""Exclude files via search
+-E '*/.tmp/*' -E '*sad*'  # path must not match /.tmp/ or sad """,
+    )
+    arggroups.clobber(parser)
     arggroups.debug(parser)
 
     arggroups.paths_or_stdin(parser)
     args = parser.parse_args()
+    arggroups.args_post(args, parser)
+
+    arggroups.mmv_folders_post(args)
 
     sort_by_ext(args)
