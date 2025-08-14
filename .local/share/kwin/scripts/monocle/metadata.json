@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "KWin/Script",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Email": "your.email@example.com",
+        "Name": "Your Name"
+      }
+    ],
+    "Category": "Windows",
+    "Description": "Monocle mode for ultrawide monitors with a 700px buffer on the left and right.",
+    "Id": "monocle_ultrawide",
+    "License": "GPLv3",
+    "Name": "Ultrawide Monocle",
+    "Website": "https://www.kde.org"
+  },
+  "X-KDE-ConfigModule": "kwin.script"
+}
