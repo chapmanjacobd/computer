@@ -6,7 +6,7 @@ StartLimitBurst=4
 
 [Service]
 ExecStartPre=/bin/sleep 30
-ExecStart=/usr/bin/syncthing serve --no-browser --logflags=0 --audit
+ExecStart=/usr/bin/syncthing serve --no-browser --no-default-folder --logflags=0 --log-level=warn
 Restart=on-failure
 RestartSec=5
 SuccessExitStatus=3 4
