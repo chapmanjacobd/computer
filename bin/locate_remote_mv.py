@@ -6,6 +6,7 @@ import stat
 from copy import deepcopy
 from pathlib import Path
 from statistics import mean
+import paramiko.ssh_exception
 
 from library.utils import arggroups, devices, path_utils, printing, processes, remote_processes, strings
 from library.utils.iterables import flatten
@@ -114,7 +115,10 @@ def main():
     os.makedirs(args.prefix, exist_ok=True)
 
     for hostname in args.hosts:
-        locate_remote(args, hostname)
+        try:
+            locate_remote(args, hostname)
+        except (TimeoutError, paramiko.ssh_exception.NoValidConnectionsError):
+            log.error("Unable to connect to %s", hostname)
 
 
 if __name__ == "__main__":
