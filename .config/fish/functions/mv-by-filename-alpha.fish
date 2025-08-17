@@ -1,5 +1,7 @@
 # Defined interactively
 function mv-by-filename-alpha
+    mkdir (seqalpha A Z) nonalpha
+
     for p in (fd -tf --exact-depth 1 . $argv)
         set first_char (string sub --length 1 "$p")
 
