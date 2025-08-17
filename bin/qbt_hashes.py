@@ -1,13 +1,8 @@
 #!/usr/bin/python3
 from collections import defaultdict
-from library.mediafiles import torrents_start
-from library.utils import arggroups, argparse_utils, printing
 
 import qbittorrentapi
-from library.playback.torrents_info import qbt_get_tracker
-from library.utils import arggroups, argparse_utils, iterables
-from library.utils.log_utils import log
-
+from library.utils import arggroups, argparse_utils
 
 
 def parse_args():
