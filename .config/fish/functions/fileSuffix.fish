@@ -1,4 +1,5 @@
 # Defined interactively
 function fileSuffix
-    path change-extension "$argv[1]" ".$argv[2].(path extension "$argv[1]")"
+    set -l orig_ext (path extension "$argv[1]")
+    path change-extension "$argv[2]$orig_ext" "$argv[1]"
 end
