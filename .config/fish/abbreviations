@@ -259,3 +259,4 @@ abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- unardel lb unardel -v
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
 abbr -a -- autoclicker repeatdelay 0.1 xdotool click 1
+abbr -a -- exiftool exiftool -g
