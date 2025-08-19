@@ -8,6 +8,8 @@ function git_clone --argument-names url
             set url (string replace 'https://gitlab.com/' 'git@gitlab.com:' $url)
         case 'https://bitbucket.org/*'
             set url (string replace 'https://bitbucket.org/' 'git@bitbucket.org:' $url)
+        case 'https://codeberg.org/*'
+            set url (string replace 'https://codeberg.org/' 'git@codeberg.org:' $url)
     end
 
     git clone $url
