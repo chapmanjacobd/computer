@@ -1,11 +1,10 @@
 #!/usr/bin/python3
+import argparse
 import re
 import subprocess
 import sys
 from collections import deque
-
-from library.utils import arggroups, argparse_utils, consts
-from library.utils import web
+from time import sleep
 
 REGEX_WGET2_SKIPPED = re.compile(r"URL '(.*?)' not followed \(parent ascending not allowed\)")
 
@@ -34,8 +33,29 @@ def wayback_clone(initial_url):
         current_url = url_queue.popleft()
         print(f"\nProcessing URL: {current_url}")
 
-        # if you use this, pay attention to my ~/.config/wget/wget2rc ;-)
-        command = ['wget2', '--recursive', '--no-parent', '--level=inf', '--verbose', current_url]
+        command = [
+            'wget2',
+            '--recursive',
+            '--no-parent',
+            '--level=inf',
+            '--progress=none',
+            '--server-response',
+            '--timeout=80',
+            '--dns-timeout=10',
+            '--connect-timeout=8',
+            '--read-timeout=45',
+            '--tries=4',
+            '--content-disposition',
+            '--trust-server-names',
+            '--no-robots',
+            '--timestamping',
+            '--force-directories',
+            '--adjust-extension',
+            '--page-requisites',
+            '--convert-links',
+            '--verbose',
+            current_url,
+        ]
 
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         while process.stdout:
@@ -43,8 +63,7 @@ def wayback_clone(initial_url):
             if not line:
                 break
 
-            if args.verbose >= consts.LOG_DEBUG_SQL:
-                print(line.strip(), file=sys.stderr)
+            # print(line.strip(), file=sys.stderr)
 
             match = REGEX_WGET2_SKIPPED.search(line)
             if match:
@@ -64,19 +83,15 @@ def wayback_clone(initial_url):
             print('wget2 exited with code', return_code, file=sys.stderr)
 
         print('Visited', len(urls_history) - len(url_queue), 'of', len(urls_history), 'queued URLs')
-        web.sleep(args)
+        sleep(5)
 
 
 if __name__ == "__main__":
-    parser = argparse_utils.ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Recursively download a website with wget, handling WaybackMachine --no-parent exceptions."
     )
-    arggroups.requests(parser)
-    parser.set_defaults(sleep_interval_requests=5)
-    arggroups.debug(parser)
 
     parser.add_argument("url", help="The starting URL for the download.")
     args = parser.parse_args()
-    arggroups.args_post(args, parser)
 
     wayback_clone(args.url)
