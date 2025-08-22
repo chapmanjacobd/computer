@@ -7,7 +7,7 @@ Before=remote-fs.target
 What=hk:
 Where=/net/hk
 Type=fuse.sshfs
-Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,delay_connect,max_conns=10
+Options=_netdev,nodev,nosuid,noatime,follow_symlinks,dirsync,ServerAliveInterval=10,reconnect,delay_connect,max_conns=15
 
 [Install]
 WantedBy=default.target
