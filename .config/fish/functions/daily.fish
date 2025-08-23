@@ -19,7 +19,7 @@ function daily
     end
     for group in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select distinct topic_group from media')
         set group_name (string sub --start 2 -- $group)
-        sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select path from media where topic_group = '$group' and path not like 'https://tildes.net/%' and text is null" >> $group_name.list
+        sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select path from media where topic_group = '$group' and path not like 'https://tildes.net/%' and text is null" >>$group_name.list
     end
     fd -S-12b -tf -x rm
     morganize
