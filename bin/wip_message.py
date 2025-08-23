@@ -112,16 +112,20 @@ def get_diff_line(args, filename):
         parts = []
         if added:
             text = "⏎".join(added)
-            parts.append(f"Added text '{text}'" if len(text) <= 80 else f"Added {len(added)} lines")
+            lines = "line" + ("s" if len(added) > 1 else "")
+            parts.append(f"Added text '{text}'" if len(text) <= 80 else f"Added {len(added)} {lines}")
         if removed:
             text = "⏎".join(removed)
-            parts.append(f"Deleted text '{text}'" if len(text) <= 80 else f"Deleted {len(removed)} lines")
+            lines = "line" + ("s" if len(added) > 1 else "")
+            parts.append(f"Deleted text '{text}'" if len(text) <= 80 else f"Deleted {len(removed)} {lines}")
         if modified:
             text = "⏎".join(modified)
-            parts.append(f"Modified text to '{text}'" if len(text) <= 80 else f"Modified {len(modified)} lines")
+            lines = "line" + ("s" if len(added) > 1 else "")
+            parts.append(f"Modified text to '{text}'" if len(text) <= 80 else f"Modified {len(modified)} {lines}")
         if moved:
             text = "⏎".join(moved)
-            parts.append(f"Moved text '{text}'" if len(text) <= 80 else f"Moved {len(moved)} lines")
+            lines = "line" + ("s" if len(added) > 1 else "")
+            parts.append(f"Moved text '{text}'" if len(text) <= 80 else f"Moved {len(moved)} {lines}")
         return "; ".join(parts)
 
 
