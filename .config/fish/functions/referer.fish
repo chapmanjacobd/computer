@@ -1,4 +1,4 @@
 # Defined interactively
 function referer
-    awk '{print $11}' | sed 's|"||g'
+    awk -F'"' '{print $4}'
 end
