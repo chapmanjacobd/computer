@@ -5,6 +5,9 @@ function daily
     lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
     mkdir ~/sync/video/keep/
 
+    lb christen --run ~/sync/
+    files_casefold.py ~/sync/ --run
+
     catt volume 0 && catt volume 40
     pip install --upgrade pychromecast
     pip install --upgrade --pre yt-dlp[default]
