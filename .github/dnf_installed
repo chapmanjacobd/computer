@@ -74,6 +74,7 @@ gmp-devel
 golang-github-tdewolff-minify
 google-noto-emoji-fonts
 grep
+grub2-efi-x64-modules
 gsl-devel
 gwenview
 hddtemp

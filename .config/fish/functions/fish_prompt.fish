@@ -69,10 +69,6 @@ function fish_prompt --description 'Write out the prompt'
     set -q VIRTUAL_ENV
     and set -l venv (echo $VIRTUAL_ENV | md5sum | md5sum | string sub -l 4)
 
-    function rand_block_prefix
-        echo "█▓▒░" | fold -w1 | shuf -n1
-    end
-
     set -l duration "$cmd_duration$CMD_DURATION"
     if test $duration -gt 300
         set duration (math -s1 $duration / 1000)s

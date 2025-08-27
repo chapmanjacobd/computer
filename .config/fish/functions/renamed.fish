@@ -1,4 +1,4 @@
 # Defined interactively
 function renamed
-    git status --porcelain --short | awk '$1 == "R" {print $4}'
+    git status --porcelain --short | awk '/^R/ {print $NF}' | string unescape --style=script
 end

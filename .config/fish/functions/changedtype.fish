@@ -1,0 +1,4 @@
+# Defined interactively
+function changedtype
+    git status --porcelain --short $argv | awk 'substr($0, 1, 1) == " " && substr($0, 2, 1) == "T" {print substr($0, 4)}' | string unescape --style=script
+end
