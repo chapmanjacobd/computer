@@ -21,6 +21,7 @@ bind ctrl-left backward-word
 bind ctrl-right forward-word
 bind ctrl-delete kill-word
 
+# https://github.com/fish-shell/fish-shell/issues/10926#issuecomment-2689671305
 bind alt-backspace backward-kill-token
 bind alt-right nextd-or-forward-token
 bind alt-left prevd-or-backward-token
