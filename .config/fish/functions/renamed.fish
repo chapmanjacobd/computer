@@ -1,4 +1,4 @@
 # Defined interactively
-function renamed
-    git status --porcelain --short | awk '/^R/ {print $NF}' | string unescape --style=script
+function renamed --wraps='git status'
+    git status --porcelain --short $argv | awk '/^R/ {print $NF}' | string unescape --style=script
 end
