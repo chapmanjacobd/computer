@@ -3,6 +3,7 @@ acpi
 age
 apcupsd
 aria2
+arp-scan
 atop
 awscli
 bash
