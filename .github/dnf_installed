@@ -165,6 +165,7 @@ ov
 pandoc
 partprobe
 pciutils-devel
+pcsx2
 pdfarranger
 perl
 perl-CPAN
@@ -206,6 +207,7 @@ R-devel
 rclone
 remove-retired-packages
 reptyr
+retroarch
 rmlint
 rpmconf
 rr
