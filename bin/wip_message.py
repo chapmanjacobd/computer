@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Suggested usage:
+# git commit -m "$(wip_message --staged)"
+
 import argparse
 import difflib
 import os
