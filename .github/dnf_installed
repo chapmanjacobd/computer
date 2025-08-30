@@ -13,6 +13,7 @@ binwalk
 bitstream-vera-fonts-all
 blas-devel
 bottles
+bpftool
 bpftrace
 btrfs-progs
 btrfsmaintenance
@@ -97,6 +98,7 @@ igt-gpu-tools
 ImageMagick-devel
 ImageMagick-heic
 iotop
+iperf3
 ipmitool
 java-latest-openjdk
 java-latest-openjdk-devel
@@ -119,12 +121,14 @@ LabPlot
 lapack-devel
 ldc
 libavif-tools
+libbpf-devel
 libcec
 libheif-freeworld
 libicu
 libicu-devel
 libmediainfo
 libnatpmp
+libnl3-devel
 liburing-devel
 libyaml-devel
 libzstd-devel
