@@ -4,8 +4,8 @@ function cb_append --argument-names suffix
     echo "$temp_file" >&2
 
     while true
-        cb | head -n 1 >&2
-        cb | tail -n 1 >&2
+        text_preview (cbfile) >&2
+
         cb >>"$temp_file"
         echo '' >>"$temp_file"
 

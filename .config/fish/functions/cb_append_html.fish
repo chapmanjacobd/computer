@@ -4,8 +4,8 @@ function cb_append_html
     echo "$temp_file" >&2
 
     while true
-        cb | head -n 1 >&2
-        cb | tail -n 1 >&2
+        text_preview (cbfile) >&2
+
         cb -t text/html >>"$temp_file"
         echo "" >>"$temp_file"
 
