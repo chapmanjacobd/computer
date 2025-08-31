@@ -41,6 +41,7 @@ libheif-tools
 libpq-devel
 lm_sensors
 lshw
+lsof
 mktorrent
 mkvtoolnix
 moreutils
