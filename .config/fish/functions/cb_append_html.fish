@@ -9,7 +9,7 @@ function cb_append_html
         cb -t text/html >>"$temp_file"
         echo "" >>"$temp_file"
 
-        echo '' >&2  # This prevents the shell's default 'read>' prompt from overwriting our output in stderr
+        echo '' >&2 # This prevents the shell's default 'read>' prompt from overwriting our output in stderr
         read __dummy__
         if test $status != 0
             break

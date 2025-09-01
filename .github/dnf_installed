@@ -60,6 +60,7 @@ feh
 ffmpeg
 ffmpeg-libs
 fftw-devel
+file-devel
 flacon
 fpart
 fpsync
