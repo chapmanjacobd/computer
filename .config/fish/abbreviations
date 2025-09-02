@@ -264,3 +264,4 @@ abbr -a -- signal run env WINEPREFIX=/home/xk/.wine wine 'C:\\\\users\\\\xk\\\\A
 abbr -a -- ip-addr ip.public
 abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
+abbr -a -- lower string lower
