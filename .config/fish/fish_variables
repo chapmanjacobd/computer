@@ -26,6 +26,7 @@ SETUVAR --export PSQLRC:/pg/psqlrc
 SETUVAR --export PYTHONBREAKPOINT:IPython\x2eterminal\x2edebugger\x2eset_trace
 SETUVAR --export PYTHONIOENCODING:utf\x2d8
 SETUVAR --export RCLONE_LOCAL_NO_PREALLOCATE:true
+SETUVAR --export TQDM_DISABLE:1
 SETUVAR --export XDG_RUNTIME_DIR:/run/user/1000
 SETUVAR --export XPRA_SHOW_SPINNER_WINDOW_TYPES:
 SETUVAR Z_DATA_DIR:/home/xk/\x2elocal/share/z
