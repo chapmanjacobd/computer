@@ -265,3 +265,4 @@ abbr -a -- ip-addr ip.public
 abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
 abbr -a -- lower string lower
+abbr -a -- tmux-slow tmux detach-client -a
