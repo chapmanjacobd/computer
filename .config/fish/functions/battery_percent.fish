@@ -4,7 +4,10 @@ function battery_percent
         return
     end
 
-    cat /sys/class/power_supply/BAT*/capacity | head -1
+    set --local bat_file /sys/class/power_supply/BAT*/capacity
+    if test -e $bat_file
+        cat $bat_file | head -1
+    end
 
     # if command -vq upower
     #    upower -i (upower -e | grep 'BAT') | grep percentage | awk '{print $2}'
