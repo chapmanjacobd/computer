@@ -216,7 +216,6 @@ abbr -a -- arpa sudo arp-scan 192.168.1.0/24
 abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
 abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | unquote)'
-abbr -a -- locate 'locate -N -i (cb | unquote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- powerinfo cpupower frequency-info
 abbr -a -- tags git tag -n9 --sort=-creatordate
@@ -266,3 +265,4 @@ abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
 abbr -a -- lower string lower
 abbr -a -- tmux-slow tmux detach-client -a
+abbr -a -- locate 'allpc locate --literal --ignore-case (cb | unquote)'
