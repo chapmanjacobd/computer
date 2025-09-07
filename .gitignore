@@ -1,3 +1,4 @@
+/.local/iiab/tailscale/
 /*.mdb*
 /.config/PCSX2/
 /.config/retroarch/
