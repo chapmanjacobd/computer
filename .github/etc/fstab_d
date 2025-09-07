@@ -13,7 +13,7 @@ UUID=ae8138c3-d0c0-45f2-82b4-fa4d4b59ee93  none                    swap    defau
 tmpfs                                      /var/lib/upower         tmpfs   nosuid,noexec 0 0
 
 UUID=f252520d-6ae3-4362-8fc9-fd48b90b6b91  /mnt/d1                 btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
-UUID=c521cf72-e9cc-4b4f-aae1-d427c607cea8  /mnt/d10                btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+UUID=b4b7d6cb-b762-4792-beb2-30781ba9cfe6  /mnt/d10                btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 
 UUID=d9f82690-6f6c-4dc6-8589-d4f9415ae773  /mnt/d2                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=36971ca5-ca2b-454c-b5f0-008c69df0401  /mnt/d3                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
