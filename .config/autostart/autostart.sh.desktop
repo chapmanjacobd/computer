@@ -1,5 +1,5 @@
 [Desktop Entry]
-Exec=/home/xk/.config/autostart.sh
+Exec=/home/xk/bin/autostart.sh
 Icon=dialog-scripts
 Name=autostart.sh
 Path=
