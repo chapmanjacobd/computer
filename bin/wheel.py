@@ -35,6 +35,7 @@ def select_mouse(mice):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Select a mouse device with a scroll wheel.")
     parser.add_argument("device", nargs="?", help="Path to the device (e.g., /dev/input/eventX).")
+    parser.add_argument("--remap-sides", action="store_true", help="Enable remapping of side buttons to PageUp/PageDown.")
     args = parser.parse_args()
 
     if args.device:
@@ -73,6 +74,8 @@ if __name__ == "__main__":
         }
     )
 
+    remap_sides = args.remap_sides
+
     right_button_pressed = False
     pressed_action = False
 
@@ -101,10 +104,10 @@ if __name__ == "__main__":
                     else:  # Middle Click
                         ui.write(event.type, event.code, event.value)
                         ui.syn()
-                elif event.code == e.BTN_EXTRA:
+                elif remap_sides and event.code == e.BTN_EXTRA:
                     ui.write(e.EV_KEY, e.KEY_PAGEUP, event.value)
                     ui.syn()
-                elif event.code == e.BTN_SIDE:
+                elif remap_sides and event.code == e.BTN_SIDE:
                     ui.write(e.EV_KEY, e.KEY_PAGEDOWN, event.value)
                     ui.syn()
                 else:  # other keys
