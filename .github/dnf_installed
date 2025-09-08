@@ -225,6 +225,7 @@ rustfmt
 scantailor
 scrot
 sed
+sg3_utils
 siege
 smartmontools
 sonic-visualiser
