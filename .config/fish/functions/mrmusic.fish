@@ -10,4 +10,7 @@ function mrmusic
     lb relmv (
         lb media ~/lb/fs/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf --folders | shuf | head -n 30
     ) ~/sync/audio/weekly/
+
+    lb christen --run ~/sync/audio/
+    files_casefold.py ~/sync/audio/ --run
 end
