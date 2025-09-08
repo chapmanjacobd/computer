@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import sys
-from time import sleep
 import evdev
 from evdev import UInput
 from evdev import ecodes as e
