@@ -115,7 +115,7 @@ function fish_prompt --description 'Write out the prompt'
             set suffix '#'
         case '*'
             set color_cwd $fish_color_cwd
-            set suffix (echo "🃁🃂🃍🃎🍞🌎🌍🌏🌌🌭🌮🌯🌝🌞🌟🌠🐘🐄🎅🧋🌸🌺🧁🦋🍭🍓🌾🌻☕✨🐑🍓🍯🍂🥧🍰🍪🍙🥐🥨🥞🍮🍋🍉🐻🐈🍊🧇❤️" | fold -w1 | shuf -n1)
+            set suffix (rand_emoji)
     end
 
     function prompt_git_pwd
