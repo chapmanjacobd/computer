@@ -17,5 +17,6 @@ function sitdown
     kwin_x11 --replace & disown
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
     vol 40
+    sudo pkill -f wheel.py
     ~/bin/autostart.sh &
 end
