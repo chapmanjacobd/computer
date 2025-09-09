@@ -12,6 +12,4 @@ xmodmap -e "clear Lock" > /dev/null
 
 sudo setkeycodes 6e 97  # remap Copilot key to RCtrl
 
-run sudo python ~/bin/wheel.py (realpath /dev/input/by-id/usb-Logitech_USB_Trackball-event-mouse)
-
 # b mons.sh -a
