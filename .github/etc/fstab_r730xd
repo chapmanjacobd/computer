@@ -29,7 +29,9 @@ UUID=28a07509-a98a-41ac-a45a-af877e6ec5c0 /mnt/b10   btrfs defaults,users,noatim
 #UUID=b7796d88-8833-41aa-b9dc-7264641d038a /mnt/x03    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 #UUID=fd94f523-469d-4595-b1c9-0d27347c86a5 /mnt/x04    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 #UUID=639e351d-e220-4464-a138-f2512ae5e504 /mnt/x05   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
-UUID=bb583e3c-e754-4d00-8db8-689770fa1055 /mnt/x06   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
-UUID=db346526-32f9-4ea6-8cb9-abf385cca003 /mnt/x07   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
-UUID=7678d3ca-b9f6-4e77-9481-a8f20b0a4781 /mnt/x08   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
-UUID=2cb91265-f0cb-4ea1-bdae-50e41bf31668 /mnt/x09   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+#UUID=bb583e3c-e754-4d00-8db8-689770fa1055 /mnt/x06   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+#UUID=db346526-32f9-4ea6-8cb9-abf385cca003 /mnt/x07   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+#UUID=7678d3ca-b9f6-4e77-9481-a8f20b0a4781 /mnt/x08   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+#UUID=2cb91265-f0cb-4ea1-bdae-50e41bf31668 /mnt/x09   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+UUID=a4e8e5aa-1fb4-4a53-bd12-597944a1fbb0 /mnt/x10   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+UUID=c5e6c4d0-d964-4547-9cc1-94a28137be57 /mnt/x11   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
