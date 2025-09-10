@@ -248,7 +248,6 @@ abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -Th | sort -k6,6g -k5,5hr'
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
-abbr -a -- scsi 'lsblk -S -o name,disk-seq'
 abbr -a -- tr trU
 abbr -a -- html_table 'lb tables --type html (cb_htmlfile)'
 abbr -a -- wtm wt -m 4 --fstack
