@@ -37,3 +37,4 @@ UUID=a4e8e5aa-1fb4-4a53-bd12-597944a1fbb0 /mnt/x10   btrfs defaults,users,noatim
 UUID=c5e6c4d0-d964-4547-9cc1-94a28137be57 /mnt/x11   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
 UUID=cfd12b39-55ee-43a5-b1cb-67e5c8ffeb76 /mnt/x12   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
 UUID=6bc8c729-4664-4005-be4b-091f94c4cb33 /mnt/x13   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+UUID=389edcdf-5c2c-43e4-b0bd-fe1eead39904 /mnt/x14   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
