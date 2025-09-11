@@ -1,6 +1,7 @@
 function daily
     ~/
     sticky_config
+    rm /run/user/1000/app/org.signal.Signal/.org.chromium.Chromium.*
 
     lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
     mkdir ~/sync/video/keep/
