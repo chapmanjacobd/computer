@@ -258,7 +258,6 @@ abbr -a -- unardel lb unardel -v
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
 abbr -a -- autoclicker repeatdelay 0.1 xdotool click 1
 abbr -a -- exiftool 'exiftool -g -a -u'
-abbr -a -- signal run env WINEPREFIX=/home/xk/.wine wine 'C:\\\\users\\\\xk\\\\AppData\\\\Local\\\\Programs\\\\signal-desktop\\\\Signal.exe' ''
 abbr -a -- ip-addr ip.public
 abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
