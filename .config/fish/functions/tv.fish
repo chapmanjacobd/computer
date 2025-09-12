@@ -7,7 +7,6 @@ function tv
         kscreen-doctor output.HDMI-1.enable output.HDMI-1.mode.1920x1080@60
         kscreen-doctor output.DP-1.disable output.DVI-D-0.disable
     end
-    krohnkite_off
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
     keepscreenon && xset s off
     #breaktimer disable && pkill breaktimer
@@ -18,5 +17,7 @@ function tv
 
     sudo pkill -f wheel.py
     run sudo python ~/bin/wheel.py --remap-sides (realpath /dev/input/by-id/usb-Compx_2.4G_Receiver-if01-event-mouse)
+    krohnkite_off
+    maximize_all
     # projectM-pulseaudio &
 end
