@@ -6,4 +6,8 @@ function check_local
     set hosts (connectable-ssh backup pakon r730xd)
     locate_remote_mv.py -v --flex --hosts $hosts -- $argv
     print $hosts | parallel sshpc {} lb torrents -- $argv
+
+    for db in ~/lb/fs/x*.db
+        lb fs $db -s $argv -p
+    end
 end
