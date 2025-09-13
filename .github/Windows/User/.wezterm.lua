@@ -2,6 +2,8 @@ local wezterm = require 'wezterm'
 local act = wezterm.action
 local config = wezterm.config_builder()
 
+-- TODO: https://wezterm.org/multiplexing.html#multiplexing
+
 config.check_for_updates = false
 
 config.max_fps = 48
