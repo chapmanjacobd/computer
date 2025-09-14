@@ -1,6 +1,4 @@
-# Defined via `source`
+# Defined interactively
 function dsql
-    for db in ~/lb/fs/d*.db
-        lb fs "$db" -pf -s "$argv"
-    end
+    parallel lb fs {} -pf -s "$argv" ::: ~/disks/*.db
 end

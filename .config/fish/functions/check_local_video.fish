@@ -7,7 +7,5 @@ function check_local_video
     locate_remote_mv.py -v -E /sync/ -E /archive/ --flex --hosts $hosts -- /video/ $argv
     print $hosts | parallel sshpc {} lb torrents -- $argv
 
-    for db in ~/lb/fs/x*.db
-        lb fs $db -s $argv -p
-    end
+    xsql $argv
 end
