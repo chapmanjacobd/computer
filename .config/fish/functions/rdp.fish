@@ -7,6 +7,7 @@ expect "Domain:"
 send "\r"
 expect "Password:"
 send "\r"
+interact
 expect eof
 '
 end
