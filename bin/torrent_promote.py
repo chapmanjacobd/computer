@@ -92,6 +92,7 @@ def sort_and_move_torrents(args):
 
     for torrent_file, destination_path, size in sorted_torrents[: args.n]:
         if args.simulate or args.print:
+            log.info("%s\t%s", torrent_file, size)
             print(
                 'mv',
                 torrent_file,
