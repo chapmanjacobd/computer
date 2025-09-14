@@ -76,4 +76,5 @@ unar
 which
 xcb-util-cursor
 xsel
+Xvfb
 zoxide
