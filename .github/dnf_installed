@@ -186,6 +186,7 @@ powertop
 procps
 progress
 proj-devel
+ps_mem
 pv
 pybind11-devel
 python
