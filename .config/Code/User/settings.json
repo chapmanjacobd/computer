@@ -202,6 +202,7 @@
     "ESPIPE",
     "exactextract",
     "excepthook",
+    "excinfo",
     "executescript",
     "Exif",
     "exiftool",
