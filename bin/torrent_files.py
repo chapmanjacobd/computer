@@ -52,11 +52,17 @@ def main():
     )
     args = parser.parse_args()
 
+    limits = {
+        "max_buffer_size": 55_000_000,  # max .torrent size in bytes
+        "max_pieces": 2_000_000,  # max number of pieces
+        "max_decode_tokens": 5_000_000,  # max tokens in bdecode
+    }
+
     # Load torrents
     torrents = []
     for torfile in args.torrent_dir.glob("*.torrent"):
         try:
-            ti = lt.torrent_info(str(torfile))
+            ti = lt.torrent_info(str(torfile), limits)
             torrents.append((ti, torfile))
         except Exception as e:
             print(f"[ERROR] {torfile}: {e}")
