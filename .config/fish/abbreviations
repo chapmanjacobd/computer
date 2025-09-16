@@ -267,3 +267,4 @@ abbr -a -- locate 'allpc locate --literal --ignore-case (cb | unquote)'
 abbr -a -- display set -gx DISPLAY :0
 abbr -a -- large-folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
 abbr -a -- ps-size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
+abbr -a -- strace 'strace -ff -p (pgrep -n )'
