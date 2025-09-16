@@ -22,23 +22,25 @@ def piecewise_hash(file_path: Path, piece_length: int, piece_hashes: list[bytes]
     return matches, total
 
 
-def check_file_against_torrent(file_path: Path, ti: lt.torrent_info, f, min_pieces: int):
+def check_file_against_torrent(file_path, ti, fs, index: int, min_pieces: int):
     """Check if a candidate file matches a given torrent file entry."""
     piece_length = ti.piece_length()
-    piece_start = f.offset // piece_length
-    piece_end = (f.offset + f.size + piece_length - 1) // piece_length
+    offset = fs.file_offset(index)
+    size = fs.file_size(index)
+    piece_start = offset // piece_length
+    piece_end = (offset + size + piece_length - 1) // piece_length
 
     piece_hashes = [ti.hash_for_piece(i) for i in range(piece_start, piece_end)]
 
     matches, total = piecewise_hash(file_path, piece_length, piece_hashes)
     if matches >= min_pieces:
         pct = (matches / total) * 100 if total else 0
-        return f, matches, total, pct
+        return index, matches, total, pct
     return None
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Match files against torrents by size + piece-hash (libtorrent).")
+    parser = argparse.ArgumentParser(description="Match files against torrents by size + piece-hash (libtorrent 2.x).")
     parser.add_argument("torrent_dir", type=Path, help="Directory of .torrent files")
     parser.add_argument("search_dirs", nargs="+", type=Path, help="Directories to scan")
     parser.add_argument("--threads", type=int, default=6, help="Number of hashing threads")
@@ -62,8 +64,10 @@ def main():
     # Index torrent files by size
     size_index = {}
     for ti, torfile in torrents:
-        for f in ti.files():
-            size_index.setdefault(f.size, []).append((ti, torfile, f))
+        fs = ti.files()
+        for i in range(ti.num_files()):
+            size = fs.file_size(i)
+            size_index.setdefault(size, []).append((ti, torfile, fs, i))
 
     # progress: infohash → [matched_pieces, total_pieces, torrent_info, torfile, set(matched_file_paths)]
     torrent_progress = {ti.info_hash().to_string(): [0, 0, ti, torfile, set()] for ti, torfile in torrents}
@@ -82,11 +86,11 @@ def main():
             size = f.stat().st_size
             if size not in size_index:
                 continue  # no possible torrent matches
-            for ti, torfile, tf in size_index[size]:
-                futures[executor.submit(check_file_against_torrent, f, ti, tf, args.min_pieces)] = (f, ti)
+            for ti, torfile, fs, idx in size_index[size]:
+                futures[executor.submit(check_file_against_torrent, f, ti, fs, idx, args.min_pieces)] = (f, ti, fs, idx)
 
         for future in as_completed(futures):
-            f, ti = futures[future]
+            f, ti, fs, idx = futures[future]
             try:
                 result = future.result()
             except Exception as e:
@@ -94,19 +98,22 @@ def main():
                 continue
 
             if result:
-                tf, matches, total, pct = result
-                print(f"[MATCH] {f} ↔ {ti.name()}/{tf.path} " f"{matches}/{total} pieces ({pct:.1f}%)")
+                index, matches, total, pct = result
+                fs = ti.files()
+                file_path_in_torrent = fs.file_path(index)
+                print(f"[MATCH] {f} ↔ {ti.name()}/{file_path_in_torrent} {matches}/{total} pieces ({pct:.1f}%)")
                 prog = torrent_progress[ti.info_hash().to_string()]
                 prog[0] += matches
                 prog[1] += total
-                prog[4].add(tf.path)  # track matched file paths
+                prog[4].add(file_path_in_torrent)
 
     # Torrent-level progress
     summary = []
     for infohash, (matched, total, ti, torfile, matched_files) in torrent_progress.items():
         if total > 0:
             pct = (matched / total) * 100
-            all_files = {f.path for f in ti.files()}
+            fs = ti.files()
+            all_files = {fs.file_path(i) for i in range(ti.num_files())}
             missing = all_files - matched_files
             summary.append((pct, ti, torfile, missing))
 
