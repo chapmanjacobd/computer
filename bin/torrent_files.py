@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import libtorrent as lt
+from library.utils import strings
 
 
 def piecewise_hash(file_path: Path, piece_length: int, piece_hashes: list[bytes]):
@@ -54,11 +55,10 @@ def main():
 
     limits = {
         "max_buffer_size": 55_000_000,  # max .torrent size in bytes
-        "max_pieces": 2_000_000,  # max number of pieces
+        "max_pieces": 2_000_000,
         "max_decode_tokens": 5_000_000,  # max tokens in bdecode
     }
 
-    # Load torrents
     torrents = []
     for torfile in args.torrent_dir.glob("*.torrent"):
         try:
@@ -75,8 +75,10 @@ def main():
             size = fs.file_size(i)
             size_index.setdefault(size, []).append((ti, torfile, fs, i))
 
-    # progress: infohash → [matched_pieces, total_pieces, torrent_info, torfile, set(matched_file_paths)]
-    torrent_progress = {ti.info_hash().to_string(): [0, 0, ti, torfile, set()] for ti, torfile in torrents}
+    # progress: infohash → [matched_size, total_size, torrent_info, torfile, set(matched_file_paths)]
+    torrent_progress = {
+        ti.info_hash().to_string(): [0, ti.total_size(), ti, torfile, set()] for ti, torfile in torrents
+    }
 
     # Collect candidate files
     candidates = []
@@ -91,7 +93,7 @@ def main():
         for f in candidates:
             size = f.stat().st_size
             if size not in size_index:
-                continue  # no possible torrent matches
+                continue
             for ti, torfile, fs, idx in size_index[size]:
                 futures[executor.submit(check_file_against_torrent, f, ti, fs, idx, args.min_pieces)] = (f, ti, fs, idx)
 
@@ -105,34 +107,42 @@ def main():
 
             if result:
                 index, matches, total, pct = result
-                fs = ti.files()
                 file_path_in_torrent = fs.file_path(index)
-                print(f"[MATCH] {f} ↔ {ti.name()}/{file_path_in_torrent} {matches}/{total} pieces ({pct:.1f}%)")
+                file_size = fs.file_size(index)
+
+                credited_size = int(file_size * (matches / total)) if total > 0 else 0
+
+                print(
+                    f"[MATCH] {f} ↔ {ti.name()}/{file_path_in_torrent} "
+                    f"{matches}/{total} pieces ({pct:.1f}%) "
+                    f"{strings.file_size(file_size - credited_size)} unknown"
+                )  # missing or unchecked (partial pieces)
+
                 prog = torrent_progress[ti.info_hash().to_string()]
-                prog[0] += matches
-                prog[1] += total
+                prog[0] += credited_size
                 prog[4].add(file_path_in_torrent)
 
     # Torrent-level progress
     summary = []
-    for infohash, (matched, total, ti, torfile, matched_files) in torrent_progress.items():
-        if total > 0:
-            pct = (matched / total) * 100
+    for _infohash, (matched_size, total_size, ti, torfile, matched_files) in torrent_progress.items():
+        if matched_size > 0:
+            pct = (matched_size / total_size) * 100
             fs = ti.files()
             all_files = {fs.file_path(i) for i in range(ti.num_files())}
             missing = all_files - matched_files
-            summary.append((pct, ti, torfile, missing))
+            summary.append((pct, matched_size, total_size, ti, torfile, missing))
 
-    summary.sort(reverse=True, key=lambda x: x[0])
     print("\n=== Torrent Progress ===")
-    for pct, ti, torfile, missing in summary:
+    summary.sort(reverse=True, key=lambda x: (x[0], x[1]))
+    for pct, matched_size, total_size, ti, torfile, missing in summary:
         missing_info = ""
         if missing:
             if len(missing) == 1:
                 missing_info = f" [{next(iter(missing))} missing]"
             else:
                 missing_info = f" [{len(missing)} files missing]"
-        print(f"{torfile.name} ({ti.name()}): {pct:.1f}%{missing_info}")
+
+        print(f"{torfile.name} ({ti.name()}): {pct:.1f}% " f"({strings.file_size(matched_size)}) {missing_info}")
 
     print(f"\n{len(summary)} torrents with at least one matching file.")
 
