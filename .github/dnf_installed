@@ -133,6 +133,7 @@ libnl3-devel
 liburing-devel
 libyaml-devel
 libzstd-devel
+lockfile-progs
 lsb
 lshw
 lutris
