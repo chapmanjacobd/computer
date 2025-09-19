@@ -270,3 +270,4 @@ abbr -a -- unshallow git fetch --unshallow
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -x squashfs -Th | sort -k6,6g -k5,5hr'
 abbr -a -- mp multipass
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
+abbr -a -- lsattr lsattr -l -d
