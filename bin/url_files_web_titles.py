@@ -27,9 +27,8 @@ def parse_args():
 def process_music_list(input_lines: list[str]) -> list[str]:
     output_lines = []
     for line in input_lines:
-        url = line.strip()
-        if url.startswith("https://") and "  # " not in line:
-            page_title = web.get_title(args, url)
+        if line.startswith("https://") and "  # " not in line:
+            page_title = web.get_title(args, line)
             output_lines.append(f"{line}  # {page_title}")
         else:
             output_lines.append(line)
@@ -41,7 +40,7 @@ def write_and_replace(file_path: str, new_content: list[str]):
     try:
         temp_dir = os.path.dirname(os.path.abspath(file_path))
         with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, dir=temp_dir) as temp_file:
-            temp_file.writelines(new_content)
+            temp_file.writelines(s + "\n" for s in new_content)
 
         shutil.move(temp_file.name, file_path)
 
@@ -63,8 +62,8 @@ if __name__ == "__main__":
                 print(f"Error: File not found at '{file_path}'. Skipping.", file=sys.stderr)
                 continue
 
-            with open(file_path, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
+            with open(file_path, 'r') as file:
+                lines = [line.strip() for line in file]
 
             modified_lines = process_music_list(lines)
             if modified_lines != lines:
