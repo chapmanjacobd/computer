@@ -8,108 +8,108 @@ __author__ = "ed <irc.rizon.net>"
 __license__ = "MIT"
 __copyright__ = 2015
 
-import struct
-import sys
 import os
 import re
-
+import struct
+import sys
 from urllib.parse import unquote
 
-
 # python doesn't provide a list of available encodings so here it is
-codecs = [ 'ascii',
- 'big5',
- 'big5hkscs',
- 'cp037',
- 'cp424',
- 'cp437',
- 'cp500',
- 'cp720',
- 'cp737',
- 'cp775',
- 'cp850',
- 'cp852',
- 'cp855',
- 'cp856',
- 'cp857',
- 'cp858',
- 'cp860',
- 'cp861',
- 'cp862',
- 'cp863',
- 'cp864',
- 'cp865',
- 'cp866',
- 'cp869',
- 'cp874',
- 'cp875',
- 'cp932',
- 'cp949',
- 'cp950',
- 'cp1006',
- 'cp1026',
- 'cp1140',
- 'cp1250',
- 'cp1251',
- 'cp1252',
- 'cp1253',
- 'cp1254',
- 'cp1255',
- 'cp1256',
- 'cp1257',
- 'cp1258',
- 'euc_jp',
- 'euc_jis_2004',
- 'euc_jisx0213',
- 'euc_kr',
- 'gb2312',
- 'gbk',
- 'gb18030',
- 'hz',
- 'iso2022_jp',
- 'iso2022_jp_1',
- 'iso2022_jp_2',
- 'iso2022_jp_2004',
- 'iso2022_jp_3',
- 'iso2022_jp_ext',
- 'iso2022_kr',
- 'latin_1',
- 'iso8859_2',
- 'iso8859_3',
- 'iso8859_4',
- 'iso8859_5',
- 'iso8859_6',
- 'iso8859_7',
- 'iso8859_8',
- 'iso8859_9',
- 'iso8859_10',
- 'iso8859_11',
- 'iso8859_13',
- 'iso8859_14',
- 'iso8859_15',
- 'iso8859_16',
- 'johab',
- 'koi8_r',
- 'koi8_u',
- 'mac_cyrillic',
- 'mac_greek',
- 'mac_iceland',
- 'mac_latin2',
- 'mac_roman',
- 'mac_turkish',
- 'ptcp154',
- 'shift_jis',
- 'shift_jis_2004',
- 'shift_jisx0213',
- 'utf_32',
- 'utf_32_be',
- 'utf_32_le',
- 'utf_16',
- 'utf_16_be',
- 'utf_16_le',
- 'utf_7',
- 'utf_8',
- 'utf_8_sig']
+codecs = [
+    'ascii',
+    'big5',
+    'big5hkscs',
+    'cp037',
+    'cp424',
+    'cp437',
+    'cp500',
+    'cp720',
+    'cp737',
+    'cp775',
+    'cp850',
+    'cp852',
+    'cp855',
+    'cp856',
+    'cp857',
+    'cp858',
+    'cp860',
+    'cp861',
+    'cp862',
+    'cp863',
+    'cp864',
+    'cp865',
+    'cp866',
+    'cp869',
+    'cp874',
+    'cp875',
+    'cp932',
+    'cp949',
+    'cp950',
+    'cp1006',
+    'cp1026',
+    'cp1140',
+    'cp1250',
+    'cp1251',
+    'cp1252',
+    'cp1253',
+    'cp1254',
+    'cp1255',
+    'cp1256',
+    'cp1257',
+    'cp1258',
+    'euc_jp',
+    'euc_jis_2004',
+    'euc_jisx0213',
+    'euc_kr',
+    'gb2312',
+    'gbk',
+    'gb18030',
+    'hz',
+    'iso2022_jp',
+    'iso2022_jp_1',
+    'iso2022_jp_2',
+    'iso2022_jp_2004',
+    'iso2022_jp_3',
+    'iso2022_jp_ext',
+    'iso2022_kr',
+    'latin_1',
+    'iso8859_2',
+    'iso8859_3',
+    'iso8859_4',
+    'iso8859_5',
+    'iso8859_6',
+    'iso8859_7',
+    'iso8859_8',
+    'iso8859_9',
+    'iso8859_10',
+    'iso8859_11',
+    'iso8859_13',
+    'iso8859_14',
+    'iso8859_15',
+    'iso8859_16',
+    'johab',
+    'koi8_r',
+    'koi8_u',
+    'mac_cyrillic',
+    'mac_greek',
+    'mac_iceland',
+    'mac_latin2',
+    'mac_roman',
+    'mac_turkish',
+    'ptcp154',
+    'shift_jis',
+    'shift_jis_2004',
+    'shift_jisx0213',
+    'utf_32',
+    'utf_32_be',
+    'utf_32_le',
+    'utf_16',
+    'utf_16_be',
+    'utf_16_le',
+    'utf_7',
+    'utf_8',
+    'utf_8_sig',
+]
 
 
 def eprint(*args, **kwargs):
@@ -172,51 +172,6 @@ def sanitize(txt, for_print=True):
     return ret
 
 
-def rename(cfg, folder):
-    """Iterate through a folder and find files to rename"""
-    for name in os.listdir(folder):
-        if cfg.mode == Modes.URL:
-            fixed = unquote(name.decode("utf-8", "ignore")).encode("utf-8")
-
-        elif cfg.mode == Modes.VIA:
-            try:
-                bork8 = name.decode("utf-8")
-                if not cfg.via.search(bork8):
-                    continue
-
-                fixed = bork8.encode(via).decode(enc).encode("utf-8")
-            except Exception as e:
-                continue
-        else:
-            raise Exception("Unknown conversion mode [%s]" % cfg.mode)
-
-        if fixed == name:
-            continue
-
-        msg = "({0}) => (\x1b[1;32m{1}\x1b[0m) ".format(
-            sanitize(name.decode("utf-8", "replace")), sanitize(fixed.decode("utf-8"))
-        )
-        eprint(msg, end="")
-        ch = getch()
-        eprint(ch)
-        if ch == "y":
-            path_from = os.path.join(folder, name)
-            path_to = os.path.join(folder, fixed)
-            os.rename(path_from, path_to)
-        if ch == "q":
-            sys.exit(0)
-
-
-def iterate(cfg, folder):
-    """Recursively traverse a folder"""
-    rename(cfg, folder)
-    for subfolder in os.listdir(folder):
-        path = os.path.join(folder, subfolder)
-        if os.path.isdir(path):
-            eprint("Entering [{0}]".format(sanitize(path.decode("utf-8", "replace"))))
-            iterate(cfg, path)
-
-
 cfg = Config()
 
 # Check if mode 1 (url)
@@ -261,7 +216,11 @@ elif len(sys.argv) == 4 and sys.argv[1] == "find":
             hits += 1
             eprint(
                 "%s \x1b[1;31m%s\x1b[0m via \x1b[1;32m%s\x1b[0m"
-                % (sys.argv[0], enc, via,)
+                % (
+                    sys.argv[0],
+                    enc,
+                    via,
+                )
             )
 
     eprint("Detection complete, found %d possible fixes" % (hits,))
@@ -300,6 +259,51 @@ else:
         )
     )
     sys.exit(1)
+
+
+def rename(cfg, folder):
+    """Iterate through a folder and find files to rename"""
+    for name in os.listdir(folder):
+        if cfg.mode == Modes.URL:
+            fixed = unquote(name.decode("utf-8", "ignore")).encode("utf-8")
+
+        elif cfg.mode == Modes.VIA:
+            try:
+                bork8 = name.decode("utf-8")
+                if not cfg.via.search(bork8):
+                    continue
+
+                fixed = bork8.encode(via).decode(enc).encode("utf-8")
+            except Exception as e:
+                continue
+        else:
+            raise Exception("Unknown conversion mode [%s]" % cfg.mode)
+
+        if fixed == name:
+            continue
+
+        msg = "({0}) => (\x1b[1;32m{1}\x1b[0m) ".format(
+            sanitize(name.decode("utf-8", "replace")), sanitize(fixed.decode("utf-8"))
+        )
+        eprint(msg, end="")
+        ch = getch()
+        eprint(ch)
+        if ch == "y":
+            path_from = os.path.join(folder, name)
+            path_to = os.path.join(folder, fixed)
+            os.rename(path_from, path_to)
+        if ch == "q":
+            sys.exit(0)
+
+
+def iterate(cfg, folder):
+    """Recursively traverse a folder"""
+    rename(cfg, folder)
+    for subfolder in os.listdir(folder):
+        path = os.path.join(folder, subfolder)
+        if os.path.isdir(path):
+            eprint("Entering [{0}]".format(sanitize(path.decode("utf-8", "replace"))))
+            iterate(cfg, path)
 
 
 eprint("\nListing files. For each file, select [Y]es [N]o [Q]uit.\n")
