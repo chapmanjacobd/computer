@@ -18,7 +18,6 @@ function torrent-maintenance
 
     allpc lb torrents --ul --no-any-exists --no-checking --no-errored --move processing --delete-rows -v -pa
 
-    allqb lb torrents --dl --no-queued --start -pa >/dev/null
     allqb lb torrents --dl --downloaded=+0 --time-active=+1days --force-start -pa >/dev/null
     allqb lb torrents --ul --no-force-start -pa >/dev/null
 end
