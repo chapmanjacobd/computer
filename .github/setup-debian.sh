@@ -12,7 +12,7 @@ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | 
 
 sudo apt remove wget
 
-sudo apt install pipx python-is-python3 eza libguestfs-tools qemu-guest-agent bfs wget2 tmux earlyoom zoxide cargo kitty git-delta
+sudo apt install pipx python-is-python3 eza libguestfs-tools qemu-guest-agent bfs wget2 tmux earlyoom zoxide cargo kitty git-delta progress ncdu
 
 sudo systemctl enable --now earlyoom
 
