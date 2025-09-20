@@ -271,3 +271,4 @@ abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -x squashfs -Th | 
 abbr -a -- mp multipass
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
 abbr -a -- lsattr lsattr -l -d
+abbr -a -- qemu quickemu --display none --vm
