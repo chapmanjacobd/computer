@@ -1,3 +1,6 @@
+set speller "hunspell"
+include /usr/share/nano/*.nanorc
+
 unbind ^J main
 unbind ^N main
 unbind ^Y all
@@ -13,7 +16,7 @@ set tabsize 4
 set constantshow
 set trimblanks
 set softwrap
-set atblanks
+unset atblanks
 set afterends
 set smarthome
 set stateflags
