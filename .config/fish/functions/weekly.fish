@@ -35,6 +35,7 @@ function weekly
         sqlite --no-headers --raw-lines ~/lb/sites/social/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
     end
     fd -S-12b -tf -x rm
+    url_files_web_titles.py (url_files)
     lb mergedbs --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
 
     lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db ~/lb/fs/audio.db
