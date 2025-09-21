@@ -123,3 +123,5 @@
     zeroPaddedFilemode = warn
 [fetch "fsck"]
     zeroPaddedFilemode = ignore
+[gpg]
+	format = ssh
