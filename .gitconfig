@@ -2,6 +2,7 @@
 [user]
     name = Jacob Chapman
     email = 7908073+chapmanjacobd@users.noreply.github.com
+	signingKey = /home/xk/.ssh/id_ed25519.pub
 [rerere]
     enabled = true
     autoupdate = true
@@ -119,6 +120,7 @@
 [commit]
     template = /home/xk/.gitmessage
     verbose = true
+	gpgSign = true
 [receive "fsck"]
     zeroPaddedFilemode = warn
 [fetch "fsck"]
