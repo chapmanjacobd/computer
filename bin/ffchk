@@ -1,0 +1,120 @@
+#!/bin/bash
+set -e
+
+# ffchk - look for corruption in multimedia files
+# ed <irc.rizon.net>, MIT-licensed, https://github.com/9001/usr-local-bin
+# -- reads through the provided multimedia files
+# -- shows list of healthy/corrupted files and errors detected
+# -- first arg switches verification mode:
+#   -- parse container packets (fast)
+#   -- full stream-decode (slow)
+
+mode="$1"
+shift
+
+[ -z "$1" ] && {
+	echo "need arg 1: mode, [f]ast or [s]low"
+	echo "need arg n: filename(s)"
+	exit 1
+}
+
+args=()
+
+[ "$mode" = f ] &&
+	args=(-codec copy)
+
+[ "$mode" = s ] &&
+	args=(-vcodec rawvideo -acodec pcm_s16le)
+
+[ -z "${args[*]}" ] && {
+	echo "bad arg 1: $mode"
+	exit 1
+}
+
+tmp=$(mktemp)
+
+cln() {
+	rm -f $tmp
+	#echo $tmp
+}
+trap cln EXIT
+trap cln ERR
+
+get_warnings() {
+	grep -vE '^Command line:|^ffmpeg -y' $tmp |
+	grep -vE 'Could not find codec parameters for stream|Consider increasing the value for the .?analyzeduration|Estimating duration from bitrate,'
+}
+
+maxrv=0
+report=()
+
+for fn in "$@"
+do
+	printf '\n\033[1;37;44m%s\033[0m\n' "$fn"
+	
+	# trace  debug  verbose  info  warning  error  fatal  panic  quiet
+	#    56     48       40    32       24     16      8      0     -8
+	FFREPORT="level=24:file=$tmp" \
+	nice ffmpeg -y -hide_banner -nostdin -v info \
+		-err_detect +crccheck+bitstream+buffer+careful+compliant+aggressive+explode \
+		-xerror -i "$fn" "${args[@]}" -f null - &&
+			rv=0 || rv=$?
+
+	[ $rv -eq 0 ] ||
+		printf '\033[1;37;41m error \033[0m\n'
+
+	# ffmpeg doesn't always return nonzero depending on error,
+	# so we also check for warnings in stdout
+	get_warnings >/dev/null &&
+		printf '\033[1;30;43m/ warning \\\033[0m\n' &&
+		get_warnings &&
+		printf '\033[1;30;43m\\ warning /\033[0m\n'
+	
+	[ $rv -eq 0 ] && get_warnings >/dev/null &&
+		rv=1
+
+	[ $rv -eq 0 ] &&
+		printf '\033[32mok\033[0m\n'
+	
+	[ $maxrv -lt $rv ] &&
+		maxrv=$rv
+	
+	[ $rv -eq 0 ] &&
+		c=32 ||
+		c=35
+	
+	report+=("$(printf '\033[0;%sm%d %s\033[0m' $c "$rv" "$fn")")
+	
+	while IFS= read -r x
+	do
+		report+=("$(printf ' \033[33m└─ %s\033[0m' "$x")")
+	done < <(get_warnings | head -n 5)
+done
+
+printf '\n\n'
+for ln in "${report[@]}"
+do
+	printf '%s\n' "$ln"
+done
+
+exit $maxrv
+
+
+
+
+
+stdbuf=()
+which stdbuf >/dev/null 2>/dev/null &&
+	stdbuf=(stdbuf -oL)
+
+# subprocess to capture ffmpeg error-code into logfile
+(
+	AV_LOG_FORCE_COLOR=1 \
+	nice "${stdbuf[@]}" ffmpeg -y -hide_banner -nostdin -v info \
+		-err_detect +crccheck+bitstream+buffer+careful+compliant+aggressive+explode \
+		-xerror -i "$fn" "${args[@]}" -f null - 2>&1
+	
+	echo $? >> $tmp
+) | "${stdbuf[@]}" tee $tmp
+
+rv=$(tail -n 1 $tmp)
