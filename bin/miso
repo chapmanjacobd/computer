@@ -1,0 +1,176 @@
+#!/bin/bash
+set -e
+
+# miso - rescue the contents of scratched/rotten optical media
+# ed <irc.rizon.net>, MIT-licensed, https://github.com/9001/usr-local-bin
+# 
+# creates an iso from a cd/dvd/blurei using gnu ddrescue,
+# verifies that the inserted media matches the iso file on resume
+# (good for reading parts of the same cd using multiple optical drives)
+
+dev="$1"
+[ ! -z "$dev" ] && [ -e "$dev" ] ||
+{
+	echo "mandatory arg 1: optical device"
+	echo " optional arg 2: output path"
+	echo
+	echo "will use ddrescue if available,"
+	echo "otherwise dd"
+	echo
+	echo "example:"
+	echo "  $0  /dev/sr0"
+	echo
+	exit 1
+}
+title="$2"
+
+
+ex() {
+printf '\033[1;37;7mmiso>\033[0;1;37;44m %s \033[0m\n' "$*" >&2
+"$@"
+}
+
+
+collect_info() {
+	{
+		isoinfo -i "$2" -d -debug
+		isoinfo -i "$2" -l -debug
+	} 2>&1 |
+	grep -avF 'Joliet escape sequence' |
+	xz -cze7 > "$1"
+
+	xz -d < "$1" |
+	awk '/^Logical block size is:/ {bs=$NF}
+		/^Volume size is:/ {count=$NF}
+		/^Volume id:/ {volid=$0;sub(/[^:]+: */,"",volid)}
+		/^Directory listing of/ {exit}
+		END {printf "%s %s %s", bs, count, volid}'
+}
+
+tmp_srcinfo=$(mktemp)
+tmp_isoinfo=$(mktemp)
+
+IFS=' ' read bs count volid <<<"$(collect_info "$tmp_srcinfo" "$dev")"
+
+[ -z "$count" ] && {
+	echo
+	echo failed to parse output from isoinfo:
+	echo
+	xz -d < "$tmp_srcinfo"
+	exit 1
+}
+
+awk '/^$/ {exit} /(Volume id|Volume set|Volume size is|Date):/' "$tmp_srcinfo"
+
+echo
+printf "volume [%s]\n" "$volid"
+echo "using dd args bs=$bs count=$count"
+echo "output will be $(((bs*count)/1024)) KiB"
+
+[ -z "$title" ] &&
+	read -u1 -rp 'title> ' title
+
+title="${title%.iso}"
+echo
+
+[   -e "$title.iso" ] && collect_info "$tmp_isoinfo" "$title.iso" >/dev/null
+[ ! -e "$title.iso" ] && cp -pv "$tmp_srcinfo" "$tmp_isoinfo"
+[ ! -e "$title.toc" ] && cp -pv "$tmp_isoinfo" "$title.toc"
+
+cmp <(cat "$tmp_srcinfo") <(cat "$title.toc") &&
+	echo "ISO describes this CD; safe to continue" ||
+{
+	echo
+	echo "ERROR:"
+	echo "mismatch between the metadata in CD and ISO!"
+	echo "ISO is probably from another CD."
+	echo
+	echo " CD: $tmp_srcinfo"
+	echo "ISO: $tmp_isoinfo"
+	echo
+	for fn in "$tmp_srcinfo" "$title.toc"
+	do
+		xz -d < "$fn" | grep -E '(Volume id|Volume set|Volume size is|Date):' 
+		echo
+	done
+	exit 1
+}
+
+
+command -v ddrescue >/dev/null || {
+	echo
+	echo "WARNING: ddrescue not found; using dd"
+	echo "  (no error correction + slower)"
+	echo
+	
+	pv=(cat)
+	command -v pv >/dev/null &&
+		pv=(pv -s $((bs*count)))
+
+	ex dd if=$dev bs=$bs count=$count conv=sync,noerror 2> >(
+		tee "$title.err" >&2
+	) |
+	"${pv[@]}" > "$title.iso"
+
+	rv=${PIPESTATUS[0]}
+	echo
+	echo "finished with status code $rv"
+	cln $rv
+}
+
+
+false && {
+	echo
+	echo "collecting table of contents..."
+	ex xorriso -indev $dev -error_behavior image_loading best_effort -abort_on NEVER -find . -exec lsdl > "$title.toc1" || true
+
+	ex xorriso -indev $dev -error_behavior image_loading best_effort -abort_on NEVER -find . -exec report_lba |
+	awk '{printf "%08d  %s\n", $6, $0}' |
+	sort > "$title.toc2" || true
+}
+
+
+echo
+echo "now starting ddrescue;"
+echo "press CTRL-C at any time and resume by running the printed commands below"
+echo
+
+
+cln() {
+	rm -f "$title".map.bak
+	eject $dev || true
+	exit $1
+}
+
+
+# pass 1, one plain read, then one retry of bad blocks going backwards
+# -R retry failed full sectors from previous runs
+ex ddrescue -v -n -b $bs -s $((bs*count)) --log-events="$title.log" $dev "$title.iso" "$title.map" || rv=$?
+
+#ddrescuelog -D "$title.map" && {
+tac "$title.log" | tr ' ' '\n' | grep -E '%$' | head -n 1 | grep 100 && {
+	echo
+	echo "copied sucessfully on first attempt; exiting"
+	cln 0
+}
+
+echo
+echo
+echo "entering second phase to reattempt bad blocks"
+
+# pass 2, direct mode, three attempts per bad block
+ex ddrescue -v -d -r4 -b $bs -s $((bs*count)) --log-events="$title.log" $dev "$title.iso" "$title.map" || rv=$?
+
+#ddrescuelog -D "$title.map" && {
+tac "$title.log" | tr ' ' '\n' | grep -E '%$' | head -n 1 | grep 100 && {
+	echo
+	echo "copied successfully on second attempt"
+	cln 0
+}
+
+echo
+echo "giving up: not all data can be copied successfully:"
+echo
+grep % "$title.log" | tail -n 2
+echo
+cln $rv

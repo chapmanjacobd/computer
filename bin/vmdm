@@ -1,0 +1,140 @@
+#!/bin/bash
+set -e
+
+# vmdm - mount a virtual-machine disk image (virtualbox, qemu, ...)
+# ed <irc.rizon.net>, MIT-licensed, https://github.com/9001/usr-local-bin
+
+maxparts=8
+
+[ "$1" = ro ] &&
+	nbd_args=(-r) &&
+	mount_args=(-r -o ro,noload)
+
+[ "$1" = rw ] &&
+	nbd_args=() &&
+	mount_args=(-o rw)
+
+[ -z "${mount_args[*]}" ] && {
+	echo need arg 1: ro or rw
+	exit 1
+}
+
+vdi="$2"
+tag="$3"
+
+[ -z "$tag" ] && {
+	echo "need arg 2: virtual disk file"
+	echo "need arg 3: mountpoint, /mnt/w7"
+	exit 1
+}
+
+find "${tag#%/*}" -maxdepth 1 2>/dev/null |
+grep -F '$tag.nbd' && {
+	echo "tag taken; choose another one"
+	exit 1
+}
+
+[ -e /dev/nbd0 ] ||
+	modprobe nbd max_part=8
+
+avdi="$(realpath -- "$vdi")"
+for x in /mnt/nbd*.img
+do
+	[ "$(readlink "$x")" = "$avdi" ] && {
+		echo "disk image already mounted, according to $x"
+		exit 1
+	}
+done
+
+n=0
+while true
+do
+	nbd_dev=nbd$n
+	[ -e /dev/$nbd_dev ] || {
+		echo "all devices busy ($nbd_dev does not exist); cannot mount"
+		echo "last qemu-nbd error:"
+		cat /dev/shm/qemu-nbd-err
+		exit 1
+	}
+	qemu-nbd "${nbd_args[@]}" -c /dev/$nbd_dev -- "$vdi" 2>/dev/shm/qemu-nbd-err &&
+		break
+	
+	n=$((n+1))
+done
+
+ln -s "$avdi" /mnt/$nbd_dev.img
+
+echo; lsblk /dev/${nbd_dev}
+echo; blkid /dev/${nbd_dev}*
+echo
+
+ndevs=$(printf '%s\n' /dev/${nbd_dev}* | wc -l)
+
+[ $ndevs -eq 1 ] && {
+	mp="$tag.${nbd_dev}p0"
+	printf "\033[36mno partitions; mounting blockdev at %s\033[0m\n" "$mp"
+	mkdir "$mp"
+	mount "${mount_args[@]}" /dev/${nbd_dev} "$mp"
+}
+
+[ $ndevs -gt 1 ] && {
+	for ((p=1; p<$ndevs; p++))
+	do
+		mp="$tag.${nbd_dev}p$p"
+		printf "\033[36mmounting %s\033[0m\n" "$mp"
+		mkdir "$mp"
+		mount "${mount_args[@]}" /dev/${nbd_dev}p$p "$mp" || true
+		echo
+	done
+}
+
+cleanup() {
+	for mp in "$tag.nbd"*
+	do
+		echo
+		echo "unmounting $mp"
+		
+		while true
+		do
+			mount | grep -F " on $mp " &&
+				umount "$mp" || true
+			
+			mount | grep -qF " on $mp " || {
+				rmdir "$mp" 2>/dev/null || true
+				break
+			}
+			
+			printf '\n\033[1;31mfailed to unmount %s\n' "$mp"
+			printf '\\- the following files (if any) are still open:\033[0m\n'
+			lsof "$mp" || true
+			echo
+			echo 'press ENTER to retry'
+			read -u1 -r
+		done
+	done
+	
+	echo
+	qemu-nbd -d /dev/$nbd_dev
+	rm -f /mnt/$nbd_dev.img
+	echo done
+}
+
+trap cleanup EXIT
+
+echo "done, now idle"
+echo "press N if you do NOT want automatic unmount on CTRL-C or exit"
+while true
+do
+	read -u1 -n1 -r r
+	echo
+	
+	[ "$r" = n ] || [ "$r" = N ] && {
+		echo "auto-unmount disabled"
+		trap - EXIT
+	}
+	
+	[ "$r" = y ] || [ "$r" = Y ] && {
+		echo "auto-unmount enabled"
+		trap cleanup EXIT
+	}
+done

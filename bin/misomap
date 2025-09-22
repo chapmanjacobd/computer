@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+# coding: utf-8
+from __future__ import print_function, unicode_literals
+
+"""misomap.py: correlates a ddrescue mapfile with an iso,
+               listing currently incomplete files"""
+__version__   = "1.0"
+__author__    = "ed <misomap@ocv.me>"
+__credits__   = ["stackoverflow.com"]
+__license__   = "MIT"
+__copyright__ = "2019"
+
+
+import re
+import sys
+import subprocess as sp
+
+
+"""
+Report layout: xt , Startlba ,   Blocks , Filesize , ISO image path
+File data lba:  0 ,   224601 ,     3096 ,  6338585 , './DVD _03/Musikk/01 Harry Gregson-Williams - '"'"'Metal Gear Solid'"'"' Main Theme.mp3;1'
+File data lba:  0 ,   227697 ,      827 ,  1693696 , './DVD _03/Musikk/05 - DJ Inphinity - Fantasy Project - Sky (RMX).mp3;1'
+"""
+
+
+def get_isotoc(iso_path):
+	ptn = re.compile(r"^File data lba: +0 +, +([0-9]+) +, +([0-9]+) +, +([0-9]+) +, +'\./(.*);1'$")
+	p = sp.Popen(['xorriso', '-indev', iso_path, '-error_behavior', 'image_loading', 'best_effort', '-abort_on', 'NEVER', '-find', '.', '-exec', 'report_lba'], stdout=sp.PIPE, stderr=sp.DEVNULL)
+	ok = False
+	while True:
+		ln = p.stdout.readline()
+		if not ln:
+			break
+		
+		ln = ln.decode('utf-8', 'replace').rstrip()
+		if ln == 'Report layout: xt , Startlba ,   Blocks , Filesize , ISO image path':
+			ok = True
+			continue
+		
+		m = ptn.match(ln)
+		if not m:
+			yield Exception(ln)
+		
+		lba1, nblocks, fsize, fname = m.groups()
+		
+		yield \
+			int(lba1), \
+			int(lba1)+int(nblocks)-1, \
+			fname.replace("""'"'"'""", "'")
+	
+	yield -1, -1, ok
+
+
+def get_ddmap(map_path):
+	ptn = re.compile(r'^0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+([?*/+-])$')
+	ret = []
+	with open(map_path, 'rb') as f:
+		for ln in f:
+			ln = ln.decode('utf-8').rstrip()
+			m = ptn.match(ln)
+			if not m:
+				print('map_ign [{}]'.format(ln))
+				continue
+			
+			p1 = int(m.group(1), 16) / 2048
+			sz = int(m.group(2), 16) / 2048
+			
+			ret.append([
+				p1,
+				p1 + sz,
+				m.group(3) == '+'
+			])
+	
+	return ret
+
+
+def main():
+	path = sys.argv[1]
+	if path.endswith('.iso') \
+	or path.endswith('.map'):
+		path, _ = path.rsplit('.', 1)
+	
+	ddmap = get_ddmap(path + '.map')
+	
+	for fp1, fp2, fname in get_isotoc(path + '.iso'):
+		#if 'AntiTrust.avi' in fname:
+		#	import pudb; pu.db
+		
+		if fp2 == -1:
+			if not fname:
+				raise Exception('failed to parse iso')
+			break
+		
+		missing = {}
+		for mp1, mp2, mok in ddmap:
+			if mok:
+				continue
+			"""
+			,------------.
+			|fp1      fp2|
+			`------------+---------.
+			      |mp1          mp2|
+			      `----------------+------.
+			                |fp1        fp2|
+			                `--------------'
+			"""
+			p = max(mp1, fp1)
+			while p <= mp2 and p <= fp2:
+				missing[p] = 1
+				p += 1
+			
+		c = '36'
+		if missing:
+			c = '1;37;41'
+		
+		perc = 0
+		if fp2 >= fp1:
+			perc = (100.0 * len(missing)) / (fp2 + 1 - fp1)  # ??
+		elif missing:
+			perc = 100
+		
+		#if perc <= 0:
+		#	continue
+		
+		print('\033[0;{}m{:8x} {:8x} {:4} {:6.2f}%  {}\033[0m'.format(
+			c, fp1, fp2, len(missing), perc, fname))
+
+
+if __name__ == '__main__':
+	main()

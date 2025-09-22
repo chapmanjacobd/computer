@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+# coding: utf-8
+from __future__ import unicode_literals, print_function
+
+"""famon.py: monitor access to small files from a process
+     (shows time spent for each file + estimate read/write speed)
+     (runs better in pypy36)"""
+__version__   = "1.0"
+__author__    = "ed <famon@ocv.me>"
+__credits__   = ["stackoverflow.com"]
+__license__   = "MIT"
+__copyright__ = "2019"
+
+
+import os
+import sys
+import time
+import subprocess as sp
+
+try:
+	import queue
+except:
+	import Queue as queue
+
+from math import log10
+try:
+	from math import log2
+except:
+	from math import log
+	
+	def log2(sz):
+		return log(sz, 2)
+
+
+def human(sz):
+	order = int(log2(sz) / 10) if sz else 0
+	fsz = sz / (1 << (order*10))
+	ndec = max(0, min(3, 3 - int(log10(abs(fsz))))) if fsz else 3
+	suffixes = ['B','K','M','G','T']
+	colors = ['1;30','31','33','1;34','1;37;41']
+	return '\033[{}m{:.{}f}{}\033[0m'.format(
+		colors[order], fsz, ndec, suffixes[order]).replace('.', '\033[1;30m.')
+
+
+def polling(pid):
+	fdpath = '/proc/{}/fd/'.format(pid).encode('utf-8')
+	open_files = {}
+	ignored_fds = {}
+	while True:
+		time.sleep(0.001)
+		fds = os.listdir(fdpath)
+		seen_now = {}
+		open_msgs = []
+		for fd in fds:
+			if fd in ignored_fds:
+				continue
+			
+			try:
+				# os.path.realpath performs recursive resolving
+				# but is 3x as expensive and pointless for this
+				fn = os.readlink(fdpath + fd)
+				if fn not in open_files:
+					sz = os.path.getsize(fn)
+					fn2 = os.readlink(fdpath + fd)
+					if fn != fn2:
+						continue
+					
+					if fn.startswith(b'/dev/pts/'):
+						ignored_fds[fd] = 1
+						continue
+					
+					open_files[fn] = [time.time(), sz]
+					if sz > 64*1024*1024:
+						open_msgs.append('{:6} {} {}'.format('open', human(sz), fn.decode('utf-8', 'replace')))
+				
+				seen_now[fn] = 1
+			
+			except OSError:
+				pass
+		
+		was_open = list(open_files.keys())
+		for fn in was_open:
+			if fn not in seen_now:
+				t0, sz = open_files[fn]
+				td = time.time() - t0
+				try:
+					bps = sz / td
+				except:
+					bps = 0
+				
+				print('{} {} {}'.format(human(bps), human(sz), fn.decode('utf-8', 'replace')))
+				del open_files[fn]
+
+		for msg in open_msgs:
+			print(msg)
+
+
+def strace_worker(q):
+	while True:
+		ts, ev = q.get()
+
+
+def strace(pid):
+	"""
+	abandoned due to performance impact:
+	time strace -e open dd if=/dev/zero of=/dev/null bs=4k count=$((1024*128))
+	real    0m2.639s
+	"""
+
+	q = queue.Queue(1024)
+	thr = threading.Thread(target=strace_worker, args=(q,))
+	thr.daemon = True
+	thr.start()
+	
+	proc = sp.Popen(['strace', '-Te', 'open', '-p', pid], stderr=sp.PIPE)
+	for ln in proc:
+		q.put(time.time(), ln.decode('utf-8', 'ignore'))
+
+
+def main():
+	pid = sys.argv[1]
+	polling(pid)
+
+
+if __name__ == '__main__':
+	main()
