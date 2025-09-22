@@ -274,3 +274,4 @@ abbr -a -- lsattr lsattr -l -d
 abbr -a -- qemu quickemu --display none --vm
 abbr -a -- gsh git show HEAD
 abbr -a -- dnffiles sudo dnf repoquery -l
+abbr -a -- raw_syscalls_count sudo bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
