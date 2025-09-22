@@ -272,3 +272,4 @@ abbr -a -- mp multipass
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
 abbr -a -- lsattr lsattr -l -d
 abbr -a -- qemu quickemu --display none --vm
+abbr -a -- gsh git show HEAD
