@@ -1,4 +1,5 @@
 /state/
+/state/syncthing/
 /lib/
 /include/
 /pipx/

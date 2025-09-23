@@ -231,6 +231,7 @@
 /.local/share/
 /.local/share/wineprefixes/
 /.local/state/
+/.local/state/syncthing/
 /.local/var/pmbootstrap/
 /.MakeMKV/
 /.mnt/
