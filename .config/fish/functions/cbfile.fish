@@ -1,4 +1,8 @@
 # Defined interactively
 function cbfile
-    cb | psub $argv
+    if status --is-command-substitution
+        cb | psub $argv
+    else
+        cat $argv | cb
+    end
 end
