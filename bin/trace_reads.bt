@@ -1,0 +1,76 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+    // Print the header row
+    printf("%-18s %-6s %-16s %-15s %-6s %s\n",
+           "TIME", "PID", "COMM", "EVENT", "FD", "PATH/ARG");
+}
+
+/* ---------------- OPEN family: Capture filename/pathname on enter ---------------- */
+tracepoint:syscalls:sys_enter_open,
+tracepoint:syscalls:sys_enter_openat,
+tracepoint:syscalls:sys_enter_openat2
+{
+    @tmp[pid] = str(args->filename);
+}
+
+tracepoint:syscalls:sys_enter_creat
+{
+    @tmp[pid] = str(args->pathname);
+}
+
+
+/* ---------------- OPEN family: Process results on exit ---------------- */
+tracepoint:syscalls:sys_exit_open,
+tracepoint:syscalls:sys_exit_openat,
+tracepoint:syscalls:sys_exit_openat2,
+tracepoint:syscalls:sys_exit_creat
+/ @tmp[pid] != "" /
+{
+    $fname = @tmp[pid];
+    delete(@tmp[pid]);
+    $fd = (int32)args->ret;
+
+    if ($fd >= 0) {
+        @fdmap[pid, $fd] = $fname;
+    }
+}
+
+
+/* ---------------- READ/WRITE families ---------------- */
+tracepoint:syscalls:sys_enter_read,
+tracepoint:syscalls:sys_enter_pread64
+/ comm != "bpftrace" && @fdmap[pid, (int32)args->fd] != "" /
+{
+    $fd = (int32)args->fd;
+    $count = (uint64)args->count;
+    $name = @fdmap[pid, $fd];
+
+    // Use if/else for guaranteed string assignment.
+    $path_arg = "<unknown>";
+    if ($name != "") {
+        $path_arg = $name;
+    }
+
+    printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
+           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+}
+
+tracepoint:syscalls:sys_enter_readv,
+tracepoint:syscalls:sys_enter_preadv
+/ comm != "bpftrace" && @fdmap[pid, (int32)args->fd] != "" /
+{
+    $fd = (int32)args->fd;
+    $count = (uint64)args->vlen;
+    $name = @fdmap[pid, $fd];
+
+    // Use if/else for guaranteed string assignment.
+    $path_arg = "<unknown>";
+    if ($name != "") {
+        $path_arg = $name;
+    }
+
+    printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
+           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+}
