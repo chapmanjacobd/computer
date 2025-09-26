@@ -276,3 +276,4 @@ abbr -a -- gsh git show HEAD
 abbr -a -- dnffiles sudo dnf repoquery -l
 abbr -a -- raw_syscalls_count sudo bpftrace -e 'tracepoint:raw_syscalls:sys_enter { @[comm] = count(); }'
 abbr -a -- weather curl v2.wttr.in/61455
+abbr -a -- httpdl curl -LkOJ
