@@ -29,6 +29,8 @@ function daily
     fd -S-12b -tf -x rm
     git add .
     preserve_titles
+    git add .
+    url_files_web_titles.py (url_files)
     morganize
 
     library download ~/lb/fs/audio.db --audio --prefix /mnt/d/dump/audio/ -w m.time_modified=0
