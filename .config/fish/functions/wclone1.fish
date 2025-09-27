@@ -1,4 +1,6 @@
-function wclone1
+# Defined interactively
+function wclone1 -w wget
     ~/d/dump/text/web/
-    wget --adjust-extension -e robots=off -np -nc -p --user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" $argv
+    wget -np -r -l inf --reject-regex '/tag/|/tags/|\?tag' --continue --max-threads=1 --wait=1 --random-wait --https-enforce=none --retry-connrefused $argv
+     #--ignore-length
 end
