@@ -13,4 +13,6 @@ function mrvideo
     ) ~/sync/video/other/
 
     lb fsadd --video ~/lb/fs/video.db ~/sync/video/other/
+
+    lb mv -eMKA -eMP3 -eOPUS ~/sync/video/ ~/sync/audio/
 end
