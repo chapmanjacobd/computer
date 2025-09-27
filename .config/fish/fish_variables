@@ -84,7 +84,7 @@ SETUVAR fish_pager_color_selected_background:\x2d\x2dreverse
 SETUVAR fish_pager_color_selected_completion:\x1d
 SETUVAR fish_pager_color_selected_description:\x1d
 SETUVAR fish_pager_color_selected_prefix:\x1d
-SETUVAR fish_user_paths:/home/xk/\x2elocal/share/go/bin\x1e/usr/share/bpftrace/tools\x1e/bin/\x1e/home/xk/\x2elocal/bin/\x1e/home/xk/bin/\x1e/usr/local/bin/\x1e/usr/bin/\x1e/home/xk/\x2ecargo/bin/\x1e/home/xk/phone/\x2eshortcuts/tasks/
+SETUVAR fish_user_paths:/usr/local/go/bin\x1e/home/xk/\x2elocal/share/go/bin\x1e/usr/share/bpftrace/tools\x1e/bin/\x1e/home/xk/\x2elocal/bin/\x1e/home/xk/bin/\x1e/usr/local/bin/\x1e/usr/bin/\x1e/home/xk/\x2ecargo/bin/\x1e/home/xk/phone/\x2eshortcuts/tasks/
 SETUVAR sponge_allow_previously_successful:true
 SETUVAR sponge_delay:2
 SETUVAR sponge_filters:sponge_filter_failed\x1esponge_filter_matched
