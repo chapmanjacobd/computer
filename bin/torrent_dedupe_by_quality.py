@@ -74,10 +74,10 @@ def extract_base_name(path):
 
 def seep(filename):
     patterns = {
-        'xofy': r'(\d+)of(\d+)',  # 04of26 -> (4, 26)
-        'part': r'Part(\d+)',  # Part1 -> 1
-        'episode': r'[Ee]pisode\s*(\d+)',
-        'season_ep': r'[Ss](\d+)[Ee](\d+)',
+        'xofy': r'(\d+)\s?of\s?(\d+)',  # 04of26 -> (4, 26)
+        'part': r'Part\s?(\d+)',  # Part1 -> 1
+        'episode': r'[Ee]pisode\s?(\d+)',
+        'season_ep': r'[Ss]\s?(\d+)[Ee]\s?(\d+)',
     }
 
     for pattern_type, pattern in patterns.items():
@@ -99,7 +99,7 @@ def group_episodes(bases):
     groups = {}
 
     for base in bases:
-        key = seep(base)
+        key = seep(base)  # can be None :-)
         if key not in groups:
             groups[key] = []
         groups[key].append(base)
