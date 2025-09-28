@@ -74,17 +74,19 @@ def extract_base_name(path):
 
 
 def seep(filename):
+    dot = r"\.?\s?"
     optional_prefix = (
-        r'(?:(?:(?P<year>\d{4})\.?(?:Series\.?)?(?P<series>\d+)?\.?)'
-        r'|(?:(?:Series\.?)?(?P<series_only>\d+)\.?(?P<year_only>\d{4})?\.?))?'
+        rf'(?:(?:(?P<year>\d{4}){dot}(?:Series{dot})?(?P<series>\d+)?{dot})'
+        rf'|(?:(?:Series{dot})?(?P<series_only>\d+){dot}(?P<year_only>\d{4})?{dot}))?'
     )
 
     patterns = {
-        'prefixed_xofy': optional_prefix + r'(?P<episode>\d+)\s?of\s?(?P<total>\d+)',
-        'prefixed_part': optional_prefix + r'Part\s?(?P<part>\d+)',
-        'season_ep': optional_prefix + r'[Ss]\s?(?P<season>\d+)[Ee]\s?(?P<episode>\d+)',
-        'episode': optional_prefix + r'[Ee]pisode\s?(?P<episode>\d+)',
-        'ep': optional_prefix + r'[Ee][Pp]?\s?(?P<episode>\d+)',
+        'prefixed_xofy': optional_prefix + rf'(?P<episode>\d+)\s?of\s?(?P<total>\d+)',
+        'prefixed_part': optional_prefix + rf'Part\s?(?P<part>\d+)',
+        'season_ep': optional_prefix + rf'[Ss]{dot}(?P<season>\d+)[Ee]{dot}(?P<episode>\d+)',
+        'episode': optional_prefix + rf'[Ee]pisode{dot}(?P<episode>\d+)',
+        'ep': optional_prefix + rf'[Ee][Pp]?{dot}(?P<episode>\d+)',
+        'year': rf'{dot}(?P<year>\d{4}){dot}',
     }
 
     def parse_prefix(groups):
@@ -128,6 +130,10 @@ def seep(filename):
                     series = prefix["series"] or "NOSERIES"
                     return f"Y{year}.A{series}.Ep{episode}"
                 return f"Ep{episode}"
+
+            elif pattern_type == 'year':
+                year = groups["year"] or "NOYEAR"
+                return f"Y{year}"
 
     return None
 
