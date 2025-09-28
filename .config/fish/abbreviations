@@ -278,3 +278,5 @@ abbr -a -- raw_syscalls_count sudo bpftrace -e 'tracepoint:raw_syscalls:sys_ente
 abbr -a -- weather curl v2.wttr.in/61455
 abbr -a -- httpdl curl -LkOJ
 abbr -a -- locc cloc --exclude-dir=__pycache__,__pypackages__ .
+abbr -a -- projwin -projwin 226377 5081003 254318 5048505
+abbr -a -- te -te 226377 5048505 254318 5081003
