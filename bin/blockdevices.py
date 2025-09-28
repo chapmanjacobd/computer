@@ -9,24 +9,14 @@ from typing import Dict, List
 
 def get_block_device_info() -> List[Dict[str, str]]:
     block_devices = glob('/sys/block/*')
-    udev_output = subprocess.check_output(['udevadm', 'info', '--query=property', *block_devices], text=True)
+    udev_output = subprocess.check_output(['udevadm', 'info', '--json=short', *block_devices], text=True)
+    udev_output = [json.loads(l) for l in udev_output.splitlines()]
 
-    devices = []
-    current_device = {}
-    for line in udev_output.splitlines():
-        if current_device and 'DEVNAME' in current_device and 'USEC_INITIALIZED' in current_device:
-            devices.append(current_device)
-            current_device = {}
-
-        # grep -E '^(DEVNAME|USEC_INITIALIZED)'
-        if line.startswith('DEVNAME='):
-            current_device['DEVNAME'] = line.split('=', 1)[1]
-        elif line.startswith('USEC_INITIALIZED='):
-            current_device['USEC_INITIALIZED'] = line.split('=', 1)[1]
-
-    if current_device and 'DEVNAME' in current_device and 'USEC_INITIALIZED' in current_device:
-        devices.append(current_device)
-
+    devices = [
+        d
+        for d in udev_output
+        if not d["DEVPATH"].startswith("/devices/virtual") and (d.get("ID_FS_TYPE") or '') != "swap"
+    ]
     return devices
 
 
