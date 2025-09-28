@@ -8,19 +8,47 @@ from library.utils import arggroups, argparse_utils, consts, devices, strings
 from library.utils.log_utils import log
 
 QUALITIES = [
+    "576p",
+    "540p",
     "720p",
-    "HDTV",
+    "480p",
+    "hdtv",
     "1080p",
+    "1080",
     "x265",
     "x264",
+    "h264",
+    "web-dl",
+    "web.dl",
+    "web",
+    "webrip",
+    "bdrip",
+    "brrip",
+    "dvd",
+    "dvdrip",
+    "hdrip",
+    "hd",
     "720i",
+    "540i",
+    "480i",
     "1080i",
-    "BRrip",
-    "DVD",
-    "DVDRip",
-    "XviD",
-    "4K",
-    "PDTV",
+    "xvid",
+    "divx6",
+    "divx521",
+    "divx511",
+    "divx5",
+    "divx",
+    "2160p",
+    "uhdtv",
+    "4k",
+    "dvb",
+    "pdtv",
+    "tvcap",
+    "vhsrip",
+    "ac3",
+    "aac",
+    "mp3",
+    "mg2",
 ]
 
 REGEX_QUALITY = re.compile(r"\.(" + "|".join(map(re.escape, QUALITIES)) + r").*\.torrent$", re.I)
@@ -29,14 +57,14 @@ REGEX_VIDEO_EXT = re.compile(r'\.(' + '|'.join(consts.VIDEO_EXTENSIONS | consts.
 
 def prioritize_resolution(path):
     for i, quality in enumerate(QUALITIES):
-        if quality.lower() in path.lower():
+        if f".{quality}." in path.lower():
             return i
     log.info("resolution not found %s", path)
     return len(QUALITIES)
 
 
 def extract_base_name(path):
-    base_name = REGEX_QUALITY.sub('', path)
+    base_name = REGEX_QUALITY.sub('', path.rsplit("/")[-1])
     base_name = REGEX_VIDEO_EXT.sub('.', base_name)
     return strings.path_to_sentence(base_name)
 
@@ -46,29 +74,35 @@ def cluster_paths(args, all_paths):
     processed = set()
 
     base_names = {path: extract_base_name(path) for path in all_paths}
+    unique_bases = list(set(base_names.values()))
 
     if args.similar is not None:
-        threshold = args.similar if (0 <= args.similar <= 1) else args.similar / 100
+        from rapidfuzz import fuzz, process
 
-        # Group by similarity
-        paths_list = list(base_names.items())
-        n = len(paths_list)
+        threshold = args.similar *100 if (0 <= args.similar <= 1) else args.similar
 
-        for i in range(n):
-            path_i, base_i = paths_list[i]
-            if base_i in processed:
+        for base in unique_bases:
+            if base in processed:
                 continue
-            cluster = [path_i]
-            for j in range(i + 1, n):
-                path_j, base_j = paths_list[j]
-                if base_j in processed:
-                    continue
-                if SequenceMatcher(None, base_i, base_j).ratio() >= threshold:
-                    cluster.append(path_j)
-                    processed.add(base_j)
-            if len(cluster) > 1:
-                clusters.append(cluster)
-            processed.add(base_i)
+
+            matches = process.extract(
+                base,
+                unique_bases,
+                scorer=fuzz.ratio,
+                score_cutoff=threshold
+            )
+
+            similar_bases = {match[0] for match in matches}
+            cluster_paths = [
+                path for path, base_name in base_names.items()
+                if base_name in similar_bases
+            ]
+
+            if len(cluster_paths) > 1:
+                clusters.append(cluster_paths)
+                processed.update(similar_bases)
+            else:
+                log.debug("Could not find enough matches %s", base)
 
     else:
         # Group by exact base name
@@ -110,7 +144,7 @@ def dedupe_database(args):
 if __name__ == "__main__":
     parser = argparse_utils.argparse.ArgumentParser(description="Deduplicate media files in a database.")
     parser.add_argument(
-        "--similar", nargs="?", type=float, const=0.8, help="Similarity ratio for comparing filenames (0.0-1.0)"
+        "--similar", nargs="?", type=float, const=100, help="Similarity ratio for comparing filenames (0.0-1.0)"
     )
     arggroups.debug(parser)
 
