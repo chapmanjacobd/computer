@@ -72,6 +72,41 @@ def extract_base_name(path):
     return strings.path_to_sentence(base_name)
 
 
+def seep(filename):
+    patterns = {
+        'xofy': r'(\d+)of(\d+)',  # 04of26 -> (4, 26)
+        'part': r'Part(\d+)',  # Part1 -> 1
+        'episode': r'[Ee]pisode\s*(\d+)',
+        'season_ep': r'[Ss](\d+)[Ee](\d+)',
+    }
+
+    for pattern_type, pattern in patterns.items():
+        match = re.search(pattern, filename)
+        if match:
+            if pattern_type == 'xofy':
+                return f"{match.group(1).lstrip('0')}of{match.group(2).lstrip('0')}"  # Normalize: 04of26 -> 4of26
+            elif pattern_type == 'part':
+                return f"Part{match.group(1).lstrip('0')}"  # Normalize: Part04 -> Part4
+            elif pattern_type == 'season_ep':
+                return f"S{match.group(1).lstrip('0')}E{match.group(2).lstrip('0')}"
+            else:
+                return match.group(1)
+
+    return None
+
+
+def group_episodes(bases):
+    groups = {}
+
+    for base in bases:
+        key = seep(base)
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(base)
+
+    return list(groups.values())
+
+
 def cluster_paths(args, all_paths):
     clusters = []
     processed = set()
@@ -91,13 +126,15 @@ def cluster_paths(args, all_paths):
             matches = process.extract(base, unique_bases, scorer=fuzz.ratio, score_cutoff=threshold)
 
             similar_bases = {match[0] for match in matches}
-            cluster_paths = [path for path, base_name in base_names.items() if base_name in similar_bases]
+            similar_episodes = group_episodes(similar_bases)
+            for similar_bases in similar_episodes:
+                cluster_paths = [path for path, base_name in base_names.items() if base_name in similar_bases]
 
-            if len(cluster_paths) > 1:
-                clusters.append(cluster_paths)
-                processed.update(similar_bases)
-            else:
-                log.debug("Could not find enough matches %s", base)
+                if len(cluster_paths) > 1:
+                    clusters.append(cluster_paths)
+                    processed.update(similar_bases)
+                else:
+                    log.debug("Could not find enough matches %s", base)
 
     else:
         # Group by exact base name
@@ -123,8 +160,15 @@ def dedupe_database(args):
         best_path = min(similar_paths, key=prioritize_resolution)
         print('ORIGINAL:', best_path)
         similar_paths.remove(best_path)
-        print('DUPLICATES:', similar_paths)
+        if len(similar_paths) == 1:
+            print('MATCHING:', similar_paths[0])
+        else:
+            print('MATCHES:')
+            for s in similar_paths:
+                print("\t", s)
+
         duplicates.update(similar_paths)
+        print()
 
     if len(duplicates) == 0:
         print('No duplicates found')
