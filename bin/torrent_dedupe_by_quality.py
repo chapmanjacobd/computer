@@ -72,25 +72,62 @@ def extract_base_name(path):
     return strings.path_to_sentence(base_name)
 
 
+
 def seep(filename):
+    optional_prefix = (
+        r'(?:(?:(?P<year>\d{4})\.?(?:Series\.?)?(?P<series>\d+)?\.?)'
+        r'|(?:(?:Series\.?)?(?P<series_only>\d+)\.?(?P<year_only>\d{4})?\.?))?'
+    )
+
     patterns = {
-        'xofy': r'(\d+)\s?of\s?(\d+)',  # 04of26 -> (4, 26)
-        'part': r'Part\s?(\d+)',  # Part1 -> 1
-        'episode': r'[Ee]pisode\s?(\d+)',
-        'season_ep': r'[Ss]\s?(\d+)[Ee]\s?(\d+)',
+        'prefixed_xofy': optional_prefix + r'(?P<episode>\d+)\s?of\s?(?P<total>\d+)',
+        'prefixed_part': optional_prefix + r'Part\s?(?P<part>\d+)',
+        'season_ep': optional_prefix + r'[Ss]\s?(?P<season>\d+)[Ee]\s?(?P<episode>\d+)',
+        'episode': optional_prefix + r'[Ee]pisode\s?(?P<episode>\d+)',
+        'ep': optional_prefix + r'[Ee][Pp]?\s?(?P<episode>\d+)',
     }
+
+    def parse_prefix(groups):
+        return {
+            "year": groups.get("year") or groups.get("year_only"),
+            "series": groups.get("series") or groups.get("series_only"),
+        }
 
     for pattern_type, pattern in patterns.items():
         match = re.search(pattern, filename)
         if match:
-            if pattern_type == 'xofy':
-                return f"{match.group(1).lstrip('0')}of{match.group(2).lstrip('0')}"  # Normalize: 04of26 -> 4of26
-            elif pattern_type == 'part':
-                return f"Part{match.group(1).lstrip('0')}"  # Normalize: Part04 -> Part4
+            groups = match.groupdict()
+            prefix = parse_prefix(groups)
+
+            if pattern_type == 'prefixed_xofy':
+                year = prefix["year"] or "NOYEAR"
+                series = prefix["series"] or "NOSERIES"
+                episode = groups['episode'].lstrip('0')
+                total = groups['total'].lstrip('0')
+                return f"Y{year}.A{series}.{episode}of{total}"
+
+            elif pattern_type == 'prefixed_part':
+                year = prefix["year"] or "NOYEAR"
+                series = prefix["series"] or "NOSERIES"
+                part = groups['part'].lstrip('0')
+                return f"Y{year}.A{series}.Part{part}"
+
             elif pattern_type == 'season_ep':
-                return f"S{match.group(1).lstrip('0')}E{match.group(2).lstrip('0')}"
-            else:
-                return match.group(1)
+                season = groups['season'].lstrip('0')
+                episode = groups['episode'].lstrip('0')
+                if prefix["year"] or prefix["series"]:
+                    year = prefix["year"] or "NOYEAR"
+                    series = prefix["series"] or "NOSERIES"
+                    return f"Y{year}.A{series}.S{season}E{episode}"
+                return f"S{season}E{episode}"
+
+            elif pattern_type in ['episode', 'ep']:
+                episode = groups['episode'].lstrip('0')
+                if prefix["year"] or prefix["series"]:
+                    year = prefix["year"] or "NOYEAR"
+                    series = prefix["series"] or "NOSERIES"
+                    return f"Y{year}.A{series}.Ep{episode}"
+                return f"Ep{episode}"
 
     return None
 
