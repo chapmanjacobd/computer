@@ -2,7 +2,6 @@
 import re
 import sqlite3
 from collections import defaultdict
-from difflib import SequenceMatcher
 
 from library.utils import arggroups, argparse_utils, consts, devices, strings
 from library.utils.log_utils import log
@@ -54,11 +53,15 @@ QUALITIES = [
 REGEX_QUALITY = re.compile(r"\.(" + "|".join(map(re.escape, QUALITIES)) + r").*\.torrent$", re.I)
 REGEX_VIDEO_EXT = re.compile(r'\.(' + '|'.join(consts.VIDEO_EXTENSIONS | consts.AUDIO_ONLY_EXTENSIONS) + r')\.', re.I)
 
+QUALITY_MAP = {q: i for i, q in enumerate(QUALITIES)}
+
 
 def prioritize_resolution(path):
-    for i, quality in enumerate(QUALITIES):
-        if f".{quality}." in path.lower():
-            return i
+    for s in path.lower().split("."):
+        for quality, i in QUALITY_MAP.items():
+            if quality in s:
+                return i
+
     log.info("resolution not found %s", path)
     return len(QUALITIES)
 
@@ -79,24 +82,16 @@ def cluster_paths(args, all_paths):
     if args.similar is not None:
         from rapidfuzz import fuzz, process
 
-        threshold = args.similar *100 if (0 <= args.similar <= 1) else args.similar
+        threshold = args.similar * 100 if (0 <= args.similar <= 1) else args.similar
 
         for base in unique_bases:
             if base in processed:
                 continue
 
-            matches = process.extract(
-                base,
-                unique_bases,
-                scorer=fuzz.ratio,
-                score_cutoff=threshold
-            )
+            matches = process.extract(base, unique_bases, scorer=fuzz.ratio, score_cutoff=threshold)
 
             similar_bases = {match[0] for match in matches}
-            cluster_paths = [
-                path for path, base_name in base_names.items()
-                if base_name in similar_bases
-            ]
+            cluster_paths = [path for path, base_name in base_names.items() if base_name in similar_bases]
 
             if len(cluster_paths) > 1:
                 clusters.append(cluster_paths)
