@@ -58,6 +58,6 @@ for i in range(len_torrents):
             duplicates[torrent_path1].append(str(torrent_path1))
             duplicates[torrent_path1].append(str(torrent_path2))
 
-print("Duplicate groups:")
+print(f"Duplicate groups ({len(duplicates)}):")
 for group in sorted(duplicates, key=len, reverse=True):
     print(duplicates[group])
