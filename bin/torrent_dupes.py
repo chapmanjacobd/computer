@@ -4,9 +4,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from library.createdb import torrents_add
-from library.utils import argparse_utils, strings
+from library.utils import argparse_utils, strings, devices, file_utils, arggroups
 
 parser = argparse_utils.ArgumentParser()
+arggroups.capability_delete(parser)
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
 
@@ -18,8 +19,7 @@ torrents = list(zip(torrent_files, metadata_results))
 
 def print_detail(d):
     print(d.get("author"), d.get("tracker"), d.get("comment"))
-    print(d["title"], d["file_count"], "files", strings.relative_datetime(d["time_uploaded"] or d["time_modified"]))
-    print("Example:", strings.file_size(d["files"][0]["size"]), d["files"][0]["path"])
+    print(d["title"], d["file_count"], "files", strings.file_size(d["size"]), strings.relative_datetime(d["time_uploaded"] or d["time_modified"]))
     print(d["path"])
 
 
@@ -68,6 +68,29 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
 print()
 print(f"Exact duplicate groups ({len(duplicates)}):")
 for group in sorted(duplicates, key=len, reverse=True):
-    for d in sorted(duplicates[group], key=lambda d: d["time_uploaded"]):
+    group = sorted(duplicates[group], key=lambda d: d["time_uploaded"])
+    for d in group:
         print_detail(d)
     print()
+
+    torrent1_files = group[0]['files']
+    torrent2_files = group[1]['files']
+    if len(torrent1_files) != len(torrent2_files):
+        lengths_set1 = set(f1['size'] for f1 in torrent1_files)
+        lengths_set2 = set(f2['size'] for f2 in torrent2_files)
+
+        if lengths_set1.issubset(lengths_set2):
+            print("Option to delete: Oldest torrent (fewer files).")
+            torrent_to_delete = group[0]
+        elif lengths_set1.issuperset(lengths_set2):
+            print("Option to delete: Newer torrent (fewer files).")
+            torrent_to_delete = group[1]
+        else:
+            print("Option to delete: Oldest torrent (file lists differ).")
+            torrent_to_delete = group[0]
+    else:
+        print("Option to delete: Oldest torrent (same file count).")
+        torrent_to_delete = group[0]
+
+    if devices.confirm("Delete?"):
+        file_utils.trash(args, torrent_to_delete["path"])
