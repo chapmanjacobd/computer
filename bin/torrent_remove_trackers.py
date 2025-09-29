@@ -7,7 +7,7 @@ import torrent_info
 from library.utils import arggroups, argparse_utils
 
 parser = argparse_utils.ArgumentParser()
-parser.add_argument("--allowed", nargs='+', default=[])
+parser.add_argument("--allowed", default=[],  action=argparse_utils.ArgparseList)
 arggroups.debug(parser)
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
