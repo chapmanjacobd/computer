@@ -46,7 +46,9 @@ def get_mountpoints():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Finds and displays block devices/partitions, sorted by initialization time")
+    parser = argparse.ArgumentParser(
+        description="Finds and displays block devices/partitions, sorted by initialization time"
+    )
     parser.add_argument('--mountpoints', action='store_true')
     parser.add_argument('--unmounted', action='store_true')
 
