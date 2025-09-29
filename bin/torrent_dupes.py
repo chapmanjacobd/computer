@@ -11,7 +11,7 @@ arggroups.capability_delete(parser)
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
 
-torrent_files = [file for torrent_folder in args.paths for file in Path(torrent_folder).glob('*.torrent')]
+torrent_files = [file for torrent_folder in args.paths for file in Path(torrent_folder).rglob('*.torrent') if not file.is_dir()]
 with ThreadPoolExecutor() as executor:
     metadata_results = executor.map(torrents_add.extract_metadata, torrent_files)
 torrents = list(zip(torrent_files, metadata_results))
