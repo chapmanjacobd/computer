@@ -1,63 +1,70 @@
 #!/usr/bin/python3
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from pprint import pprint
 
 from rich import inspect
-from torrentool.api import Torrent
 from library.utils import argparse_utils, strings
 from library.utils.printing import print_overwrite
+from library.createdb import torrents_add
 
 parser = argparse_utils.ArgumentParser()
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
 
-torrents = [
-    (torrent_file, Torrent.from_file(torrent_file))
-    for torrent_folder in args.paths
-    for torrent_file in Path(torrent_folder).glob('*.torrent')
-]
+torrent_files = [file for torrent_folder in args.paths for file in Path(torrent_folder).glob('*.torrent')]
+with ThreadPoolExecutor() as executor:
+    metadata_results = executor.map(torrents_add.extract_metadata, torrent_files)
+torrents = list(zip(torrent_files, metadata_results))
+
+def print_detail(d):
+    print(d["path"])
+    print(d.get("author"), d.get("tracker"), d.get("comment"))
+    print(d["title"], d["file_count"], "files")
+    print("Example:", d["files"][0])
 
 len_torrents = len(torrents)
 duplicates = {}
-for i in range(len_torrents):
-    torrent_path1 = torrents[i][0]
-    torrent1 = torrents[i][1]
-
+for i, (torrent_path1, torrent1) in enumerate(torrents):
     print_overwrite('Checking', i, 'of', len_torrents, f"({strings.percent(i/len_torrents)})")
-    for j in range(i + 1, len(torrents)):
-        torrent_path2 = torrents[j][0]
-        torrent2 = torrents[j][1]
+
+    for torrent_path2, torrent2 in torrents[i + 1 :]:
 
         is_dupe = False
-        if torrent1.files == torrent2.files:
+        torrent1_files = torrent1['files']
+        torrent2_files = torrent2['files']
+        if torrent1_files == torrent2_files:
             is_dupe = True
-        elif len(torrent1.files) > 3 and len(torrent1.files) == len(torrent2.files):
-            sizes1 = [f.length for f in torrent1.files]
-            sizes2 = [f.length for f in torrent2.files]
+        elif len(torrent1_files) > 3 and len(torrent1_files) == len(torrent2_files):
+            sizes1 = [f['size'] for f in torrent1_files]
+            sizes2 = [f['size'] for f in torrent2_files]
             if sizes1 == sizes2:
                 is_dupe = True
 
-        elif len(torrent1.files) > 10 and len(torrent2.files) > 10:
-            lengths_set1 = set(f1.length for f1 in torrent1.files)
-            lengths_set2 = set(f2.length for f2 in torrent2.files)
+        elif len(torrent1_files) > 10 and len(torrent2_files) > 10:
+            lengths_set1 = set(f1['size'] for f1 in torrent1_files)
+            lengths_set2 = set(f2['size'] for f2 in torrent2_files)
             overlap_lengths = lengths_set1.intersection(lengths_set2)
             match_count = len(overlap_lengths)
 
-            similarity = match_count / len(torrent1.files)
+            similarity = match_count / len(torrent1_files)
             if similarity > 0.3:
-                print(torrent_path1, torrent_path2, 'are similar', strings.percent(similarity))
-                inspect(torrent1)
-                inspect(torrent2)
+                print()
+                print(strings.percent(similarity), "similar:", torrent_path1, torrent_path2)
+                print_detail(torrent1)
+                print_detail(torrent2)
+                print()
 
         if is_dupe:
-            inspect(torrent1)
-            inspect(torrent2)
+            key = str(torrent_path1)
+            if key not in duplicates:
+                duplicates[key] = []
+            duplicates[key].append(torrent1)
+            duplicates[key].append(torrent2)
 
-            if torrent_path1 not in duplicates:
-                duplicates[torrent_path1] = []
-            duplicates[torrent_path1].append(str(torrent_path1))
-            duplicates[torrent_path1].append(str(torrent_path2))
-
-print(f"Duplicate groups ({len(duplicates)}):")
+print(f"Exact duplicate groups ({len(duplicates)}):")
 for group in sorted(duplicates, key=len, reverse=True):
-    print(duplicates[group])
+    for d in duplicates[group]:
+        print_detail(d)
+    print()
