@@ -44,6 +44,9 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
         elif len(torrent1_files) > 10 and len(torrent2_files) > 10:
             lengths_set1 = set(f1['size'] for f1 in torrent1_files)
             lengths_set2 = set(f2['size'] for f2 in torrent2_files)
+            if lengths_set1.issubset(lengths_set2) or lengths_set1.issuperset(lengths_set2):
+                is_dupe = True
+
             overlap_lengths = lengths_set1.intersection(lengths_set2)
             match_count = len(overlap_lengths)
 
