@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from library.createdb import torrents_add
-from library.utils import arggroups, argparse_utils, devices, file_utils, printing, strings
+from library.utils import arggroups, argparse_utils, devices, file_utils, printing, strings, nums
 
 parser = argparse_utils.ArgumentParser()
 arggroups.capability_delete(parser)
@@ -27,7 +27,7 @@ def get_detail(d):
 def comparison_table(d1, d2):
     printing.table([get_detail(d1), get_detail(d2)])
 
-
+min_size = nums.human_to_bytes("2Mi")
 len_torrents = len(torrents)
 duplicates = {}
 for i, (torrent_path1, torrent1) in enumerate(torrents):
@@ -41,14 +41,14 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
         if torrent1_files == torrent2_files:
             is_dupe = True
         elif len(torrent1_files) > 3 and len(torrent1_files) == len(torrent2_files):
-            sizes1 = [f['size'] for f in torrent1_files]
-            sizes2 = [f['size'] for f in torrent2_files]
+            sizes1 = sorted([f['size'] for f in torrent1_files])
+            sizes2 = sorted([f['size'] for f in torrent2_files])
             if sizes1 == sizes2:
                 is_dupe = True
 
-        elif len(torrent1_files) > 10 and len(torrent2_files) > 10:
-            lengths_set1 = set(f1['size'] for f1 in torrent1_files)
-            lengths_set2 = set(f2['size'] for f2 in torrent2_files)
+        elif len(torrent1_files) > 2 and len(torrent2_files) > 2:
+            lengths_set1 = set(f1['size'] for f1 in torrent1_files if f1['size'] > min_size)
+            lengths_set2 = set(f2['size'] for f2 in torrent2_files if f2['size'] > min_size)
             if lengths_set1.issubset(lengths_set2) or lengths_set1.issuperset(lengths_set2):
                 is_dupe = True
 
