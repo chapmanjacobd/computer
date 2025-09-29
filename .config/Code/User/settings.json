@@ -461,6 +461,10 @@
   "python.formatting.blackArgs": [
     "--line-length=120 --skip-string-normalization"
   ],
+"go.useLanguageServer": true,
+"gopls": {
+	"formatting.gofumpt": true,
+},
   "python.languageServer": "Pylance",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportUnusedImport": "warning",

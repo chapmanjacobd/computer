@@ -1,5 +1,7 @@
 # Defined interactively
 function goformat
-    gofmt -swe
-    goimports -wve
+    gofmt -s -w -e .
+    goimports -w -e .
+    gofumpt -w .
+    gci write .
 end
