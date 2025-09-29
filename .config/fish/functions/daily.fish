@@ -45,4 +45,5 @@ function daily
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
     files_casefold.py ~/sync/ --run
+    priv-daily
 end
