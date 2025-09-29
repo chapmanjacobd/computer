@@ -1,6 +1,6 @@
 # Defined interactively
 function goformat
-    go vet ./...
+    go vet -c=1 ./...
     gofmt -s -w -e .
     goimports -w -e .
     gofumpt -w .
