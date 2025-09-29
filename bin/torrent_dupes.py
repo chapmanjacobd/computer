@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from library.createdb import torrents_add
-from library.utils import argparse_utils, strings, devices, file_utils, arggroups
+from library.utils import arggroups, argparse_utils, devices, file_utils, printing, strings
 
 parser = argparse_utils.ArgumentParser()
 arggroups.capability_delete(parser)
@@ -17,10 +17,15 @@ with ThreadPoolExecutor() as executor:
 torrents = list(zip(torrent_files, metadata_results))
 
 
-def print_detail(d):
-    print(d.get("author"), d.get("tracker"), d.get("comment"))
-    print(d["title"], d["file_count"], "files", strings.file_size(d["size"]), strings.relative_datetime(d["time_uploaded"] or d["time_modified"]))
-    print(d["path"])
+def get_detail(d):
+    return {k: v for k, v in d.items() if k in ["author", "tracker", "comment", "title", "file_count", "path"]} | {
+        "size": strings.file_size(d["size"]),
+        "time_uploaded": strings.relative_datetime(d["time_uploaded"] or d["time_modified"]),
+    }
+
+
+def comparison_table(d1, d2):
+    printing.table([get_detail(d1), get_detail(d2)])
 
 
 len_torrents = len(torrents)
@@ -54,8 +59,7 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
             if similarity > 0.3:
                 print()
                 print(strings.percent(similarity), "similar:")
-                print_detail(torrent1)
-                print_detail(torrent2)
+                comparison_table(torrent1, torrent2)
                 print()
 
         if is_dupe:
@@ -69,8 +73,7 @@ print()
 print(f"Exact duplicate groups ({len(duplicates)}):")
 for group in sorted(duplicates, key=len, reverse=True):
     group = sorted(duplicates[group], key=lambda d: d["time_uploaded"])
-    for d in group:
-        print_detail(d)
+    comparison_table(*group)
     print()
 
     torrent1_files = group[0]['files']
@@ -80,16 +83,16 @@ for group in sorted(duplicates, key=len, reverse=True):
         lengths_set2 = set(f2['size'] for f2 in torrent2_files)
 
         if lengths_set1.issubset(lengths_set2):
-            print("Option to delete: Oldest torrent (fewer files).")
+            print("Delete left (Older, fewer files)")
             torrent_to_delete = group[0]
         elif lengths_set1.issuperset(lengths_set2):
-            print("Option to delete: Newer torrent (fewer files).")
+            print("Delete right (Newer, fewer files)")
             torrent_to_delete = group[1]
         else:
-            print("Option to delete: Oldest torrent (file lists differ).")
+            print("Delete left (Older, file lists differ)")
             torrent_to_delete = group[0]
     else:
-        print("Option to delete: Oldest torrent (same file count).")
+        print("Delete left (Older, same file count)")
         torrent_to_delete = group[0]
 
     if devices.confirm("Delete?"):
