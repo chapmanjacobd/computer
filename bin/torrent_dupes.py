@@ -4,14 +4,16 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from library.createdb import torrents_add
-from library.utils import arggroups, argparse_utils, devices, file_utils, printing, strings, nums
+from library.utils import arggroups, argparse_utils, devices, file_utils, nums, printing, strings
 
 parser = argparse_utils.ArgumentParser()
 arggroups.capability_delete(parser)
 parser.add_argument('paths', nargs='+', help='Path(s) to torrent files')
 args = parser.parse_args()
 
-torrent_files = [file for torrent_folder in args.paths for file in Path(torrent_folder).rglob('*.torrent') if not file.is_dir()]
+torrent_files = [
+    file for torrent_folder in args.paths for file in Path(torrent_folder).rglob('*.torrent') if not file.is_dir()
+]
 with ThreadPoolExecutor() as executor:
     metadata_results = executor.map(torrents_add.extract_metadata, torrent_files)
 torrents = list(zip(torrent_files, metadata_results))
@@ -20,12 +22,13 @@ torrents = list(zip(torrent_files, metadata_results))
 def get_detail(d):
     return {k: v for k, v in d.items() if k in ["author", "tracker", "comment", "title", "file_count", "path"]} | {
         "size": strings.file_size(d["size"]),
-        "time_uploaded": strings.relative_datetime(d["time_uploaded"] or d["time_modified"]),
+        "time_uploaded": strings.relative_datetime(d["time_uploaded"]),
     }
 
 
 def comparison_table(d1, d2):
     printing.table([get_detail(d1), get_detail(d2)])
+
 
 min_size = nums.human_to_bytes("2Mi")
 len_torrents = len(torrents)
@@ -40,15 +43,20 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
         torrent2_files = torrent2['files']
         if torrent1_files == torrent2_files:
             is_dupe = True
-        elif len(torrent1_files) > 3 and len(torrent1_files) == len(torrent2_files):
+        elif len(torrent1_files) > 1 and len(torrent1_files) == len(torrent2_files):
             sizes1 = sorted([f['size'] for f in torrent1_files])
             sizes2 = sorted([f['size'] for f in torrent2_files])
             if sizes1 == sizes2:
                 is_dupe = True
 
-        elif len(torrent1_files) > 2 and len(torrent2_files) > 2:
+        elif (len(torrent1_files) > 1 and len(torrent2_files) > 2) or (
+            len(torrent1_files) > 2 and len(torrent2_files) > 1
+        ):
             lengths_set1 = set(f1['size'] for f1 in torrent1_files if f1['size'] > min_size)
             lengths_set2 = set(f2['size'] for f2 in torrent2_files if f2['size'] > min_size)
+            if not lengths_set1 or not lengths_set2:
+                continue
+
             if lengths_set1.issubset(lengths_set2) or lengths_set1.issuperset(lengths_set2):
                 is_dupe = True
 
@@ -63,6 +71,9 @@ for i, (torrent_path1, torrent1) in enumerate(torrents):
                 print()
 
         if is_dupe:
+            torrent1["time_uploaded"] = torrent1["time_uploaded"] or torrent1["time_modified"] or torrent1["time_created"] or 0
+            torrent2["time_uploaded"] = torrent2["time_uploaded"] or torrent2["time_modified"] or torrent2["time_created"] or 0
+
             key = str(torrent_path1)
             if key not in duplicates:
                 duplicates[key] = []
