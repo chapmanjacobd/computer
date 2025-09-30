@@ -2,7 +2,7 @@
 [user]
     name = Jacob Chapman
     email = 7908073+chapmanjacobd@users.noreply.github.com
-	signingKey = /home/xk/.ssh/id_ed25519.pub
+	signingkey = /home/xk/.ssh/id_ed25519.pub
 [rerere]
     enabled = true
     autoupdate = true
@@ -10,7 +10,7 @@
     default = upstream
     autosetupremote = true
     followTags = true
-    useForceIfIncludes = true
+    #useForceIfIncludes = true
 [core]
     pager = delta --syntax-theme GitHub --max-line-length 1024  # --keep-plus-minus-markers
     excludesfile = /home/xk/.gitignore_global
