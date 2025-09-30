@@ -2,6 +2,7 @@
 
 # blank line between title and body
 
+# Co-authored-by: X <@users.noreply.github.com>
 # Body: Explain *why* not *how*
 # Include task ID (Jira issue)
 # Wrap at 72 chars. ################################## which is here ####
