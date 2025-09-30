@@ -62,6 +62,4 @@ function weekly
 
     # timeout --preserve-status --signal INT 3d lb redditupdate --lookback 8 ~/lb/reddit/61_Photos_Unsorted.db
     # lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
-
-    rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial --remove-source-files hk:/home/xk/process\* hk:/var/mnt/b2/process\* hk:/var/mnt/b1/process\* /mnt/d/dump/video/
 end
