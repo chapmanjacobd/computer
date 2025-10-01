@@ -20,7 +20,9 @@ args = parse_args()
 qbt_client = torrents_start.start_qBittorrent(args)
 preferences = qbt_client.app_preferences()
 
-existing = {k: v for k, v in preferences.items() if args.key in k}
+existing = {k: v for k, v in preferences.items() if args.key == k}
+if len(existing) == 0:
+    existing = {k: v for k, v in preferences.items() if args.key in k}
 if len(existing) == 0:
     processes.exit_error(f'No matches for {args.key} in {preferences.keys()}')
 
