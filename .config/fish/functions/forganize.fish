@@ -41,5 +41,5 @@ function forganize
     end
     mktree.py ~/d/
 
-    # dsql_refresh
+    dsql_refresh
 end
