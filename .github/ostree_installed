@@ -63,6 +63,7 @@ python-devel
 python3-pip
 qbittorrent-nox
 ripgrep
+rmlint
 rpmfusion-free-release-tainted
 rpmfusion-nonfree-release-tainted
 sg3_utils
