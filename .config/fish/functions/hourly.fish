@@ -11,5 +11,5 @@ function hourly
     end
     torrent-maintenance
     qbt-unseed
-    lb torrents --dl --no-queued --no-stopped --force-start
+    lb-dev torrents --dl --no-fast --no-queued --no-stopped --force-start
 end
