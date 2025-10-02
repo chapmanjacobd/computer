@@ -183,6 +183,7 @@ plocate
 pngquant
 podman-bootc
 podman-compose
+podman-docker
 podman-machine
 powertop
 procps
