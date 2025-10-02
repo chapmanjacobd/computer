@@ -21,6 +21,5 @@ function torrent-maintenance
     allqb lb torrents --dl --downloaded=+0 --time-active=+1days --force-start -pa >/dev/null
     allqb lb torrents --ul --no-force-start -pa >/dev/null
 
-    lb-dev torrents --dl --no-fast --no-queued --no-stopped --force-start -pa >/dev/null
-    # lb-dev torrents --dl --fast --no-queued --no-stopped --no-force-start -pa >/dev/null
+    lb-dev torrents --dl --dl-speed=-3M --no-queued --no-stopped --force-start -pa >/dev/null
 end
