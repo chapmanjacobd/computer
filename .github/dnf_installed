@@ -194,6 +194,7 @@ pv
 pybind11-devel
 python
 python-devel
+python-uinput
 python3
 python3-brotli
 python3-btrfs
