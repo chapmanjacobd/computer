@@ -578,5 +578,11 @@
   "github.copilot.editor.enableAutoCompletions": false,
   "git.blame.editorDecoration.enabled": true,
   "notebook.inlineValues": true,
-  "python.terminal.shellIntegration.enabled": true
+  "python.terminal.shellIntegration.enabled": true,
+  "github.copilot.enable": {
+    "*": false,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  }
 }
