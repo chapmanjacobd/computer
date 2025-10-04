@@ -42,8 +42,8 @@ sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.ta
 sudo systemctl disable --now systemd-journald-audit.socket
 sudo systemctl mask systemd-journald-audit.socket
 
-for dep in $(cat .github/cargo_installed); do
+for dep in $(cat ~/.github/cargo_installed); do
     cargo install $dep
 done
 
-cat .github/vscode_extensions.txt | xargs -I{} -n1 code --install-extension {} --force
+cat ~/.github/vscode_extensions.txt | xargs -I{} -n1 code --install-extension {} --force
