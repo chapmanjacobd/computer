@@ -8,9 +8,9 @@ from typing import List
 from urllib.parse import urlparse
 
 import humanize
-from torrentool.api import Torrent
 from library.utils import arggroups, argparse_utils, iterables
 from library.utils.log_utils import log
+from torrentool.api import Torrent
 
 IGNORE_DOMAINS = []
 PORN_DOMAINS = [
@@ -44,7 +44,7 @@ def get_tracker_dirname(torrent: Torrent):
     return torrent.source
 
 
-def extract_torrent_file(args, torrent_file):
+def _extract_torrent_file(args, torrent_file):
     torrent = Torrent.from_file(torrent_file)
 
     if args.ext and not set(args.ext).intersection(Path(f.name).suffix[1:] for f in torrent.files):
@@ -72,6 +72,14 @@ def extract_torrent_file(args, torrent_file):
     destination_path = dir_name / torrent_file.name
 
     return (torrent_file, destination_path.resolve(), torrent_size)
+
+
+def extract_torrent_file(args, torrent_file):
+    try:
+        return _extract_torrent_file(args, torrent_file)
+    except Exception:
+        log.exception("Failed reading %s", torrent_file)
+        return None
 
 
 def sort_and_move_torrents(args):

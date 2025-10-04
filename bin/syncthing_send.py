@@ -5,6 +5,7 @@ import os
 import time
 
 import requests
+from library.utils import processes
 
 
 def get_syncthing_api_url(args, endpoint):
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--interval", "-I", type=int, default=5 * 60, help="The time in seconds to wait between checks."
     )
+    parser.add_argument("--timeout", default="24h", help="The max time to wait")
     parser.add_argument("folder_path", help="A Syncthing send-only folder root")
     args = parser.parse_args()
 
@@ -142,5 +144,7 @@ if __name__ == "__main__":
         parser.error(
             "The API key is required. Please provide it via --api-key or set the SYNCTHING_API_KEY environment variable."
         )
+
+    processes.timeout(args.timeout)
 
     main(args)
