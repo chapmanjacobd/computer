@@ -30,7 +30,7 @@ sudo loginctl enable-linger xk
 fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher (cat ~/.config/fish/fish_plugins)'
 chsh -s /usr/bin/fish
 
-pipx install library trash-cli black datasette ipython ipdb isort memray mutmut pytest pylint pycln pur pipdeptree pdm scalene sparseutils sqlite-utils ssort sshuttle torrentool yt-dlp
+pipx install library trash-cli black datasette ipython ipdb isort memray mutmut pytest pycln pur pipdeptree pdm scalene sparseutils sqlite-utils ssort sshuttle torrentool yt-dlp
 # library cp --dry-run ~/.github/etc/ /etc/
 # sudo cp -a ~/.github/etc/. /etc/
 
