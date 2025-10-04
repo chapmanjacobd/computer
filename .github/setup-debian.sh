@@ -8,9 +8,11 @@ sudo visudo
 
 cat .github/etc/nanorc | sudo tee /etc/nanorc
 
-sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+git clone https://github.com/ku1ik/stderred.git
+cd stderred
+make
 
-sudo apt remove wget
+# sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 sudo apt install pipx python-is-python3 eza libguestfs-tools qemu-guest-agent bfs wget2 tmux earlyoom zoxide cargo kitty git-delta progress ncdu fzf fish
 
