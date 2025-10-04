@@ -112,6 +112,7 @@
     pushf = push --force-with-lease --force-if-includes
     head = show HEAD
     remotes = remote -v
+    ignore = !printf \"%s\\n\" \"$@\" >> .git/info/exclude
 [advice]
     skippedCherryPicks = false
 [branch]
