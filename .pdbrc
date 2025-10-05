@@ -1,0 +1,10 @@
+from pprint import pprint
+from rich import inspect
+alias pp pprint(%1)
+alias in inspect(%1)
+alias ins inspect(%1)
+alias locals pp locals()
+alias globals pp globals()
+alias ppd pp %1.__dict__
+alias pps ppd self
+alias i interact
