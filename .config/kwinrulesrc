@@ -50,11 +50,11 @@ types=1
 
 [General]
 ColorScheme[$d]
-count=3
+count=4
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2,3
+rules=1,2,3,cde039a7-9ff0-4298-acb3-0e0849aa037b
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
@@ -72,6 +72,11 @@ minimize=true
 minimizerule=3
 wmclass=projectm-jack
 wmclassmatch=1
+
+[cde039a7-9ff0-4298-acb3-0e0849aa037b]
+Description=Disable KeepBelow
+belowrule=2
+wmclass=*
 
 [cdea28e4-de1c-43f4-b161-4086aa4c7437]
 Description=phat_max
