@@ -37,6 +37,7 @@ ms-vscode.remote-explorer
 ms-vscode.remote-server
 PKief.material-icon-theme
 quicktype.quicktype
+rioj7.select-by
 ritwickdey.LiveServer
 samuelcolvin.jinjahtml
 skyapps.fish-vscode

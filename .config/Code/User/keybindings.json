@@ -51,13 +51,41 @@
     "when": "editorTextFocus"
   },
   {
-    "key": "alt+left",
-    "command": "cursorWordLeft",
-    "when": "editorTextFocus"
+      "key": "alt+right",
+      "command": "moveby.regex",
+      "when": "editorTextFocus",
+      "args": {
+          "regex": "\\s+",
+          "properties": ["next", "start"]
+      }
   },
   {
-    "key": "alt+right",
-    "command": "cursorWordRight",
-    "when": "editorTextFocus"
+      "key": "alt+left",
+      "command": "moveby.regex",
+      "when": "editorTextFocus",
+      "args": {
+          "regex": "\\s+",
+          "properties": ["prev", "start"]
+      }
+  },
+  {
+    "key": "alt+shift+right",
+    "command": "selectby.regex",
+    "when": "editorTextFocus",
+    "args": {
+      "forward": "\\S+",
+      "forwardInclude": true,
+      "properties": ["end"]
+    }
+  },
+  {
+    "key": "alt+shift+left",
+    "command": "selectby.regex",
+    "when": "editorTextFocus",
+    "args": {
+      "backward": "\\S+",
+      "backwardInclude": true,
+      "properties": ["start"]
+    }
   }
 ]
