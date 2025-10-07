@@ -243,7 +243,6 @@ abbr -a -- ipy ipython --pdb
 abbr -a -- github gh repo view --web
 abbr -a -- echon print
 abbr -a -- cwd 'pwd | cb'
-abbr -a -- torrent torrentool torrent info
 abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
@@ -284,3 +283,4 @@ abbr -a -- cpubusy sudo runqlat.bt
 abbr -a -- swaps sudo swapin.bt
 abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
+abbr -a -- torrent torrent_info.py
