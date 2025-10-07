@@ -12,7 +12,7 @@ function mrvideo
         lb watch ~/lb/fs/video.db -E /sync/video/other/ --local --upper 6 -pf -L 5
     ) ~/sync/video/other/
 
-    lb fsadd --video ~/lb/fs/video.db ~/sync/video/other/
-
     lb mv -eMKA -eMP3 -eOPUS ~/sync/video/ ~/sync/audio/
+
+    lb fsadd --video ~/lb/video.db ~/sync/video/other/
 end

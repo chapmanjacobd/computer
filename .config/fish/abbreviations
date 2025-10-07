@@ -86,7 +86,7 @@ abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
 abbr -a -- py python
 abbr -a -- sql sqlite --no-headers --raw-lines
-abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/fs/video.db
+abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/dl/video.db
 abbr -a -- gstat git diff --stat
 abbr -a -- soulseek nicotine
 abbr -a -- memray memray run --live
@@ -114,12 +114,12 @@ abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untrac
 abbr -a -- gd 'git diff; git diff --stat'
 abbr -a -- mod_up clear_mod_keys.sh
 abbr -a -- tmpdir mkcdtemp
-abbr -a -- ytda 'lb dladd ~/lb/fs/audio.db (cb)'
+abbr -a -- ytda 'lb dladd ~/lb/dl/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
 abbr -a -- trashrestore trash-restore-d
 abbr -a -- file 'file -bi'
-abbr -a -- ytd 'lb dladd ~/lb/fs/video.db (cb)'
+abbr -a -- ytd 'lb dladd ~/lb/dl/video.db (cb)'
 abbr -a -- osq osqueryi
 abbr -a -- revsort rightsort
 abbr -a -- pcontinue presume

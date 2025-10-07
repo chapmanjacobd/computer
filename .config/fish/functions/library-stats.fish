@@ -23,5 +23,5 @@ function library-stats
     end
 
     links-status ~/mc/cine.db ~/mc/links.db ~/mc/music.db ~/mc/tv.db ~/lb/sites/manual/*.db
-    dlstatus ~/lb/fs/tax_sounds.db ~/lb/fs/video.db ~/lb/fs/tax.db ~/lb/fs/91_New_Art.db ~/lb/audio.db ~/lb/fs/61_Photos_Unsorted.db
+    dlstatus ~/lb/dl/tax_sounds.db ~/lb/dl/video.db ~/lb/dl/tax.db ~/lb/dl/91_New_Art.db ~/lb/dl/audio.db ~/lb/dl/61_Photos_Unsorted.db
 end

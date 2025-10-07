@@ -37,8 +37,8 @@ function weekly
     fd -S-12b -tf -x rm
     lb mergedbs --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
 
-    lb merge-online-local ~/lb/fs/video.db --yes
-    lb merge-online-local ~/lb/fs/audio.db --yes
+    lb merge-online-local ~/lb/dl/video.db --yes
+    lb merge-online-local ~/lb/dl/audio.db --yes
 
     tubeupdate
     for db in ~/lb/sites/*.db ~/lb/sites/manual/*.db
