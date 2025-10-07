@@ -17,5 +17,5 @@ function mrporn
         lb wt ~/lb/fs/tax.db -E 69_Taxes_Keep -E /keep/ --local -FC=+4 -FC=-16 -p bf | shuf | head -n 8
     ) ~/sync/porn/video/
 
-    lb fsadd --video ~/lb/fs/tax.db ~/sync/porn/video/
+    lb fsadd --video ~/lb/tax.db ~/sync/porn/video/
 end

@@ -37,12 +37,6 @@ function weekly
     fd -S-12b -tf -x rm
     lb mergedbs --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
 
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/81_New_Music.db ~/lb/reddit/83_Classical_Composers.db ~/lb/fs/audio.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/71_Mealtime_Videos.db ~/lb/fs/video.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/63_Sounds.db ~/lb/fs/tax_sounds.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/69_Taxes.db ~/lb/fs/tax.db
-    lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/reddit/91_New_Art.db ~/lb/fs/91_New_Art.db
-
     lb merge-online-local ~/lb/fs/video.db --yes
     lb merge-online-local ~/lb/fs/audio.db --yes
 
@@ -59,7 +53,4 @@ function weekly
 
     ~/d/dump/porn/image/
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
-
-    # timeout --preserve-status --signal INT 3d lb redditupdate --lookback 8 ~/lb/reddit/61_Photos_Unsorted.db
-    # lb mergedbs --bk path --only-target-columns --ignore -t media ~/lb/fs/61_Photos_Unsorted.db ~/lb/reddit/61_Photos_Unsorted.db
 end

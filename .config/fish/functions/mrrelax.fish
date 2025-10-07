@@ -11,6 +11,6 @@ function mrrelax
         lt --db ~/lb/fs/tax_sounds.db -L 24 -p wf --moved /mnt/d/ ~/sync/porn/image/ | psub
     ) /mnt/d/ ~/sync/porn/image/
 
-    lb fsadd --video ~/lb/fs/tax.db ~/sync/porn/image/
+    lb fsadd --video ~/lb/tax.db ~/sync/porn/image/
 
 end

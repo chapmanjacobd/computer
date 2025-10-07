@@ -37,11 +37,6 @@ function daily
 
     # b sqlite-utils rebuild-fts ~/lb/fs/video.db media
 
-    # ~/lb/
-    # for db in reddit/63_Sounds.db reddit/69_Taxes.db reddit/71_Mealtime_Videos.db reddit/81_New_Music.db reddit/83_Classical_Composers.db
-    #    lb redditupdate $db --lookback 2
-    # end
-
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
     files_casefold.py ~/sync/ --run
