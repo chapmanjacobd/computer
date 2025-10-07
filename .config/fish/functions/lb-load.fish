@@ -15,6 +15,8 @@ function lb-load
         lb fsadd ~/lb/fs/tax_sounds.db --audio --delete-unplayable --process --move $d/check/porn/audio/ $d/dump/porn/audio/ -v
         lb fsadd ~/lb/fs/tax_sounds.db --audio --delete-unplayable --process --move $d/check/porn/audio/from_video/ $d/dump/porn/video/
 
+        lb fsadd ~/lb/fs/tax_VR.db --delete-unplayable --move $d/check/porn/vr/ $d/dump/porn/vr/ -v
+
         lb fsadd ~/lb/fs/video.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move $d/check/video/ $d/dump/video/ -v
 
         lb mv --ext srt,vtt,ass $d/dump/porn/video/ $d/check/porn/video/
