@@ -22,4 +22,5 @@ function torrent-maintenance
     allqb lb torrents --ul --no-force-start -pa >/dev/null
 
     lb-dev torrents --dl --dl-speed=-3M --no-queued --no-stopped --force-start -pa >/dev/null
+    ssh r730xd "lb-dev torrents --dl --no-fast --no-queued --no-stopped --force-start; lb-dev torrents --dl --fast --no-queued --no-stopped --no-force-start"
 end
