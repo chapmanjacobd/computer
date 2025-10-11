@@ -143,7 +143,6 @@ abbr -a -- pstat pidstat -l --dec=0 3 1 -r
 abbr -a -- uuid lsblk -f
 abbr -a -- sshfs sshfs -o noauto,noatime,_netdev,reconnect,ConnectTimeout=10,ServerAliveInterval=8,TCPKeepAlive=no,auto_cache,cache_timeout=115200,attr_timeout=115200,entry_timeout=1200
 abbr -a -- opentabs openlinks
-abbr -a -- exts fileTypeStatistics
 abbr -a -- wdlf lb links --no-extract --download
 abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- iotop sudo iotop -Poa
@@ -284,3 +283,4 @@ abbr -a -- swaps sudo swapin.bt
 abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- torrent torrent_info.py
+abbr -a -- exts 'ext | asc'
