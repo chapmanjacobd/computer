@@ -213,6 +213,7 @@
     "firestore",
     "FLATGEOBUF",
     "framebuffer",
+    "frecency",
     "fspath",
     "ftfy",
     "fullscreen",
