@@ -4,7 +4,7 @@ from pathlib import Path
 
 from library.utils import argparse_utils
 
-tasks = ['sync', 'dump', 'check', 'library', 'archive']
+tasks = ['dump', 'check', 'library', 'archive']
 categories = {
     'self': ['metadata', 'home', 'finances', 'secure', 'private', 'credentials', 'portraits', 'other'],
     'world': ['consulting', 'downloads', 'seeding', 'other'],
