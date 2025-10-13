@@ -27,7 +27,7 @@ def parse_args():
 def process_music_list(input_lines: list[str]) -> list[str]:
     output_lines = []
     for line in input_lines:
-        if line.startswith("https://") and "  # " not in line:
+        if line.startswith(("https://", "http://")) and "  # " not in line:
             page_title = web.get_title(args, line)
             output_lines.append(f"{line}  # {page_title}")
         else:
