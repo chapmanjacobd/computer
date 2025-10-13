@@ -132,6 +132,8 @@ libmediainfo
 libnatpmp
 libnl3-devel
 liburing-devel
+libXxf86vm
+libXxf86vm-devel
 libyaml-devel
 libzstd-devel
 lockfile-progs
