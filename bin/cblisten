@@ -50,28 +50,26 @@ def main():
     entries = []
     seen = set()
     stop_event = Event()
-
-    # Start clipboard monitoring in background thread
     monitor_thread = Thread(target=monitor_clipboard, args=(stop_event, entries, seen, args.cmd), daemon=True)
     monitor_thread.start()
 
-    print("Monitoring clipboard... Press Ctrl+D to stop and print entries.", file=sys.stderr)
+    print("Monitoring clipboard... Press Ctrl+D to stop and print entries", file=sys.stderr)
 
     try:
         # Wait for Ctrl+D (EOF)
         sys.stdin.read()
     except KeyboardInterrupt:
-        # Also accept Ctrl+C as alternative
-        pass
+        # Ctrl+C pressed
+        interrupted = True
 
     # Stop monitoring
     stop_event.set()
     monitor_thread.join(timeout=0.5)
 
-    # Print all unique entries
-    print("\n--- Unique Clipboard Entries ---", file=sys.stderr)
     for entry in entries:
-        print(entry)
+        print(entry, end='')
+    if interrupted:
+        sys.exit(141)
 
 
 if __name__ == "__main__":
