@@ -17,7 +17,7 @@ def clear_clipboard():
 
     for cmd in clear_commands:
         try:
-            subprocess.run(cmd, shell=True, capture_output=True, timeout=1)
+            subprocess.run(cmd, shell=True, capture_output=True, check=True, timeout=2)
             # If any command succeeds, we're done
             return
         except Exception:
