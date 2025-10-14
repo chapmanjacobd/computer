@@ -11,6 +11,20 @@ import time
 from threading import Event, Thread
 
 
+def clear_clipboard():
+    """Try to clear the clipboard using various methods."""
+    clear_commands = ['wl-copy </dev/null', 'xsel --clipboard --input </dev/null', 'xclip -sel c -i </dev/null']
+
+    for cmd in clear_commands:
+        try:
+            subprocess.run(cmd, shell=True, capture_output=True, timeout=1)
+            # If any command succeeds, we're done
+            return
+        except Exception:
+            # Try next command
+            continue
+
+
 def get_clipboard(cmd):
     """Get current clipboard content using the specified command."""
     try:
@@ -47,9 +61,12 @@ def main():
 
     args = parser.parse_args()
 
+    clear_clipboard()
+
     entries = []
     seen = set()
     stop_event = Event()
+    interrupted = False
     monitor_thread = Thread(target=monitor_clipboard, args=(stop_event, entries, seen, args.cmd), daemon=True)
     monitor_thread.start()
 
