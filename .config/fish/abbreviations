@@ -284,3 +284,5 @@ abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- torrent torrent_info.py
 abbr -a -- exts 'ext | asc'
+abbr -a -- cv check_local_video
+abbr -a -- cl check_local
