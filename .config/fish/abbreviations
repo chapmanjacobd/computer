@@ -266,7 +266,6 @@ abbr -a -- large-folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G 
 abbr -a -- ps-size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
 abbr -a -- unshallow git fetch --unshallow
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -x squashfs -Th | sort -k6,6g -k5,5hr'
-abbr -a -- mp multipass
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
 abbr -a -- lsattr lsattr -l -d
 abbr -a -- qemu quickemu --display none --vm
@@ -284,5 +283,5 @@ abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- torrent torrent_info.py
 abbr -a -- exts 'ext | asc'
-abbr -a -- cv check_local_video
-abbr -a -- cl check_local
+abbr -a -- cv 'check_local_video (cb | unquote)'
+abbr -a -- cl 'check_local (cb | unquote)'
