@@ -47,7 +47,7 @@ write-filename-in-watch-later-config
 
 alang=ja,jp,jpn,kr,krn,cn,ch,de,deu,ger,eng,en,enUS,en-US,English
 slang=en,eng
-blend-subtitles=yes
+blend-subtitles=no
 volume=80
 volume-max=140
 
