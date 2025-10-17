@@ -406,6 +406,8 @@
     "vcodec",
     "voronoi",
     "webpath",
+    "webpaths",
+    "webseeds",
     "webvtt",
     "wraplength",
     "xattr",
