@@ -285,3 +285,4 @@ abbr -a -- torrent torrent_info.py
 abbr -a -- exts 'ext | asc'
 abbr -a -- cv 'check_local_video (cb | unquote)'
 abbr -a -- cl 'check_local (cb | unquote)'
+abbr -a -- perftop sudo perf top
