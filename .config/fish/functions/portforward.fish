@@ -13,7 +13,7 @@ function portforward
         return 1
     end
 
-    ssh -N -L 127.0.0.1:$local_port:127.0.0.1:$remote_port $computer_name
+    b ssh -N -L 127.0.0.1:$local_port:127.0.0.1:$remote_port $computer_name
     set -l pid $last_pid
 
     echo http://127.0.0.1:$local_port
