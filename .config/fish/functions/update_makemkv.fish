@@ -1,10 +1,10 @@
 # Defined interactively
-function update_makemkv
-    ~/bin/
+function update_makemkv --argument v
+    ~/.local/bin/
     trash makemkv*
-    wget https://www.makemkv.com/download/makemkv-bin-1.17.2.tar.gz
-    wget https://www.makemkv.com/download/makemkv-oss-1.17.2.tar.gz
-    unar makemkv*gz
+    wget1 https://www.makemkv.com/download/makemkv-bin-$v.tar.gz
+    wget1 https://www.makemkv.com/download/makemkv-oss-$v.tar.gz
+    unardel.nodir makemkv*gz
     cd makemkv-oss*
     ./configure
     make
@@ -12,4 +12,6 @@ function update_makemkv
     ../makemkv-bin*
     make
     sudo make install
+
+    open https://forum.makemkv.com/forum/viewtopic.php?f=5&t=1053
 end

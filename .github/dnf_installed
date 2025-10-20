@@ -275,6 +275,7 @@ util-linux
 valgrind
 vdpauinfo
 vmtouch
+wget1
 wget2
 wine
 winetricks
