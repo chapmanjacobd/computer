@@ -286,3 +286,4 @@ abbr -a -- cv 'check_local_video (cb | unquote)'
 abbr -a -- cl 'check_local (cb | unquote)'
 abbr -a -- perftop sudo perf top
 abbr -a -- torrent lb-dev torrents-dump
+abbr -a -- catbin typebin
