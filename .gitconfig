@@ -114,6 +114,12 @@
     remotes = remote -v
     localignore = !printf \"%s\\n\" \"$@\" >> .git/info/exclude
     ignore = !printf \"%s\\n\" \"$@\" >> .gitignore
+    whoami = !git config user.name && git config user.email
+    difflog = log -p --stat
+    sha = log -n 1 --pretty=format:'%H'
+    staged = diff --cached
+    commits = rev-list HEAD --count
+    find = !git-fzf-checkout
 [advice]
     skippedCherryPicks = false
 [branch]
