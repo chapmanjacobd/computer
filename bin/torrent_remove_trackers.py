@@ -3,7 +3,7 @@
 from concurrent.futures import ThreadPoolExecutor
 
 import libtorrent as lt
-import torrent_info
+from library.mediafiles.torrents_dump import gen_torrents
 from library.utils import arggroups, argparse_utils
 
 parser = argparse_utils.ArgumentParser()
@@ -17,7 +17,7 @@ allowed = {t.encode('utf-8') for t in args.allowed}
 
 def remove_trackers(path):
     with open(path, 'rb') as f:
-        torrent_data = lt.bdecode(f.read())
+        torrent_data = lt.bdecode(f.read())  # type: ignore
 
     if b'announce-list' in torrent_data:
         filtered_announce_list = []
@@ -33,10 +33,10 @@ def remove_trackers(path):
             del torrent_data[b'announce']
 
     with open(path, 'wb') as f:
-        f.write(lt.bencode(torrent_data))
+        f.write(lt.bencode(torrent_data))  # type: ignore
 
 
-torrent_files = list(torrent_info.gen_torrents(args.paths))
+torrent_files = list(gen_torrents(args.paths))
 with ThreadPoolExecutor(max_workers=1) as executor:
     futures = [executor.submit(remove_trackers, f) for f in torrent_files]
     for future in futures:
