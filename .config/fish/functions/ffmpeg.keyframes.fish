@@ -1,4 +1,4 @@
 # Defined interactively
 function ffmpeg.keyframes
-    ffmpeg -i "$argv" -an -sn -filter:v "select='eq(pict_type,PICT_TYPE_I)',setpts=N/FRAME_RATE/TB" (path change-extension .keys.mkv "$argv")
+    ffmpeg -nostdin -i "$argv" -c copy -bsf:v 'noise=drop=not(key)' -an -sn -f mpegts - | ffmpeg -f mpegts -i - -vf "setpts=N/FRAME_RATE/TB*8" (path change-extension .keys.mkv "$argv")
 end
