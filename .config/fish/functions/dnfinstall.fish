@@ -5,7 +5,7 @@ function dnfinstall --wraps='dnf install'
         sort --unique --ignore-case ~/.github/ostree_installed | sponge ~/.github/ostree_installed
     else if type -q apt
         sudo apt install $argv
-        and echo $argv | strings split ' ' >>~/.github/apt_installed
+        and echo $argv | string split ' ' >>~/.github/apt_installed
         sort --unique --ignore-case ~/.github/apt_installed | sponge ~/.github/apt_installed
     else
         sudo dnf install $argv
