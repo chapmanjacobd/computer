@@ -3,6 +3,7 @@ android-tools
 bfs
 btrfsmaintenance
 cargo
+cmake
 cups
 detox
 distrobox
@@ -17,6 +18,7 @@ ffmpegthumbnailer
 fish
 freerdp-server
 fzf
+gcc-c++
 git
 git-delta
 git-lfs
@@ -51,6 +53,7 @@ nmon
 oniguruma-devel
 ov
 parallel
+pciutils-devel
 perl-Image-ExifTool
 pg_top
 plocate
