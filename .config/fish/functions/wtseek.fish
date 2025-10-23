@@ -1,7 +1,7 @@
 # Defined interactively
 function wtseek
     focus_under_mouse
-    b repeatdelay 1.1 xdotool key o
+    b repeatdelay 0.7 xdotool key i
     set key_pid (jobs -lp)
 
     wt $argv
