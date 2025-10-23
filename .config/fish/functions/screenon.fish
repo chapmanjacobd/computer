@@ -2,7 +2,7 @@
 function screenon
     if type wlr-randr
         #WAYLAND_DISPLAY="wayland-0"
-        wlr-randr --output HDMI-A-1 --on --auto
+        wlr-randr --output HDMI-A-1 --on
     else
         xset dpms force on
     end
