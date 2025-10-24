@@ -198,7 +198,6 @@ abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
-abbr -a -- partition sudo sgdisk -n 0:0:0 -t 0:8300
 abbr -a -- ext4 sudo mkfs.ext4 -T largefile -m 0 -e continue
 abbr -a -- trash-dirs trash-list --trash-dirs
 abbr -a -- lsfs lsblk -fa -o FSAVAIL,MOUNTPOINTS,NAME,FSTYPE,FSVER
@@ -288,3 +287,4 @@ abbr -a -- perftop sudo perf top
 abbr -a -- torrent lb-dev torrents-dump
 abbr -a -- catbin typebin
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
+abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
