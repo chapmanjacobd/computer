@@ -2,3 +2,5 @@ moreutils
 quickemu
 aria2
 socat
+fd-find
+parallel
