@@ -1,4 +1,4 @@
-function port-user
+function portuser
     set -l pid (sudo lsof -t -i:$argv[1])
     if count $pid >/dev/null
         for id in $pid

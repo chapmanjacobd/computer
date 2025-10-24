@@ -288,3 +288,4 @@ abbr -a -- torrent lb-dev torrents-dump
 abbr -a -- catbin typebin
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
 abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
+abbr -a -- port-user portuser
