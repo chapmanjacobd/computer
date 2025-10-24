@@ -1,6 +1,6 @@
-moreutils
-quickemu
 aria2
-socat
 fd-find
+moreutils
 parallel
+quickemu
+socat
