@@ -29,3 +29,5 @@ then
 else
   echo " => Not enough points to buy ${UPLOAD}G of upload ($UPLOADPOINTS required)"
 fi
+
+rm $SPEND_JSON
