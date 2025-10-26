@@ -73,8 +73,8 @@ def get_sort_key(path: str):
     elif sort_field == "time_modified":
         return last_seen.get(path, 0)
     elif sort_field == "size":
-        _, cur = files.get(path, (0, 0))
-        return cur
+        init, cur = files.get(path, (0, 0))
+        return cur - init
     return last_seen.get(path, 0)
 
 
