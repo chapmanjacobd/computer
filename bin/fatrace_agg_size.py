@@ -42,7 +42,7 @@ min_delta = nums.human_to_bytes(args.min_delta) if args.min_delta else 0
 
 TERMINAL = shutil.get_terminal_size((80, 24))
 TERMINAL_LINES = TERMINAL.lines - 3
-TERMINAL_WIDTH = TERMINAL.columns - 10
+TERMINAL_WIDTH = TERMINAL.columns - 11
 
 files = {}  # path -> (initial_size, current_size)
 last_seen = {}  # path -> last modified time
@@ -94,12 +94,12 @@ def print_status(final=False):
         if delta < min_delta:
             continue
         sign = "+" if delta > 0 else "-"
-        print(f"{sign}{strings.file_size(abs(delta))}\t{path[0:TERMINAL_WIDTH]}")
+        print(f"{sign}{strings.file_size(abs(delta)):<9}{path[0:TERMINAL_WIDTH]}")
         count += 1
         if not final and count >= TERMINAL_LINES:
             break
 
-    print(f"{len(recent)} files")
+    print(f"{len(recent)} total modified files")
     sys.stdout.flush()
 
 
