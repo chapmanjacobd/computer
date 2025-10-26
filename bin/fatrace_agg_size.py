@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import time
+
+from library.utils import strings
+
+parser = argparse.ArgumentParser(description="Track file modifications with fatrace and show size deltas.")
+parser.add_argument(
+    "interval",
+    nargs="?",
+    type=int,
+    default=5,
+    help="Refresh interval in seconds (default: 5)",
+)
+parser.add_argument(
+    "--sort",
+    default="time_modified:desc",
+    help="Sort mode: time_created[:desc], time_modified[:desc], size[:desc]",
+)
+parser.add_argument(
+    "-E",
+    "--exclude",
+    action="append",
+    default=[],
+    metavar="SUBSTRING",
+    help="Exclude files whose path contains this substring (can be used multiple times)",
+)
+args = parser.parse_args()
+
+sort_field, _, sort_dir = args.sort.partition(":")
+sort_desc = sort_dir.lower() == "desc"
+
+TERMINAL = shutil.get_terminal_size((80, 24))
+TERMINAL_LINES = TERMINAL.lines - 1
+TERMINAL_WIDTH = TERMINAL.columns - 10
+
+files = {}  # path -> (initial_size, current_size)
+last_seen = {}  # path -> last modified time
+stop = False
+
+
+def sigint_handler(sig, frame):
+    global stop
+    stop = True
+
+
+signal.signal(signal.SIGINT, sigint_handler)
+
+
+def should_exclude(path: str) -> bool:
+    for substr in args.exclude:
+        if substr in path:
+            return True
+    return False
+
+
+def get_sort_key(path: str):
+    if sort_field == "time_created":
+        try:
+            return os.path.getctime(path)
+        except OSError:
+            return 0
+    elif sort_field == "time_modified":
+        return last_seen.get(path, 0)
+    elif sort_field == "size":
+        _, cur = files.get(path, (0, 0))
+        return cur
+    return last_seen.get(path, 0)
+
+
+def sort_files():
+    valid_paths = [p for p in last_seen.keys() if not should_exclude(p)]
+    return sorted(valid_paths, key=get_sort_key, reverse=sort_desc)
+
+
+def print_status(final=False):
+    os.system("clear")
+
+    recent = sort_files()
+    count = 0
+    for path in recent:
+        init, cur = files[path]
+        delta = cur - init
+        if delta == 0:
+            continue
+        sign = "+" if delta > 0 else "-"
+        print(f"{sign}{strings.file_size(abs(delta))}\t{path[0:TERMINAL_WIDTH]}")
+        count += 1
+        if not final and count >= TERMINAL_LINES:
+            break
+
+    print(f"{len(recent)} files")
+    sys.stdout.flush()
+
+
+proc = subprocess.Popen(
+    ["sudo", "fatrace", "-f", "W"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1
+)
+
+try:
+    last_refresh = time.time()
+
+    while not stop:
+        line = proc.stdout.readline()
+        if not line:
+            break
+
+        parts = line.strip().split(" ", 2)
+        if len(parts) < 3:
+            continue
+
+        _, op, path = parts
+        path = path.strip()
+
+        if should_exclude(path):
+            continue
+
+        if not os.path.isfile(path):
+            continue
+
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            continue
+
+        if path not in files:
+            files[path] = (size, size)
+        else:
+            init, _ = files[path]
+            files[path] = (init, size)
+
+        last_seen[path] = time.time()
+
+        now = time.time()
+        if now - last_refresh >= args.interval:
+            print_status()
+            last_refresh = now
+except KeyboardInterrupt:
+    pass
+finally:
+    proc.terminate()
+    proc.wait()
+
+    print_status(final=True)
