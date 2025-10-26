@@ -12,7 +12,7 @@ function torrent-maintenance
         qbt_torrents_trumped.py --host $s
     end
     # remove tagged items
-    for s in pakon backup r730xd len hk
+    for s in (connectable-ssh pakon backup r730xd len hk)
         ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing/(datestamp) --delete-rows
     end >>~/mc/_unfinished.txt
 

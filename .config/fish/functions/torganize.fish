@@ -9,7 +9,7 @@ function torganize
     lb mv ~/Downloads/*.torrent ~/.local/data/qbittorrent/queue/
     lb torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v --delete-files
 
-    lb computer-add ~/lb/computers.local.db pakon backup r730xd len -v
+    lb computer-add ~/lb/computers.local.db (connectable-ssh pakon backup r730xd len) -v
     lb computer-add ~/lb/computers.remote.db hk -v
 
     qbt_computers_remaining.py ~/lb/computers.local.db
