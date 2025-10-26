@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 
-from library.utils import strings
+from library.utils import strings, nums
 
 parser = argparse.ArgumentParser(description="Track file modifications with fatrace and show size deltas.")
 parser.add_argument(
@@ -30,13 +30,18 @@ parser.add_argument(
     metavar="SUBSTRING",
     help="Exclude files whose path contains this substring (can be used multiple times)",
 )
+parser.add_argument("--min-size", help="Exclude files whose size is smaller than this")
+parser.add_argument("--min-delta", help="Exclude files whose size delta (+/-) is smaller than this")
 args = parser.parse_args()
 
 sort_field, _, sort_dir = args.sort.partition(":")
 sort_desc = sort_dir.lower() == "desc"
 
+min_size = nums.human_to_bytes(args.min_size) if args.min_size else 0
+min_delta = nums.human_to_bytes(args.min_delta) if args.min_delta else 0
+
 TERMINAL = shutil.get_terminal_size((80, 24))
-TERMINAL_LINES = TERMINAL.lines - 1
+TERMINAL_LINES = TERMINAL.lines - 3
 TERMINAL_WIDTH = TERMINAL.columns - 10
 
 files = {}  # path -> (initial_size, current_size)
@@ -86,7 +91,7 @@ def print_status(final=False):
     for path in recent:
         init, cur = files[path]
         delta = cur - init
-        if delta == 0:
+        if delta < min_delta:
             continue
         sign = "+" if delta > 0 else "-"
         print(f"{sign}{strings.file_size(abs(delta))}\t{path[0:TERMINAL_WIDTH]}")
@@ -125,6 +130,8 @@ try:
 
         try:
             size = os.path.getsize(path)
+            if size < min_size:
+                continue
         except OSError:
             continue
 
