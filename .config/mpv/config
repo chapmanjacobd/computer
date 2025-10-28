@@ -50,6 +50,7 @@ slang=en,eng
 blend-subtitles=no
 volume=80
 volume-max=140
+deinterlace=auto
 
 sub-fix-timing=yes
 sub-auto=fuzzy
