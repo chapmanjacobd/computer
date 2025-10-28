@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+import sys
+import argparse
+from collections import defaultdict
+
+
+def run_filter_mode(char, input_stream, min_depth, max_depth):
+    for line in input_stream:
+        line = line.rstrip('\n')
+        depth = line.count(char)
+
+        if min_depth <= depth <= max_depth:
+            print(line)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Filters lines based on the count of matching characters",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument("--char", "-c", default="/")
+    parser.add_argument(
+        'depth_args',
+        nargs='*',
+        type=int,
+        help="""\
+No arguments: Prints depth statistics (count and a sample line).
+1 argument: Exact depth to filter (e.g., '3').
+2 arguments: Depth range [min_depth max_depth] (e.g., '2 5').""",
+    )
+
+    args = parser.parse_args()
+
+    num_args = len(args.depth_args)
+
+    if num_args == 0:  # Statistics Mode (No args)
+        stats = defaultdict(lambda: {'count': 0, 'sample': None})
+
+        for line in sys.stdin:
+            line = line.rstrip('\n')
+            depth = line.count(args.char)
+
+            stats[depth]['count'] += 1  # type: ignore
+            if stats[depth]['sample'] is None:
+                stats[depth]['sample'] = line
+
+        print("Depth | Count | Sample Line")
+        for depth in sorted(stats.keys()):
+            count = stats[depth]['count']
+            sample = stats[depth]['sample']
+            print(f"{depth:<5} | {count:<5} | {sample}")
+
+    elif num_args == 1:  # Exact Filter Mode (One arg)
+        exact_depth = args.depth_args[0]
+        run_filter_mode(args.char, sys.stdin, exact_depth, exact_depth)
+    elif num_args == 2:  # Range Filter Mode (Two args)
+        min_depth = args.depth_args[0]
+        max_depth = args.depth_args[1]
+        if min_depth > max_depth:
+            min_depth, max_depth = max_depth, min_depth  # Swap if entered incorrectly
+        run_filter_mode(args.char, sys.stdin, min_depth, max_depth)
+    else:  # More than 2 arguments is an error
+        parser.error("Takes 0, 1, or 2 integer arguments.")
+
+
+if __name__ == '__main__':
+    sys.setrecursionlimit(2000)
+    main()
