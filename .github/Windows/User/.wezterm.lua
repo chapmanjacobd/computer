@@ -27,6 +27,15 @@ config.hide_tab_bar_if_only_one_tab = true
 config.pane_focus_follows_mouse = true
 config.enable_scroll_bar = true
 
+-- Hide the scrollbar when there is no scrollback or alternate screen is active
+wezterm.on("update-status", function(window, pane)
+    local overrides = window:get_config_overrides() or {}
+    local dimensions = pane:get_dimensions()
+
+    overrides.enable_scroll_bar = dimensions.scrollback_rows > dimensions.viewport_rows and not pane:is_alt_screen_active()
+    window:set_config_overrides(overrides)
+end)
+
 config.selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%"
 
 config.tab_max_width = 60
