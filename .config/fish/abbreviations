@@ -291,3 +291,5 @@ abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
 abbr -a -- port-user portuser
 abbr -a -- tail 'tail -n$LINES'
 abbr -a -- head 'head -n$LINES'
+abbr -a -- highcpu 'ps -eo pid,etime,%cpu,command ww --sort=-pcpu | head -n 5'
+abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
