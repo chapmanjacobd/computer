@@ -1,4 +1,4 @@
-function offset
+function continue-from
     set substring $argv[1]
     set file (coalesce $argv[2] /dev/stdin)
 
