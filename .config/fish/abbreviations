@@ -294,3 +294,4 @@ abbr -a -- head 'head -n$LINES'
 abbr -a -- highcpu 'ps -eo pid,etime,%cpu,command ww --sort=-pcpu | head -n 5'
 abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
 abbr -a -- continue-from match-first-tail
+abbr -a -- continue-to match-first-head
