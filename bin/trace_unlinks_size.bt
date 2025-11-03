@@ -1,0 +1,22 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+    printf("%-10s %-6s %-16s %-12s %-15s %s\n",
+           "TIME", "PID", "COMM", "SIZE (B)", "EVENT", "FILE PATH");
+}
+
+kfunc:vfs_unlink
+{
+    $inode = args.dentry->d_inode;
+    $file_size = $inode->i_size;
+    $filename = str(args.dentry->d_name.name);
+
+    printf("%-10s %-6d %-16s %-12d %-15s %s\n",
+           strftime("%H:%M:%S", nsecs/1000000000), 
+           pid, 
+           comm, 
+           $file_size, 
+           "VFS_UNLINK", 
+           $filename);
+}
