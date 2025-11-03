@@ -2,21 +2,49 @@
 
 BEGIN
 {
-    printf("%-10s %-6s %-16s %-12s %-15s %s\n",
-           "TIME", "PID", "COMM", "SIZE (B)", "EVENT", "FILE PATH");
+    printf("%-10s %-6s %-6s %-16s %-6s %-6s %s\n",
+           "TIME", "UID", "PID", "COMM", "SIZE", "UNIT", "FILE PATH");
 }
 
 kfunc:vfs_unlink
 {
+    // Get the inode structure and file size
     $inode = args.dentry->d_inode;
-    $file_size = $inode->i_size;
+    $size_bytes = (uint64)$inode->i_size;
+    
+    // Define constants for unit conversion
+    $TB = (uint64)1024 * 1024 * 1024 * 1024;
+    $GB = (uint64)1024 * 1024 * 1024;
+    $MB = (uint64)1024 * 1024;
+    $KB = (uint64)1024;
+    
+    $size_val = $size_bytes;
+    $unit = "B";
+
+    // Scale the size for human-readable output
+    if ($size_bytes >= $TB) {
+        $size_val = (uint64)$size_bytes / $TB;
+        $unit = "TB";
+    } else if ($size_bytes >= $GB) {
+        $size_val = (uint64)$size_bytes / $GB;
+        $unit = "GB";
+    } else if ($size_bytes >= $MB) {
+        $size_val = (uint64)$size_bytes / $MB;
+        $unit = "MB";
+    } else if ($size_bytes >= $KB) {
+        $size_val = (uint64)$size_bytes / $KB;
+        $unit = "KB";
+    }
+
     $filename = str(args.dentry->d_name.name);
 
-    printf("%-10s %-6d %-16s %-12d %-15s %s\n",
+    printf("%-10s %-6d %-6d %-16s %-6d %-6s %s\n",
            strftime("%H:%M:%S", nsecs/1000000000), 
+           uid,
            pid, 
            comm, 
-           $file_size, 
-           "VFS_UNLINK", 
+           $size_val, 
+           $unit,
            $filename);
 }
+
