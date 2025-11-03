@@ -14,5 +14,5 @@ tracepoint:syscalls:sys_enter_fchownat,
 tracepoint:syscalls:sys_enter_utimensat
 {
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "CHATTR", "-", str(args->filename));
+           strftime("%H:%M:%S", nsecs), pid, comm, "CHATTR", "-", str(args->filename));
 }

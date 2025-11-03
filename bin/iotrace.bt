@@ -34,10 +34,10 @@ tracepoint:syscalls:sys_exit_creat
     if ($fd >= 0) {
         @fdmap[pid, $fd] = $fname;
         printf("%-18s %-6d %-16s %-15s %-6d %s\n",
-               strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "OPEN", $fd, $fname);
+               strftime("%H:%M:%S", nsecs), pid, comm, "OPEN", $fd, $fname);
     } else {
         printf("%-18s %-6d %-16s %-15s %-6s %s (err=%d)\n",
-               strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "OPEN_FAIL", "-", $fname, $fd);
+               strftime("%H:%M:%S", nsecs), pid, comm, "OPEN_FAIL", "-", $fname, $fd);
     }
 }
 
@@ -55,7 +55,7 @@ tracepoint:syscalls:sys_enter_close
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "CLOSE", $fd, $path_arg);
+           strftime("%H:%M:%S", nsecs), pid, comm, "CLOSE", $fd, $path_arg);
 }
 
 /* ---------------- READ/WRITE families ---------------- */
@@ -63,7 +63,7 @@ tracepoint:syscalls:sys_enter_read,
 tracepoint:syscalls:sys_enter_pread64
 {
     $fd = (int32)args->fd;
-    $count = (uint64)args->count; 
+    $count = (uint64)args->count;
     $name = @fdmap[pid, $fd];
 
     // Use if/else for guaranteed string assignment.
@@ -73,16 +73,16 @@ tracepoint:syscalls:sys_enter_pread64
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "READ", $fd, $path_arg, $count);
 }
 
 tracepoint:syscalls:sys_enter_readv,
 tracepoint:syscalls:sys_enter_preadv
 {
     $fd = (int32)args->fd;
-    $count = (uint64)args->vlen; 
+    $count = (uint64)args->vlen;
     $name = @fdmap[pid, $fd];
-    
+
     // Use if/else for guaranteed string assignment.
     $path_arg = "<unknown>";
     if ($name != "") {
@@ -90,16 +90,16 @@ tracepoint:syscalls:sys_enter_preadv
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "READ", $fd, $path_arg, $count);
 }
 
 tracepoint:syscalls:sys_enter_write,
 tracepoint:syscalls:sys_enter_pwrite64
 {
     $fd = (int32)args->fd;
-    $count = (uint64)args->count; 
+    $count = (uint64)args->count;
     $name = @fdmap[pid, $fd];
-    
+
     // Use if/else for guaranteed string assignment.
     $path_arg = "<unknown>";
     if ($name != "") {
@@ -107,7 +107,7 @@ tracepoint:syscalls:sys_enter_pwrite64
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "WRITE", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "WRITE", $fd, $path_arg, $count);
 }
 
 tracepoint:syscalls:sys_enter_writev,
@@ -116,7 +116,7 @@ tracepoint:syscalls:sys_enter_pwritev
     $fd = (int32)args->fd;
     $count = (uint64)args->vlen;
     $name = @fdmap[pid, $fd];
-    
+
     // Use if/else for guaranteed string assignment.
     $path_arg = "<unknown>";
     if ($name != "") {
@@ -124,16 +124,16 @@ tracepoint:syscalls:sys_enter_pwritev
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "WRITE", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "WRITE", $fd, $path_arg, $count);
 }
 
 /* ---------------- Path-Based Operations (FD is '-') ---------------- */
 
 tracepoint:syscalls:sys_enter_statx,
 tracepoint:syscalls:sys_enter_newfstatat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "STAT", "-", str(args->filename));
+           strftime("%H:%M:%S", nsecs), pid, comm, "STAT", "-", str(args->filename));
 }
 
 tracepoint:syscalls:sys_enter_chmod,
@@ -141,65 +141,65 @@ tracepoint:syscalls:sys_enter_fchmodat,
 tracepoint:syscalls:sys_enter_chown,
 tracepoint:syscalls:sys_enter_fchownat,
 tracepoint:syscalls:sys_enter_utimensat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "CHATTR", "-", str(args->filename));
+           strftime("%H:%M:%S", nsecs), pid, comm, "CHATTR", "-", str(args->filename));
 }
 
 tracepoint:syscalls:sys_enter_unlink,
 tracepoint:syscalls:sys_enter_unlinkat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "UNLINK", "-", str(args->pathname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "UNLINK", "-", str(args->pathname));
 }
 
 tracepoint:syscalls:sys_enter_mkdir,
 tracepoint:syscalls:sys_enter_mkdirat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "MKDIR", "-", str(args->pathname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "MKDIR", "-", str(args->pathname));
 }
 
 tracepoint:syscalls:sys_enter_rmdir
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "RMDIR", "-", str(args->pathname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "RMDIR", "-", str(args->pathname));
 }
 
 tracepoint:syscalls:sys_enter_setxattr,
 tracepoint:syscalls:sys_enter_removexattr
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "XATTR", "-", str(args->pathname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "XATTR", "-", str(args->pathname));
 }
 
 tracepoint:syscalls:sys_enter_execve,
 tracepoint:syscalls:sys_enter_execveat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "EXEC", "-", str(args->filename));
+           strftime("%H:%M:%S", nsecs), pid, comm, "EXEC", "-", str(args->filename));
 }
 
 /* ---------------- Two-Path Operations (FD is '-') ---------------- */
 
 tracepoint:syscalls:sys_enter_link,
 tracepoint:syscalls:sys_enter_linkat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s -> %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "LINK", "-", str(args->oldname), str(args->newname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "LINK", "-", str(args->oldname), str(args->newname));
 }
 
 tracepoint:syscalls:sys_enter_symlink,
 tracepoint:syscalls:sys_enter_symlinkat
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s -> %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "SYMLINK", "-", str(args->oldname), str(args->newname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "SYMLINK", "-", str(args->oldname), str(args->newname));
 }
 
 tracepoint:syscalls:sys_enter_rename,
 tracepoint:syscalls:sys_enter_renameat,
 tracepoint:syscalls:sys_enter_renameat2
-{ 
+{
     printf("%-18s %-6d %-16s %-15s %-6s %s -> %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "RENAME", "-", str(args->oldname), str(args->newname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "RENAME", "-", str(args->oldname), str(args->newname));
 }

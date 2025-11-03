@@ -54,7 +54,7 @@ tracepoint:syscalls:sys_enter_pread64
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "READ", $fd, $path_arg, $count);
 }
 
 tracepoint:syscalls:sys_enter_readv,
@@ -72,5 +72,5 @@ tracepoint:syscalls:sys_enter_preadv
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s (count=%lu)\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "READ", $fd, $path_arg, $count);
+           strftime("%H:%M:%S", nsecs), pid, comm, "READ", $fd, $path_arg, $count);
 }

@@ -12,5 +12,5 @@ tracepoint:syscalls:sys_enter_renameat,
 tracepoint:syscalls:sys_enter_renameat2
 {
     printf("%-18s %-6d %-16s %-15s %-6s %s -> %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "RENAME", "-", str(args->oldname), str(args->newname));
+           strftime("%H:%M:%S", nsecs), pid, comm, "RENAME", "-", str(args->oldname), str(args->newname));
 }

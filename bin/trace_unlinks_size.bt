@@ -3,7 +3,7 @@
 BEGIN
 {
     printf("%-10s %-6s %-6s %-16s %-6s %-6s %s\n",
-           "TIME", "UID", "PID", "COMM", "SIZE", "UNIT", "FILE PATH");
+           "TIME", "USER", "PID", "COMM", "SIZE", "UNIT", "FILENAME");
 }
 
 kfunc:vfs_unlink
@@ -38,12 +38,12 @@ kfunc:vfs_unlink
 
     $filename = str(args.dentry->d_name.name);
 
-    printf("%-10s %-6d %-6d %-16s %-6d %-6s %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), 
-           uid,
-           pid, 
-           comm, 
-           $size_val, 
+    printf("%-10s %-7s %-6d %-16s %-6d %-6s %s\n",
+           strftime("%H:%M:%S", nsecs),
+           username,
+           pid,
+           comm,
+           $size_val,
            $unit,
            $filename);
 }

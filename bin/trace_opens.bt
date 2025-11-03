@@ -34,10 +34,10 @@ tracepoint:syscalls:sys_exit_creat
     if ($fd >= 0) {
         @fdmap[pid, $fd] = $fname;
         printf("%-18s %-6d %-16s %-15s %-6d %s\n",
-               strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "OPEN", $fd, $fname);
+               strftime("%H:%M:%S", nsecs), pid, comm, "OPEN", $fd, $fname);
     } else {
         printf("%-18s %-6d %-16s %-15s %-6s %s (err=%d)\n",
-               strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "OPEN_FAIL", "-", $fname, $fd);
+               strftime("%H:%M:%S", nsecs), pid, comm, "OPEN_FAIL", "-", $fname, $fd);
     }
 }
 
@@ -55,5 +55,5 @@ tracepoint:syscalls:sys_enter_close
     }
 
     printf("%-18s %-6d %-16s %-15s %-6d %s\n",
-           strftime("%H:%M:%S", nsecs/1000000000), pid, comm, "CLOSE", $fd, $path_arg);
+           strftime("%H:%M:%S", nsecs), pid, comm, "CLOSE", $fd, $path_arg);
 }
