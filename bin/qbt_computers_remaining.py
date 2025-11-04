@@ -59,6 +59,7 @@ for host, host_disks in disks_by_host.items():
         torrents = qbt_client.torrents_info()
     except (qbittorrentapi.APIConnectionError, ConnectionRefusedError):
         log.error("ConnectionError: skipping %s %s", host, port)
+        continue
 
     host_disks = sorted(host_disks, key=len, reverse=True)
     torrents_by_disk = {}

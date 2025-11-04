@@ -2,6 +2,7 @@
 from library.mediafiles import torrents_start
 from library.utils import arggroups, argparse_utils, strings
 
+
 def parse_args():
     parser = argparse_utils.ArgumentParser()
     arggroups.qBittorrent(parser)

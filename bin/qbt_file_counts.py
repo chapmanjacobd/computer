@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 
 from library.mediafiles import torrents_start
+from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils
 
 
@@ -25,7 +26,7 @@ torrents = qbt_client.torrents_info()
 if args.folders:
     for t in torrents:
         folder_groups = defaultdict(list)
-        for f in t.files:
+        for f in torrents_info.torrent_files(t):
             folder_name = os.path.dirname(f.name)
             folder_groups[folder_name].append(f.size)
 
@@ -33,4 +34,4 @@ if args.folders:
             print(sum(files_size), len(files_size), sep='\t')
 else:
     for t in torrents:
-        print(t.total_size, len(t.files), sep='\t')
+        print(t.total_size, len(torrents_info.torrent_files(t)), sep='\t')

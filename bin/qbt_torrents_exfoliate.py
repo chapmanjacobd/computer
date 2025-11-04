@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from library.mediafiles import torrents_start
-from library.utils import arggroups, argparse_utils, devices, strings
+from library.utils import arggroups, argparse_utils, strings
 
 
 def parse_args():

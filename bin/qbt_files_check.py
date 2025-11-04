@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from library.mediafiles import torrents_start
+from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils, file_utils
 
 
@@ -49,7 +50,7 @@ for t in torrents:
 
     t_folder_count = defaultdict(int)
     for t_folder in t_folders:
-        for f in t.files:
+        for f in torrents_info.torrent_files(t):
             p = os.path.join(t_folder, f.name)
             if p in fs_files:
                 known[p] += 1

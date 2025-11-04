@@ -44,7 +44,7 @@ def torrents_status():
                 "progress": strings.percent(t.progress),
                 "eta": strings.duration_short(t.eta) if t.eta < 8640000 else None,
                 "remaining": strings.file_size(t.amount_left) if t.amount_left > 0 else None,
-                "files": len(t.files) if args.file_counts else None,
+                "files": len(torrents_info.torrent_files(t)) if args.file_counts else None,
                 "tracker_msg": "; ".join(msg for _tr, msg in torrents_info.get_error_messages(t)),
                 "path": t.content_path if args.verbose >= consts.LOG_INFO else None,
             }

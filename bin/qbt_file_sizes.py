@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import qbittorrentapi
-from library.playback.torrents_info import qbt_get_tracker
+from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils, iterables
 from library.utils.log_utils import log
 
@@ -30,17 +30,14 @@ for host in args.hosts:
     )
 
     for t in qbt_client.torrents_info():
-        try:
-            d = {
-                'host': host,
-                'torrent_name': t.name,
-                'total_size': t.total_size,
-                'files_sizes': [f.size for f in t.files],
-                'tracker': qbt_get_tracker(qbt_client, t),
-            }
-            torrents.append(d)
-        except (qbittorrentapi.APIConnectionError, ConnectionRefusedError):
-            log.warning("ConnectionError %s %s getting %s files or tracker", host, port, t.name)
+        d = {
+            'host': host,
+            'torrent_name': t.name,
+            'total_size': t.total_size,
+            'files_sizes': [f.size for f in torrents_info.torrent_files(t)],
+            'tracker': torrents_info.qbt_get_tracker(qbt_client, t),
+        }
+        torrents.append(d)
 
 
 for i in range(len(torrents)):

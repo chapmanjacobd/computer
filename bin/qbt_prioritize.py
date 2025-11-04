@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import pandas as pd
 from library.mediafiles import torrents_start
-from library.playback.torrents_info import qbt_get_tracker
+from library.playback import torrents_info
 from library.text import regex_sort
 from library.utils import arggroups, argparse_utils, iterables
 from library.utils.pd_utils import rank_dataframe
@@ -39,8 +39,8 @@ for t in torrents:
             "remaining": t.amount_left,
             "num_complete": t.num_complete,
             "num_leechs": t.num_leechs,
-            "num_files": len(t.files),
-            "tracker": qbt_get_tracker(qbt_client, t),
+            "num_files": len(torrents_info.torrent_files(t)),
+            "tracker": torrents_info.qbt_get_tracker(qbt_client, t),
         }
     )
 
