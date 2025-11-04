@@ -1,7 +1,9 @@
 #!/usr/bin/python3
+import qbittorrentapi
 from library.mediafiles import torrents_start
 from library.playback import torrents_info
-from library.utils import arggroups, argparse_utils, devices, strings
+from library.utils import arggroups, argparse_utils, strings
+from library.utils.log_utils import log
 
 
 def parse_args():
@@ -44,7 +46,12 @@ args = parse_args()
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
 
-torrents = [t for t in torrents if is_trumped_torrent(t)]
 for t in torrents:
-    print(strings.percent(t.progress), t.name, t.comment)
-    qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
+    try:
+        is_trumped = is_trumped_torrent(t)
+        if is_trumped:
+            print(strings.percent(t.progress), t.name, t.comment)
+            qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
+
+    except (qbittorrentapi.APIConnectionError, ConnectionRefusedError):
+        log.error("ConnectionError: skipping %s", t.name)
