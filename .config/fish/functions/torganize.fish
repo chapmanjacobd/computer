@@ -2,11 +2,13 @@
 function torganize
     parallel sshpc {} qbt_prioritize.py ::: pakon backup r730xd len hk
 
-    rsync -auh --remove-sent-files ~/Downloads/\[(seq 0 9)*.torrent backup:.local/data/rtorrent/watch/new/
+    if test (count ~/Downloads/\[(seq 0 9)*.torrent) -gt 0
+        rsync -auh --remove-sent-files ~/Downloads/\[(seq 0 9)*.torrent backup:.local/data/rtorrent/watch/new/
+    end
 
     lb playlists ~/lb/torrents.db -pa
 
-    lb mv ~/Downloads/*.torrent ~/.local/data/qbittorrent/queue/
+    lb mv -etorrent ~/Downloads/ ~/.local/data/qbittorrent/queue/
     lb torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v --delete-files
 
     lb computer-add ~/lb/computers.local.db (connectable-ssh pakon backup r730xd len) -v
