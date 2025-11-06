@@ -8,7 +8,7 @@ function forganize
     lb-rebuild-fts
 
     lb-load
-    yes | lb dedupe-media --fs ~/lb/fs/video.db -v --dedupe-cmd dupreplace.fish
+    yes | lb dedupe-media --fs ~/lb/fs/video.db -v
     yes | lb dedupe-media --fs ~/lb/fs/tax.db -v
     yes | lb dedupe-media --fs ~/lb/fs/audio.db -v
 
