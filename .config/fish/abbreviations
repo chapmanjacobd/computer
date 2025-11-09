@@ -296,4 +296,4 @@ abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
 abbr -a -- continue-from match-first-tail
 abbr -a -- continue-to match-first-head
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
-abbr -a -- morg 'morganize (modified.staged) (modified) (untracked)'
+abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
