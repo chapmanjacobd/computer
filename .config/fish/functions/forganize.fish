@@ -1,5 +1,5 @@
 function forganize
-    morganize
+    morganize-all
     dorganize
 
     qbt-unseed

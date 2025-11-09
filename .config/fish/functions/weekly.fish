@@ -11,7 +11,7 @@ function weekly
     lb christen --run ~/sync/
     files_casefold.py ~/sync/ --run
 
-    morganize
+    morganize-all
 
     mam_update
 
