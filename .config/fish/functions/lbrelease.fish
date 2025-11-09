@@ -24,17 +24,14 @@ function lbrelease --argument newver
     echo
     git status
     if gum confirm --default=no
+        allpc pip install --upgrade pip
+        pip install --upgrade pip pdm
+        pdm lock --group deluxe,test
         git commit -m "$newver"
         git pull
         git push
         git tag -a "v$newver" && git push --tags
-        pip install --upgrade pip pdm
-        pdm lock --group deluxe,test
-        sleep 400
-        python -m pip install --upgrade library
-        allpc pip install --upgrade pip
-        allpc python -m pip install --upgrade library
-        allpc pip install --upgrade --pre yt-dlp[default]
+        syncpcs
     else
         return 1
     end
