@@ -5,7 +5,7 @@ set -Eeuo pipefail
 declare -A HDD_SETTINGS
 HDD_SETTINGS=(
     ["scheduler"]="bfq"
-    ["nr_requests"]="4"
+    ["nr_requests"]="64"
     ["iosched/back_seek_max"]="32000"
     ["iosched/back_seek_penalty"]="3"
     ["iosched/fifo_expire_sync"]="80"
@@ -14,18 +14,16 @@ HDD_SETTINGS=(
     ["iosched/low_latency"]="1"
     ["iosched/timeout_sync"]="200"
     ["iosched/max_budget"]="0"
-    ["iosched/strict_guarantees"]="1"
 )
 
 declare -A SSD_OVERRIDES
 SSD_OVERRIDES=(
-    ["nr_requests"]="36"
+    ["nr_requests"]="32"
     ["iosched/back_seek_penalty"]="1"
     ["iosched/slice_idle_us"]="16"
     ["iosched/fifo_expire_sync"]="10"
     ["iosched/fifo_expire_async"]="250"
     ["iosched/timeout_sync"]="10"
-    ["iosched/strict_guarantees"]="0"
 )
 
 if [[ $EUID -ne 0 ]]; then
@@ -70,12 +68,12 @@ for FILE_NAME in "${!HDD_SETTINGS[@]}"; do
     fi
 
     CURRENT_VALUE=$(get_current_value "$FULL_PATH")
-    printf "  - %-25s | Current: **%s**" "$FILE_NAME" "$CURRENT_VALUE"
+    printf "  - %-25s | Current: **%s**\n" "$FILE_NAME" "$CURRENT_VALUE"
 
     echo "$NEW_VALUE" > "$FULL_PATH" 2>/dev/null
 
     APPLIED_VALUE=$(get_current_value "$FULL_PATH")
     if [[ "$CURRENT_VALUE" != "$APPLIED_VALUE" ]]; then
-        printf " -> Changed to: **%s**\n" "$APPLIED_VALUE"
+        printf "     -> Changed to: **%s**\n" "$APPLIED_VALUE"
     fi
 done
