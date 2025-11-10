@@ -1,8 +1,6 @@
 # Defined interactively
 function lb-load
-    for file in (fd -tf -eZIP -e7z -eRAR -eEXE -er00 -eCBR -eCBZ -eISO . ~/d/dump/porn/video/ ~/d/dump/video/)
-        unardel $file
-    end
+    lb unardel -vy ~/d/dump/video/ ~/d/dump/porn/video/
 
     for d in /mnt/d(seq 1 10)
         lb fsadd ~/lb/fs/tax.db --video --hash --delete-unplayable --check-corrupt --full-scan-if-corrupt 15% --delete-corrupt 20% --move $d/check/porn/video/ $d/dump/porn/video/ -v
