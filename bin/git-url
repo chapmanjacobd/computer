@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+git rev-parse --is-inside-work-tree >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "Error: Not a git repository." >&2
+  exit 1
+fi
+
+REMOTE=${1:-origin}
+GIT_URL=$(git remote get-url "$REMOTE" 2>/dev/null)
+
+if [ -z "$GIT_URL" ]; then
+  echo "Error: Could not find remote URL for '$REMOTE'." >&2
+  exit 1
+fi
+
+GIT_PROTOCOL=""
+URI=""
+DOMAIN=""
+URL_PATH=""
+BROWSER_CMD=""
+
+if [[ "$GIT_URL" =~ ^[a-z\+]+://.* ]]; then
+  # Handles protocol URLs (ssh://, https://, git://, etc.)
+  GIT_PROTOCOL=${GIT_URL%%://*}
+  URI=${GIT_URL#*://}
+  URI=${URI#*@} # Remove possible username
+
+  # Split on first / to get server name and path
+  DOMAIN=${URI%%/*}
+  URL_PATH=${URI#*/}
+
+  # Remove port number from non-http/https protocols (ie, ssh, git)
+  if [[ $GIT_PROTOCOL != 'https' && $GIT_PROTOCOL != 'http' ]]; then
+    DOMAIN=${DOMAIN%:*}
+  fi
+
+else
+  # Handles SCP-style [user@]host:path/to/repo.git
+  # 1. Trim possible username
+  URI=${GIT_URL##*@} 
+
+  # 2. Split on the first : to get server name and path
+  # Host/Domain is everything before the first colon
+  DOMAIN=${URI%%:*} 
+  # Path is everything after the first colon
+  URL_PATH=${URI#*:}   # Handles SCP-style [user@]host:path/to/repo.git
+  URI=${GIT_URL##*@} # Trim possible username
+fi
+
+FINAL_URL_PATH=${URL_PATH%\.git}
+FINAL_URL="https://${DOMAIN}/${FINAL_URL_PATH}"
+
+echo $FINAL_URL
