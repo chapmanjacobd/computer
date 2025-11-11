@@ -23,6 +23,7 @@ UUID=e94d03fc-56f8-446d-b36b-5e385e2e356d /mnt/b6    btrfs defaults,users,noatim
 UUID=3810c031-7149-45ed-b983-189152480a8d /mnt/b8    btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=56ae30fd-bf8e-4a90-9903-c06a06af4989 /mnt/b9    ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 UUID=28a07509-a98a-41ac-a45a-af877e6ec5c0 /mnt/b10   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+UUID=2dc0cd2c-cb8e-4718-a918-99673bac5b00 /mnt/b11   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 
 #UUID=b7d8d3f4-a3c1-49b6-9c9e-05d88bc82131 /mnt/x01    ext4  defaults,users,noatime,nodiratime,commit=80,nofail,x-systemd.mount-timeout=999 0 0
 #UUID=4411d88f-c76b-4fbb-a253-0e9cca6f750f /mnt/x02   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
@@ -39,3 +40,5 @@ UUID=cfd12b39-55ee-43a5-b1cb-67e5c8ffeb76 /mnt/x12   btrfs defaults,users,noatim
 #UUID=6bc8c729-4664-4005-be4b-091f94c4cb33 /mnt/x13   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
 #UUID=389edcdf-5c2c-43e4-b0bd-fe1eead39904 /mnt/x14   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
 UUID=cf59acab-7998-4108-9962-b59645a4f970 /mnt/x15   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+UUID=db2cb95d-94fe-46d2-a0aa-3ec93d9333b4 /mnt/x16   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=59742b38-8d8a-4f7f-b643-8a529e158f4b /mnt/x17   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
