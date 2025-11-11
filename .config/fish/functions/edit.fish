@@ -1,6 +1,6 @@
 # Defined via `source`
 function edit
-    set sp (path normalize ~/.github/"$argv")
+    set sp ~/.github(path resolve "$argv")
 
     sudoedit "$argv"
 
