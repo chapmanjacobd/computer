@@ -120,6 +120,7 @@
     staged = diff --cached
     commits = rev-list HEAD --count
     find = !git-fzf-checkout
+    url = !git-url
 [advice]
     skippedCherryPicks = false
 [branch]
