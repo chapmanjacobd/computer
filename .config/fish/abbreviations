@@ -297,3 +297,4 @@ abbr -a -- continue-from match-first-tail
 abbr -a -- continue-to match-first-head
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
+abbr -a -- editcb 'cb | vipe | cb'
