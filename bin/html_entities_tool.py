@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-#!/usr/bin/python3
 
-import sys
-import unicodedata
 import html
 import re
+import sys
+import unicodedata
+
 
 def get_utf8_info(char):
     try:
@@ -13,6 +13,7 @@ def get_utf8_info(char):
         return name, code_point
     except ValueError:
         return "Not found", None
+
 
 def decode_and_track_entities(text):
     # Regex to find HTML entities: &#...; or &name;
@@ -34,6 +35,7 @@ def decode_and_track_entities(text):
     unescaped_text = ENTITY_RE.sub(tracker_replacer, text)
 
     return unescaped_text, entity_map
+
 
 def process_input(text):
     """
@@ -74,9 +76,11 @@ def process_input(text):
     if prev_char_ascii:
         print()
 
+
 def main():
     input_text = sys.stdin.read()
     process_input(input_text)
+
 
 if __name__ == "__main__":
     main()
