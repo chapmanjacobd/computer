@@ -186,10 +186,8 @@ plasma-workspace-x11
 playerctl
 plocate
 pngquant
-podman-bootc
 podman-compose
 podman-docker
-podman-machine
 powertop
 procps
 progress
@@ -214,6 +212,7 @@ qalc
 qbittorrent-nox
 qdirstat
 qemu
+qemu-user-static
 quickemu
 qutebrowser
 R-devel
