@@ -299,3 +299,5 @@ abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:d
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
 abbr -a -- editcb 'cb | vipe | cb'
 abbr -a -- journal journalctl -g
+abbr -a -- cipher.caesar tr a-z n-za-m
+abbr -a -- chars wc -c

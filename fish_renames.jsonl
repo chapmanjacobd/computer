@@ -86,3 +86,31 @@
 {"type": "rename", "original_name": "btrfs_temp_device_add", "timestamp": 1763187440.5181365, "new_name": "btrfs.tempdevice.add"}
 {"type": "rename", "original_name": "btrfs_temp_device_remove", "timestamp": 1763187446.8015532, "new_name": "btrfs.tempdevice.remove"}
 {"type": "rename", "original_name": "buffer_one_line", "timestamp": 1763188132.0952725, "new_name": "lines.buffer1"}
+{"type": "skip", "original_name": "bytes", "timestamp": 1763238604.4840899}
+{"type": "rename", "original_name": "bytes2human", "timestamp": 1763238632.4867315, "new_name": "size.human"}
+{"type": "skip", "original_name": "caesar-cipher", "timestamp": 1763238682.0162513}
+{"type": "skip", "original_name": "callback", "timestamp": 1763238685.9366577}
+{"type": "skip", "original_name": "capitalize", "timestamp": 1763238790.8262963}
+{"type": "skip", "original_name": "cargofix", "timestamp": 1763238807.2718809}
+{"type": "skip", "original_name": "cargoinstall", "timestamp": 1763238820.0596237}
+{"type": "skip", "original_name": "cargorelease", "timestamp": 1763238825.4815354}
+{"type": "skip", "original_name": "cargouninstall", "timestamp": 1763239236.33912}
+{"type": "rename", "original_name": "catt_set_default", "timestamp": 1763239256.4793665, "new_name": "catt.default"}
+{"type": "rename", "original_name": "catt_volume_ramp", "timestamp": 1763239267.6337044, "new_name": "catt.vol.ramp"}
+{"type": "rename", "original_name": "cb2pdf", "timestamp": 1763239320.2115307, "new_name": "cb.to.pdf"}
+{"type": "rename", "original_name": "cb_append", "timestamp": 1763239326.5099733, "new_name": "cb.append"}
+{"type": "rename", "original_name": "cb_append_html", "timestamp": 1763239331.7892742, "new_name": "cb.append.html"}
+{"type": "rename", "original_name": "cb_htmlfile", "timestamp": 1763239349.2914212, "new_name": "cb.file.html"}
+{"type": "rename", "original_name": "cbcalc", "timestamp": 1763239354.9966288, "new_name": "cb.calc"}
+{"type": "rename", "original_name": "cbfile", "timestamp": 1763239358.1054676, "new_name": "cb.file"}
+{"type": "rename", "original_name": "cbwrap", "timestamp": 1763239389.5995195, "new_name": "cb.wrap.cb"}
+{"type": "skip", "original_name": "cd", "timestamp": 1763239394.86938}
+{"type": "skip", "original_name": "cdp", "timestamp": 1763239432.4733052}
+{"type": "skip", "original_name": "changedtype", "timestamp": 1763239500.0648057}
+{"type": "skip", "original_name": "changedtype.staged", "timestamp": 1763239506.692125}
+{"type": "skip", "original_name": "chars", "timestamp": 1763239651.9420881}
+{"type": "skip", "original_name": "check", "timestamp": 1763240253.3448992}
+{"type": "rename", "original_name": "check_local", "timestamp": 1763240422.4147973, "new_name": "files.locate"}
+{"type": "rename", "original_name": "check_local_video", "timestamp": 1763240436.7910726, "new_name": "files.video.locate"}
+{"type": "rename", "original_name": "checkdb", "timestamp": 1763240457.215772, "new_name": "sqlite.check.quick"}
+{"type": "skip", "original_name": "children", "timestamp": 1763240661.2737856}

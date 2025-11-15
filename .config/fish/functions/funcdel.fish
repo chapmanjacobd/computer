@@ -26,7 +26,7 @@ function funcdel --description 'Remove the current definition of all specified f
 
     set -l retval 0
     for funcname in $argv
-        set -l funcpath "$funcdir/$funcname.fish"
+        set -l funcpath (realpath "$funcdir/$funcname.fish")
 
         if not functions -q -- $funcname
             printf (_ "%s: not defined as a function '%s'\n") funcdel $funcname >&2
