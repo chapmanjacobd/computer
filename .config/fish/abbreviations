@@ -301,3 +301,4 @@ abbr -a -- editcb 'cb | vipe | cb'
 abbr -a -- journal journalctl -g
 abbr -a -- cipher.caesar tr a-z n-za-m
 abbr -a -- chars wc -c
+abbr -a -- connectpg portforward remote-address 5432

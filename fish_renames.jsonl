@@ -114,3 +114,20 @@
 {"type": "rename", "original_name": "check_local_video", "timestamp": 1763240436.7910726, "new_name": "files.video.locate"}
 {"type": "rename", "original_name": "checkdb", "timestamp": 1763240457.215772, "new_name": "sqlite.check.quick"}
 {"type": "skip", "original_name": "children", "timestamp": 1763240661.2737856}
+{"type": "skip", "original_name": "chrome-profile", "timestamp": 1763240726.2635891}
+{"type": "rename", "original_name": "clean_home", "timestamp": 1763240738.971459, "new_name": "home.clean"}
+{"type": "rename", "original_name": "clean_home_advanced", "timestamp": 1763240757.7149668, "new_name": "home.clean.permissions"}
+{"type": "rename", "original_name": "clear_lock_file", "timestamp": 1763240780.6312203, "new_name": "flock.simple.delete"}
+{"type": "rename", "original_name": "clear_scrollback", "timestamp": 1763240809.6257508, "new_name": "scrollback.clear"}
+{"type": "rename", "original_name": "clip", "timestamp": 1763240826.2380927, "new_name": "ffclip"}
+{"type": "rename", "original_name": "close_window", "timestamp": 1763240834.7307205, "new_name": "window.close"}
+{"type": "skip", "original_name": "cmdline", "timestamp": 1763240856.2167635}
+{"type": "skip", "original_name": "coalesce", "timestamp": 1763240858.9640267}
+{"type": "rename", "original_name": "codec", "timestamp": 1763240872.537893, "new_name": "ffprobe.codec"}
+{"type": "rename", "original_name": "coln", "timestamp": 1763240881.5412483, "new_name": "lines.coln"}
+{"type": "skip", "original_name": "colorpager", "timestamp": 1763240914.5014284}
+{"type": "skip", "original_name": "common_prefix", "timestamp": 1763240947.5903196}
+{"type": "skip", "original_name": "config", "timestamp": 1763240974.0839808}
+{"type": "skip", "original_name": "confirm", "timestamp": 1763240983.6203291}
+{"type": "rename", "original_name": "confirm_default_yes", "timestamp": 1763241001.4699457, "new_name": "confirm.yes"}
+{"type": "rename", "original_name": "connectable-ssh", "timestamp": 1763241024.3318295, "new_name": "servers.ssh.connectable"}
