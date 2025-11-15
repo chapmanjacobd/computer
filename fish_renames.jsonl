@@ -43,3 +43,7 @@
 {"type": "skip", "original_name": "archives", "timestamp": 1763174573.6716943}
 {"type": "rename", "original_name": "archiveurl", "timestamp": 1763174713.0383372, "new_name": "urls.submit.wayback"}
 {"type": "rename", "original_name": "argo-check", "timestamp": 1763174755.9439502, "new_name": "argo.check"}
+{"type": "rename", "original_name": "argshead", "timestamp": 1763175409.7414474, "new_name": "args.head"}
+{"type": "rename", "original_name": "argstail", "timestamp": 1763175414.0662005, "new_name": "args.tail"}
+{"type": "rename", "original_name": "artist", "timestamp": 1763175452.3004274, "new_name": "ffprobe.artist"}
+{"type": "skip", "original_name": "asc", "timestamp": 1763175482.5627558}
