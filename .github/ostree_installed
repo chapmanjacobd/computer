@@ -1,6 +1,9 @@
 acpi
 android-tools
 bfs
+boost-build
+boost-devel
+boost-python3-devel
 btrfsmaintenance
 cargo
 cmake
@@ -49,8 +52,10 @@ mkvtoolnix
 moreutils
 nano
 ncdu
+ninja-build
 nmon
 oniguruma-devel
+openssl-devel
 ov
 parallel
 pciutils-devel
@@ -64,6 +69,7 @@ pspg
 python
 python-devel
 python3-pip
+python3.14-devel
 qbittorrent-nox
 ripgrep
 rmlint
