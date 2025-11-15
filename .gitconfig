@@ -3,9 +3,6 @@
     name = Jacob Chapman
     email = 7908073+chapmanjacobd@users.noreply.github.com
 	signingkey = /home/xk/.ssh/id_ed25519.pub
-[rerere]
-    enabled = true
-    autoupdate = true
 [push]
     default = upstream
     autosetupremote = true
@@ -26,40 +23,9 @@
     fsckobjects = true
 [receive]
     fsckObjects = true
-[interactive]
-    diffFilter = delta --color-only
-[diff]
-    algorithm = histogram
-    indentHeuristic = true
-    tool = delta
-    difftool = delta
-    colormoved = zebra
-    context = 5
-    mnemonicPrefix = true
-[delta]
-    navigate = true
-[diff "sqlite3"]
-    binary = true
-    textconv = "echo .dump | sqlite3"
-[color]
-    ui = auto
-[color "diff-highlight"]
-    oldNormal = red bold
-    oldHighlight = red bold 52
-    newNormal = green bold
-    newHighlight = green bold 22
-[color "diff"]
-    meta = yellow
-    commit = yellow bold
-    old = red bold
-    new = green bold
-    whitespace = red reverse
-[color.grep]
-    match = red normal bold
-    filename = magenta
-    lineNumber = green
-    column = green
-    separator = cyan
+
+[init]
+    defaultBranch = main
 [pull]
     rebase = merges
 [rebase]
@@ -67,8 +33,9 @@
     autosquash = true
     updateRefs = true
     missingCommitsCheck = warn
-[init]
-    defaultBranch = main
+[rerere]
+    enabled = true
+    autoupdate = true
 [filter "lfs"]
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
@@ -78,14 +45,6 @@
     helper = cache
 [help]
     autocorrect = prompt
-[difftool "vscode"]
-    cmd = code --wait --diff $LOCAL $REMOTE
-[merge]
-    autoStash = true
-    conflictstyle = zdiff3
-    summary = true
-    diffstat = true
-    log = 50
 [log]
     date = relative-local
 [alias]
@@ -137,3 +96,48 @@
     zeroPaddedFilemode = ignore
 [gpg]
 	format = ssh
+[interactive]
+    diffFilter = delta --color-only
+[diff]
+    algorithm = histogram
+    indentHeuristic = true
+    tool = delta
+    difftool = delta
+    colormoved = zebra
+    context = 5
+    mnemonicPrefix = true
+[delta]
+    navigate = true
+[diff "sqlite3"]
+    binary = true
+    textconv = "echo .dump | sqlite3"
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+[merge]
+    autoStash = true
+	conflictStyle = diff3
+    summary = true
+    diffstat = true
+    log = 50
+[merge "mergiraf"]
+	name = mergiraf
+	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
+[color]
+    ui = auto
+[color "diff-highlight"]
+    oldNormal = red bold
+    oldHighlight = red bold 52
+    newNormal = green bold
+    newHighlight = green bold 22
+[color "diff"]
+    meta = yellow
+    commit = yellow bold
+    old = red bold
+    new = green bold
+    whitespace = red reverse
+[color.grep]
+    match = red normal bold
+    filename = magenta
+    lineNumber = green
+    column = green
+    separator = cyan
