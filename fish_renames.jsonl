@@ -39,3 +39,7 @@
 {"type": "rename", "original_name": "append", "timestamp": 1763173646.3823774, "new_name": "file.append.line"}
 {"type": "rename", "original_name": "appendbuffer", "timestamp": 1763173876.660654, "new_name": "cb.append.auto"}
 {"type": "skip", "original_name": "appendfiles", "timestamp": 1763174023.8068194}
+{"type": "skip", "original_name": "archive", "timestamp": 1763174566.1308122}
+{"type": "skip", "original_name": "archives", "timestamp": 1763174573.6716943}
+{"type": "rename", "original_name": "archiveurl", "timestamp": 1763174713.0383372, "new_name": "urls.submit.wayback"}
+{"type": "rename", "original_name": "argo-check", "timestamp": 1763174755.9439502, "new_name": "argo.check"}

@@ -7,5 +7,5 @@ function argshead
         set n 1
     end
 
-    echo $argv | cut -d' ' -f -$n
+    echo (print $argv | head -n$n)
 end
