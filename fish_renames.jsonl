@@ -142,3 +142,14 @@
 {"type": "rename", "original_name": "cpfunc", "timestamp": 1763241474.7018554, "new_name": "phone.copy.func"}
 {"type": "skip", "original_name": "cr", "timestamp": 1763241486.1714435}
 {"type": "rename", "original_name": "create-launcher", "timestamp": 1763241607.3912628, "new_name": "file.desktop.create"}
+{"type": "skip", "original_name": "create_lock_file", "timestamp": 1763242455.8728783}
+{"type": "skip", "original_name": "created", "timestamp": 1763242459.9494584}
+{"type": "rename", "original_name": "csv_grep", "timestamp": 1763242496.608445, "new_name": "grep.csv"}
+{"type": "rename", "original_name": "cut10", "timestamp": 1763242523.0348575, "new_name": "lines.cut10.cb"}
+{"type": "rename", "original_name": "d-expand", "timestamp": 1763242610.3076088, "new_name": "d.expand"}
+{"type": "skip", "original_name": "daily", "timestamp": 1763242613.0006702}
+{"type": "rename", "original_name": "datesleep", "timestamp": 1763242624.9037795, "new_name": "sleep.date"}
+{"type": "skip", "original_name": "datestamp", "timestamp": 1763242631.5872936}
+{"type": "skip", "original_name": "dbackups", "timestamp": 1763242674.9513626}
+{"type": "skip", "original_name": "dbs", "timestamp": 1763242958.3529403}
+{"type": "rename", "original_name": "decode-url", "timestamp": 1763242985.1169293, "new_name": "urls.decode"}
