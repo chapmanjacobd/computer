@@ -7,5 +7,5 @@ function argstail
         set n 1
     end
 
-    echo (print $argv | tac | head -n$n | tac)
+    echo (print $argv | tail -n$n)
 end
