@@ -7,5 +7,5 @@ function argstail
         set n 1
     end
 
-    echo $argv | string split ' ' | tail -n $n | string join ' '
+    echo (print $argv | tac | head -n$n | tac)
 end
