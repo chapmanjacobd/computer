@@ -10,7 +10,7 @@ ScrollFactor=0.75
 [Mouse]
 X11LibInputXAccelProfileFlat=true
 XLbInptAccelProfileFlat=false
-XLbInptPointerAcceleration=0.8
+XLbInptPointerAcceleration=1
 XLbInptScrollOnButtonDown=true
 cursorSize=48
 cursorTheme=Breeze_Light

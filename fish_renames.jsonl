@@ -63,3 +63,26 @@
 {"type": "skip", "original_name": "bat", "timestamp": 1763186371.8659554}
 {"type": "rename", "original_name": "battery-mode", "timestamp": 1763186466.0571604, "new_name": "system.battery.cpu"}
 {"type": "skip", "original_name": "battery", "timestamp": 1763186477.4957888}
+{"type": "rename", "original_name": "battery_percent", "timestamp": 1763186523.7770114, "new_name": "battery.percent"}
+{"type": "rename", "original_name": "bigdpi", "timestamp": 1763186749.178794, "new_name": "system.dpi.big"}
+{"type": "rename", "original_name": "blockchannel", "timestamp": 1763186912.0330403, "new_name": "yt.downloadarchive.add"}
+{"type": "skip", "original_name": "blockdevices", "timestamp": 1763186948.016721}
+{"type": "rename", "original_name": "blockdomain", "timestamp": 1763186980.3738222, "new_name": "hosts.block"}
+{"type": "rename", "original_name": "bq_fetch_dataset_schema", "timestamp": 1763187012.111572, "new_name": "bq.dataset.schema"}
+{"type": "rename", "original_name": "bracket_digits", "timestamp": 1763187093.284991, "new_name": "chars.numbers.brackets"}
+{"type": "rename", "original_name": "brightness_down", "timestamp": 1763187104.5554202, "new_name": "brightness.down"}
+{"type": "rename", "original_name": "brightness_get", "timestamp": 1763187118.2835782, "new_name": "brightness.get"}
+{"type": "rename", "original_name": "brightness_lg_down", "timestamp": 1763187134.3368547, "new_name": "brightness.lg.down"}
+{"type": "rename", "original_name": "brightness_lg_get", "timestamp": 1763187143.8320715, "new_name": "brightness.lg.get"}
+{"type": "rename", "original_name": "brightness_lg_set", "timestamp": 1763187148.2380545, "new_name": "brightness.lg.set"}
+{"type": "rename", "original_name": "brightness_lg_up", "timestamp": 1763187153.0668488, "new_name": "brightness.lg.up"}
+{"type": "rename", "original_name": "brightness_set", "timestamp": 1763187174.0446243, "new_name": "brightness.set"}
+{"type": "rename", "original_name": "brightness_step", "timestamp": 1763187182.568518, "new_name": "brightness.step"}
+{"type": "rename", "original_name": "brightness_up", "timestamp": 1763187190.9069335, "new_name": "brightness.up"}
+{"type": "rename", "original_name": "browse_url", "timestamp": 1763187319.9888465, "new_name": "search.web"}
+{"type": "rename", "original_name": "btrfs-dev", "timestamp": 1763187332.6728995, "new_name": "btrfs.dev"}
+{"type": "rename", "original_name": "btrfs_check_delete_snapshot", "timestamp": 1763187355.0270338, "new_name": "btrfs.snapshot.delete.check"}
+{"type": "rename", "original_name": "btrfs_nocheck_delete_snapshot", "timestamp": 1763187363.142113, "new_name": "btrfs.snapshot.delete"}
+{"type": "rename", "original_name": "btrfs_temp_device_add", "timestamp": 1763187440.5181365, "new_name": "btrfs.tempdevice.add"}
+{"type": "rename", "original_name": "btrfs_temp_device_remove", "timestamp": 1763187446.8015532, "new_name": "btrfs.tempdevice.remove"}
+{"type": "rename", "original_name": "buffer_one_line", "timestamp": 1763188132.0952725, "new_name": "lines.buffer1"}
