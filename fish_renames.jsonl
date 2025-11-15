@@ -1,0 +1,34 @@
+{"type": "skip", "original_name": "MPV_SOCKET", "timestamp": 1763168221.9586334}
+{"type": "skip", "original_name": "SELECT", "timestamp": 1763168224.5116973}
+{"type": "skip", "original_name": "__fish_make_completion_signals", "timestamp": 1763168524.6216853}
+{"type": "skip", "original_name": "__fish_print_pipestatus", "timestamp": 1763168529.3334007}
+{"type": "skip", "original_name": "__pipenv_shell_activate", "timestamp": 1763168617.2726848}
+{"type": "skip", "original_name": "_autopair_backspace", "timestamp": 1763168628.9931138}
+{"type": "skip", "original_name": "_autopair_insert_left", "timestamp": 1763168631.3476896}
+{"type": "skip", "original_name": "_autopair_insert_right", "timestamp": 1763168632.9790242}
+{"type": "skip", "original_name": "_autopair_insert_same", "timestamp": 1763168634.885769}
+{"type": "skip", "original_name": "_autopair_tab", "timestamp": 1763168636.1753714}
+{"type": "skip", "original_name": "_fzf_configure_bindings_help", "timestamp": 1763168641.2206798}
+{"type": "skip", "original_name": "_fzf_extract_var_info", "timestamp": 1763168643.0378406}
+{"type": "skip", "original_name": "_fzf_preview_changed_file", "timestamp": 1763168647.6735938}
+{"type": "skip", "original_name": "_fzf_preview_file", "timestamp": 1763168653.8585324}
+{"type": "skip", "original_name": "_fzf_report_diff_type", "timestamp": 1763168708.6804745}
+{"type": "skip", "original_name": "_fzf_report_file_type", "timestamp": 1763168728.9802287}
+{"type": "skip", "original_name": "_fzf_search_directory", "timestamp": 1763168737.7139604}
+{"type": "skip", "original_name": "_fzf_search_git_log", "timestamp": 1763169110.8268595}
+{"type": "skip", "original_name": "_fzf_search_git_status", "timestamp": 1763169115.7298734}
+{"type": "skip", "original_name": "_fzf_search_history", "timestamp": 1763169117.612211}
+{"type": "skip", "original_name": "_fzf_search_processes", "timestamp": 1763169119.8438833}
+{"type": "skip", "original_name": "_fzf_search_variables", "timestamp": 1763169128.212297}
+{"type": "skip", "original_name": "_fzf_wrapper", "timestamp": 1763169131.4291186}
+{"type": "skip", "original_name": "_ytdl", "timestamp": 1763169149.913907}
+{"type": "skip", "original_name": "abbr_random_line", "timestamp": 1763169878.4516249}
+{"type": "skip", "original_name": "abbrdel", "timestamp": 1763169899.5209627}
+{"type": "skip", "original_name": "abbrsave", "timestamp": 1763169901.9105403}
+{"type": "skip", "original_name": "access_log_ua", "timestamp": 1763169912.3236837}
+{"type": "rename", "original_name": "activate", "timestamp": 1763169935.3557963, "new_name": "pipenv.activate"}
+{"type": "skip", "original_name": "added", "timestamp": 1763169952.8399568}
+{"type": "skip", "original_name": "added.lines", "timestamp": 1763169996.518503}
+{"type": "rename", "original_name": "allowMove", "timestamp": 1763172780.3171372, "new_name": "trackpad.on.with.keyboard"}
+{"type": "rename", "original_name": "allpc", "timestamp": 1763172868.4866438, "new_name": "servers.ssh"}
+{"type": "rename", "original_name": "allpct", "timestamp": 1763172927.8664694, "new_name": "servers.ssh.interactive"}
