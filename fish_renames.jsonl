@@ -40,10 +40,17 @@
 {"type": "rename", "original_name": "appendbuffer", "timestamp": 1763173876.660654, "new_name": "cb.append.auto"}
 {"type": "skip", "original_name": "appendfiles", "timestamp": 1763174023.8068194}
 {"type": "skip", "original_name": "archive", "timestamp": 1763174566.1308122}
-{"type": "skip", "original_name": "archives", "timestamp": 1763174573.6716943}
 {"type": "rename", "original_name": "archiveurl", "timestamp": 1763174713.0383372, "new_name": "urls.submit.wayback"}
 {"type": "rename", "original_name": "argo-check", "timestamp": 1763174755.9439502, "new_name": "argo.check"}
 {"type": "rename", "original_name": "argshead", "timestamp": 1763175409.7414474, "new_name": "args.head"}
 {"type": "rename", "original_name": "argstail", "timestamp": 1763175414.0662005, "new_name": "args.tail"}
 {"type": "rename", "original_name": "artist", "timestamp": 1763175452.3004274, "new_name": "ffprobe.artist"}
 {"type": "skip", "original_name": "asc", "timestamp": 1763175482.5627558}
+{"type": "skip", "original_name": "asc2", "timestamp": 1763175611.3089013}
+{"type": "rename", "original_name": "attrs", "timestamp": 1763175813.3661714, "new_name": "file.attrs"}
+{"type": "rename", "original_name": "archives", "timestamp": 1763176228.7630675, "new_name": "lines.paths.archives"}
+{"type": "rename", "original_name": "audio", "timestamp": 1763176246.6803703, "new_name": "lines.paths.audio"}
+{"type": "rename", "original_name": "audioActualTime", "timestamp": 1763176270.4190443, "new_name": "ffmpeg.decode"}
+{"type": "rename", "original_name": "audioCompressAndSplit", "timestamp": 1763176461.446617, "new_name": "ffmpeg.audio.split.93"}
+{"type": "skip", "original_name": "authorized_keys", "timestamp": 1763176629.9986458}
+{"type": "rename", "original_name": "avg", "timestamp": 1763176698.532401, "new_name": "lines.numbers.avg"}
