@@ -110,8 +110,8 @@
 {"type": "skip", "original_name": "changedtype.staged", "timestamp": 1763239506.692125}
 {"type": "skip", "original_name": "chars", "timestamp": 1763239651.9420881}
 {"type": "skip", "original_name": "check", "timestamp": 1763240253.3448992}
-{"type": "rename", "original_name": "check_local", "timestamp": 1763240422.4147973, "new_name": "files.locate"}
-{"type": "rename", "original_name": "check_local_video", "timestamp": 1763240436.7910726, "new_name": "files.video.locate"}
+{"type": "rename", "original_name": "check_local", "timestamp": 1763240422.4147973, "new_name": "search.files"}
+{"type": "rename", "original_name": "check_local_video", "timestamp": 1763240436.7910726, "new_name": "search.video"}
 {"type": "rename", "original_name": "checkdb", "timestamp": 1763240457.215772, "new_name": "sqlite.check.quick"}
 {"type": "skip", "original_name": "children", "timestamp": 1763240661.2737856}
 {"type": "skip", "original_name": "chrome-profile", "timestamp": 1763240726.2635891}
@@ -131,3 +131,14 @@
 {"type": "skip", "original_name": "confirm", "timestamp": 1763240983.6203291}
 {"type": "rename", "original_name": "confirm_default_yes", "timestamp": 1763241001.4699457, "new_name": "confirm.yes"}
 {"type": "rename", "original_name": "connectable-ssh", "timestamp": 1763241024.3318295, "new_name": "servers.ssh.connectable"}
+{"type": "skip", "original_name": "connectpg", "timestamp": 1763241144.3942738}
+{"type": "rename", "original_name": "coolpeople", "timestamp": 1763241165.0375512, "new_name": "people.mentors"}
+{"type": "skip", "original_name": "copy-last-command", "timestamp": 1763241230.890411}
+{"type": "skip", "original_name": "copying", "timestamp": 1763241243.0203748}
+{"type": "rename", "original_name": "copyq-search", "timestamp": 1763241279.747074, "new_name": "search.copyq"}
+{"type": "skip", "original_name": "cp-running", "timestamp": 1763241349.4460695}
+{"type": "skip", "original_name": "cp", "timestamp": 1763241357.7626595}
+{"type": "skip", "original_name": "cpd", "timestamp": 1763241391.0465643}
+{"type": "rename", "original_name": "cpfunc", "timestamp": 1763241474.7018554, "new_name": "phone.copy.func"}
+{"type": "skip", "original_name": "cr", "timestamp": 1763241486.1714435}
+{"type": "rename", "original_name": "create-launcher", "timestamp": 1763241607.3912628, "new_name": "file.desktop.create"}
