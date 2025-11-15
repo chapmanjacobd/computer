@@ -32,3 +32,10 @@
 {"type": "rename", "original_name": "allowMove", "timestamp": 1763172780.3171372, "new_name": "trackpad.on.with.keyboard"}
 {"type": "rename", "original_name": "allpc", "timestamp": 1763172868.4866438, "new_name": "servers.ssh"}
 {"type": "rename", "original_name": "allpct", "timestamp": 1763172927.8664694, "new_name": "servers.ssh.interactive"}
+{"type": "rename", "original_name": "allqb", "timestamp": 1763173266.0044918, "new_name": "servers.qb"}
+{"type": "rename", "original_name": "allscreens", "timestamp": 1763173312.756133, "new_name": "screens.on.all"}
+{"type": "rename", "original_name": "alpha", "timestamp": 1763173541.1167095, "new_name": "chars.alpha"}
+{"type": "rename", "original_name": "ansible-repl", "timestamp": 1763173563.1396062, "new_name": "ansible.repl"}
+{"type": "rename", "original_name": "append", "timestamp": 1763173646.3823774, "new_name": "file.append.line"}
+{"type": "rename", "original_name": "appendbuffer", "timestamp": 1763173876.660654, "new_name": "cb.append.auto"}
+{"type": "skip", "original_name": "appendfiles", "timestamp": 1763174023.8068194}
