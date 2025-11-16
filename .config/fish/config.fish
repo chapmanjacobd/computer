@@ -14,7 +14,7 @@ end
 
 source ~/.config/fish/functions/ls.fish
 
-fzf_configure_bindings --variables
+fzf_configure_bindings --directory=\cf --git_status=\cs --git_log=\cl --processes=\cp
 
 bind ctrl-backspace backward-kill-word
 bind ctrl-left backward-word
