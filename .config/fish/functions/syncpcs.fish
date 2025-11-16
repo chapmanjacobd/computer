@@ -1,7 +1,7 @@
 # Defined interactively
 function syncpcs
     ssh len clean_home
-    print hk pakon backup r730xd len | parallel sshpc {} git pull
-    print hk pakon backup r730xd len | parallel sshpc {} git -C lb/ pull
-    print hk pakon backup r730xd len | parallel sshpc {} pip install --upgrade lb/
+    print $servers | parallel sshpc {} git pull
+    print $servers | parallel sshpc {} git -C lb/ pull
+    print $servers | parallel sshpc {} pip install --upgrade lb/
 end

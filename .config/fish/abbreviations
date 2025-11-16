@@ -231,7 +231,7 @@ abbr -a -- less ov
 abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
-abbr -a -- torrent-status 'echon pakon backup r730xd len hk | parallel sshpc {} lb-dev torrents --dl -pa | ov'
+abbr -a -- torrent-status 'print $servers | parallel sshpc {} lb-dev torrents --dl -pa | ov'
 abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
 abbr -a -- wipc gitstash-checkpoint
