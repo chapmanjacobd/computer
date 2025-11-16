@@ -30,3 +30,4 @@ wt -u priority -d-7
 wt -db ~/lb/fs/video.big.db -u priority --fetch-siblings each
 wt -m 4 --fstack -db ~/lb/fs/tax.db --keep-dir /home/xk/d/library/porn/video/ -E /mnt/d1/ -E /mnt/d10/ --local -rs -L inf -S+500 -m 3 --fstack --mute --pause
 wtseek --start 5% -db ~/lb/fs/tax.net.db --trash-cmd rm --keep-dir keep -rs -L inf -S+1800 --mute -m 6
+wt -w subtitle_count=0 -O -o -P pw -d+9

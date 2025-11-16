@@ -375,9 +375,6 @@ _launch=Alt+P
 [services][fish-6.desktop]
 _launch=Ctrl+Alt+Shift+P
 
-[services][fish-8.desktop]
-_launch=Ctrl+Alt+P
-
 [services][fish-9.desktop]
 _launch=Alt+H
 
