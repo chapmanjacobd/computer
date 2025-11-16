@@ -3,7 +3,7 @@ function pkill
     set -l opts
     set -l patterns
     for arg in $argv
-        if string match -qr '^-' $arg
+        if string match -qr -- '^-' $arg
             set opts $opts $arg
         else
             set patterns $patterns $arg
