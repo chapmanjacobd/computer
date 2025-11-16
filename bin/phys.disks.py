@@ -85,7 +85,7 @@ def render_ascii(bays):
             elif mount:
                 text = f"[!] {dev:<3} {mount:>4}"
             else:
-                text = f"[O] {dev:<3}     "
+                text = f"[\033[32mO\033[0m] {dev:<3}     "
 
             row_text.append(text)
 
