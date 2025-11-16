@@ -55,7 +55,7 @@ def get_dev_bay_map():
                 mount = None
                 for child in node.get("children", []):
                     if isinstance(child, dict) and child.get("mountpoint"):
-                        mount = os.path.basename(child["mountpoint"])
+                        mount = os.path.basename(child["mountpoint"].rstrip(os.sep))
                         break
 
                 baymap[bay]["dev"] = node["kname"]
