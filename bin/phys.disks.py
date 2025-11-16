@@ -89,7 +89,7 @@ def render_ascii(bays):
 
             row_text.append(text)
 
-        lines.append("    ".join(row_text))
+        lines.append(" | ".join(row_text))
 
     return "\n".join(lines)
 
