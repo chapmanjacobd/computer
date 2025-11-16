@@ -1,6 +1,6 @@
 # Defined interactively
 function ls -w eza
-    echo Why not try Ctrl+Alt+F?
+    echo Why not try Ctrl+F?
 
     if status --is-interactive
         if has_git_dir $argv; and not string match -q '/net/*' $argv; and not string match -q '/net/*' $PWD
