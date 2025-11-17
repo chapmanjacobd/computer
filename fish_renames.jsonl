@@ -304,3 +304,24 @@
 {"type": "rename", "original_name": "gdalcalcnodata0", "timestamp": 1763389440.2429953, "new_name": "raster.nodata0"}
 {"type": "rename", "original_name": "gdl-insta", "timestamp": 1763389451.5865338, "new_name": "dl.insta"}
 {"type": "rename", "original_name": "gdl", "timestamp": 1763389485.5563753, "new_name": "dl.images"}
+{"type": "skip", "original_name": "gen_from_len_str", "timestamp": 1763409290.2372012}
+{"type": "rename", "original_name": "gen_from_random_date", "timestamp": 1763409322.4616323, "new_name": "random.date"}
+{"type": "rename", "original_name": "gen_from_random_timestamp", "timestamp": 1763409328.70464, "new_name": "random.timestamp"}
+{"type": "rename", "original_name": "getignore", "timestamp": 1763409393.327028, "new_name": "git.ignore.get"}
+{"type": "rename", "original_name": "getsubtitles", "timestamp": 1763409411.9680798, "new_name": "search.subtitles"}
+{"type": "skip", "original_name": "ghostscript", "timestamp": 1763409422.7844665}
+
+{"type": "rename", "original_name": "git-cat", "timestamp": 1763409484.0885253, "new_name": "gh.cat"}
+{"type": "rename", "original_name": "git-changelog", "timestamp": 1763409493.0149205, "new_name": "git.changelog"}
+{"type": "rename", "original_name": "git-eol-reset", "timestamp": 1763409509.40101, "new_name": "git.reset.eol"}
+{"type": "rename", "original_name": "git-recreate", "timestamp": 1763409535.5516813, "new_name": "git.reclone"}
+{"type": "skip", "original_name": "git.abort", "timestamp": 1763409538.0808108}
+{"type": "skip", "original_name": "git.continue", "timestamp": 1763409538.8529155}
+{"type": "skip", "original_name": "git", "timestamp": 1763409560.6994462}
+{"type": "rename", "original_name": "gitMoveToNewBranch", "timestamp": 1763409582.0082045, "new_name": "git.rebranch"}
+{"type": "rename", "original_name": "git_amend", "timestamp": 1763409590.8183508, "new_name": "git.amend"}
+{"type": "rename", "original_name": "git_branch", "timestamp": 1763409614.9720993, "new_name": "git.branch"}
+{"type": "rename", "original_name": "git_clone", "timestamp": 1763409624.0247674, "new_name": "git.clone"}
+{"type": "skip", "original_name": "git_commit_message", "timestamp": 1763409643.2817214}
+{"type": "skip", "original_name": "git_one_line_changes", "timestamp": 1763409714.1723251}
+{"type": "rename", "original_name": "git_recent", "timestamp": 1763409796.5775955, "new_name": "git.recent"}

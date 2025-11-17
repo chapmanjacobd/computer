@@ -7,11 +7,11 @@ function morganize
     end
 
     for f in $argv
-        if string match -q -- $HOME'/.config/fish/functions/*.fish' "$f"
+        if string match -q -- '*.config/fish/functions/*.fish' "$f"
             fish_indent -w "$f"
         end
 
-        if string match -q -- $HOME'/mc/*.txt' "$f"
+        if string match -q -- '*mc/*.txt' "$f"
             sort --unique --stable --ignore-case "$f" | sed '/^$/d' | sponge "$f"
         end
 
