@@ -48,8 +48,8 @@
 {"type": "skip", "original_name": "asc", "timestamp": 1763175482.5627558}
 {"type": "skip", "original_name": "asc2", "timestamp": 1763175611.3089013}
 {"type": "rename", "original_name": "attrs", "timestamp": 1763175813.3661714, "new_name": "file.attrs"}
-{"type": "rename", "original_name": "archives", "timestamp": 1763176228.7630675, "new_name": "lines.paths.archives"}
-{"type": "rename", "original_name": "audio", "timestamp": 1763176246.6803703, "new_name": "lines.paths.audio"}
+{"type": "rename", "original_name": "archives", "timestamp": 1763176228.7630675, "new_name": "paths.archives"}
+{"type": "rename", "original_name": "audio", "timestamp": 1763176246.6803703, "new_name": "paths.audio"}
 {"type": "rename", "original_name": "audioActualTime", "timestamp": 1763176270.4190443, "new_name": "ffmpeg.decode"}
 {"type": "rename", "original_name": "audioCompressAndSplit", "timestamp": 1763176461.446617, "new_name": "ffmpeg.audio.split.93"}
 {"type": "skip", "original_name": "authorized_keys", "timestamp": 1763176629.9986458}
@@ -214,3 +214,84 @@
 {"type": "rename", "original_name": "fd-bsd", "timestamp": 1763346243.56694, "new_name": "fd.bsd"}
 {"type": "rename", "original_name": "fd-date", "timestamp": 1763346247.2671196, "new_name": "fd.date"}
 {"type": "skip", "original_name": "fdupe", "timestamp": 1763346280.1630533}
+{"type": "rename", "original_name": "feed", "timestamp": 1763347103.6479495, "new_name": "sdcard.dump.footage"}
+{"type": "rename", "original_name": "ffa", "timestamp": 1763347137.2269633, "new_name": "video.to.audio"}
+{"type": "rename", "original_name": "ffa_delete", "timestamp": 1763347165.0519297, "new_name": "video.to.audio.delete"}
+{"type": "rename", "original_name": "ffmpeg-check-corrupt", "timestamp": 1763347249.5983436, "new_name": "ffmpeg.decode"}
+{"type": "skip", "original_name": "ffmpeg.audio.normalize.check", "timestamp": 1763347264.6706057}
+{"type": "skip", "original_name": "ffmpeg", "timestamp": 1763347269.1489484}
+{"type": "rename", "original_name": "ffmpeg.frames", "timestamp": 1763347283.7242203, "new_name": "ffprobe.video.frames"}
+{"type": "rename", "original_name": "ffmpeg.frametypes", "timestamp": 1763347301.3268783, "new_name": "ffprobe.video.frametypes"}
+{"type": "rename", "original_name": "ffmpeg.keyframes", "timestamp": 1763347317.5231674, "new_name": "video.to.keyframes.slow"}
+{"type": "rename", "original_name": "ffmpeg.keyframes.images", "timestamp": 1763347327.840565, "new_name": "video.to.images"}
+{"type": "rename", "original_name": "ffmpeg.keyframes.io", "timestamp": 1763347385.4030974, "new_name": "video.to.keyframes.slow.named"}
+{"type": "rename", "original_name": "ffmpeg.keyframes.quick", "timestamp": 1763347505.523031, "new_name": "video.to.keyframes"}
+{"type": "rename", "original_name": "ffmpeg.keyframes.timestamps", "timestamp": 1763347559.3644152, "new_name": "ffprobe.video.keyframes.timestamps"}
+{"type": "rename", "original_name": "ffmpeg.pkt.dts", "timestamp": 1763347587.013958, "new_name": "ffprobe.audio.dts.timestamps"}
+{"type": "rename", "original_name": "ffmpeg.rotate", "timestamp": 1763347624.2260573, "new_name": "video.rotate"}
+{"type": "rename", "original_name": "ffmpeg.scenes", "timestamp": 1763347638.3825119, "new_name": "video.to.scenes"}
+{"type": "rename", "original_name": "ffmpeg.scenes.images", "timestamp": 1763347647.6488261, "new_name": "video.to.images.scenes"}
+{"type": "rename", "original_name": "ffmpegBurnInSubtitlesBitmap", "timestamp": 1763347714.1157868, "new_name": "video.subtitle.hardcode"}
+{"type": "rename", "original_name": "ffmpegFixAudioChromecast", "timestamp": 1763347761.9354956, "new_name": "audio.to.chromecast"}
+{"type": "rename", "original_name": "ffmpegMakeMusicVideoBlank", "timestamp": 1763347779.0817447, "new_name": "audio.to.video.black"}
+{"type": "rename", "original_name": "ffmpegToHEVC", "timestamp": 1763347787.8659253, "new_name": "video.to.hevc"}
+{"type": "rename", "original_name": "ffmpeg_progress", "timestamp": 1763347834.6527407, "new_name": "progress.ffmpeg"}
+{"type": "rename", "original_name": "ffprint", "timestamp": 1763347980.569729, "new_name": "info"}
+{"type": "skip", "original_name": "ffprobe", "timestamp": 1763347983.1365814}
+{"type": "rename", "original_name": "ffprobejson", "timestamp": 1763347995.9573057, "new_name": "ffprobe.json"}
+{"type": "rename", "original_name": "ffquality", "timestamp": 1763348028.9119976, "new_name": "ffmpeg.decode.quality"}
+{"type": "rename", "original_name": "ffreport", "timestamp": 1763348036.2422707, "new_name": "ffmpeg.decode.report"}
+{"type": "rename", "original_name": "ffsmall.audio", "timestamp": 1763348056.622931, "new_name": "audio.shrink"}
+{"type": "rename", "original_name": "ffsmall", "timestamp": 1763348061.8368773, "new_name": "video.shrink"}
+{"type": "rename", "original_name": "ffsmall_delete", "timestamp": 1763348068.4721131, "new_name": "video.shrink.delete"}
+{"type": "rename", "original_name": "ffsmallgpu", "timestamp": 1763348096.8660262, "new_name": "video.shrink.gpu"}
+{"type": "rename", "original_name": "ffvcs", "timestamp": 1763348113.74949, "new_name": "video.to.contactsheet"}
+{"type": "rename", "original_name": "file-exists", "timestamp": 1763348127.2589006, "new_name": "file.exists"}
+{"type": "rename", "original_name": "fileSuffix", "timestamp": 1763348216.955386, "new_name": "path.withsuffix"}
+{"type": "rename", "original_name": "fileTypeStatistics", "timestamp": 1763348243.7259173, "new_name": "files.ext.asc"}
+{"type": "rename", "original_name": "fileTypeVideos", "timestamp": 1763348282.3174882, "new_name": "paths.video"}
+{"type": "rename", "original_name": "filecount", "timestamp": 1763348289.9066365, "new_name": "files.count"}
+{"type": "rename", "original_name": "filehandlers", "timestamp": 1763348297.1527464, "new_name": "file.handlers"}
+{"type": "rename", "original_name": "filehandles", "timestamp": 1763348300.370845, "new_name": "file.handles"}
+{"type": "rename", "original_name": "filelength", "timestamp": 1763348340.4300416, "new_name": "file.lines.count"}
+{"type": "skip", "original_name": "files", "timestamp": 1763348344.9215693}
+{"type": "rename", "original_name": "filesize", "timestamp": 1763348375.3240309, "new_name": "file.size"}
+{"type": "rename", "original_name": "filetype", "timestamp": 1763348393.5497522, "new_name": "file.type"}
+{"type": "rename", "original_name": "filter-0", "timestamp": 1763348532.5915842, "new_name": "lines.not.0"}
+{"type": "rename", "original_name": "filter-deleted", "timestamp": 1763348782.57818, "new_name": "paths.exist"}
+{"type": "rename", "original_name": "filter-empty-lines", "timestamp": 1763348964.8374534, "new_name": "lines.not.empty"}
+{"type": "rename", "original_name": "filterByGenre", "timestamp": 1763349121.2327468, "new_name": "files.audio.genre"}
+{"type": "rename", "original_name": "filter_opts", "timestamp": 1763349155.541823, "new_name": "optparse"}
+{"type": "rename", "original_name": "filterfile", "timestamp": 1763349210.698361, "new_name": "file.lines.filter"}
+{"type": "skip", "original_name": "findandreplace", "timestamp": 1763349325.723665}
+{"type": "rename", "original_name": "firefox-history", "timestamp": 1763349344.71627, "new_name": "search.firefoxhistory"}
+{"type": "rename", "original_name": "fish-map", "timestamp": 1763349435.2808557, "new_name": "lines.eval"}
+{"type": "rename", "original_name": "fish_commandline_stdin", "timestamp": 1763349514.342216, "new_name": "commandline.stdin"}
+{"type": "skip", "original_name": "fish_functions", "timestamp": 1763349526.180521}
+{"type": "skip", "original_name": "fish_greeting", "timestamp": 1763349536.2867692}
+{"type": "skip", "original_name": "fish_prompt", "timestamp": 1763349554.8134797}
+{"type": "skip", "original_name": "fish_remove_path", "timestamp": 1763349557.8303735}
+{"type": "skip", "original_name": "fish_right_prompt", "timestamp": 1763349559.822511}
+{"type": "skip", "original_name": "fisher", "timestamp": 1763349563.779684}
+{"type": "rename", "original_name": "fix_audio", "timestamp": 1763349756.7892258, "new_name": "audio.fixup.compand"}
+{"type": "rename", "original_name": "flatsearch", "timestamp": 1763349776.650855, "new_name": "search.flatpak"}
+{"type": "rename", "original_name": "flattenDirectory", "timestamp": 1763349789.4132364, "new_name": "folders.flatten"}
+{"type": "rename", "original_name": "focus_follows_mouse", "timestamp": 1763349839.2806585, "new_name": "kwin.FocusFollowsMouse"}
+{"type": "rename", "original_name": "focus_under_mouse", "timestamp": 1763349848.968616, "new_name": "kwin.FocusUnderMouse"}
+{"type": "rename", "original_name": "folder-trash", "timestamp": 1763349872.5996459, "new_name": "folder.trash"}
+{"type": "rename", "original_name": "folders", "timestamp": 1763350126.6331046, "new_name": "folders-eval"}
+{"type": "skip", "original_name": "forganize", "timestamp": 1763350129.9761717}
+{"type": "skip", "original_name": "freeport", "timestamp": 1763350131.8021405}
+{"type": "rename", "original_name": "fs_display", "timestamp": 1763350391.958721, "new_name": "screen.on"}
+{"type": "skip", "original_name": "fstab", "timestamp": 1763350397.5200346}
+{"type": "rename", "original_name": "ftp_put", "timestamp": 1763350408.0335963, "new_name": "ftp.put"}
+{"type": "skip", "original_name": "fu", "timestamp": 1763350457.0625293}
+{"type": "skip", "original_name": "funccp", "timestamp": 1763350460.6036155}
+{"type": "skip", "original_name": "funcdel", "timestamp": 1763350462.944767}
+{"type": "rename", "original_name": "funced-code", "timestamp": 1763350481.417418, "new_name": "funced.code"}
+{"type": "skip", "original_name": "funcmv", "timestamp": 1763350485.228811}
+{"type": "skip", "original_name": "funcsave", "timestamp": 1763350488.0457776}
+{"type": "rename", "original_name": "fzf-choose-multi", "timestamp": 1763350507.841103, "new_name": "fzf.multi"}
+{"type": "rename", "original_name": "fzf-choose", "timestamp": 1763350512.9881961, "new_name": "fzf.choose"}
+{"type": "skip", "original_name": "fzf_configure_bindings", "timestamp": 1763350516.9633517}
+{"type": "rename", "original_name": "fzf_mpv", "timestamp": 1763350521.043579, "new_name": "fzf.mpv"}
