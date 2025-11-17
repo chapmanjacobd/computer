@@ -299,3 +299,8 @@
 {"type": "skip", "original_name": "gcloudssh", "timestamp": 1763352244.4333947}
 {"type": "skip", "original_name": "fzf.image", "timestamp": 1763352287.3075533}
 {"type": "skip", "original_name": "gcon", "timestamp": 1763356698.3665593}
+{"type": "rename", "original_name": "gcp-resize", "timestamp": 1763389206.2366674, "new_name": "gcp.resize"}
+{"type": "rename", "original_name": "gcsweblink", "timestamp": 1763389223.8957844, "new_name": "link.gcs"}
+{"type": "rename", "original_name": "gdalcalcnodata0", "timestamp": 1763389440.2429953, "new_name": "raster.nodata0"}
+{"type": "rename", "original_name": "gdl-insta", "timestamp": 1763389451.5865338, "new_name": "dl.insta"}
+{"type": "rename", "original_name": "gdl", "timestamp": 1763389485.5563753, "new_name": "dl.images"}

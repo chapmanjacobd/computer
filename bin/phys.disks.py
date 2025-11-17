@@ -9,14 +9,16 @@ BAY_LAYOUT = [
     [2, 5, 8, 11],
 ]
 
+
 def load_lsblk():
     out = subprocess.check_output(["lsblk", "-o", "NAME,KNAME,TYPE,MOUNTPOINT,HCTL", "--json"])
     return json.loads(out)
 
+
 def get_dev_bay_map():
     baymap = {i: {"dev": None, "mount": None} for i in range(12)}
     ls = load_lsblk()
-    
+
     def walk(node):
         if node["type"] == "disk":
             hctl = node.get("hctl", "")
@@ -33,15 +35,16 @@ def get_dev_bay_map():
                                 break
                         baymap[bay]["dev"] = node["kname"]
                         baymap[bay]["mount"] = mount
-        
+
         for c in node.get("children", []):
             if isinstance(c, dict):
                 walk(c)
-    
+
     for blk in ls["blockdevices"]:
         walk(blk)
-    
+
     return baymap
+
 
 def render_ascii(bays):
     lines = []
@@ -61,9 +64,11 @@ def render_ascii(bays):
         lines.append(" | ".join(row_text))
     return "\n".join(lines)
 
+
 def main():
     bays = get_dev_bay_map()
     print(render_ascii(bays))
+
 
 if __name__ == "__main__":
     main()
