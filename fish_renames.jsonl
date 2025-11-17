@@ -207,3 +207,10 @@
 {"type": "rename", "original_name": "ext", "timestamp": 1763344966.3939269, "new_name": "chars.ext"}
 {"type": "rename", "original_name": "extract_colors", "timestamp": 1763345031.2028096, "new_name": "image.colors"}
 {"type": "skip", "original_name": "exts_size", "timestamp": 1763345123.9925005}
+{"type": "rename", "original_name": "f", "timestamp": 1763346022.4842145, "new_name": "files.tree.d2"}
+{"type": "skip", "original_name": "fasd_cd", "timestamp": 1763346140.4481804}
+{"type": "skip", "original_name": "fcd", "timestamp": 1763346176.1869655}
+{"type": "rename", "original_name": "fdopen", "timestamp": 1763346226.8464801, "new_name": "fd.open"}
+{"type": "rename", "original_name": "fd-bsd", "timestamp": 1763346243.56694, "new_name": "fd.bsd"}
+{"type": "rename", "original_name": "fd-date", "timestamp": 1763346247.2671196, "new_name": "fd.date"}
+{"type": "skip", "original_name": "fdupe", "timestamp": 1763346280.1630533}
