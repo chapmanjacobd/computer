@@ -325,3 +325,69 @@
 {"type": "skip", "original_name": "git_commit_message", "timestamp": 1763409643.2817214}
 {"type": "skip", "original_name": "git_one_line_changes", "timestamp": 1763409714.1723251}
 {"type": "rename", "original_name": "git_recent", "timestamp": 1763409796.5775955, "new_name": "git.recent"}
+{"type": "rename", "original_name": "git_remote_serve", "timestamp": 1763410121.2880094, "new_name": "git.serve"}
+{"type": "rename", "original_name": "git_remote_use_https", "timestamp": 1763410133.352365, "new_name": "git.remote.https"}
+{"type": "rename", "original_name": "git_remote_use_server", "timestamp": 1763410138.4617743, "new_name": "git.remote.server"}
+{"type": "rename", "original_name": "git_remote_use_ssh", "timestamp": 1763410143.6456435, "new_name": "git.remote.ssh"}
+{"type": "rename", "original_name": "git_serve", "timestamp": 1763410147.5467768, "new_name": "git.daemon"}
+{"type": "skip", "original_name": "gitadd", "timestamp": 1763410174.444577}
+{"type": "rename", "original_name": "gitblame-percent", "timestamp": 1763410372.6625812, "new_name": "git.blame.share"}
+{"type": "rename", "original_name": "gitcommitbefore", "timestamp": 1763410532.421219, "new_name": "git.hash.before.date"}
+{"type": "rename", "original_name": "gitcopy", "timestamp": 1763410548.562663, "new_name": "git.copy"}
+{"type": "rename", "original_name": "gitcopystaged", "timestamp": 1763410555.9921374, "new_name": "git.copy.staged"}
+{"type": "rename", "original_name": "gitdiffall", "timestamp": 1763410576.4755027, "new_name": "git.diff.branches"}
+{"type": "rename", "original_name": "gitdiffdate", "timestamp": 1763410587.6849437, "new_name": "git.diff.date"}
+{"type": "rename", "original_name": "githistory", "timestamp": 1763410638.6426504, "new_name": "paths.git.log"}
+{"type": "rename", "original_name": "githubfile", "timestamp": 1763410758.04704, "new_name": "search.github.path"}
+{"type": "rename", "original_name": "githubstars", "timestamp": 1763410766.0694008, "new_name": "gh.stars"}
+{"type": "rename", "original_name": "githubtabs", "timestamp": 1763410818.0738094, "new_name": "gh.tabs"}
+{"type": "rename", "original_name": "gitignore-local", "timestamp": 1763410826.270922, "new_name": "git.ignore.local"}
+{"type": "rename", "original_name": "gitignore", "timestamp": 1763410829.779598, "new_name": "git.ignore"}
+{"type": "rename", "original_name": "gitls-blame", "timestamp": 1763410852.1717215, "new_name": "paths.git.blame"}
+{"type": "rename", "original_name": "gitls-commits", "timestamp": 1763410929.9155517, "new_name": "paths.git.popular"}
+{"type": "rename", "original_name": "gitls", "timestamp": 1763410938.9444742, "new_name": "paths.git.ls"}
+{"type": "rename", "original_name": "gitls1", "timestamp": 1763410942.233716, "new_name": "paths.git.ls1"}
+{"type": "rename", "original_name": "gitpop", "timestamp": 1763410945.4355638, "new_name": "git.pop"}
+{"type": "rename", "original_name": "gitresetindex", "timestamp": 1763410957.703426, "new_name": "git.index.reset"}
+{"type": "rename", "original_name": "gitsize", "timestamp": 1763410960.3861213, "new_name": "git.size"}
+{"type": "rename", "original_name": "gitstash-checkpoint", "timestamp": 1763410968.3306472, "new_name": "git.checkpoint"}
+{"type": "rename", "original_name": "gittodo", "timestamp": 1763410971.3065917, "new_name": "git.todo"}
+{"type": "rename", "original_name": "gittodos", "timestamp": 1763410974.6695235, "new_name": "git.todos"}
+{"type": "rename", "original_name": "gitupstream", "timestamp": 1763410982.9387465, "new_name": "git.upstream"}
+{"type": "skip", "original_name": "goformat", "timestamp": 1763410993.6352956}
+{"type": "skip", "original_name": "grepmv", "timestamp": 1763411022.30809}
+{"type": "rename", "original_name": "gscbdl", "timestamp": 1763411048.957262, "new_name": "gcs.cb.dl"}
+{"type": "rename", "original_name": "gsgdalinfo", "timestamp": 1763411082.77883, "new_name": "gdalinfo.gcs"}
+{"type": "rename", "original_name": "gsogr", "timestamp": 1763411103.4155061, "new_name": "ogrinfo.gcs"}
+{"type": "rename", "original_name": "has_audio", "timestamp": 1763411118.8760073, "new_name": "ffprobe.has.audio"}
+{"type": "rename", "original_name": "has_both_audio_video", "timestamp": 1763411171.2256267, "new_name": "ffprobe.has.av"}
+{"type": "rename", "original_name": "has_git_dir", "timestamp": 1763411185.2540395, "new_name": "git.dir"}
+{"type": "rename", "original_name": "has_sub", "timestamp": 1763411246.8649483, "new_name": "ffprobe.has.subtitle"}
+{"type": "rename", "original_name": "has_video", "timestamp": 1763411284.916496, "new_name": "ffprobe.has.video"}
+{"type": "skip", "original_name": "hdmi", "timestamp": 1763411297.609093}
+{"type": "rename", "original_name": "headtee", "timestamp": 1763411361.8565905, "new_name": "tee.prepend"}
+{"type": "skip", "original_name": "hhmmss", "timestamp": 1763411368.9939864}
+{"type": "skip", "original_name": "highlight2", "timestamp": 1763411587.3817534}
+{"type": "skip", "original_name": "hourly", "timestamp": 1763411592.8613238}
+{"type": "rename", "original_name": "hours", "timestamp": 1763411632.7021434, "new_name": "hours.to.seconds"}
+{"type": "rename", "original_name": "html_details_code", "timestamp": 1763411649.3060503, "new_name": "html.details.code"}
+{"type": "rename", "original_name": "html_force_url", "timestamp": 1763411670.0579507, "new_name": "html.url.force"}
+{"type": "rename", "original_name": "html_force_url_nolink", "timestamp": 1763411703.7559404, "new_name": "html.url.nolink"}
+{"type": "rename", "original_name": "html_forum_code", "timestamp": 1763411714.8016372, "new_name": "html.forum.code"}
+{"type": "rename", "original_name": "html_quote", "timestamp": 1763411722.0945091, "new_name": "html.quote"}
+{"type": "rename", "original_name": "html_titles", "timestamp": 1763411764.4872293, "new_name": "cb.html.titles"}
+{"type": "rename", "original_name": "html_wrap_quote", "timestamp": 1763411812.288908, "new_name": "cb.html.quote.wrap"}
+{"type": "skip", "original_name": "htop", "timestamp": 1763411818.8627617}
+{"type": "rename", "original_name": "human2bytes", "timestamp": 1763411825.1308475, "new_name": "human.to.bytes"}
+{"type": "rename", "original_name": "iiab-start", "timestamp": 1763411829.7310243, "new_name": "iiab.start"}
+{"type": "rename", "original_name": "image-folder-ask-keep", "timestamp": 1763411856.0307393, "new_name": "folders.images.ask"}
+{"type": "rename", "original_name": "image", "timestamp": 1763411861.793011, "new_name": "paths.images"}
+{"type": "rename", "original_name": "image_squash", "timestamp": 1763411871.0272565, "new_name": "image.shrink"}
+{"type": "rename", "original_name": "img_radial_gradient", "timestamp": 1763411890.0937614, "new_name": "image.gradient.radial"}
+{"type": "rename", "original_name": "increment", "timestamp": 1763411920.0497448, "new_name": "path.increment"}
+{"type": "rename", "original_name": "interleave", "timestamp": 1763411936.2632384, "new_name": "lines.interleave"}
+{"type": "rename", "original_name": "invalid_utf8", "timestamp": 1763412167.526041, "new_name": "chars.invalid.utf8"}
+{"type": "rename", "original_name": "ip.public", "timestamp": 1763412206.5102136, "new_name": "address.public"}
+{"type": "rename", "original_name": "ip_link_toggle", "timestamp": 1763412218.6124856, "new_name": "ip.link.toggle"}
+{"type": "skip", "original_name": "ipp", "timestamp": 1763412233.1759644}
+{"type": "skip", "original_name": "is_corrupt_media", "timestamp": 1763412248.290287}
