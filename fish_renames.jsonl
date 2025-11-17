@@ -153,3 +153,57 @@
 {"type": "skip", "original_name": "dbackups", "timestamp": 1763242674.9513626}
 {"type": "skip", "original_name": "dbs", "timestamp": 1763242958.3529403}
 {"type": "rename", "original_name": "decode-url", "timestamp": 1763242985.1169293, "new_name": "urls.decode"}
+{"type": "skip", "original_name": "_env_vars_update_servers", "timestamp": 1763343076.2485614}
+{"type": "rename", "original_name": "dedupe", "timestamp": 1763343092.730109, "new_name": "lines.dedupe"}
+{"type": "rename", "original_name": "defaultset", "timestamp": 1763343125.1354246, "new_name": "setdefault"}
+{"type": "rename", "original_name": "delete_duplicate_lines", "timestamp": 1763343441.433055, "new_name": "file.lines.dedupe"}
+{"type": "skip", "original_name": "deleted", "timestamp": 1763343452.8914337}
+{"type": "skip", "original_name": "deleted.lines", "timestamp": 1763343461.7439163}
+{"type": "skip", "original_name": "deleted.staged", "timestamp": 1763343488.4944813}
+{"type": "skip", "original_name": "desc", "timestamp": 1763343494.277617}
+{"type": "rename", "original_name": "diff-pairwise", "timestamp": 1763343535.6345756, "new_name": "pairwise.diff"}
+{"type": "skip", "original_name": "diskstatus", "timestamp": 1763343553.4232533}
+{"type": "rename", "original_name": "displays", "timestamp": 1763343607.1378422, "new_name": "screens"}
+{"type": "rename", "original_name": "dl_torrents", "timestamp": 1763343668.321619, "new_name": "dl.torrents"}
+{"type": "skip", "original_name": "dla", "timestamp": 1763343683.2202358}
+{"type": "skip", "original_name": "dlstatus", "timestamp": 1763343780.317855}
+{"type": "skip", "original_name": "dlunsafe", "timestamp": 1763343809.7806044}
+{"type": "skip", "original_name": "dnfinstall", "timestamp": 1763343811.933125}
+{"type": "skip", "original_name": "dnfremove", "timestamp": 1763343813.2807791}
+{"type": "rename", "original_name": "dns-set-google", "timestamp": 1763343821.4499772, "new_name": "system.dns.google"}
+{"type": "rename", "original_name": "dns-to-ip", "timestamp": 1763343931.5538058, "new_name": "dns.to.ip"}
+{"type": "rename", "original_name": "docker-cleanup", "timestamp": 1763344134.8162186, "new_name": "docker.cleanup"}
+{"type": "rename", "original_name": "dockercp", "timestamp": 1763344174.4467118, "new_name": "docker.compose.cp"}
+{"type": "rename", "original_name": "dockerpatch", "timestamp": 1763344193.026623, "new_name": "docker.patch"}
+{"type": "rename", "original_name": "domains", "timestamp": 1763344268.1927605, "new_name": "chars.domain"}
+{"type": "skip", "original_name": "dorganize", "timestamp": 1763344281.0370965}
+{"type": "skip", "original_name": "dotenv", "timestamp": 1763344283.3252633}
+{"type": "skip", "original_name": "dptmp", "timestamp": 1763344323.1558971}
+{"type": "skip", "original_name": "dptmpo", "timestamp": 1763344328.09386}
+{"type": "skip", "original_name": "dsql", "timestamp": 1763344331.635634}
+{"type": "rename", "original_name": "dsql_refresh", "timestamp": 1763344399.9195542, "new_name": "d.sql.refresh"}
+{"type": "rename", "original_name": "dsql_refresh_disk", "timestamp": 1763344426.0504282, "new_name": "dsql.refresh"}
+{"type": "rename", "original_name": "duckdb-open", "timestamp": 1763344444.3121135, "new_name": "duckdb.open"}
+{"type": "rename", "original_name": "duckdb2parquet", "timestamp": 1763344456.6352768, "new_name": "duckdb.to.parquet"}
+{"type": "rename", "original_name": "duckdb_compact", "timestamp": 1763344468.6275043, "new_name": "duckdb.vacuum"}
+{"type": "rename", "original_name": "duplines", "timestamp": 1763344510.6762621, "new_name": "files.lines.asc"}
+{"type": "rename", "original_name": "duration", "timestamp": 1763344516.3238935, "new_name": "ffprobe.duration"}
+{"type": "rename", "original_name": "eachpc", "timestamp": 1763344536.6935608, "new_name": "servers.ssh.each"}
+{"type": "rename", "original_name": "ecd", "timestamp": 1763344576.383647, "new_name": "zd"}
+{"type": "skip", "original_name": "echon", "timestamp": 1763344619.2161503}
+{"type": "skip", "original_name": "edit", "timestamp": 1763344648.7023113}
+{"type": "skip", "original_name": "edp", "timestamp": 1763344658.2052906}
+{"type": "skip", "original_name": "emacs", "timestamp": 1763344661.8521469}
+{"type": "skip", "original_name": "enumerate", "timestamp": 1763344697.5981383}
+{"type": "rename", "original_name": "eval-dir", "timestamp": 1763344726.3390014, "new_name": "folder.eval"}
+{"type": "rename", "original_name": "eval-file", "timestamp": 1763344729.041072, "new_name": "file.eval"}
+{"type": "rename", "original_name": "eval-random", "timestamp": 1763344774.6788812, "new_name": "file.eval.random"}
+{"type": "rename", "original_name": "eval-repeat-dir", "timestamp": 1763344784.2446887, "new_name": "folder.eval.repeat"}
+{"type": "rename", "original_name": "eval-repeat", "timestamp": 1763344885.1428864, "new_name": "file.eval.repeat"}
+{"type": "rename", "original_name": "eval-shuf-repeat", "timestamp": 1763344912.0070322, "new_name": "file.eval.shuf.repeat"}
+{"type": "rename", "original_name": "eval-shuf", "timestamp": 1763344920.482824, "new_name": "file.eval.shuf"}
+{"type": "rename", "original_name": "exists", "timestamp": 1763344936.36958, "new_name": "paths.exist"}
+{"type": "rename", "original_name": "explain", "timestamp": 1763344947.3713548, "new_name": "ai.explain"}
+{"type": "rename", "original_name": "ext", "timestamp": 1763344966.3939269, "new_name": "chars.ext"}
+{"type": "rename", "original_name": "extract_colors", "timestamp": 1763345031.2028096, "new_name": "image.colors"}
+{"type": "skip", "original_name": "exts_size", "timestamp": 1763345123.9925005}

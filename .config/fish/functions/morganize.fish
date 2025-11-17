@@ -20,7 +20,7 @@ function morganize
         end
 
         if string match -q -- '*/people.*list' "$f"
-            dedupe "$f" | sort_by_last_name.py | sponge "$f"
+            unique "$f" | sort_by_last_name.py | sponge "$f"
         end
     end
 end

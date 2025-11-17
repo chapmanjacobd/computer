@@ -1,1 +1,3 @@
-dedupe.py
+#!/usr/bin/awk -f
+
+!seen[$0]++
