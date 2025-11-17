@@ -295,3 +295,7 @@
 {"type": "rename", "original_name": "fzf-choose", "timestamp": 1763350512.9881961, "new_name": "fzf.choose"}
 {"type": "skip", "original_name": "fzf_configure_bindings", "timestamp": 1763350516.9633517}
 {"type": "rename", "original_name": "fzf_mpv", "timestamp": 1763350521.043579, "new_name": "fzf.mpv"}
+{"type": "rename", "original_name": "fzf_mpv_preview", "timestamp": 1763352232.7825568, "new_name": "fzf.video"}
+{"type": "skip", "original_name": "gcloudssh", "timestamp": 1763352244.4333947}
+{"type": "skip", "original_name": "fzf.image", "timestamp": 1763352287.3075533}
+{"type": "skip", "original_name": "gcon", "timestamp": 1763356698.3665593}
