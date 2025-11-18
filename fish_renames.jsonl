@@ -391,3 +391,20 @@
 {"type": "rename", "original_name": "ip_link_toggle", "timestamp": 1763412218.6124856, "new_name": "ip.link.toggle"}
 {"type": "skip", "original_name": "ipp", "timestamp": 1763412233.1759644}
 {"type": "skip", "original_name": "is_corrupt_media", "timestamp": 1763412248.290287}
+{"type": "rename", "original_name": "is_sparse_file", "timestamp": 1763413507.5314677, "new_name": "file.is.sparse"}
+{"type": "rename", "original_name": "is_vertical_video", "timestamp": 1763413521.6524334, "new_name": "video.is.vertical"}
+{"type": "rename", "original_name": "isparent", "timestamp": 1763413556.5153928, "new_name": "path.is.parent"}
+{"type": "skip", "original_name": "javtiful_links", "timestamp": 1763413590.8757107}
+{"type": "skip", "original_name": "javtiful_search", "timestamp": 1763413605.7997894}
+{"type": "skip", "original_name": "jo", "timestamp": 1763413967.0927606}
+{"type": "rename", "original_name": "jotree", "timestamp": 1763413972.3809888, "new_name": "jo.tree"}
+{"type": "rename", "original_name": "json-compress", "timestamp": 1763414051.359909, "new_name": "json.compact"}
+{"type": "rename", "original_name": "json-keys-count", "timestamp": 1763414073.3020244, "new_name": "json.keys.count"}
+{"type": "rename", "original_name": "json2yaml", "timestamp": 1763414081.841849, "new_name": "json.to.yaml"}
+{"type": "rename", "original_name": "json_filter_nulls", "timestamp": 1763414095.8672862, "new_name": "json.no.nulls"}
+{"type": "skip", "original_name": "keepaud", "timestamp": 1763414123.8312562}
+{"type": "rename", "original_name": "keepscreenoff", "timestamp": 1763414226.9269824, "new_name": "screen.blank"}
+{"type": "rename", "original_name": "keepscreenon", "timestamp": 1763414279.4818594, "new_name": "screen.blank.no"}
+{"type": "skip", "original_name": "keepvid", "timestamp": 1763414296.3706276}
+{"type": "rename", "original_name": "key-refresh-nomachine", "timestamp": 1763414322.6299405, "new_name": "key.refresh.nomachine"}
+{"type": "rename", "original_name": "key-refresh-ssh", "timestamp": 1763414340.4491768, "new_name": "key.refresh.ssh"}
