@@ -467,3 +467,36 @@
 {"type": "skip", "original_name": "lsof", "timestamp": 1763480291.9414785}
 {"type": "rename", "original_name": "lsof_fuser", "timestamp": 1763480310.1297243, "new_name": "lsof.fuser"}
 {"type": "rename", "original_name": "lsoff", "timestamp": 1763480364.763351, "new_name": "lsof.subfolder"}
+{"type": "rename", "original_name": "lswin", "timestamp": 1763481105.0055654, "new_name": "windows"}
+{"type": "rename", "original_name": "lt-dev", "timestamp": 1763481111.3412938, "new_name": "lt.dev"}
+{"type": "rename", "original_name": "lt-search", "timestamp": 1763481112.8293736, "new_name": "lt.search"}
+{"type": "rename", "original_name": "lt-start", "timestamp": 1763481113.8953822, "new_name": "lt.start"}
+{"type": "rename", "original_name": "lt-stop", "timestamp": 1763481116.3234744, "new_name": "lt.stop"}
+{"type": "rename", "original_name": "lt-toggle", "timestamp": 1763481129.7199028, "new_name": "lt.toggle"}
+{"type": "rename", "original_name": "lt-wakeup", "timestamp": 1763481133.3139615, "new_name": "lt.wakeup"}
+{"type": "skip", "original_name": "lt", "timestamp": 1763481135.2480276}
+{"type": "rename", "original_name": "lt_args", "timestamp": 1763481138.6241717, "new_name": "lt.args"}
+{"type": "skip", "original_name": "lta", "timestamp": 1763481144.0466495}
+{"type": "skip", "original_name": "ltd", "timestamp": 1763481192.4139447}
+{"type": "rename", "original_name": "mac_os_finder_cd", "timestamp": 1763481252.8276193, "new_name": "mac.os.finder.cd"}
+{"type": "skip", "original_name": "magnets", "timestamp": 1763481288.8029072}
+{"type": "rename", "original_name": "magnetsearch_1337", "timestamp": 1763481301.9170039, "new_name": "magnetsearch.1337"}
+{"type": "skip", "original_name": "makeValidFilename", "timestamp": 1763494877.922691}
+{"type": "rename", "original_name": "mam-promote", "timestamp": 1763494898.5652587, "new_name": "mam.promote"}
+{"type": "rename", "original_name": "mam_db_dl", "timestamp": 1763494902.431406, "new_name": "mam.db.dl"}
+{"type": "rename", "original_name": "mam_db_dl_query", "timestamp": 1763494920.477993, "new_name": "mam.db.dl.query"}
+{"type": "rename", "original_name": "mam_dl", "timestamp": 1763494924.1199815, "new_name": "mam.dl"}
+{"type": "skip", "original_name": "boot.windows", "timestamp": 1763494957.0934343}
+{"type": "rename", "original_name": "mam_search", "timestamp": 1763494978.0295446, "new_name": "mam.search"}
+{"type": "rename", "original_name": "mam_update", "timestamp": 1763494983.4977355, "new_name": "mam.update"}
+{"type": "skip", "original_name": "map", "timestamp": 1763495183.8339067}
+{"type": "rename", "original_name": "match-first-head", "timestamp": 1763496864.5167549, "new_name": "lines.until"}
+{"type": "rename", "original_name": "match-first-tail", "timestamp": 1763496943.8708134, "new_name": "lines.after"}
+{"type": "rename", "original_name": "match-last-head", "timestamp": 1763496950.4129264, "new_name": "lines.until.last"}
+{"type": "rename", "original_name": "match-last-tail", "timestamp": 1763496966.4721785, "new_name": "lines.after.last"}
+{"type": "rename", "original_name": "match-trunc-head", "timestamp": 1763497092.8813188, "new_name": "file.truncate.after"}
+{"type": "rename", "original_name": "match-trunc-tail", "timestamp": 1763497103.689356, "new_name": "file.truncate.until"}
+{"type": "skip", "original_name": "matchmv", "timestamp": 1763497219.4566386}
+{"type": "rename", "original_name": "maximize_all", "timestamp": 1763497230.0690203, "new_name": "windows.maximize.all"}
+{"type": "rename", "original_name": "maxmem10", "timestamp": 1763497253.0956569, "new_name": "run.mem10G"}
+{"type": "rename", "original_name": "maxmem10b", "timestamp": 1763497273.9203868, "new_name": "run.b.mem10G"}
