@@ -305,3 +305,4 @@ abbr -a -- connectpg portforward remote-address 5432
 abbr -a -- history.last history -1
 abbr -a -- dedupe unique
 abbr -a -- kill.jobs 'kill (jobs -p)'
+abbr -a -- loc allpc locate
