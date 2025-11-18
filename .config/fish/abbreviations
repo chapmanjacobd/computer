@@ -304,3 +304,4 @@ abbr -a -- chars wc -c
 abbr -a -- connectpg portforward remote-address 5432
 abbr -a -- history.last history -1
 abbr -a -- dedupe unique
+abbr -a -- kill.jobs 'kill (jobs -p)'

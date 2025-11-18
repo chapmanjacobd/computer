@@ -408,3 +408,39 @@
 {"type": "skip", "original_name": "keepvid", "timestamp": 1763414296.3706276}
 {"type": "rename", "original_name": "key-refresh-nomachine", "timestamp": 1763414322.6299405, "new_name": "key.refresh.nomachine"}
 {"type": "rename", "original_name": "key-refresh-ssh", "timestamp": 1763414340.4491768, "new_name": "key.refresh.ssh"}
+{"type": "rename", "original_name": "keyboard-repeat-char", "timestamp": 1763447195.2198439, "new_name": "input.key.repeat"}
+{"type": "rename", "original_name": "kill-on-port", "timestamp": 1763447210.772661, "new_name": "killport"}
+{"type": "skip", "original_name": "killjobs", "timestamp": 1763447398.1124246}
+{"type": "skip", "original_name": "killvpn", "timestamp": 1763447405.1124048}
+{"type": "skip", "original_name": "knowledge", "timestamp": 1763447417.6869593}
+{"type": "skip", "original_name": "html.titles", "timestamp": 1763472455.741195}
+{"type": "rename", "original_name": "krohnkite_off", "timestamp": 1763472462.5180721, "new_name": "krohnkite.off"}
+{"type": "rename", "original_name": "krohnkite_on", "timestamp": 1763472467.8362145, "new_name": "krohnkite.on"}
+{"type": "rename", "original_name": "krohnkite_toggle", "timestamp": 1763472470.2943301, "new_name": "krohnkite.toggle"}
+{"type": "rename", "original_name": "l", "timestamp": 1763472511.5792904, "new_name": "folders.tree.d2"}
+{"type": "skip", "original_name": "la", "timestamp": 1763472520.9474251}
+{"type": "rename", "original_name": "laptop", "timestamp": 1763472587.7855566, "new_name": "screen.virtual.laptop"}
+{"type": "rename", "original_name": "laptop2880", "timestamp": 1763472607.0192802, "new_name": "screen.virtual.2880"}
+{"type": "rename", "original_name": "last-function-name", "timestamp": 1763472663.3172123, "new_name": "commandline.last.cmd"}
+{"type": "rename", "original_name": "last_watched", "timestamp": 1763472714.7263014, "new_name": "wt.last"}
+{"type": "rename", "original_name": "lastconfigaccessed", "timestamp": 1763472850.6441824, "new_name": "files.modified.last"}
+{"type": "rename", "original_name": "lbformat", "timestamp": 1763473387.2925282, "new_name": "pyformat.all"}
+{"type": "rename", "original_name": "lb-dev", "timestamp": 1763474322.2011418, "new_name": "lb.dev"}
+{"type": "rename", "original_name": "lb-load", "timestamp": 1763474324.460885, "new_name": "lb.load"}
+{"type": "rename", "original_name": "lb-maintainence", "timestamp": 1763474325.6886663, "new_name": "lb.maintainence"}
+{"type": "rename", "original_name": "lb-rebuild-fts", "timestamp": 1763474327.6353521, "new_name": "lb.rebuild.fts"}
+{"type": "rename", "original_name": "lb-refresh", "timestamp": 1763474328.9652157, "new_name": "lb.refresh"}
+{"type": "rename", "original_name": "lbrelease", "timestamp": 1763474339.0012884, "new_name": "lb.release"}
+{"type": "rename", "original_name": "lbtest", "timestamp": 1763474343.6100602, "new_name": "lb.test"}
+{"type": "rename", "original_name": "lbupgrade", "timestamp": 1763474358.4076235, "new_name": "lb.upgrade"}
+{"type": "rename", "original_name": "len_bytes", "timestamp": 1763474364.3953629, "new_name": "len.bytes"}
+{"type": "rename", "original_name": "library-stats", "timestamp": 1763474599.326078, "new_name": "lb.stats"}
+{"type": "skip", "original_name": "limit", "timestamp": 1763476586.3858767}
+{"type": "skip", "original_name": "line", "timestamp": 1763476592.2580774}
+{"type": "rename", "original_name": "lines", "timestamp": 1763476609.926599, "new_name": "lines.count"}
+{"type": "skip", "original_name": "lines.folders", "timestamp": 1763476614.7893708}
+{"type": "rename", "original_name": "linetail", "timestamp": 1763476839.6992524, "new_name": "lines.rcolumn"}
+{"type": "rename", "original_name": "links-status", "timestamp": 1763476907.123181, "new_name": "links.db.stats"}
+{"type": "skip", "original_name": "ll", "timestamp": 1763476964.4328575}
+{"type": "rename", "original_name": "llm_pytest", "timestamp": 1763476981.0272584, "new_name": "llm.pytest"}
+{"type": "rename", "original_name": "llm_python", "timestamp": 1763476982.3936002, "new_name": "llm.python"}

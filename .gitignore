@@ -90,6 +90,9 @@
 /.config/fish/functions/load_build_env.fish
 /.config/fish/functions/load_env_*
 /.config/fish/functions/priv-*
+/.config/fish/functions/load.build.env.fish
+/.config/fish/functions/load.env.*
+/.config/fish/functions/priv.*
 /.config/fish/functions/mega.fish
 /.config/fish/functions/_autopair*
 /.config/fish/functions/_fzf*

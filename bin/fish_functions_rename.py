@@ -118,17 +118,20 @@ def process_functions(args):
         print()
         print(description)
 
-        new_name = input(f"Enter new name (or skip): ").strip()
+        new_name = input(f"Enter new name: ").strip()
+        if not new_name:
+            new_name = original_name.replace("-", ".").replace("_", ".")
+        elif new_name != original_name:
+            new_name = new_name.replace("-", ".").replace("_", ".")
 
-        if new_name and new_name != original_name:
-            new_name.replace("-", ".").replace("_", ".")
+        if new_name == original_name:
+            save_rename_entry(original_name, "", "skip", args)
+            print("[SKIP] No new name entered. Logged as skip.")
+        else:
             command = f"funcmv {original_name} {new_name}"
             funcmv_commands.append(command)
 
             save_rename_entry(original_name, new_name, "rename", args)
-        else:
-            save_rename_entry(original_name, "", "skip", args)
-            print("[SKIP] No new name entered. Logged as skip.")
 
     if funcmv_commands:
         print("\n" + "=" * 50)
