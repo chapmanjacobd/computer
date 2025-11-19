@@ -26,8 +26,11 @@ function lbrelease --argument newver
     if gum confirm --default=no
         allpc pip install --upgrade pip
         pip install --upgrade pip pdm
+
         pdm lock --group deluxe,test
+        git add pdm.lock
         git commit -m "$newver"
+
         git pull
         git push
         git tag -a "v$newver" && git push --tags
