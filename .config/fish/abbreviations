@@ -284,7 +284,6 @@ abbr -a -- exts 'ext | asc'
 abbr -a -- cv 'check_local_video (cb | unquote)'
 abbr -a -- cl 'check_local (cb | unquote)'
 abbr -a -- perftop sudo perf top
-abbr -a -- torrent lb-dev torrents-dump
 abbr -a -- catbin typebin
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
 abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
@@ -308,3 +307,6 @@ abbr -a -- kill.jobs 'kill (jobs -p)'
 abbr -a -- loc allpc locate
 abbr -a -- lta ltd
 abbr -a -- grepmv 'mv (rg -i --files-with-matches src) dest'
+abbr -a -- now lb now
+abbr -a -- next lb next
+abbr -a -- torrent lb torrents-dump

@@ -557,3 +557,12 @@
 {"type": "rename", "original_name": "non_alpha", "timestamp": 1763502444.0596316, "new_name": "chars.no.alpha"}
 {"type": "rename", "original_name": "noonday", "timestamp": 1763502469.9912562, "new_name": "noon"}
 {"type": "rename", "original_name": "noswap", "timestamp": 1763502478.4165223, "new_name": "run.noswap"}
+{"type": "rename", "original_name": "not-fish", "timestamp": 1763597236.640461, "new_name": "prompt.minimal"}
+{"type": "rename", "original_name": "not_exists", "timestamp": 1763597254.758619, "new_name": "paths.exists.no"}
+{"type": "rename", "original_name": "not_in", "timestamp": 1763597353.817845, "new_name": "lines.not.in.file"}
+{"type": "rename", "original_name": "now_playing", "timestamp": 1763597378.338687, "new_name": "now"}
+{"type": "skip", "original_name": "o", "timestamp": 1763597433.7178655}
+{"type": "skip", "original_name": "offset", "timestamp": 1763597491.2896585}
+{"type": "skip", "original_name": "onejav", "timestamp": 1763597507.7044291}
+{"type": "rename", "original_name": "only-duplicates", "timestamp": 1763657034.0117548, "new_name": "lines.duplicates"}
+{"type": "rename", "original_name": "openfiles", "timestamp": 1763657075.8390694, "new_name": "paths.is.open"}
