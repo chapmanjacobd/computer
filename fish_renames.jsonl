@@ -566,3 +566,35 @@
 {"type": "skip", "original_name": "onejav", "timestamp": 1763597507.7044291}
 {"type": "rename", "original_name": "only-duplicates", "timestamp": 1763657034.0117548, "new_name": "lines.duplicates"}
 {"type": "rename", "original_name": "openfiles", "timestamp": 1763657075.8390694, "new_name": "paths.is.open"}
+{"type": "rename", "original_name": "openlinks", "timestamp": 1763707215.9919505, "new_name": "file.urls.open"}
+{"type": "rename", "original_name": "openmctabs", "timestamp": 1763707247.0674622, "new_name": "mc.links.open"}
+{"type": "rename", "original_name": "organize_audio_in_video", "timestamp": 1763707745.1072152, "new_name": "organize.audio.in.video"}
+{"type": "rename", "original_name": "par", "timestamp": 1763707781.2944958, "new_name": "eval.par"}
+{"type": "rename", "original_name": "parallel-stop", "timestamp": 1763707801.619436, "new_name": "parallel.stop"}
+{"type": "skip", "original_name": "parentname", "timestamp": 1763707832.5796773}
+{"type": "rename", "original_name": "path_explode", "timestamp": 1763707853.9463828, "new_name": "path.explode"}
+{"type": "rename", "original_name": "path_validate", "timestamp": 1763707873.8993142, "new_name": "path.validate"}
+{"type": "skip", "original_name": "pchildren", "timestamp": 1763707878.8308403}
+{"type": "rename", "original_name": "pcwd", "timestamp": 1763707899.4142427, "new_name": "ps.cwd"}
+{"type": "rename", "original_name": "pdfsmall", "timestamp": 1763707972.605574, "new_name": "pdf.shrink"}
+{"type": "rename", "original_name": "pdfsmall_grey", "timestamp": 1763707985.012744, "new_name": "pdf.shrink.grey"}
+{"type": "rename", "original_name": "pdfsmaller", "timestamp": 1763708002.0072186, "new_name": "pdf.shrink2"}
+{"type": "skip", "original_name": "autosuggest", "timestamp": 1763708198.0090585}
+{"type": "skip", "original_name": "autosuggest.no", "timestamp": 1763708198.7132504}
+{"type": "rename", "original_name": "per_line_stdin", "timestamp": 1763708292.774542, "new_name": "lines.eval.split"}
+{"type": "skip", "original_name": "percent", "timestamp": 1763708328.907065}
+{"type": "rename", "original_name": "percent_from_float", "timestamp": 1763708349.36672, "new_name": "percent.from.float"}
+{"type": "rename", "original_name": "pgrep-children", "timestamp": 1763708383.664407, "new_name": "pgrep.children"}
+{"type": "rename", "original_name": "pick_window", "timestamp": 1763708418.3081954, "new_name": "windows.fzf"}
+{"type": "rename", "original_name": "pipe_code", "timestamp": 1763708475.3617702, "new_name": "tee.code"}
+{"type": "skip", "original_name": "pipinstall", "timestamp": 1763708495.328609}
+{"type": "skip", "original_name": "pipuninstall", "timestamp": 1763708496.4686399}
+{"type": "skip", "original_name": "pkill", "timestamp": 1763708511.7272298}
+{"type": "rename", "original_name": "pkilldaemon", "timestamp": 1763708591.3329337, "new_name": "pkill.daemon"}
+{"type": "rename", "original_name": "podman-compose-cleanup", "timestamp": 1763708620.107608, "new_name": "podman.compose.cleanup"}
+{"type": "rename", "original_name": "popline", "timestamp": 1763708640.8260386, "new_name": "file.line.pop"}
+{"type": "rename", "original_name": "poplinehead", "timestamp": 1763709764.0787337, "new_name": "file.line.popleft"}
+{"type": "skip", "original_name": "port", "timestamp": 1763709788.7072012}
+{"type": "skip", "original_name": "portforward", "timestamp": 1763709791.764865}
+{"type": "skip", "original_name": "portuser", "timestamp": 1763709795.0531957}
+{"type": "skip", "original_name": "pparent", "timestamp": 1763709802.4171066}

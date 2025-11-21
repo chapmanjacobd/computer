@@ -1,3 +1,4 @@
+/.config/gcloud/boto
 /.deno/bin/
 /.dolt/
 /.config/Raspberry Pi/
@@ -60,7 +61,7 @@
 /*.hevc
 /*.srt
 /.*fakexinerama
-/.aws
+/.config/aws
 /.bash_history
 /.bigqueryrc
 /.boto
@@ -206,7 +207,7 @@
 /.config/xpra/
 /.config/zoom.conf
 /.config/zoomus.conf
-/.docker/
+/.config/docker
 /.dotnet
 /.dub/
 /.duckdb_history
@@ -217,8 +218,8 @@
 /.gsutil/
 /.gtk-bookmarks
 /.icons/
-/.ipython/profile_default/db/
-/.ipython/profile_default/history.sqlite
+/.config/ipython/profile_default/db/
+/.config/ipython/profile_default/history.sqlite
 /.java/
 /.jkiss-lm/dbeaver-ee.lic
 /.jobs/
@@ -255,8 +256,8 @@
 /.octosql/
 /.openai-api-key.txt
 /.osquery/.history
-/.parallel/semaphores/
-/.parallel/tmp/
+/.config/parallel/semaphores/
+/.config/parallel/tmp/
 /.pdbhistory
 /.pki/
 /.projectM/playlist
@@ -272,7 +273,7 @@
 /.sqlite_history
 /.ssh/
 /.sshuttle.hosts
-/.ssr/
+/.config/simplescreenrecorder/logs/
 /.steam/
 /.steampath
 /.steampid

@@ -19,6 +19,7 @@ if [ -f /home/xk/.tnsrc ]; then
 fi
 ###-tns-completion-end-###
 
+export HISTFILE="${XDG_STATE_HOME}"/bash/history
 export LESSCHARSET=utf-8
 shopt -s histappend
 shopt -s cmdhist

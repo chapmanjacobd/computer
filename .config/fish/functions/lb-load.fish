@@ -30,4 +30,10 @@ function lb-load
 
         lb mv --ext mka,mp3,oga,opus $d/check/porn/video/ $d/dump/porn/image/ /mnt/d/dump/porn/audio/from_video/
     end
+
+    lb fs ~/lb/fs/video.db -w 'video_count=0 and audio_count>=1' -pf | parallel lb relmv {} ~/d/dump/audio/from_video/
+    lb fs ~/lb/fs/video.db -w 'video_count>=1 and audio_count=0' -pf | parallel lb relmv {} ~/d/dump/image/gifs/from_video/
+
+    lb fs ~/lb/fs/tax.db -w 'video_count=0 and audio_count>=1' -pf | parallel lb relmv {} ~/d/dump/porn/audio/from_video/
+    lb fs ~/lb/fs/tax.db -w 'video_count>=1 and audio_count=0' -pf | parallel lb relmv {} ~/d/dump/porn/image/gifs/from_video/
 end

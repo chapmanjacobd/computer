@@ -10,13 +10,13 @@
     #useForceIfIncludes = true
 [core]
     pager = delta --syntax-theme GitHub --max-line-length 1024  # --keep-plus-minus-markers
-    excludesfile = /home/xk/.gitignore_global
+    excludesfile = /home/xk/.config/git/ignore
     preloadindex = true
     fscache = true
     eol = lf
     autocrlf = false
     logallrefupdates = true
-    attributesfile = /home/xk/.gitattributes_global
+    attributesfile = /home/xk/.config/git/attributes
 [transfer]
     fsckobjects = true
 [fetch]

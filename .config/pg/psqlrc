@@ -1,3 +1,21 @@
+select :'PROMPT1'='%/%R%x%# ' as default_prompt \gset
+\if :default_prompt
+  \set PROMPT1 '(%:ROW_COUNT:)%R%# '
+\endif
+
+\set QUIET                                    \\-- Don't print welcome message etc.
+\set HISTFILE ~/.cache/psql-history- :DBNAME  \\-- Keep history per database
+\set HISTSIZE          -1                     \\-- Infinite history
+\set HISTCONTROL       ignoredups             \\-- Don't store duplicates in history
+\set PROMPT2           '%R%# '                \\-- No database name in the line continuation prompt.
+\set COMP_KEYWORD_CASE lower                  \\-- Complete keywords to lower case.
+\pset linestyle        unicode                \\-- Nicely formatted tables.
+\pset footer           off                    \\-- Don't display "(n rows)" at the end of the table.
+\pset null             '<NULL>'                 \\-- Display null values as NULL
+\timing                on                     \\-- Show query timings
+\set pretty '\\pset numericlocale'
+\pset pager 'less -S'
+#\pset pager off
 \set QUIET 1
 -- By default, NULL displays as an empty space. Is it actually an empty
 -- string, or is it null? This makes that distinction visible.
