@@ -598,3 +598,107 @@
 {"type": "skip", "original_name": "portforward", "timestamp": 1763709791.764865}
 {"type": "skip", "original_name": "portuser", "timestamp": 1763709795.0531957}
 {"type": "skip", "original_name": "pparent", "timestamp": 1763709802.4171066}
+{"type": "rename", "original_name": "ppause-fzf", "timestamp": 1763851190.2911391, "new_name": "ps.fzf.pause"}
+{"type": "rename", "original_name": "ppause", "timestamp": 1763851208.4595037, "new_name": "ps.pause"}
+{"type": "rename", "original_name": "ppaused", "timestamp": 1763851211.7942822, "new_name": "ps.paused"}
+{"type": "rename", "original_name": "pperf", "timestamp": 1763851220.1027684, "new_name": "ps.perf"}
+{"type": "rename", "original_name": "prefix", "timestamp": 1763851226.4659877, "new_name": "lines.prefix"}
+{"type": "rename", "original_name": "prepend", "timestamp": 1763851238.6373107, "new_name": "file.prepend"}
+{"type": "rename", "original_name": "preserve_titles", "timestamp": 1763851489.8292587, "new_name": "file.urls.titles.preserve"}
+{"type": "rename", "original_name": "presume-all", "timestamp": 1763851499.2255805, "new_name": "ps.resume.all"}
+{"type": "rename", "original_name": "presume-fzf", "timestamp": 1763851504.0236838, "new_name": "ps.fzf.resume"}
+{"type": "rename", "original_name": "presume", "timestamp": 1763851511.0100498, "new_name": "ps.resume"}
+{"type": "rename", "original_name": "previousdiff", "timestamp": 1763852344.0318856, "new_name": "diff.prior"}
+{"type": "rename", "original_name": "print-a4", "timestamp": 1763852376.0667806, "new_name": "image.to.pdf.a4"}
+{"type": "rename", "original_name": "print-env-vars", "timestamp": 1763852520.3056989, "new_name": "print.env.vars"}
+{"type": "skip", "original_name": "print", "timestamp": 1763852522.7736237}
+{"type": "rename", "original_name": "printnew", "timestamp": 1763852683.2594092, "new_name": "repeat.new"}
+{"type": "rename", "original_name": "priv-allocate-torrents", "timestamp": 1763852693.8559618, "new_name": "priv.allocate.torrents"}
+{"type": "rename", "original_name": "priv-daily", "timestamp": 1763852706.41956, "new_name": "priv.daily"}
+{"type": "rename", "original_name": "priv-start-r730xd", "timestamp": 1763852724.3141773, "new_name": "priv.start.r730xd"}
+{"type": "rename", "original_name": "proc.children", "timestamp": 1763854296.3380065, "new_name": "ps.children"}
+{"type": "rename", "original_name": "process_audio", "timestamp": 1763854308.0320766, "new_name": "audio.process"}
+{"type": "rename", "original_name": "process_media", "timestamp": 1763854311.282467, "new_name": "media.process"}
+{"type": "rename", "original_name": "processes.fzf", "timestamp": 1763854321.8588161, "new_name": "ps.fzf"}
+{"type": "rename", "original_name": "pscmd", "timestamp": 1763854327.912863, "new_name": "ps.cmd"}
+{"type": "rename", "original_name": "psd", "timestamp": 1763854711.1479344, "new_name": "ps.blocked"}
+{"type": "skip", "original_name": "pservice", "timestamp": 1763855113.8950737}
+{"type": "rename", "original_name": "pss", "timestamp": 1763855133.0810783, "new_name": "ps.all"}
+{"type": "skip", "original_name": "pstop", "timestamp": 1763855157.6739912}
+{"type": "rename", "original_name": "ptail", "timestamp": 1763855177.8188562, "new_name": "ps.tail"}
+{"type": "rename", "original_name": "pulumi-cp-secret", "timestamp": 1763855364.3672612, "new_name": "pulumi.secret.copy"}
+{"type": "rename", "original_name": "py_stat", "timestamp": 1763855427.4329376, "new_name": "stat.py"}
+{"type": "skip", "original_name": "pyformat", "timestamp": 1763855429.5348027}
+{"type": "rename", "original_name": "pyformat88", "timestamp": 1763855436.3809783, "new_name": "pyformat.88"}
+{"type": "rename", "original_name": "qbt-queue", "timestamp": 1763855444.6494246, "new_name": "qbt.queue"}
+{"type": "rename", "original_name": "qbt-unqueue", "timestamp": 1763855445.6274621, "new_name": "qbt.unqueue"}
+{"type": "rename", "original_name": "qbt-unseed", "timestamp": 1763855446.3095393, "new_name": "qbt.unseed"}
+{"type": "skip", "original_name": "qdbus", "timestamp": 1763855449.1754916}
+{"type": "rename", "original_name": "quote_cmd", "timestamp": 1763857238.0896406, "new_name": "cmd.quote"}
+{"type": "skip", "original_name": "r", "timestamp": 1763857240.907728}
+{"type": "rename", "original_name": "rand_block_prefix", "timestamp": 1763857266.9285607, "new_name": "random.block"}
+{"type": "rename", "original_name": "rand_emoji", "timestamp": 1763857271.1047573, "new_name": "random.emoji"}
+{"type": "rename", "original_name": "randaud", "timestamp": 1763857284.6553426, "new_name": "audio.random"}
+{"type": "skip", "original_name": "randmusic", "timestamp": 1763857333.3123431}
+{"type": "rename", "original_name": "random-file", "timestamp": 1763857361.9951563, "new_name": "file.random"}
+{"type": "rename", "original_name": "random-filename", "timestamp": 1763857697.4852357, "new_name": "path.new"}
+{"type": "skip", "original_name": "randomFilePaths", "timestamp": 1763857718.957916}
+{"type": "rename", "original_name": "randomPhoto", "timestamp": 1763857746.7305446, "new_name": "image.slideshow"}
+{"type": "rename", "original_name": "random_choice", "timestamp": 1763857777.7995489, "new_name": "random.status"}
+{"type": "rename", "original_name": "random_string", "timestamp": 1763857790.2341232, "new_name": "chars.random"}
+{"type": "rename", "original_name": "random_thousanths", "timestamp": 1763857807.3346484, "new_name": "random.float"}
+{"type": "rename", "original_name": "randvid", "timestamp": 1763857822.7127507, "new_name": "video.random"}
+{"type": "skip", "original_name": "rdp", "timestamp": 1763857825.2687252}
+{"type": "rename", "original_name": "rdp_headless", "timestamp": 1763857831.4489746, "new_name": "rdp.headless"}
+{"type": "skip", "original_name": "rdpserve", "timestamp": 1763857833.1048243}
+{"type": "rename", "original_name": "rebase-reword", "timestamp": 1763857852.8437154, "new_name": "rebase.reword"}
+{"type": "skip", "original_name": "reboot", "timestamp": 1763857890.274961}
+{"type": "rename", "original_name": "recommendations_html", "timestamp": 1763857951.8566658, "new_name": "cb.html.plaintext"}
+{"type": "rename", "original_name": "redarc_audio", "timestamp": 1763857969.865192, "new_name": "redarc.audio"}
+{"type": "rename", "original_name": "redarc_gifs", "timestamp": 1763857971.1329598, "new_name": "redarc.gifs"}
+{"type": "rename", "original_name": "redarc_pics", "timestamp": 1763857972.1494172, "new_name": "redarc.pics"}
+{"type": "rename", "original_name": "redarc_site_search", "timestamp": 1763857978.1496031, "new_name": "redarc.site.search"}
+{"type": "rename", "original_name": "redarc_video", "timestamp": 1763857979.4915955, "new_name": "redarc.video"}
+{"type": "skip", "original_name": "redditadd", "timestamp": 1763857983.0893927}
+{"type": "rename", "original_name": "referer", "timestamp": 1763858014.0001307, "new_name": "logs.nginx.referer"}
+{"type": "skip", "original_name": "refreshLibraryPakon", "timestamp": 1763858035.2531328}
+{"type": "skip", "original_name": "regex", "timestamp": 1763858039.9133987}
+{"type": "skip", "original_name": "relax", "timestamp": 1763859403.4808018}
+{"type": "rename", "original_name": "relaxkeep", "timestamp": 1763859407.752591, "new_name": "relax.keep"}
+{"type": "rename", "original_name": "relaxvid", "timestamp": 1763859411.9372838, "new_name": "relax.video"}
+{"type": "rename", "original_name": "relaxvidd", "timestamp": 1763859461.662521, "new_name": "relax.video.multi"}
+{"type": "skip", "original_name": "remount", "timestamp": 1763859478.1134174}
+{"type": "rename", "original_name": "remove-broken-symlinks", "timestamp": 1763859696.1032767, "new_name": "remove.broken.symlinks"}
+{"type": "skip", "original_name": "renamed", "timestamp": 1763859709.0418475}
+{"type": "skip", "original_name": "repeat", "timestamp": 1763859712.1500998}
+{"type": "rename", "original_name": "repeatdelay", "timestamp": 1763859717.4859858, "new_name": "repeat.delay"}
+{"type": "skip", "original_name": "repeatn", "timestamp": 1763859839.8074358}
+{"type": "rename", "original_name": "repeatslowly", "timestamp": 1763859848.729527, "new_name": "repeat.slowly"}
+{"type": "skip", "original_name": "replaceExt", "timestamp": 1763859873.742607}
+{"type": "rename", "original_name": "reset-amdgpu", "timestamp": 1763859887.368681, "new_name": "gpu.reset"}
+{"type": "rename", "original_name": "reset-display-len", "timestamp": 1763859912.773531, "new_name": "display.len.reset"}
+{"type": "skip", "original_name": "resolution", "timestamp": 1763859918.7434018}
+{"type": "skip", "original_name": "rest", "timestamp": 1763859920.4295204}
+{"type": "rename", "original_name": "restartplasma", "timestamp": 1763859997.789808, "new_name": "kde.reset"}
+{"type": "rename", "original_name": "restore_undermount_files", "timestamp": 1763865118.9186332, "new_name": "d.files.undermounted"}
+{"type": "rename", "original_name": "restorechmod", "timestamp": 1763865132.7130322, "new_name": "chmod.reset"}
+{"type": "rename", "original_name": "resume-edit", "timestamp": 1763865164.9201753, "new_name": "resume.edit"}
+{"type": "rename", "original_name": "rgf", "timestamp": 1763865198.75911, "new_name": "search.text.paths"}
+{"type": "skip", "original_name": "goinstall", "timestamp": 1763865224.061449}
+{"type": "rename", "original_name": "rightsort", "timestamp": 1763865268.5415082, "new_name": "sort.right"}
+{"type": "rename", "original_name": "ripcd", "timestamp": 1763865330.608785, "new_name": "cd.audio.dump"}
+{"type": "rename", "original_name": "ro_mounts", "timestamp": 1763865357.1478696, "new_name": "mount.ro"}
+{"type": "rename", "original_name": "roman", "timestamp": 1763865376.70631, "new_name": "number.to.roman"}
+{"type": "skip", "original_name": "row", "timestamp": 1763865382.1605663}
+{"type": "rename", "original_name": "rpmsize", "timestamp": 1763865394.3210335, "new_name": "rpm.size"}
+{"type": "rename", "original_name": "rsink", "timestamp": 1763865453.604182, "new_name": "rsync.stdin"}
+{"type": "skip", "original_name": "run", "timestamp": 1763865455.6166348}
+{"type": "skip", "original_name": "s", "timestamp": 1763865458.9686575}
+{"type": "skip", "original_name": "scandb", "timestamp": 1763865463.9647412}
+{"type": "skip", "original_name": "scatter", "timestamp": 1763865520.8562083}
+{"type": "skip", "original_name": "scr", "timestamp": 1763865539.8708706}
+{"type": "rename", "original_name": "screen-reset", "timestamp": 1763865555.6632516, "new_name": "xcalib.reset"}
+{"type": "rename", "original_name": "screendim", "timestamp": 1763865564.3516688, "new_name": "xcalib.dim"}
+{"type": "rename", "original_name": "screenheight", "timestamp": 1763865587.3242052, "new_name": "resolution.height"}
+{"type": "rename", "original_name": "screenoff", "timestamp": 1763865598.830849, "new_name": "screen.off"}
+{"type": "rename", "original_name": "screenon", "timestamp": 1763865603.1164856, "new_name": "screen.on"}

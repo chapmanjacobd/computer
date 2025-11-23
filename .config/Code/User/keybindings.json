@@ -1,6 +1,10 @@
 // Place your key bindings in this file to override the defaults
 [
   {
+    "key": "ctrl+`",
+    "command": "workbench.action.toggleZenMode"
+  },
+  {
     "key": "ctrl+alt+enter",
     "command": "workbench.action.terminal.runSelectedText"
   },

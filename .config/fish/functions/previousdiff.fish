@@ -4,7 +4,7 @@ function previousdiff --argument name
     set current_output /tmp/cmd_diff_2_$name
     set previous_output /tmp/cmd_diff_1_$name
 
-    cat /dev/stdin >$current_output
+    tee >$current_output
 
     if test -e $previous_output
         delta --syntax-theme GitHub --max-line-length 1024 --pager no $argv[2] $previous_output $current_output

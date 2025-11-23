@@ -12,7 +12,7 @@ BIGKEY=0        # usually you dont have to touch this
 
 # Read from stdin hack
 if [ -z "$*" ]; then
-    SUM=$(cat /dev/stdin)
+    SUM=$(tee)
 fi
     
 ### Scaling and environment analysis for optimal output on 

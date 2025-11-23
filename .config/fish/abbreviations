@@ -28,7 +28,6 @@ abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
 abbr -a -- mvl 'mvl -s""'
 abbr -a -- ncdu 'NO_COLOR=1 ncdu'
-abbr -a -- p 'pipenv shell'
 abbr -a -- pgrep 'pgrep -fa'
 abbr -a -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'
 abbr -a -- q exit
@@ -310,3 +309,9 @@ abbr -a -- grepmv 'mv (rg -i --files-with-matches src) dest'
 abbr -a -- now lb now
 abbr -a -- next lb next
 abbr -a -- torrent lb torrents-dump
+abbr -a -- p systemctl status
+abbr -a -- pu systemctl status --user
+abbr -a -- reboot sudo systemctl reboot
+abbr -a -- remount sudo mount -o remount
+abbr -a -- folders.empty.delete find . -type d -empty -delete
+abbr -a -- symlinks.dangling.delete sudo symlinks -r -d .
