@@ -16,6 +16,9 @@ function _exec_with_prefix
         return
     end
 
-    commandline "$COMMAND_PREFIX $cmd"
-    commandline -f execute
+    history append $cmd
+    echo
+    eval $COMMAND_PREFIX $cmd
+    commandline ''
+    commandline -f repaint
 end

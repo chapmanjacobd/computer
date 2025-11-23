@@ -69,15 +69,9 @@ function fish_prompt --description 'Write out the prompt'
     set -q VIRTUAL_ENV
     and set -l venv (echo $VIRTUAL_ENV | md5sum | md5sum | string sub -l 4)
 
-    set -l duration "$cmd_duration$CMD_DURATION"
-    if test $duration -gt 300
-        set duration (math -s1 $duration / 1000)s
-    else
-        set duration
-    end
-
-    if test -n "$duration"
-        printf '%s %s \n' (date '+%H%M') $duration
+    if set -q CMD_DURATION; and test $CMD_DURATION -gt 300
+        printf '%s %s \n' (date '+%H%M') (math -s1 $CMD_DURATION / 1000)s
+        set -e CMD_DURATION
     end
 
     set battery_percentage (low_battery_percent)
