@@ -317,3 +317,5 @@ abbr -a -- folders.empty.delete find . -type d -empty -delete
 abbr -a -- symlinks.dangling.delete sudo symlinks -r -d .
 abbr -a -- rpmfiles rpmquery -ql
 abbr -a -- boottime systemd-analyze critical-chain --no-pager
+abbr -a -- pu.time systemd-analyze --user blame
+abbr -a -- p.time systemd-analyze blame

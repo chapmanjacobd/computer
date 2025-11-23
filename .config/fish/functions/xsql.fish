@@ -1,4 +1,4 @@
 # Defined interactively
 function xsql
-    parallel lb fs {} -pf -s "$argv" ::: ~/disks/*/*.db
+    parallel lb fs {} -pf -s "$argv" ::: ~/disks/*/*.fs.db
 end
