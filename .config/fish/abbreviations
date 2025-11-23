@@ -315,3 +315,4 @@ abbr -a -- reboot sudo systemctl reboot
 abbr -a -- remount sudo mount -o remount
 abbr -a -- folders.empty.delete find . -type d -empty -delete
 abbr -a -- symlinks.dangling.delete sudo symlinks -r -d .
+abbr -a -- rpmfiles rpmquery -ql

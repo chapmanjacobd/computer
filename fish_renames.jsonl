@@ -702,3 +702,4 @@
 {"type": "rename", "original_name": "screenheight", "timestamp": 1763865587.3242052, "new_name": "resolution.height"}
 {"type": "rename", "original_name": "screenoff", "timestamp": 1763865598.830849, "new_name": "screen.off"}
 {"type": "rename", "original_name": "screenon", "timestamp": 1763865603.1164856, "new_name": "screen.on"}
+{"type": "rename", "original_name": "screenshot-satellite", "timestamp": 1763865713.8120983, "new_name": "screenshot.satellite"}

@@ -100,7 +100,7 @@ iftop
 igt-gpu-tools
 ImageMagick-devel
 ImageMagick-heic
-iotop
+iotop-c
 iperf3
 ipmitool
 java-latest-openjdk
@@ -152,6 +152,7 @@ meson
 mhonarc
 miniupnpc
 mktorrent
+mold
 moreutils
 mpv
 mpv-devel
@@ -230,6 +231,7 @@ rtorrent
 rust-src
 rustfmt
 scantailor
+sccache
 scrot
 sed
 sg3_utils

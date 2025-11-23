@@ -9,4 +9,5 @@ github.com/mikefarah/yq/v4@latest
 github.com/tdewolff/minify/v2/cmd/minify@latest
 github.com/x-motemen/gore/cmd/gore@latest
 golang.org/x/tools/cmd/goimports@latest
+honnef.co/go/tools/cmd/staticcheck@latest
 mvdan.cc/gofumpt@latest
