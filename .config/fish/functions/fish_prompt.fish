@@ -76,18 +76,22 @@ function fish_prompt --description 'Write out the prompt'
         set duration
     end
 
+    if test -n "$duration"
+        printf '%s %s \n' (date '+%H%M') $duration
+    end
+
     set battery_percentage (low_battery_percent)
     if test -n "$battery_percentage"
         echo -n "$battery_percentage "
     end
 
     set_color $color_host
-    if test -n "$duration"
-        printf '%s ' (date '+%H%M')
-    else if set -q venv
-        printf '(%s) ' $venv
+    if set -q venv
+        printf '(%s) ' "$venv"
     else if set -q CONTAINER_ID
-        printf '(%s) ' $CONTAINER_ID
+        printf '(%s) ' "$CONTAINER_ID"
+    else if set -q COMMAND_PREFIX
+        printf '(%s) ' "$COMMAND_PREFIX"
     else
         printf (rand_block_prefix)
         printf (rand_block_prefix)
@@ -96,10 +100,6 @@ function fish_prompt --description 'Write out the prompt'
         printf ' '
     end
     set_color normal
-
-    if test -n "$duration"
-        printf '%s ' $duration
-    end
 
     set -l color_cwd
     set -l prefix
