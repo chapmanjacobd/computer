@@ -1,5 +1,5 @@
 function mam.promote -a max
-    load_env_mam
+    load.env.mam
 
     ~/lb/
     if test $max -gt 0

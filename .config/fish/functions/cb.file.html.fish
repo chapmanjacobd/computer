@@ -1,4 +1,4 @@
 # Defined interactively
-function cb_htmlfile
+function cb.file.html
     cb -t text/html | psub
 end

@@ -1,5 +1,5 @@
 # Defined in /home/xk/.config/fish/functions/morganize-all.fish @ line 1
-function morganize-all
+function morganize.all
     for f in ~/.config/fish/functions/*.fish
         fish_indent -w $f
     end

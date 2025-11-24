@@ -1,6 +1,6 @@
 function mam.update
     ~/lb/
-    load_env_mam
+    load.env.mam
 
     python ~/bin/mam_search.py --audiobooks --books --radio --cookie $MAM_COOKIE ~/lb/sites/mam/mam.db BBC R4
     for q in (cat ~/j/lists/publishers.list)

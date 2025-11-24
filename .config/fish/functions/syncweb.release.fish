@@ -6,7 +6,7 @@ function syncweb.release --argument-names newver
 
     sed -i "s|$oldver|$newver|" syncweb/__main__.py
 
-    lbformat
+    pyformat.all
 
     git add .
     rg -i --no-heading todo:

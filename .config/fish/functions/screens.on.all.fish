@@ -1,5 +1,5 @@
 # Defined interactively
-function allscreens
+function screens.on.all
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
         kscreen-doctor output.DisplayPort-0.enable output.HDMI-A-0.enable output.DVI-D-0.enable
     else

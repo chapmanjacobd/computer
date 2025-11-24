@@ -9,7 +9,7 @@ function lb.release --argument newver
     rg db.execute
 
     ruff check . --select A001 --select A002 --select S110
-    lbformat
+    pyformat.all
 
     rg -i --no-heading --no-line-number --fixed-strings -j1 ', 0)' | grep -ivE 'coalesce|noqa'
     python -m library.readme >.github/README.md

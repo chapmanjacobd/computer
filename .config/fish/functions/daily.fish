@@ -32,7 +32,7 @@ function daily
     file.urls.titles.preserve
     git add .
     url_files_web_titles.py (url_files)
-    morganize-all
+    morganize.all
 
     # library download ~/lb/dl/audio.db --audio --prefix /mnt/d/dump/audio/ -w m.time_modified=0
 

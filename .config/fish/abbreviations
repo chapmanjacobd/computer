@@ -244,7 +244,7 @@ abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- tr trU
-abbr -a -- html_table 'lb tables --type html (cb_htmlfile)'
+abbr -a -- html_table 'lb tables --type html (cb.file.html)'
 abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
@@ -605,3 +605,23 @@ abbr -a -- presume-all ps.resume.all
 abbr -a -- trash-restore-all trash.restore.all
 abbr -a -- minimize_all windows.minimize.all
 abbr -a -- maximize_all windows.maximize.all
+abbr -a -- morganize-all morganize.all
+abbr -a -- sqlall sql.all
+abbr -a -- allscreens screens.on.all
+abbr -a -- pss ps.all
+abbr -a -- lbformat pyformat.all
+abbr -a -- smalldpi system.dpi.small
+abbr -a -- json2yaml json.to.yaml
+abbr -a -- cb_append_html cb.append.html
+abbr -a -- cb_htmlfile cb.file.html
+abbr -a -- vpn_nl vpn.nl
+abbr -a -- git-eol-reset git.reset.eol
+abbr -a -- ansible-repl ansible.repl
+abbr -a -- ytm.url yt.print.url
+abbr -a -- gitupstream git.upstream
+abbr -a -- mam_dl dl.mam
+abbr -a -- load_env_mam load.env.mam
+abbr -a -- to_insta video.to.instagram
+abbr -a -- screendim xcalib.dim
+abbr -a -- random-file file.random
+abbr -a -- skipthrough mpv.seek.random

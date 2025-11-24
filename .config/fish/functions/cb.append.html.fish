@@ -1,5 +1,5 @@
 # Defined via `source`
-function cb_append_html
+function cb.append.html
     set temp_file (mktemp -t 'cb_append_XXXXXX.html')
     echo "$temp_file" >&2
 

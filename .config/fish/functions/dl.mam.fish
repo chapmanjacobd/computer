@@ -1,6 +1,6 @@
 # Defined via `source`
-function mam_dl
-    load_env_mam
+function dl.mam
+    load.env.mam
     ~/Downloads/
     for id in $argv
         set id (echo $id | grep -i '.net/t/' | sed 's|https://www.myanonamouse.net/t/||')

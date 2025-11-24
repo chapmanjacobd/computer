@@ -1,6 +1,6 @@
 # Defined interactively
 function hourly
-    load_env_mam
+    load.env.mam
     ~/bin/mam_upload_credit.sh
 
     mam.promote (mam_slots.py --max 5 --cookie $MAM_COOKIE)

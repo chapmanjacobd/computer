@@ -1,5 +1,5 @@
 function forganize
-    morganize-all
+    morganize.all
     dorganize
 
     lb.refresh

@@ -1,5 +1,5 @@
 # Defined interactively
-function git-eol-reset
+function git.reset.eol
     git rm --cached -- $argv
     git restore --source=HEAD --staged --worktree -- $argv
 end
