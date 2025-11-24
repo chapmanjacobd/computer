@@ -9,7 +9,7 @@ function standuphorizontally
     end
     krohnkite.off
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
-    keepscreenoff && xset +dpms
+    screen.blank && xset +dpms
     #breaktimer disable
     ~/bin/autostart.sh &
 end

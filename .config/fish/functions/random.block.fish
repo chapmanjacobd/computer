@@ -1,4 +1,4 @@
 # Defined interactively
-function rand_block_prefix
+function random.block
     random choice █ ▓ ▒ ░
 end

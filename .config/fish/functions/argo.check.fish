@@ -1,5 +1,5 @@
 # Defined interactively
-function argo-check
+function argo.check
     for w in $argv
         if argo get $w | grep -i Succeeded
             echo $w

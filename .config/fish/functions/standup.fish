@@ -11,7 +11,7 @@ function standup
     end
     krohnkite.off
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
-    keepscreenoff && xset +dpms
+    screen.blank && xset +dpms
     #breaktimer disable
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
     ~/bin/autostart.sh &

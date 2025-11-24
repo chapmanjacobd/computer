@@ -1,5 +1,5 @@
 # Defined interactively
-function ffsmall
+function video.shrink
     # while test (pgrep ffmpeg | count) -ge 3
     #    sleep (random_thousanths 0 5000)
     # end

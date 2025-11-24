@@ -87,10 +87,10 @@ function fish_prompt --description 'Write out the prompt'
     else if set -q COMMAND_PREFIX
         printf '(%s) ' "$COMMAND_PREFIX"
     else
-        printf (rand_block_prefix)
-        printf (rand_block_prefix)
-        printf (rand_block_prefix)
-        printf (rand_block_prefix)
+        printf (random.block)
+        printf (random.block)
+        printf (random.block)
+        printf (random.block)
         printf ' '
     end
     set_color normal

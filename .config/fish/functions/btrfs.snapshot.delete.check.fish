@@ -1,5 +1,5 @@
 # Defined interactively
-function btrfs_check_delete_snapshot -a mnt
+function btrfs.snapshot.delete.check -a mnt
     if not string length --quiet $mnt
         echo Please specify mount point as first arg
         return 1

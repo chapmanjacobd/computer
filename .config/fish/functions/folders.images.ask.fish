@@ -1,5 +1,5 @@
 # Defined via `source`
-function image-folder-ask-keep
+function folders.images.ask
     for dir in $argv
         for d in (fd . -td "$dir" | sort.length | tac)
             echo "$d"

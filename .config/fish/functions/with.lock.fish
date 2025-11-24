@@ -1,5 +1,5 @@
 # Defined via `source`
-function with_lock
+function with.lock
     set -l lockfile "$XDG_RUNTIME_DIR/$argv[1].lock"
     set -l command $argv[2..-1]
 

@@ -1,4 +1,4 @@
 # Defined interactively
-function sqlite-check
+function sqlite.corrupt.check
     sqlite3 $argv 'pragma integrity_check'
 end

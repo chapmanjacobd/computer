@@ -1,5 +1,5 @@
 # Defined interactively
-function vpn_hk
+function vpn.hk
     sudo tailscale up --advertise-exit-node=false
     sudo tailscale set --exit-node=hk
 

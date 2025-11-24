@@ -1,5 +1,5 @@
 # Defined interactively
 function video.shrink.delete
-    ffsmall $argv
+    video.shrink $argv
     and rm "$argv[1]"
 end
