@@ -25,7 +25,7 @@ abbr -a -- ipa 'ip a'
 abbr -a -- lbmu 'lb mu (mergerfs_disk_mounts)'
 abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
-abbr -a -- mvl 'mvl -s""'
+abbr -a -- lines.mv 'lines.mv -s""'
 abbr -a -- ncdu 'NO_COLOR=1 ncdu'
 abbr -a -- pgrep 'pgrep -fa'
 abbr -a -- preview fzf\ --preview\ \'bat\ --color\ \"always\"\ \{\}\'

@@ -1,5 +1,5 @@
 # Defined in /home/xk/.config/fish/functions/mvl.fish @ line 2
-function mvl --description 'move lines'
+function lines.mv --description 'move lines'
 
     argparse --min-args 2 h/help 's/search=' -- $argv
     or return 1
@@ -8,7 +8,7 @@ function mvl --description 'move lines'
 
     if set -q _flag_help
         echo "Move lines of text from one file to another"
-        echo "example: mvl -s'baz' foo.txt bar.txt"
+        echo "example: lines.mv -s'baz' foo.txt bar.txt"
         return 0
     end
 
