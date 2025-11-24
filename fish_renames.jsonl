@@ -950,3 +950,20 @@
 {"type": "skip", "original_name": "xssh", "timestamp": 1764009427.5618417}
 {"type": "rename", "original_name": "xxdall", "timestamp": 1764009446.034477, "new_name": "xxd.all"}
 {"type": "rename", "original_name": "yaml2json", "timestamp": 1764009451.0246475, "new_name": "yaml.to.json"}
+{"type": "skip", "original_name": "yank", "timestamp": 1764009608.9795933}
+{"type": "skip", "original_name": "yt.big", "timestamp": 1764009611.282909}
+{"type": "skip", "original_name": "yt", "timestamp": 1764009613.4941785}
+{"type": "rename", "original_name": "yt.headers", "timestamp": 1764009674.179967, "new_name": "yt.head"}
+{"type": "skip", "original_name": "yta", "timestamp": 1764009683.3550625}
+{"type": "skip", "original_name": "ytarchive", "timestamp": 1764009712.149159}
+{"type": "skip", "original_name": "ytdan", "timestamp": 1764009721.3383877}
+{"type": "skip", "original_name": "ytdl", "timestamp": 1764009724.9753666}
+{"type": "skip", "original_name": "ytdn", "timestamp": 1764009727.5874665}
+{"type": "rename", "original_name": "ytm.filename", "timestamp": 1764009774.8991132, "new_name": "yt.print.path"}
+{"type": "rename", "original_name": "ytm.playlist", "timestamp": 1764009786.5234232, "new_name": "yt.print.playlistindex"}
+{"type": "rename", "original_name": "ytm.url", "timestamp": 1764009794.1026402, "new_name": "yt.print.url"}
+{"type": "rename", "original_name": "yts", "timestamp": 1764009810.529162, "new_name": "yt.subtitle"}
+{"type": "rename", "original_name": "ytsearch", "timestamp": 1764009821.4501648, "new_name": "search.youtube"}
+{"type": "rename", "original_name": "zcat_remote", "timestamp": 1764009846.193919, "new_name": "zcat.web"}
+{"type": "skip", "original_name": "zg", "timestamp": 1764009869.9362204}
+{"type": "rename", "original_name": "zombies", "timestamp": 1764009903.3843515, "new_name": "ps.zombies"}
