@@ -16,7 +16,6 @@ abbr -a -- ga 'git add .'
 abbr -a -- gcl gitclear
 abbr -a -- gitlog 'git log --oneline --decorate --all --graph --stat'
 abbr -a -- gits 'git log -p -S'
-abbr -a -- gls gitls
 abbr -a -- gp 'git pull'
 abbr -a -- gr 'git reset'
 abbr -a -- grep 'grep -i'
@@ -628,3 +627,4 @@ abbr -a -- skipthrough mpv.seek.random
 abbr -a -- sum lines.sum
 abbr -a -- par eval.par
 abbr -a -- gdl dl.images
+abbr -a -- gls paths.git.ls
