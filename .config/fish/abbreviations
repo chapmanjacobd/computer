@@ -626,3 +626,4 @@ abbr -a -- screendim xcalib.dim
 abbr -a -- random-file file.random
 abbr -a -- skipthrough mpv.seek.random
 abbr -a -- sum lines.sum
+abbr -a -- par eval.par
