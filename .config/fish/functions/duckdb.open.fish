@@ -1,5 +1,5 @@
 # Defined interactively
-function duckdb-open
+function duckdb.open
     run dbeaver-ce -con 'driver=DuckDB|database='(path resolve $argv[1])
     sleep 2
 

@@ -76,10 +76,10 @@ abbr -a -- relmv lb relmv
 abbr -a -- pi pipinstall
 abbr -a -- ci cargoinstall
 abbr -a -- gitfetch 'find . -maxdepth 8 -type d -name .git | xargs  -P8 -I{} git -C {}/../ fetch --all'
-abbr -a -- sshh ssh\ pakon\ -t\ tmux\ new-session\ -A\ -s\ phone\ \"\'fish\ -c\ clean_home\;\ exec\ fish\'\"
+abbr -a -- sshh ssh\ pakon\ -t\ tmux\ new-session\ -A\ -s\ phone\ \"\'fish\ -c\ home.clean\;\ exec\ fish\'\"
 abbr -a -- dragondrop dragondrop --on-top --all-compact
 abbr -a -- expand string\ split\ \'\ \'
-abbr -a -- ch clean_home
+abbr -a -- ch home.clean
 abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
 abbr -a -- py python
@@ -102,9 +102,9 @@ abbr -a -- cbf cb.file
 abbr -a -- inotify kde-inotify-survey
 abbr -a -- syss timer-status
 abbr -a -- dl file.eval.shuf-repeat
-abbr -a -- re eval-random
-abbr -a -- random-eval eval-random
-abbr -a -- er eval-random
+abbr -a -- re file.eval.random
+abbr -a -- random-eval file.eval.random
+abbr -a -- er file.eval.random
 abbr -a -- refreshLibrary lb.refresh
 abbr -a -- abspath lsd
 abbr -a -- mv-ln mvln
@@ -628,3 +628,23 @@ abbr -a -- sum lines.sum
 abbr -a -- par eval.par
 abbr -a -- gdl dl.images
 abbr -a -- gls paths.git.ls
+abbr -a -- eval-random file.eval.random
+abbr -a -- randvid video.random
+abbr -a -- random_string chars.random
+abbr -a -- mrmusic music.mv.random
+abbr -a -- mrrelax porn.misc.mv.random
+abbr -a -- mrporn porn.mv.random
+abbr -a -- mrvideo video.mv.random
+abbr -a -- mrquest porn.vr.mv.random
+abbr -a -- mrart art.mv.random
+abbr -a -- mpvf mpv.confirm
+abbr -a -- duckdb_compact duckdb.vacuum
+abbr -a -- sqlite-vacuum sqlite.vacuum
+abbr -a -- untiln until.n
+abbr -a -- seqn seq.n
+abbr -a -- clean_home home.clean
+abbr -a -- wipclean wip.clean
+abbr -a -- roman number.to.roman
+abbr -a -- bytes2human size.human
+abbr -a -- duckdb-open duckdb.open
+abbr -a -- fdopen fd.open

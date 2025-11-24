@@ -2,14 +2,14 @@
 function unroman --description 'Convert Roman numeral to number (filter)'
     # Read from stdin if no argument
     if test (count $argv) -eq 0
-        while read -l roman
+        while read -l number.to.roman
             unroman $roman
         end
         return
     end
 
     # Validate input
-    set -l roman (string upper $argv[1])
+    set -l number.to.roman (string upper $argv[1])
     if ! string match -qr '^[IVXLCDM]+$' -- $roman
         echo "Error: Input must be a valid Roman numeral (I, V, X, L, C, D, M)" >&2
         return 1

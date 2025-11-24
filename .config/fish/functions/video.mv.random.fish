@@ -1,4 +1,4 @@
-function mrvideo
+function video.mv.random
     lb copy-play-counts ~/lb/video.db /home/xk/lb/fs/video.db --source-prefix ~/sync/video/keep/ --target-prefix /mnt/d/
 
     lb mv ~/sync/video/keep/ ~/d/library/video/

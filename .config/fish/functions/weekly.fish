@@ -4,9 +4,9 @@ function weekly
 
     unli.visas.update
 
-    mrmusic
+    music.mv.random
     #mrvideo
-    mrporn
+    porn.mv.random
     #mrrelax
     lb christen --run ~/sync/
     files_casefold.py ~/sync/ --run

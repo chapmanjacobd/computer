@@ -1,5 +1,5 @@
 # Defined interactively
-function wipclean
+function wip.clean
     git clean -n
     if gum confirm
         git clean -f

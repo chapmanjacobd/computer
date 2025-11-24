@@ -1,4 +1,4 @@
-function mrrelax
+function porn.misc.mv.random
     rsync -a --remove-source-files --backup-dir (date "+%d.%m.%Y") --exclude=".*" ~/sync/porn/image/keep/ ~/sync/porn/image/
 
     fd --max-results=500 -tf . ~/d/dump/porn/image/ -0 | xargs -0 -I{} mv "{}" ~/sync/porn/image/

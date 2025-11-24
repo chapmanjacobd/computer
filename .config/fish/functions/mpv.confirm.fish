@@ -1,5 +1,5 @@
 # Defined interactively
-function mpvf
+function mpv.confirm
     for f in $argv/*
         mpv $f
         confirm

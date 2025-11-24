@@ -1,9 +1,9 @@
 # Defined interactively
-function roman --description 'Convert number to Roman numeral [1-3999] (filter)'
+function number.to.roman --description 'Convert number to Roman numeral [1-3999] (filter)'
     # Read from stdin if no argument
     if test (count $argv) -eq 0
         while read -l num
-            roman $num
+            number.to.roman $num
         end
         return
     end

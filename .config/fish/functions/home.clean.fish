@@ -1,5 +1,5 @@
 # Defined interactively
-function clean_home
+function home.clean
     ~/
     rmdir * 2>/dev/null
     trash .config/ksmserverrc .xsession-errors .config/libaccounts-glib 2>/dev/null

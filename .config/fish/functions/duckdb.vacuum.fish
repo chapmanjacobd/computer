@@ -1,7 +1,7 @@
 # Defined via `source`
-function duckdb_compact
+function duckdb.vacuum
     if test (count $argv) -ne 1
-        echo "Usage: duckdb_compact <database_file>"
+        echo "Usage: duckdb.vacuum <database_file>"
         return 1
     end
 

@@ -1,4 +1,4 @@
-function mrporn
+function porn.mv.random
     lb copy-play-counts ~/lb/tax.db /home/xk/lb/fs/tax.db --source-prefix ~/sync/porn/video/keep/ --target-prefix /mnt/d/
 
     ~/sync/porn/video/
