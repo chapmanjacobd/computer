@@ -249,7 +249,6 @@ abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
-abbr -a -- unardel lb unardel -v
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
 abbr -a -- autoclicker repeatdelay 0.1 xdotool click 1
 abbr -a -- exiftool 'exiftool -g -a -u'
@@ -321,3 +320,6 @@ abbr -a -- pu.time systemd-analyze --user blame
 abbr -a -- p.time systemd-analyze blame
 abbr -a -- ping ping -c1
 abbr -a -- shutdown sudo shutdown now
+abbr -a -- su sudo su
+abbr -a -- userd systemctl --user
+abbr -a -- unardel lb unardel -v

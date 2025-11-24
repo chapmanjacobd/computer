@@ -1,4 +1,4 @@
 # Defined interactively
 function todo
-    cat (echo $argv | psub) ~/j/private/todos.md | sponge ~/j/private/todos.md
+    cat (echo $argv | psub) ~/j/private/todo.md | sponge ~/j/private/todo.md
 end

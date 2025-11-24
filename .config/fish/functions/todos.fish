@@ -1,4 +1,4 @@
 # Defined interactively
 function todos
-    headtee ~/j/private/todos.md
+    headtee ~/j/private/todo.md
 end
