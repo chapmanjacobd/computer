@@ -1,5 +1,5 @@
 # Defined interactively
-function syncpcs
+function servers.sync
     ssh len clean_home
     print $servers | parallel sshpc {} git pull
     print $servers | parallel sshpc {} git -C lb/ pull

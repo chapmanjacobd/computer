@@ -1,4 +1,4 @@
 # Defined interactively
-function alpha
+function chars.alpha
     grep -P '^[[:alpha:]]+$' $argv
 end

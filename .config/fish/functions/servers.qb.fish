@@ -1,5 +1,5 @@
 # Defined interactively
-function allqb
+function servers.qb
     set -l all_failed true
 
     for s in 127.0.0.1:8080 (connectable-ssh $servers | grep -v pakon | sed "s|\$|:8888|")

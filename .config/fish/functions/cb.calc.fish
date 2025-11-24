@@ -1,4 +1,4 @@
 # Defined interactively
-function cbcalc
+function cb.calc
     math (cb | tr = ' ')
 end

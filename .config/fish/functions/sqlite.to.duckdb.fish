@@ -1,5 +1,5 @@
 # Defined via `source`
-function sqlite2duckdb -a sqlite_db
+function sqlite.to.duckdb -a sqlite_db
     set duckdb_db (path change-extension duckdb $sqlite_db)
 
     duckdb -c "

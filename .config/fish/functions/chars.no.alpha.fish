@@ -1,4 +1,4 @@
 # Defined interactively
-function non_alpha
+function chars.no.alpha
     grep -v -P '^[[:alpha:]]+$'
 end

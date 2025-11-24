@@ -1,5 +1,5 @@
 # Defined interactively
-function nmove
+function rename.b
     set old $argv[1]
     set new $argv[2]
     set paths $argv[3..-1]

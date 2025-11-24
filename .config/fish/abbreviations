@@ -126,7 +126,7 @@ abbr -a -- lsgpu lsgpu -p
 abbr -a -- restore_snapshot snapshot_restore
 abbr -a -- skipworktree 'git update-index --skip-worktree --'
 abbr -a -- unskipworktree 'git update-index --no-skip-worktree --'
-abbr -a -- getTabs cut10
+abbr -a -- getTabs lines.cut10.cb
 abbr -a -- savetabs tabs.save
 abbr -a -- tixati /home/xk/.cargo/bin/vopono -v exec --provider custom --custom /etc/wireguard/cloudflare.conf --protocol wireguard tixati
 abbr -a -- sys systemctl
@@ -156,7 +156,7 @@ abbr -a -- punpause-all presume-all
 abbr -a -- punpause-fzf presume-fzf
 abbr -a -- punpause presume
 abbr -a -- recommit wipam
-abbr -a -- cbfold cbwrap
+abbr -a -- cbfold cb.wrap.cb
 abbr -a -- rsync rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
 abbr -a -- sponge_rsync rsink
 abbr -a -- timeout timeout --preserve-status --signal INT 20m
@@ -337,3 +337,29 @@ abbr -a -- pyformat88 pyformat.88
 abbr -a -- invalid_utf8 chars.invalid.utf8
 abbr -a -- valid_utf8 chars.utf8
 abbr -a -- filter-0 lines.not.0
+abbr -a -- mega dl.mega
+abbr -a -- non_alpha chars.no.alpha
+abbr -a -- seqalpha seq.alpha
+abbr -a -- alpha chars.alpha
+abbr -a -- sqlgrep_media search.db.media
+abbr -a -- sqlite-media sqlite.media
+abbr -a -- transcribe_ja audio.to.text.ja
+abbr -a -- bq_fetch_dataset_schema bq.dataset.schema
+abbr -a -- gdl-insta dl.insta
+abbr -a -- nmove rename.b
+abbr -a -- cut10 lines.cut10.cb
+abbr -a -- cbwrap cb.wrap.cb
+abbr -a -- spaces chars.spaces.cb
+abbr -a -- tmuxcb tmux.cb
+abbr -a -- sqlite2duckdb sqlite.to.duckdb
+abbr -a -- browse_url search.web
+abbr -a -- zcat_remote zcat.web
+abbr -a -- allqb servers.qb
+abbr -a -- codec ffprobe.codec
+abbr -a -- ip.public ip.public
+abbr -a -- sleepmusic audio.sleepmusic
+abbr -a -- cbcalc cb.calc
+abbr -a -- cpfunc phone.copy.func
+abbr -a -- sync_links links.sync
+abbr -a -- syncpcs servers.sync
+abbr -a -- wtsync wt.sync

@@ -34,7 +34,7 @@ function lbrelease --argument newver
         git pull
         git push
         git tag -a "v$newver" && git push --tags
-        syncpcs
+        servers.sync
     else
         return 1
     end

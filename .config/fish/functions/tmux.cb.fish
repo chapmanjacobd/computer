@@ -1,4 +1,4 @@
 # Defined interactively
-function tmuxcb
+function tmux.cb
     tmux capture-pane -pS- | cb
 end

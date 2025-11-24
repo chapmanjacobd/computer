@@ -1,5 +1,5 @@
 # Defined via `source`
-function sync_links
+function links.sync
     ssh -t len wip ~/mc
     wip ~/mc
 end

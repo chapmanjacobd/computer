@@ -1,4 +1,4 @@
 # Defined via `source`
-function cbwrap
+function cb.wrap.cb
     cb | wrap | cb
 end

@@ -1,4 +1,4 @@
 # Defined interactively
-function seqalpha
+function seq.alpha
     perl -e '$,="\n"; print ("'$argv[1]'" .. "'$argv[2]'")'
 end

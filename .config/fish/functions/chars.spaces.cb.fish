@@ -1,4 +1,4 @@
-function spaces
+function chars.spaces.cb
     # 　 (IDEOGRAPHIC SPACE, U+12288, 0xe38080)
     #   (MEDIUM MATHEMATICAL SPACE, U+8287, 0xe2819f)
     #   (NARROW NO-BREAK SPACE, U+8239, 0xe280af)
