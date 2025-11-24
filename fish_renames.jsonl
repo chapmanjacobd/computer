@@ -730,3 +730,5 @@
 {"type": "rename", "original_name": "slideshowgen", "timestamp": 1763946217.6524973, "new_name": "images.to.videoo"}
 {"type": "rename", "original_name": "smalldpi", "timestamp": 1763946236.9089434, "new_name": "system.dpi.small"}
 {"type": "rename", "original_name": "smartlba", "timestamp": 1763946257.6915452, "new_name": "smartctl.lbas"}
+{"type": "rename", "original_name": "smartls", "timestamp": 1763950792.7000518, "new_name": "smartctl.ls"}
+{"type": "rename", "original_name": "snakecase", "timestamp": 1763950816.6710038, "new_name": "lines.to.snake.case"}

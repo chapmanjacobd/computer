@@ -1,6 +1,7 @@
 # Defined interactively
 function commandline.prefix
-    if not set -q COMMAND_PREFIX;  # --- ACTIVATE ---
+    if not set -q COMMAND_PREFIX
+        # --- ACTIVATE ---
         if test -z "$argv[1]"
             echo "Commandline prefix not active" >&2
             return 1
@@ -10,7 +11,7 @@ function commandline.prefix
         bind \n _exec_with_prefix
 
         set -g COMMAND_PREFIX $argv
-    else  # --- DEACTIVATE ---
+    else # --- DEACTIVATE ---
         bind \r execute
         bind \n execute
 
