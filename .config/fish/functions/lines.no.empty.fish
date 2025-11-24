@@ -1,4 +1,4 @@
 # Defined via `source`
-function strip
+function lines.no.empty
     rg -N "\S" $argv
 end
