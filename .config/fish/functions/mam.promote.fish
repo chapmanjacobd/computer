@@ -1,4 +1,4 @@
-function mam-promote -a max
+function mam.promote -a max
     load_env_mam
 
     ~/lb/

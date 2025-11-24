@@ -1,5 +1,5 @@
 # Defined interactively
-function qbt-queue
+function qbt.queue
     torganize
     priv-allocate-torrents
     torrents.maintenance

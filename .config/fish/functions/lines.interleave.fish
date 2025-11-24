@@ -1,4 +1,4 @@
 # Defined interactively
-function interleave
+function lines.interleave
     paste -d\n $argv
 end

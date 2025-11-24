@@ -6,7 +6,7 @@ function trash-empty
         set args (trash-list --trash-dirs)
     end
 
-    trash-size
+    trash.size
     trash-list >>~/.local/share/trashed.txt
 
     # for mnt in $argv

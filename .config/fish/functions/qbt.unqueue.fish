@@ -1,5 +1,5 @@
 # Defined via `source`
-function qbt-unqueue
+function qbt.unqueue
     lb torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ --delete-files
 
     ~/.local/data/qbittorrent/queue/

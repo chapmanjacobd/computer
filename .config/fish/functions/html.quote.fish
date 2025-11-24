@@ -1,4 +1,4 @@
 # Defined via `source`
-function html_quote
+function html.quote
     sed 's/^/> /'
 end

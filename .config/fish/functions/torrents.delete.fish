@@ -1,5 +1,5 @@
 # Defined interactively
-function tordel
+function torrents.delete
     lb torrents $argv
     or return
     if confirm

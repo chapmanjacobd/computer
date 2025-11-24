@@ -1,4 +1,4 @@
 # Defined interactively
-function unquote
+function chars.no.quote
     trU /\"\'«»‘’‚‛“”„‟‹›「」『』〝〞〟﹁﹂﹃﹄＂＇｢｣\(\)[]\{\}:,`?&!. ' '
 end

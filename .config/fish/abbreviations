@@ -188,7 +188,7 @@ abbr -a -- colors palette
 abbr -a -- splitlines string split \n
 abbr -a -- teecb 'tee | cb'
 abbr -a -- cmd commandline --insert
-abbr -a -- cmdexpand 'commandline --insert (cb | unquote_cmd)'
+abbr -a -- cmdexpand 'commandline --insert (cb | cmd.unquote)'
 abbr -a -- vpipe vipe
 abbr -a -- words /usr/share/dict/words
 abbr -a -- power-save sudo cpupower frequency-set -g powersave
@@ -212,7 +212,7 @@ abbr -a -- services systemctl list-units --type=service --all
 abbr -a -- arpa sudo arp-scan 192.168.1.0/24
 abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
-abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | unquote)'
+abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | chars.no.quote)'
 abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- powerinfo cpupower frequency-info
 abbr -a -- tags git tag -n9 --sort=-creatordate
@@ -257,7 +257,7 @@ abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
 abbr -a -- lower string lower
 abbr -a -- tmux-slow tmux detach-client -a
-abbr -a -- locate 'allpc locate --literal --ignore-case (cb | unquote)'
+abbr -a -- locate 'allpc locate --literal --ignore-case (cb | chars.no.quote)'
 abbr -a -- display set -gx DISPLAY :0
 abbr -a -- large-folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
 abbr -a -- ps-size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
@@ -279,8 +279,8 @@ abbr -a -- swaps sudo swapin.bt
 abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- exts 'ext | asc'
-abbr -a -- cv 'check_local_video (cb | unquote)'
-abbr -a -- cl 'check_local (cb | unquote)'
+abbr -a -- cv 'check_local_video (cb | chars.no.quote)'
+abbr -a -- cl 'check_local (cb | chars.no.quote)'
 abbr -a -- perftop sudo perf top
 abbr -a -- catbin typebin
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
@@ -475,3 +475,30 @@ abbr -a -- update_unli_cities_visas unli.visas.update
 abbr -a -- update_makemkv makemkv.update
 abbr -a -- create-launcher file.desktop.create
 abbr -a -- tmux-socket-recreate tmux.socket.recreate
+abbr -a -- ffmpeg.rotate video.rotate
+abbr -a -- activate pipenv.activate
+abbr -a -- ffsmall_delete video.shrink.delete
+abbr -a -- systemd-cron-delete systemd.cron.delete
+abbr -a -- ffa_delete video.to.audio.delete
+abbr -a -- tordel torrents.delete
+abbr -a -- btrfs_nocheck_delete_snapshot btrfs.snapshot.delete
+abbr -a -- nextSongDelete next.delete
+abbr -a -- syscalls_bytes_write syscalls.bytes.write
+abbr -a -- lsar_remote lsar.remote
+abbr -a -- mam-promote mam.promote
+abbr -a -- quote_cmd cmd.quote
+abbr -a -- html_quote html.quote
+abbr -a -- unquote chars.no.quote
+abbr -a -- unquote_cmd cmd.unquote
+abbr -a -- qbt-queue qbt.queue
+abbr -a -- qbt-unqueue qbt.unqueue
+abbr -a -- interleave lines.interleave
+abbr -a -- allpct servers.ssh.interactive
+abbr -a -- btrfs_temp_device_remove btrfs.tempdevice.remove
+abbr -a -- git_remote_serve git.serve
+abbr -a -- preserve_titles file.urls.titles.preserve
+abbr -a -- stickysync_size stickysync.size
+abbr -a -- filesize file.size
+abbr -a -- trash-size trash.size
+abbr -a -- rpmsize rpm.size
+abbr -a -- gitsize git.size

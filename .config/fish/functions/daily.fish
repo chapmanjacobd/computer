@@ -29,7 +29,7 @@ function daily
     end
     fd -S-12b -tf -x rm
     git add .
-    preserve_titles
+    file.urls.titles.preserve
     git add .
     url_files_web_titles.py (url_files)
     morganize-all

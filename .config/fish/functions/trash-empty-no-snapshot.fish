@@ -23,7 +23,7 @@ function trash-empty-no-snapshot
     end
 
     for d in $args
-        du -hs $d | grep -v ^0 # trash-size
+        du -hs $d | grep -v ^0 # trash.size
         trash-list --trash-dir $d >>~/.local/share/trashed.txt
     end
 
