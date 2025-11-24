@@ -1,4 +1,4 @@
 # Defined interactively
-function pscmd
+function ps.cmd
     ps -o command= --ppid $argv
 end

@@ -1,5 +1,5 @@
 # Defined via `source`
-function d-expand
+function d.expand
     set path (path resolve "$argv")
     set -l tasks sync/ dump/ pending/ check/ library/ archive/
 

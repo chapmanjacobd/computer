@@ -116,7 +116,7 @@ abbr -a -- tmpdir mkcdtemp
 abbr -a -- ytda 'lb dladd ~/lb/dl/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
-abbr -a -- trashrestore trash-restore-d
+abbr -a -- trashrestore trash.restore.d
 abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/dl/video.db (cb)'
 abbr -a -- osq osqueryi
@@ -363,3 +363,33 @@ abbr -a -- cpfunc phone.copy.func
 abbr -a -- sync_links links.sync
 abbr -a -- syncpcs servers.sync
 abbr -a -- wtsync wt.sync
+abbr -a -- sync_history history.sync
+abbr -a -- duplines files.lines.asc
+abbr -a -- fileTypeStatistics files.ext.asc
+abbr -a -- ffmpegToHEVC video.to.hevc
+abbr -a -- trash-restore-d trash.restore.d
+abbr -a -- argshead args.head
+abbr -a -- yt.headers yt.head
+abbr -a -- syscalls_bytes_read syscalls.bytes.read
+abbr -a -- lb-load lb.load
+abbr -a -- xkcd_password password.xkcd
+abbr -a -- btrfs_temp_device_add btrfs.tempdevice.add
+abbr -a -- blockchannel yt.downloadarchive.add
+abbr -a -- gitcopystaged git.copy.staged
+abbr -a -- psd ps.blocked
+abbr -a -- ffmpeg.keyframes.io video.to.keyframes.slow.named
+abbr -a -- ppaused ps.paused
+abbr -a -- restore_undermount_files d.files.undermounted
+abbr -a -- lsfd_paths ls.fd
+abbr -a -- systemd-pid-u userd.pid
+abbr -a -- pscmd ps.cmd
+abbr -a -- last-function-name commandline.last.cmd
+abbr -a -- mpvcmd mpv.cmd
+abbr -a -- fix_audio audio.fixup.compand
+abbr -a -- d-expand d.expand
+abbr -a -- git_amend git.amend
+abbr -a -- headtee tee.prepend
+abbr -a -- prepend file.prepend
+abbr -a -- cb_append cb.append
+abbr -a -- unseed qbt.unseed
+abbr -a -- qbt-unseed qbt.unseed.old

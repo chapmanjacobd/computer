@@ -1,5 +1,5 @@
 # Defined interactively
-function ffmpeg.keyframes.io --argument-names input --argument-names output
+function video.to.keyframes.slow.named --argument-names input --argument-names output
     set -l tmpfile (mktemp --suffix .mkv --dry-run)
     mkfifo $tmpfile
 

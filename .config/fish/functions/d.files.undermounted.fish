@@ -1,5 +1,5 @@
 # Defined via `source`
-function restore_undermount_files
+function d.files.undermounted
     sudo mkdir /orig_mnt/
     sudo mount --bind /mnt /orig_mnt/
     /orig_mnt/

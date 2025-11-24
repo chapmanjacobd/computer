@@ -1,5 +1,5 @@
 # Defined interactively
-function lb-load
+function lb.load
     lb unardel -vy ~/d/dump/video/ ~/d/dump/porn/video/
 
     for d in /mnt/d(seq 1 10)

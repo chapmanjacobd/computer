@@ -1,4 +1,4 @@
 # Defined interactively
 function mpvprop
-    mpvcmd '{ "command": ["get_property", "'$argv'"] }'
+    mpv.cmd '{ "command": ["get_property", "'$argv'"] }'
 end

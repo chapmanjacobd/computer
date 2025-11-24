@@ -15,7 +15,7 @@ function daily
     pip install --upgrade pychromecast
     allpc pip install --upgrade --pre yt-dlp[default]
 
-    sync_history
+    history.sync
     # command trash-empty 10 -f
 
     ~/j/social/

@@ -1,7 +1,7 @@
 # Defined via `source`
-function btrfs_temp_device_add --argument-names btrfs_mnt --argument-names new_mnt
+function btrfs.tempdevice.add --argument-names btrfs_mnt --argument-names new_mnt
     if test (count $argv) -ne 2
-        echo "Usage: btrfs_temp_device_add <btrfs_mountpoint> <new_mountpoint>"
+        echo "Usage: btrfs.tempdevice.add <btrfs_mountpoint> <new_mountpoint>"
         return 1
     end
 

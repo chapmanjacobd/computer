@@ -1,5 +1,5 @@
 # Defined interactively
-function prepend
+function file.prepend
     set tmpfile (mktemp --tmpdir=(path dirname "$argv"))
 
     ensure_newline.awk | cat - "$argv" >>"$tmpfile"

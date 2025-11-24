@@ -2,12 +2,10 @@ function forganize
     morganize-all
     dorganize
 
-    qbt-unseed
-
     lb-refresh
     lb-rebuild-fts
 
-    lb-load
+    lb.load
     yes | lb dedupe-media --fs ~/lb/fs/video.db -v
     yes | lb dedupe-media --fs ~/lb/fs/tax.db -v
     yes | lb dedupe-media --fs ~/lb/fs/audio.db -v

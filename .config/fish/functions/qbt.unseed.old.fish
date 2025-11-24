@@ -1,4 +1,4 @@
-function qbt-unseed
+function qbt.unseed.old
     allpc library torrents --complete --seeders=+4 --time-stalled=+3days --time-seeding=+61days --stop --move processing --delete-rows -v
     # check file existence, prevent ghost seed
     allpc lb torrents --no-stopped --no-errored --ul --no-all-exists --seeders=-2 --stop --move processing --delete-rows

@@ -1,5 +1,5 @@
 # Defined via `source`
-function cb_append --argument-names suffix
+function cb.append --argument-names suffix
     set temp_file (mktemp -t "cb_append_XXXXXX$suffix")
     echo "$temp_file" >&2
 

@@ -10,5 +10,5 @@ function hourly
         priv-allocate-torrents
     end
     torrent-maintenance
-    qbt-unseed
+    qbt.unseed.old
 end

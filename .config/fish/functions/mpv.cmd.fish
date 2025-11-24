@@ -1,4 +1,4 @@
 # Defined interactively
-function mpvcmd
+function mpv.cmd
     echo $argv | socat - $MPV_SOCKET | jq -r .data
 end

@@ -1,5 +1,5 @@
 # Defined via `source`
-function git_amend
+function git.amend
     set tags (git tag --points-at HEAD)
     if test -n "$tags"
         if not confirm "Tags found pointing to HEAD: $tags. Continue? (y/N)"

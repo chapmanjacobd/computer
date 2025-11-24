@@ -1,5 +1,5 @@
 # Defined via `source`
-function unseed
+function qbt.unseed
     servers.qb library torrents --complete -s $argv -p
     or return
     if confirm

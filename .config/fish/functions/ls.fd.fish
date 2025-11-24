@@ -1,4 +1,4 @@
 # Defined interactively
-function lsfd_paths
+function ls.fd
     fd . /proc -tsymlink | grep /fd/ | xargs readlink | grep ^/
 end

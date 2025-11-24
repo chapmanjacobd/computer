@@ -1,6 +1,6 @@
 # Defined interactively
 function vnc
-    # sync_history
+    # history.sync
 
     #vopono -v exec --custom ./custom_openvpn.ovpn --protocol openvpn "firefox"
     if contains pakon $argv

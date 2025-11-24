@@ -1,4 +1,4 @@
 # Defined interactively
-function gitcopystaged
+function git.copy.staged
     ssh $argv "cd $(pwd); git diff --staged" | git apply -
 end

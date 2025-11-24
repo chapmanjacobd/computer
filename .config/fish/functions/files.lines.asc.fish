@@ -1,4 +1,4 @@
 # Defined interactively
-function duplines
+function files.lines.asc
     fd -tf . $argv -x cat | string trim | asc
 end

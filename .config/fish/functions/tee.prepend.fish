@@ -1,5 +1,5 @@
 # Defined interactively
-function headtee --argument file
+function tee.prepend --argument file
     set temp (mktemp)
     tee $temp
     cat $temp $file | sponge $file

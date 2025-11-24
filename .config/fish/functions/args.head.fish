@@ -1,5 +1,5 @@
 # Defined interactively
-function argshead
+function args.head
     argparse n/lines= -- $argv
     if set -q _flag_lines
         set n $_flag_lines
