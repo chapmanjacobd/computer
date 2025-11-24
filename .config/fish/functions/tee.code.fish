@@ -1,5 +1,5 @@
 # Defined interactively
-function pipe_code
+function tee.code
     set temp_file (mktemp)
     cat >$temp_file
     code $temp_file

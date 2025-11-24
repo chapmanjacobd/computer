@@ -1,5 +1,5 @@
 # Defined interactively
-function html_details_code
+function html.details.code
     echo -n '<details>
 <summary></summary>
 

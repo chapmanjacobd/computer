@@ -1,4 +1,4 @@
 # Defined via `source`
-function fd-bsd
+function fd.bsd
     fd $argv --exec-batch printf '%s\n'
 end

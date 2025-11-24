@@ -20,5 +20,5 @@ function torganize
     #qbt_computers_remaining.py ~/lb/computers.remote.db
 
     torrents-db-stats
-    echo torrent-maintenance
+    echo torrents.maintenance
 end

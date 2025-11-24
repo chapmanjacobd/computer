@@ -1,4 +1,4 @@
-function torrent-maintenance
+function torrents.maintenance
     set hosts (connectable-ssh $servers | grep -v pakon | sed "s|\$|:8888|")
 
     ~/bin/qbt_hashes.py -v 127.0.0.1:8080 $hosts

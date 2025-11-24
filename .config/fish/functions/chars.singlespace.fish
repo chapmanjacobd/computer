@@ -1,4 +1,4 @@
 # Defined interactively
-function whitespace
+function chars.singlespace
     tr '\n' ' ' | tr -s ' '
 end

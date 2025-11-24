@@ -1,4 +1,4 @@
 # Defined interactively
-function lsdir
+function lsd
     fd -d1 --full-path --absolute-path . $argv
 end

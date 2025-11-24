@@ -1,4 +1,4 @@
 # Defined interactively
-function tgrep
+function trace
     strace -p (pgrep -fn $argv)
 end

@@ -2,6 +2,6 @@
 function qbt-queue
     torganize
     priv-allocate-torrents
-    torrent-maintenance
+    torrents.maintenance
     qbt.unseed
 end

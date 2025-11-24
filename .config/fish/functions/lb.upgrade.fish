@@ -1,4 +1,4 @@
 # Defined via `source`
-function lbupgrade
+function lb.upgrade
     allpc pip install --upgrade library
 end

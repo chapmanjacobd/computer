@@ -107,7 +107,7 @@ abbr -a -- re eval-random
 abbr -a -- random-eval eval-random
 abbr -a -- er eval-random
 abbr -a -- refreshLibrary lb-refresh
-abbr -a -- abspath lsdir
+abbr -a -- abspath lsd
 abbr -a -- mv-ln mvln
 abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
 abbr -a -- gd 'git diff; git diff --stat'
@@ -393,3 +393,23 @@ abbr -a -- prepend file.prepend
 abbr -a -- cb_append cb.append
 abbr -a -- unseed qbt.unseed
 abbr -a -- qbt-unseed qbt.unseed.old
+abbr -a -- tmux-append tmux.append
+abbr -a -- allowMove trackpad.on.with.keyboard
+abbr -a -- rebase-reword rebase.reword
+abbr -a -- fd-bsd fd.bsd
+abbr -a -- lsdir lsd
+abbr -a -- pcwd ps.cwd
+abbr -a -- priv-start-r730xd priv.start.r730xd
+abbr -a -- ytsearch search.youtube
+abbr -a -- whitespace chars.singlespace
+abbr -a -- tgrep trace
+abbr -a -- torrent-maintenance torrents.maintenance
+abbr -a -- lb-maintainence lb.maintainence
+abbr -a -- mins_since datestamp.mins.since
+abbr -a -- html_force_url html.url.force
+abbr -a -- lbupgrade lb.upgrade
+abbr -a -- funced-code funced.code
+abbr -a -- pipe_code tee.code
+abbr -a -- html_forum_code html.forum.code
+abbr -a -- html_details_code html.details.code
+abbr -a -- ffmpegBurnInSubtitlesBitmap video.subtitle.hardcode

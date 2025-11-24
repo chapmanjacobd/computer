@@ -9,6 +9,6 @@ function hourly
     if test (uptime_secs) -gt 3600; and not copying
         priv-allocate-torrents
     end
-    torrent-maintenance
+    torrents.maintenance
     qbt.unseed.old
 end
