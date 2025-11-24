@@ -2,7 +2,7 @@ function weekly
     dbackups
     trash ~/sync/.stversions/*
 
-    update_unli_cities_visas
+    unli.visas.update
 
     mrmusic
     #mrvideo
@@ -13,7 +13,7 @@ function weekly
 
     morganize-all
 
-    mam_update
+    mam.update
 
     for f in /home/xk/.local/share/nicotine/usershares/*
         lb nicotine-import ~/lb/sites/todo/soulseek/(path basename $f).db $f

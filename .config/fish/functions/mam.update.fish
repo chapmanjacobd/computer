@@ -1,4 +1,4 @@
-function mam_update
+function mam.update
     ~/lb/
     load_env_mam
 

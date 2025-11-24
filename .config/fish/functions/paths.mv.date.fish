@@ -1,5 +1,5 @@
 # Defined via `source`
-function mv-by-filename-yearmonth
+function paths.mv.date
     while read line
         set date_str (date --date=(lb date $line) +%Y-%m)
 

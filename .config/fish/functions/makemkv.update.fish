@@ -1,5 +1,5 @@
 # Defined interactively
-function update_makemkv --argument v
+function makemkv.update --argument v
     ~/.local/bin/
     trash makemkv*
     wget1 https://www.makemkv.com/download/makemkv-bin-$v.tar.gz

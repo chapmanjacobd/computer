@@ -1,5 +1,5 @@
 # Defined via `source`
-function create-launcher
+function file.desktop.create
     set command_name (string replace -r ' ' '_' "$argv")
     set launcher_path $HOME/.local/share/applications/$command_name.desktop
 

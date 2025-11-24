@@ -1,5 +1,5 @@
 # Defined interactively
-function path_validate --description 'check if a string is a valid filename on Mac, Linux, & Windows'
+function path.validate --description 'check if a string is a valid filename on Mac, Linux, & Windows'
     set fname "$argv[1]"
 
     # must have at least one letter/number

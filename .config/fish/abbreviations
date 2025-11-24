@@ -464,3 +464,14 @@ abbr -a -- focus_follows_mouse kwin.FocusFollowsMouse
 abbr -a -- truncatelines files.lines.truncate
 abbr -a -- locate_folders folders.locate
 abbr -a -- fd-date fd.date
+abbr -a -- gitcommitbefore git.hash.before.date
+abbr -a -- gitdiffdate git.diff.date
+abbr -a -- gen_from_random_date random.date
+abbr -a -- datesleep sleep.date
+abbr -a -- mv-by-filename-yearmonth paths.mv.date
+abbr -a -- path_validate path.validate
+abbr -a -- mam_update mam.update
+abbr -a -- update_unli_cities_visas unli.visas.update
+abbr -a -- update_makemkv makemkv.update
+abbr -a -- create-launcher file.desktop.create
+abbr -a -- tmux-socket-recreate tmux.socket.recreate
