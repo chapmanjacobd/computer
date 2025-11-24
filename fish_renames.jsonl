@@ -937,3 +937,16 @@
 {"type": "rename", "original_name": "wipclean", "timestamp": 1764009074.2566009, "new_name": "wip.clean"}
 {"type": "rename", "original_name": "wipd", "timestamp": 1764009083.4546084, "new_name": "wip.diff"}
 {"type": "skip", "original_name": "wipm", "timestamp": 1764009089.1638205}
+{"type": "rename", "original_name": "with_lock", "timestamp": 1764009299.0278966, "new_name": "with.lock"}
+{"type": "rename", "original_name": "with_unli", "timestamp": 1764009308.8114738, "new_name": "with.unli"}
+{"type": "skip", "original_name": "wrap", "timestamp": 1764009312.8341327}
+{"type": "rename", "original_name": "wt-dev", "timestamp": 1764009339.4091651, "new_name": "wt.dev"}
+{"type": "skip", "original_name": "wt", "timestamp": 1764009340.8375068}
+{"type": "skip", "original_name": "wtd", "timestamp": 1764009342.726055}
+{"type": "skip", "original_name": "wtseek", "timestamp": 1764009347.7983932}
+{"type": "rename", "original_name": "wtsync", "timestamp": 1764009356.9316425, "new_name": "wt.sync"}
+{"type": "rename", "original_name": "xkcd_password", "timestamp": 1764009420.7723236, "new_name": "password.xkcd"}
+{"type": "skip", "original_name": "xsql", "timestamp": 1764009425.535642}
+{"type": "skip", "original_name": "xssh", "timestamp": 1764009427.5618417}
+{"type": "rename", "original_name": "xxdall", "timestamp": 1764009446.034477, "new_name": "xxd.all"}
+{"type": "rename", "original_name": "yaml2json", "timestamp": 1764009451.0246475, "new_name": "yaml.to.json"}
