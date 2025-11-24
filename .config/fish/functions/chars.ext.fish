@@ -1,4 +1,4 @@
 # Defined via `source`
-function ext
+function chars.ext
     awk -F'.' '{print $NF}' $argv
 end
