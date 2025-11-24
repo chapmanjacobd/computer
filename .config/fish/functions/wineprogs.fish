@@ -1,4 +1,4 @@
 # Defined interactively
 function wineprogs
-    fd . ~/.wine/drive_c/ -tf -eexe
+    fd . $WINEPREFIX/drive_c/ -tf -eEXE -HI
 end

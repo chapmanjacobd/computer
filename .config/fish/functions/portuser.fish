@@ -1,4 +1,6 @@
 function portuser
+    sudo lsof +c 0 -i:$argv[1]
+
     set -l pid (sudo lsof -t -i:$argv[1])
     if count $pid >/dev/null
         for id in $pid

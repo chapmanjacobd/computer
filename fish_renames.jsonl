@@ -925,3 +925,15 @@
 {"type": "skip", "original_name": "weekly", "timestamp": 1764007756.4564788}
 {"type": "skip", "original_name": "wget", "timestamp": 1764007766.9988184}
 {"type": "skip", "original_name": "wget.single", "timestamp": 1764007902.1050432}
+{"type": "skip", "original_name": "wclone.slow", "timestamp": 1764008198.7653804}
+{"type": "rename", "original_name": "wgetfilename", "timestamp": 1764008364.5920281, "new_name": "wget.force.suffix"}
+{"type": "skip", "original_name": "wgettext", "timestamp": 1764008444.5182927}
+{"type": "rename", "original_name": "whichpip", "timestamp": 1764008450.5607865, "new_name": "which.pip"}
+{"type": "rename", "original_name": "whitespace", "timestamp": 1764008608.3000731, "new_name": "chars.singlespace"}
+{"type": "skip", "original_name": "wholistens", "timestamp": 1764008938.180028}
+{"type": "rename", "original_name": "wiiso", "timestamp": 1764008961.1340992, "new_name": "wii.shrink"}
+{"type": "rename", "original_name": "wineprogs", "timestamp": 1764009064.177468, "new_name": "wine.programs"}
+{"type": "skip", "original_name": "wip", "timestamp": 1764009066.6940084}
+{"type": "rename", "original_name": "wipclean", "timestamp": 1764009074.2566009, "new_name": "wip.clean"}
+{"type": "rename", "original_name": "wipd", "timestamp": 1764009083.4546084, "new_name": "wip.diff"}
+{"type": "skip", "original_name": "wipm", "timestamp": 1764009089.1638205}
