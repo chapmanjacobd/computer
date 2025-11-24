@@ -326,3 +326,14 @@ abbr -a -- unardel lb unardel -v
 abbr -a -- ps.unit systemctl whoami
 abbr -a -- stat.web http HEAD
 abbr -a -- wrap 'whitespace | fold -s -w 100'
+abbr -a -- laptop2880 screen.virtual.2880
+abbr -a -- gdalcalcnodata0 raster.nodata0
+abbr -a -- buffer_one_line lines.buffer1
+abbr -a -- gitls1 paths.git.ls1
+abbr -a -- pdfsmaller pdf.shrink2
+abbr -a -- audioCompressAndSplit ffmpeg.audio.split.93
+abbr -a -- print-a4 image.to.pdf.a4
+abbr -a -- pyformat88 pyformat.88
+abbr -a -- invalid_utf8 chars.invalid.utf8
+abbr -a -- valid_utf8 chars.utf8
+abbr -a -- filter-0 lines.not.0

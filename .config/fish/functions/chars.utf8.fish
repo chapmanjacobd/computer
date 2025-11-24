@@ -1,4 +1,4 @@
 # Defined interactively
-function valid_utf8
+function chars.utf8
     grep -ax '.*'
 end

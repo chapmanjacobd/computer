@@ -1,4 +1,4 @@
 # Defined interactively
-function invalid_utf8
+function chars.invalid.utf8
     grep -axv '.*'
 end

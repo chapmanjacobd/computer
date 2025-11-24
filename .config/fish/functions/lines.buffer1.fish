@@ -1,4 +1,4 @@
 # Defined interactively
-function buffer_one_line
+function lines.buffer1
     perl -ne 'print $l;$l=$_;END{print $l}'
 end
