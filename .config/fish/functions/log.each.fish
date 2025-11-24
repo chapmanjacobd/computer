@@ -1,5 +1,5 @@
 # Defined via `source`
-function logeach
+function log.each
     for s in (systemctl list-unit-files --type service --state enabled --no-legend --no-pager | cut -f1 -d' ')
         log -u $s
     end

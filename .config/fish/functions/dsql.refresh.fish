@@ -1,5 +1,5 @@
 # Defined interactively
-function dsql_refresh_disk
+function dsql.refresh
     set -l name (path basename $argv)
 
     set joblog (mktemp)

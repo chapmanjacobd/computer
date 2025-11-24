@@ -1,5 +1,5 @@
 # Defined via `source`
-function dockerpatch
+function docker.patch
     docker run -it -v (pwd):/wd $argv[1] /bin/bash
 
     set container_id (docker ps -aqlf ancestor=$argv[1])

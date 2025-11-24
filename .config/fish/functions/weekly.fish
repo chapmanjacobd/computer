@@ -19,7 +19,7 @@ function weekly
         lb nicotine-import ~/lb/sites/todo/soulseek/(path basename $f).db $f
     end
 
-    lb-refresh
+    lb.refresh
     lb-rebuild-fts
 
     pip install --upgrade yt-dlp gallery-dl praw library

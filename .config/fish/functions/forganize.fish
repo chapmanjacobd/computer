@@ -2,7 +2,7 @@ function forganize
     morganize-all
     dorganize
 
-    lb-refresh
+    lb.refresh
     lb-rebuild-fts
 
     lb.load
@@ -19,5 +19,5 @@ function forganize
     end
     mktree.py ~/d/
 
-    dsql_refresh
+    d.sql.refresh
 end

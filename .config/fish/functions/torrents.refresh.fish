@@ -1,5 +1,5 @@
 # Defined interactively
-function tor-refresh
+function torrents.refresh
     set call_dir (pwd)
     tempdir
     for s in (connectable-ssh $servers)

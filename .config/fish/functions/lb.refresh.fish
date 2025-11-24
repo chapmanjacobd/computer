@@ -1,5 +1,5 @@
 # Defined interactively
-function lb-refresh
+function lb.refresh
     lb fsadd ~/lb/audio.db --audio ~/sync/audio/
     lb fsadd ~/lb/video.db --video ~/sync/video/
 

@@ -1,5 +1,5 @@
 # Defined interactively
-function sum_fish
+function lines.sum.fish
     set accumulator 0
 
     while read -l line

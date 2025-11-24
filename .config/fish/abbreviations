@@ -106,7 +106,7 @@ abbr -a -- dl file.eval.shuf-repeat
 abbr -a -- re eval-random
 abbr -a -- random-eval eval-random
 abbr -a -- er eval-random
-abbr -a -- refreshLibrary lb-refresh
+abbr -a -- refreshLibrary lb.refresh
 abbr -a -- abspath lsd
 abbr -a -- mv-ln mvln
 abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
@@ -525,3 +525,23 @@ abbr -a -- sleepy_perf ps.waiting
 abbr -a -- githistory paths.git.log
 abbr -a -- git-changelog git.changelog
 abbr -a -- avg_size files.size.avg
+abbr -a -- avg lines.numbers.avg
+abbr -a -- logeach log.each
+abbr -a -- eachpc servers.ssh.each
+abbr -a -- speak text.to.speach
+abbr -a -- git_branch git.branch
+abbr -a -- gitMoveToNewBranch git.rebranch
+abbr -a -- redarc_site_search redarc.site.search
+abbr -a -- mam_search mam.search
+abbr -a -- lt-search lt.search
+abbr -a -- dockerpatch docker.patch
+abbr -a -- watchfilehandles filehandles.watch
+abbr -a -- nomachine_colemak_dh system.settings.nomachine.colemak.dh
+abbr -a -- un_paragraph lines.unparagraph
+abbr -a -- trim-trailing-slash chars.no.trailingslash
+abbr -a -- folder-trash folder.trash
+abbr -a -- lb-refresh lb.refresh
+abbr -a -- dsql_refresh d.sql.refresh
+abbr -a -- dsql_refresh_disk dsql.refresh
+abbr -a -- tor-refresh torrents.refresh
+abbr -a -- sum_fish lines.sum.fish

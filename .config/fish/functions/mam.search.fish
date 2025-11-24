@@ -1,5 +1,5 @@
 # Defined via `source`
-function mam_search
+function mam.search
     optparse $argv
 
     load_env_mam

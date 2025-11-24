@@ -4,7 +4,7 @@ function torrents.maintenance
     ~/bin/qbt_hashes.py -v 127.0.0.1:8080 $hosts
     ~/bin/qbt_file_sizes.py -v 127.0.0.1:8080 $hosts
 
-    tor-refresh
+    torrents.refresh
 
     # tag items
     for s in 127.0.0.1:8080 $hosts

@@ -1,5 +1,5 @@
 # Defined interactively
-function dsql_refresh
+function d.sql.refresh
     set joblog (mktemp)
     for i in (seq 1 $MERGERFS_DISKS)
         for m in /mnt/d$i/*
