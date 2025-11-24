@@ -1,4 +1,4 @@
 # Defined interactively
-function uptime_secs
+function uptime.seconds
     math -s0 (cat /proc/uptime | awk '{print $1}')
 end

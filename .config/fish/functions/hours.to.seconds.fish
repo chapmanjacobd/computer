@@ -1,4 +1,4 @@
 # Defined interactively
-function hours
+function hours.to.seconds
     math "60*60*$argv"
 end
