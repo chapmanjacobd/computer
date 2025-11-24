@@ -1,5 +1,5 @@
 # Defined interactively
-function sr. --argument-names find --argument-names replace
+function findandreplace.all --argument-names find --argument-names replace
     rg -. --no-heading --no-line-number -j1 "$find"
 
     if confirm
