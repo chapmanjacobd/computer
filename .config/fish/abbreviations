@@ -194,7 +194,7 @@ abbr -a -- words /usr/share/dict/words
 abbr -a -- power-save sudo cpupower frequency-set -g powersave
 abbr -a -- power-performance sudo cpupower frequency-set -g performance
 abbr -a -- bios systemctl reboot --firmware-setup
-abbr -a -- teesum 'tee | sum'
+abbr -a -- teesum 'tee | lines.sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
 abbr -a -- ext4 sudo mkfs.ext4 -T largefile -m 0 -e continue
@@ -625,3 +625,4 @@ abbr -a -- to_insta video.to.instagram
 abbr -a -- screendim xcalib.dim
 abbr -a -- random-file file.random
 abbr -a -- skipthrough mpv.seek.random
+abbr -a -- sum lines.sum
