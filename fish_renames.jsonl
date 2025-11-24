@@ -732,3 +732,14 @@
 {"type": "rename", "original_name": "smartlba", "timestamp": 1763946257.6915452, "new_name": "smartctl.lbas"}
 {"type": "rename", "original_name": "smartls", "timestamp": 1763950792.7000518, "new_name": "smartctl.ls"}
 {"type": "rename", "original_name": "snakecase", "timestamp": 1763950816.6710038, "new_name": "lines.to.snake.case"}
+{"type": "rename", "original_name": "snapshot", "timestamp": 1763968770.924217, "new_name": "folder.snapshot"}
+{"type": "rename", "original_name": "snapshot_restore", "timestamp": 1763968775.0813992, "new_name": "folder.snapshot.restore"}
+{"type": "skip", "original_name": "files.no.ext", "timestamp": 1763968788.8011906}
+{"type": "skip", "original_name": "sockets", "timestamp": 1763968792.199084}
+{"type": "skip", "original_name": "sorted", "timestamp": 1763968796.5080838}
+{"type": "rename", "original_name": "sortlength", "timestamp": 1763968801.5968747, "new_name": "sort.length"}
+{"type": "rename", "original_name": "spaces", "timestamp": 1763968822.6237397, "new_name": "chars.spaces.cb"}
+{"type": "rename", "original_name": "sparse_percent", "timestamp": 1763969041.5182714, "new_name": "file.sparse.percent"}
+{"type": "rename", "original_name": "speak", "timestamp": 1763969084.2936265, "new_name": "text.to.speach"}
+{"type": "rename", "original_name": "speedtest", "timestamp": 1763969178.5593443, "new_name": "ssh.speedtest"}
+{"type": "rename", "original_name": "split-by-silence-cleanup", "timestamp": 1763969198.0453846, "new_name": "split.by.silence.cleanup"}

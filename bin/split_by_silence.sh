@@ -1,7 +1,7 @@
 #!/bin/bash
 
 IN=$1
-OUT=$2
+OUT=$1.%03d.opus
 
 true ${SD_PARAMS:="-55dB:d=0.3"};
 true ${MIN_FRAGMENT_DURATION:="20"};
