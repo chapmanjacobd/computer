@@ -703,3 +703,30 @@
 {"type": "rename", "original_name": "screenoff", "timestamp": 1763865598.830849, "new_name": "screen.off"}
 {"type": "rename", "original_name": "screenon", "timestamp": 1763865603.1164856, "new_name": "screen.on"}
 {"type": "rename", "original_name": "screenshot-satellite", "timestamp": 1763865713.8120983, "new_name": "screenshot.satellite"}
+{"type": "rename", "original_name": "_exec_with_prefix", "timestamp": 1763942971.9402966, "new_name": ".exec.with.prefix"}
+{"type": "skip", "original_name": "commandline.prefix", "timestamp": 1763942975.5408146}
+{"type": "skip", "original_name": "eval.cache", "timestamp": 1763942978.7688432}
+{"type": "rename", "original_name": "pipupgrade", "timestamp": 1763942987.8307326, "new_name": "pip.upgrade.all"}
+{"type": "skip", "original_name": "screenshotsave", "timestamp": 1763943031.8644319}
+{"type": "rename", "original_name": "screenwidth", "timestamp": 1763943071.19964, "new_name": "resolution.width"}
+{"type": "skip", "original_name": "search.github", "timestamp": 1763943075.7175307}
+{"type": "rename", "original_name": "search_photo", "timestamp": 1763943104.8486931, "new_name": "search.web.image.text"}
+{"type": "rename", "original_name": "sendroid", "timestamp": 1763943118.6569474, "new_name": "adb.mv"}
+{"type": "skip", "original_name": "sendroidmusic", "timestamp": 1763943137.0834377}
+{"type": "skip", "original_name": "sendroidsd", "timestamp": 1763943146.4358675}
+{"type": "rename", "original_name": "seq-eval", "timestamp": 1763945708.2855287, "new_name": "seq.eval"}
+{"type": "rename", "original_name": "seqalpha", "timestamp": 1763945807.9706607, "new_name": "seq.alpha"}
+{"type": "rename", "original_name": "seqn", "timestamp": 1763945809.8769515, "new_name": "seq.n"}
+{"type": "rename", "original_name": "service-status", "timestamp": 1763945877.704711, "new_name": "systemd.tree"}
+{"type": "skip", "original_name": "shutdown", "timestamp": 1763945928.584259}
+{"type": "rename", "original_name": "similar_artist", "timestamp": 1763945958.6968744, "new_name": "similar.artist"}
+{"type": "skip", "original_name": "sitdown", "timestamp": 1763945964.5693624}
+{"type": "skip", "original_name": "skip", "timestamp": 1763945973.663576}
+{"type": "rename", "original_name": "skipthrough", "timestamp": 1763946008.4305499, "new_name": "mpv.seek.random"}
+{"type": "rename", "original_name": "sleepmusic", "timestamp": 1763946049.6934693, "new_name": "audio.sleepmusic"}
+{"type": "rename", "original_name": "sleepy_perf", "timestamp": 1763946151.6147468, "new_name": "ps.waiting"}
+{"type": "skip", "original_name": "slideshow", "timestamp": 1763946159.4228313}
+{"type": "skip", "original_name": "slideshowFill", "timestamp": 1763946191.9416974}
+{"type": "rename", "original_name": "slideshowgen", "timestamp": 1763946217.6524973, "new_name": "images.to.videoo"}
+{"type": "rename", "original_name": "smalldpi", "timestamp": 1763946236.9089434, "new_name": "system.dpi.small"}
+{"type": "rename", "original_name": "smartlba", "timestamp": 1763946257.6915452, "new_name": "smartctl.lbas"}

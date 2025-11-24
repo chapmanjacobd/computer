@@ -1,5 +1,5 @@
 # https://github.com/mattmc3/fishconf/blob/main/functions/cachecmd.fish
-function cachecmd --description 'Cache a command'
+function eval.cache --description 'Cache a command'
     set --local cmdfile (
         string join '_' -- $argv |
             string replace -ar '[/-]' '_' |

@@ -320,3 +320,4 @@ abbr -a -- boottime systemd-analyze critical-chain --no-pager
 abbr -a -- pu.time systemd-analyze --user blame
 abbr -a -- p.time systemd-analyze blame
 abbr -a -- ping ping -c1
+abbr -a -- shutdown sudo shutdown now

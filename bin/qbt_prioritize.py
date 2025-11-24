@@ -41,6 +41,7 @@ for t in torrents:
             "num_leechs": t.num_leechs,
             "num_files": len(torrents_info.torrent_files(t)),
             "tracker": torrents_info.qbt_get_tracker(qbt_client, t),
+            "private": t.private,
         }
     )
 
@@ -66,6 +67,7 @@ media = sorted(
     key=lambda d: (
         d["progress"] > 0,
         d["progress"] > 0.03,
+        d["private"],
         d["remaining"] < 3719453952 // 16,
         d["remaining"] < 3719453952 // 4,
         d["remaining"] < 3719453952,
