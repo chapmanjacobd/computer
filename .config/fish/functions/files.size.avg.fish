@@ -1,4 +1,4 @@
 # Defined interactively
-function avg_size
+function files.size.avg
     bytes (math -s0 "$(file.size)/$(fd -tf | count)")
 end

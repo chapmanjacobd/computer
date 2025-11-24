@@ -1,5 +1,5 @@
 # Defined via `source`
-function processes.fzf
+function ps.fzf
     set -f ps_cmd (command -v ps || echo "ps")
     set -f ps_preview_fmt (string join ',' 'pid' 'ppid=PARENT' 'user' '%cpu' 'rss=RSS_IN_KB' 'start=START_TIME' 'command')
 

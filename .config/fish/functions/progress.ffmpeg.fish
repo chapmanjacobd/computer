@@ -1,5 +1,5 @@
 # Defined interactively
-function ffmpeg_progress
+function progress.ffmpeg
     for pid in (pgrep ffmpeg)
         progress -p $pid
     end

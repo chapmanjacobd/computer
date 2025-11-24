@@ -7,7 +7,7 @@ function maximize_all
 
     set is_enabled (kreadconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled)
     if test "$is_enabled" = true
-        krohnkite_off
+        krohnkite.off
         sleep 0.5
         krohnkite_on
     end

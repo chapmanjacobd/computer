@@ -1,5 +1,5 @@
 # Defined interactively
-function eval-shuf
+function file.eval.shuf
     for j in (shuf $argv)
         echo $j
         eval $j

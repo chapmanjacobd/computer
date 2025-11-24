@@ -1,5 +1,5 @@
 # Defined via `source`
-function diff-pairwise
+function pairwise.diff
     set files (fd -tf . $argv | sort --stable)
 
     for i in (seq 2 (count $files))

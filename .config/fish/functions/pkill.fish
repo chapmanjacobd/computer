@@ -13,6 +13,6 @@ function pkill
     if test (count $patterns) -gt 0
         command pkill $opts $patterns
     else
-        kill $opts (processes.fzf)
+        kill $opts (ps.fzf)
     end
 end

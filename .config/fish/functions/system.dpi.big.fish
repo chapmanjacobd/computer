@@ -1,4 +1,4 @@
-function bigdpi
+function system.dpi.big
     xrandr --dpi 192
     echo 'Xft.dpi: 192' | xrdb -override
     sed -i 's/ScaleFactor=1/ScaleFactor=2' ~/.config/kdeglobals

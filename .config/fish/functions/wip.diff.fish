@@ -1,5 +1,5 @@
 # Defined interactively
-function wipd
+function wip.diff
     git add .
     git diff --staged
 end

@@ -7,7 +7,7 @@ function standuphorizontally
         kscreen-doctor output.DP-1.disable output.HDMI-1.disable output.DVI-D-1.disable
         kscreen-doctor output.DVI-D-1.enable output.DVI-D-1 output.DVI-D-1.mode.1920x1080@50
     end
-    krohnkite_off
+    krohnkite.off
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
     keepscreenoff && xset +dpms
     #breaktimer disable

@@ -1,4 +1,4 @@
 # Defined interactively
 function window.close
-    wmctrl -c (pick_window)
+    wmctrl -c (windows.fzf)
 end
