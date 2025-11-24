@@ -1,6 +1,6 @@
 # Defined interactively
-function the_empire_dl
-    load_env_the_empire
+function dl.torrent.the.empire
+    load.env.the.empire
 
     for url in $argv
         if not grep -i $url ~/.local/data/qbittorrent/the_empire_click.urls >/dev/null

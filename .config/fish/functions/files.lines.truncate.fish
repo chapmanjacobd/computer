@@ -1,5 +1,5 @@
 # Defined interactively
-function truncatelines
+function files.lines.truncate
     set qty $argv[1]
     set f $argv[2..-1]
 

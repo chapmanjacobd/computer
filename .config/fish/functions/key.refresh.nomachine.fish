@@ -1,5 +1,5 @@
 # Defined via `source`
-function key-refresh-nomachine
+function key.refresh.nomachine
     set oldkey (mktemp --tmpdir=/home/xk/.ssh/old/ id_rsa_nx_XXXXX)
     mv ~/.ssh/id_rsa_nx $oldkey
     mv ~/.ssh/id_rsa_nx.pub $oldkey.pub

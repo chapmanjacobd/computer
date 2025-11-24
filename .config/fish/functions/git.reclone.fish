@@ -1,5 +1,5 @@
 # Defined via `source`
-function git-recreate
+function git.reclone
     set tmp_fifo (mktemp -u)
     mkfifo $tmp_fifo
     git fast-export --signed-tags=strip --all >$tmp_fifo &

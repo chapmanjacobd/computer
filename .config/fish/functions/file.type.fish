@@ -1,5 +1,5 @@
 # Defined interactively
-function filetype
+function file.type
     if test (count $argv) -gt 0
         file -b $argv
     else

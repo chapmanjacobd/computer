@@ -1,4 +1,4 @@
-function lbrelease --argument newver
+function lb.release --argument newver
     ~/lb/
     set oldver (awk -F'"' '/^__version__/{print $2}' library/__main__.py)
 

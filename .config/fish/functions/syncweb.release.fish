@@ -1,5 +1,5 @@
 # Defined interactively
-function syncweb-release --argument-names newver
+function syncweb.release --argument-names newver
     ~/github/xk/syncweb-py
 
     set oldver (awk -F'"' '/^__version__/{print $2}' syncweb/__main__.py)

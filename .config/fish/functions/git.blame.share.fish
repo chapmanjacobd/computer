@@ -1,5 +1,5 @@
 # Defined in /home/xk/.config/fish/functions/gitblame-percent.fish @ line 2
-function gitblame-percent --argument file
+function git.blame.share --argument file
     set line_count (wc -l $file | cut -d' ' -f1)
     set authors (git blame --line-porcelain "$file" | grep "^author " | desc)
 

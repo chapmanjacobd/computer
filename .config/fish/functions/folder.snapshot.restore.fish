@@ -1,5 +1,5 @@
 # Defined via `source`
-function snapshot_restore
+function folder.snapshot.restore
     set snapshot_folder $argv[1]
 
     if test -d $snapshot_folder

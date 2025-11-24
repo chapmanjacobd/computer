@@ -1,6 +1,6 @@
 # Defined via `source`
 function mam_search
-    filter_opts $argv
+    optparse $argv
 
     load_env_mam
 

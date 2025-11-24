@@ -1,4 +1,4 @@
 # Defined interactively
-function delete_duplicate_lines
+function file.lines.dedupe
     cat "$argv" | unique | sponge "$argv"
 end

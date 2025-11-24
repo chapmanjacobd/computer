@@ -1,4 +1,4 @@
 # Defined interactively
-function presume
+function ps.resume
     kill -CONT $argv
 end

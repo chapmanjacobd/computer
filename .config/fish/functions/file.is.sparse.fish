@@ -1,5 +1,5 @@
 # Defined via `source`
-function is_sparse_file
+function file.is.sparse
     set actual_size (du --block-size=1 "$argv" | awk '{print $1}')
     set apparent_size (du --block-size=1 --apparent-size "$argv" | awk '{print $1}')
 

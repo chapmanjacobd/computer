@@ -66,7 +66,7 @@ abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
 abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
-abbr -a -- tl truncatelines 1
+abbr -a -- tl files.lines.truncate 1
 abbr -a -- suspend sudo systemctl suspend
 abbr -a -- vpn-partial sshuttle --dns -HNvr pakon
 abbr -a -- hexdump hexdump -C
@@ -121,9 +121,9 @@ abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/dl/video.db (cb)'
 abbr -a -- osq osqueryi
 abbr -a -- revsort rightsort
-abbr -a -- pcontinue presume
+abbr -a -- pcontinue ps.resume
 abbr -a -- lsgpu lsgpu -p
-abbr -a -- restore_snapshot snapshot_restore
+abbr -a -- restore_snapshot folder.snapshot.restore
 abbr -a -- skipworktree 'git update-index --skip-worktree --'
 abbr -a -- unskipworktree 'git update-index --no-skip-worktree --'
 abbr -a -- getTabs lines.cut10.cb
@@ -152,9 +152,9 @@ abbr -a -- timezone_update tzupdate
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
 abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
-abbr -a -- punpause-all presume-all
-abbr -a -- punpause-fzf presume-fzf
-abbr -a -- punpause presume
+abbr -a -- punpause-all ps.resume-all
+abbr -a -- punpause-fzf ps.fzf.resume
+abbr -a -- punpause ps.resume
 abbr -a -- recommit wipam
 abbr -a -- cbfold cb.wrap.cb
 abbr -a -- rsync rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
@@ -203,7 +203,7 @@ abbr -a -- lsfs lsblk -fa -o FSAVAIL,MOUNTPOINTS,NAME,FSTYPE,FSVER
 abbr -a -- gitauthors git shortlog -sn
 abbr -a -- gitroot 'cd (git rev-parse --show-cdup)'
 abbr -a -- arp arp -n
-abbr -a -- gc git_clone
+abbr -a -- gc git.clone
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- gs git status --short --untracked
@@ -225,7 +225,7 @@ abbr -a -- iostat iostat -xh 4
 abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --metadata --human-readable --error-on-no-transfer --checkers 18 --no-update-modtime --timeout=45s --ignore-existing --check-first
 abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
-abbr -a -- stopped 'ppaused | less -FSRXc'
+abbr -a -- stopped 'ps.paused | less -FSRXc'
 abbr -a -- less ov
 abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
@@ -434,3 +434,33 @@ abbr -a -- has_sub ffprobe.has.subtitle
 abbr -a -- yts yt.subtitle
 abbr -a -- gitls-blame paths.git.blame
 abbr -a -- virtual_console tty.theme
+abbr -a -- volume catt.volume
+abbr -a -- presume-fzf ps.fzf.resume
+abbr -a -- presume ps.resume
+abbr -a -- key-refresh-nomachine key.refresh.nomachine
+abbr -a -- append file.append.line
+abbr -a -- git_clone git.clone
+abbr -a -- git-recreate git.reclone
+abbr -a -- delete_duplicate_lines file.lines.dedupe
+abbr -a -- filetype file.type
+abbr -a -- gitblame-percent git.blame.share
+abbr -a -- trash-restore-here trash.restore.here
+abbr -a -- the_empire_dl dl.torrent.the.empire
+abbr -a -- load_env_the_empire load.env.the.empire
+abbr -a -- filterByGenre files.audio.genre
+abbr -a -- gitignore git.ignore
+abbr -a -- snapshot_restore folder.snapshot.restore
+abbr -a -- snakecase lines.to.snake.case
+abbr -a -- syncweb-release syncweb.release
+abbr -a -- lbrelease lb.release
+abbr -a -- close_window window.close
+abbr -a -- fzf-choose fzf.choose
+abbr -a -- is_sparse_file file.is.sparse
+abbr -a -- filter_opts optparse
+abbr -a -- ppause-fzf ps.fzf.pause
+abbr -a -- ppause ps.pause
+abbr -a -- focus_under_mouse kwin.FocusUnderMouse
+abbr -a -- focus_follows_mouse kwin.FocusFollowsMouse
+abbr -a -- truncatelines files.lines.truncate
+abbr -a -- locate_folders folders.locate
+abbr -a -- fd-date fd.date

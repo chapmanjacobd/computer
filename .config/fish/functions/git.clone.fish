@@ -1,5 +1,5 @@
 # Defined via `source`
-function git_clone --argument-names url
+function git.clone --argument-names url
 
     switch $url
         case 'https://github.com/*'

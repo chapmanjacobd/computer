@@ -1,5 +1,5 @@
 # Defined via `source`
-function gitignore
+function git.ignore
     touch .gitignore
     echo "$argv" | cat - .gitignore | sponge .gitignore
     if gum confirm --default=no 'git reset?'

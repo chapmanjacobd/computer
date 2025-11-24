@@ -1,6 +1,6 @@
 # Defined interactively
-function presume-all
-    for pid in (ppaused | cut -d' ' -f1)
-        presume $pid
+function ps.resume-all
+    for pid in (ps.paused | cut -d' ' -f1)
+        ps.resume $pid
     end
 end

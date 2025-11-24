@@ -1,5 +1,5 @@
 # Defined interactively
-function volume
+function catt.volume
     if pgrep -f catt
         catt volume $argv
     else

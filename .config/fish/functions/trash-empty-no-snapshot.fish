@@ -1,6 +1,6 @@
 # Defined interactively
 function trash-empty-no-snapshot
-    filter_opts $argv
+    optparse $argv
 
     set args (
 	  if test -z "$args"

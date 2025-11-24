@@ -1,6 +1,6 @@
 # Defined interactively
 function trash-empty
-    filter_opts $argv
+    optparse $argv
 
     if test -z "$args"
         set args (trash-list --trash-dirs)

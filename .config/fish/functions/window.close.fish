@@ -1,4 +1,4 @@
 # Defined interactively
-function close_window
+function window.close
     wmctrl -c (pick_window)
 end
