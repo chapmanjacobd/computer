@@ -1,4 +1,4 @@
 # Defined interactively
-function pkilldaemon
+function pkill.daemon
     pkill -P (pgrep -f 'systemd --user') $argv
 end

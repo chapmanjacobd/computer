@@ -1,4 +1,4 @@
 # Defined interactively
-function linetail
+function lines.rcolumn
     awk '{print $(NF-'(coalesce $argv 0)')}'
 end

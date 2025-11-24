@@ -1,5 +1,5 @@
 # Defined interactively
-function mecho
+function args.or.stdin
     if test (count $argv) -gt 0
         echo $argv
     else

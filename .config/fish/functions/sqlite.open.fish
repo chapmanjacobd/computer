@@ -1,5 +1,5 @@
 # Defined interactively
-function sqlite-open
+function sqlite.open
     run dbeaver-ce -con 'driver=SQLite|database='(path resolve $argv[1])
     sleep 2
 

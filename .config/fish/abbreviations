@@ -140,7 +140,7 @@ abbr -a -- eda lb eda
 abbr -a -- pstat pidstat -l --dec=0 3 1 -r
 abbr -a -- uuid lsblk -f
 abbr -a -- sshfs sshfs -o noauto,noatime,_netdev,reconnect,ConnectTimeout=10,ServerAliveInterval=8,TCPKeepAlive=no,auto_cache,cache_timeout=115200,attr_timeout=115200,entry_timeout=1200
-abbr -a -- opentabs openlinks
+abbr -a -- opentabs file.urls.open
 abbr -a -- wdlf lb links --no-extract --download
 abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- iotop sudo iotop -Poa
@@ -157,7 +157,7 @@ abbr -a -- punpause ps.resume
 abbr -a -- recommit wipam
 abbr -a -- cbfold cb.wrap.cb
 abbr -a -- rsync rsync -ah --info=progress2 --no-inc-recursive --partial-dir=.rsync-partial
-abbr -a -- sponge_rsync rsink
+abbr -a -- sponge_rsync rsync.stdin
 abbr -a -- timeout timeout --preserve-status --signal INT 20m
 abbr -a -- massif valgrind --tool=massif
 abbr -a -- ash ssh
@@ -477,7 +477,7 @@ abbr -a -- tmux-socket-recreate tmux.socket.recreate
 abbr -a -- ffmpeg.rotate video.rotate
 abbr -a -- activate pipenv.activate
 abbr -a -- ffsmall_delete video.shrink.delete
-abbr -a -- systemd-cron-delete systemd.cron.delete
+abbr -a -- systemd.cron-delete systemd.cron.delete
 abbr -a -- ffa_delete video.to.audio.delete
 abbr -a -- tordel torrents.delete
 abbr -a -- btrfs_nocheck_delete_snapshot btrfs.snapshot.delete
@@ -648,3 +648,28 @@ abbr -a -- roman number.to.roman
 abbr -a -- bytes2human size.human
 abbr -a -- duckdb-open duckdb.open
 abbr -a -- fdopen fd.open
+abbr -a -- sqlite-open sqlite.open
+abbr -a -- openfiles paths.is.open
+abbr -a -- openmctabs mc.links.open
+abbr -a -- openlinks file.urls.open
+abbr -a -- pgrep-children pgrep.children
+abbr -a -- proc.children ps.children
+abbr -a -- flattenDirectory folders.flatten
+abbr -a -- explain ai.explain
+abbr -a -- domains chars.domain
+abbr -a -- rsink rsync.stdin
+abbr -a -- fish_commandline_stdin commandline.stdin
+abbr -a -- mecho args.or.stdin
+abbr -a -- coln lines.coln
+abbr -a -- linetail lines.rcolumn
+abbr -a -- krohnkite_on krohnkite.on
+abbr -a -- screen.on screen.on
+abbr -a -- display.enable screen.on
+abbr -a -- llm_python llm.python
+abbr -a -- duration ffprobe.duration
+abbr -a -- vnc-pakon vnc.pakon
+abbr -a -- pkilldaemon pkill.daemon
+abbr -a -- git_serve git.daemon
+abbr -a -- noonday noon
+abbr -a -- systemd-cron systemd.cron
+abbr -a -- fs_display display.enable

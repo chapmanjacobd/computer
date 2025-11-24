@@ -9,6 +9,6 @@ function windows.minimize.all
     if test "$is_enabled" = true
         krohnkite.off
         sleep 0.5
-        krohnkite_on
+        krohnkite.on
     end
 end

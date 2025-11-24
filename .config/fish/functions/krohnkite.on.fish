@@ -1,5 +1,5 @@
 # Defined interactively
-function krohnkite_on
+function krohnkite.on
     kwriteconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled true
     qdbus org.kde.KWin /KWin reconfigure
 end

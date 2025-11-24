@@ -1,5 +1,5 @@
 # Defined interactively
-function fs_display --argument target
+function display.enable --argument target
     for enabled in (kscreen-doctor -o | grep -v disconnected | grep -i enabled | cut -d' ' -f3)
         kscreen-doctor output.$enabled.disable
     end

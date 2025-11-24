@@ -1,5 +1,5 @@
 # Defined interactively
-function fish_commandline_stdin
+function commandline.stdin
     while read -l line
         commandline -a $line
     end

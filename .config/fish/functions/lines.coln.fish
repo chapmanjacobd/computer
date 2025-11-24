@@ -1,5 +1,5 @@
 # Defined interactively
-function coln
+function lines.coln
     set col $argv[1]
     if test $col -gt 0
         awk '{print $'$argv[1]'}'

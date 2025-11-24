@@ -1,4 +1,4 @@
-function openmctabs
+function mc.links.open
     argparse 'p/prefix=+' 'n/qty=' -- $argv
     set -l file $argv[1]
 
