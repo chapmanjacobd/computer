@@ -1,6 +1,6 @@
 # Defined interactively
 function servers.ssh.each
     for pc in $servers
-        sshpc $pc -t $argv
+        server.ssh $pc -t $argv
     end
 end

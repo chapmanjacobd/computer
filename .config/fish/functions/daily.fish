@@ -13,7 +13,7 @@ function daily
 
     catt volume 0 && catt volume 40
     pip install --upgrade pychromecast
-    allpc pip install --upgrade --pre yt-dlp[default]
+    servers.ssh pip install --upgrade --pre yt-dlp[default]
 
     history.sync
     # command trash-empty 10 -f

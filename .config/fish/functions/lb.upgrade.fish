@@ -1,4 +1,4 @@
 # Defined via `source`
 function lb.upgrade
-    allpc pip install --upgrade library
+    servers.ssh pip install --upgrade library
 end

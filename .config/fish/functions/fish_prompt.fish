@@ -109,7 +109,7 @@ function fish_prompt --description 'Write out the prompt'
             set suffix '#'
         case '*'
             set color_cwd $fish_color_cwd
-            set suffix (rand_emoji)
+            set suffix (random.emoji)
     end
 
     function prompt_git_pwd

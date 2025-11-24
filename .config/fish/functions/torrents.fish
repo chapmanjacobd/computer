@@ -1,4 +1,4 @@
 # Defined interactively
 function torrents
-    parallel sshpc {} lb torrents $argv ::: (connectable-ssh $servers)
+    parallel server.ssh {} lb torrents $argv ::: (connectable-ssh $servers)
 end

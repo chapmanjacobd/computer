@@ -5,7 +5,7 @@ function check_local_video
 
     set hosts (connectable-ssh $servers_local)
     locate_remote_mv.py -v -E /sync/ -E /archive/ --flex --hosts $hosts -- /video/ $argv
-    print $hosts | parallel sshpc {} lb torrents -- $argv
+    print $hosts | parallel server.ssh {} lb torrents -- $argv
 
     xsql $argv
 end

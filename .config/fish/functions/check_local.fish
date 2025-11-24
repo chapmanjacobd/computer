@@ -5,7 +5,7 @@ function check_local
 
     set hosts (connectable-ssh $servers_local)
     locate_remote_mv.py -v --flex --hosts $hosts -- $argv
-    print $hosts | parallel sshpc {} lb torrents -- $argv
+    print $hosts | parallel server.ssh {} lb torrents -- $argv
 
     xsql $argv
 end

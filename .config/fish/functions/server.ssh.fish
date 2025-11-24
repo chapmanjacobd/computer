@@ -1,5 +1,5 @@
 # Defined interactively
-function sshpc --argument pc
+function server.ssh --argument pc
     echo $pc
     ssh $pc $argv[2..-1]
     echo

@@ -230,7 +230,7 @@ abbr -a -- less ov
 abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
-abbr -a -- torrent-status 'print $servers | parallel sshpc {} lb-dev torrents --dl -pa | ov'
+abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb-dev torrents --dl -pa | ov'
 abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
 abbr -a -- wipc gitstash-checkpoint
@@ -257,7 +257,7 @@ abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
 abbr -a -- lower string lower
 abbr -a -- tmux-slow tmux detach-client -a
-abbr -a -- locate 'allpc locate --literal --ignore-case (cb | chars.no.quote)'
+abbr -a -- locate 'servers.ssh locate --literal --ignore-case (cb | chars.no.quote)'
 abbr -a -- display set -gx DISPLAY :0
 abbr -a -- large-folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
 abbr -a -- ps-size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
@@ -302,7 +302,7 @@ abbr -a -- connectpg portforward remote-address 5432
 abbr -a -- history.last history -1
 abbr -a -- dedupe unique
 abbr -a -- kill.jobs 'kill (jobs -p)'
-abbr -a -- loc allpc locate
+abbr -a -- loc servers.ssh locate
 abbr -a -- lta ltd
 abbr -a -- grepmv 'mv (rg -i --files-with-matches src) dest'
 abbr -a -- now lb now
@@ -545,3 +545,23 @@ abbr -a -- dsql_refresh d.sql.refresh
 abbr -a -- dsql_refresh_disk dsql.refresh
 abbr -a -- tor-refresh torrents.refresh
 abbr -a -- sum_fish lines.sum.fish
+abbr -a -- git_remote_use_ssh git.remote.ssh
+abbr -a -- key-refresh-ssh key.refresh.ssh
+abbr -a -- sshpc server.ssh
+abbr -a -- allpc servers.ssh
+abbr -a -- sqlpath search.db.media.path
+abbr -a -- githubfile search.github.path
+abbr -a -- ytm.filename yt.print.path
+abbr -a -- sshls ls.sshpath
+abbr -a -- screenwidth resolution.width
+abbr -a -- sortlength sort.length
+abbr -a -- rand_emoji random.emoji
+abbr -a -- with_unli with.unli
+abbr -a -- standuphdmi standup.hdmi
+abbr -a -- fzf-choose-multi fzf.multi
+abbr -a -- relaxvidd relax.video.multi
+abbr -a -- tvdvi tv.dvi
+abbr -a -- flatsearch search.flatpak
+abbr -a -- archiveurl urls.submit.wayback
+abbr -a -- ffmpegMakeMusicVideoBlank audio.to.video.black
+abbr -a -- substack dl.substack

@@ -24,7 +24,7 @@ function lb.release --argument newver
     echo
     git status
     if gum confirm --default=no
-        allpc pip install --upgrade pip
+        servers.ssh pip install --upgrade pip
         pip install --upgrade pip pdm
 
         pdm lock --group deluxe,test

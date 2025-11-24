@@ -1,4 +1,4 @@
-function relaxvidd
+function relax.video.multi
     fish -c 'lb extract ~/lb/tax.db ~/sync/porn/video/ ~/sync/porn/image/' &
     mpv --no-video --af="acompressor=ratio=4,loudnorm" (fd -eOPUS -eOGA . ~/sync/porn/image) &
     mount_pakond

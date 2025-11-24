@@ -1,4 +1,4 @@
 # Defined interactively
-function screenwidth
+function resolution.width
     xdotool getdisplaygeometry | cut -f1 -d' '
 end
