@@ -673,3 +673,6 @@ abbr -a -- git_serve git.daemon
 abbr -a -- noonday noon
 abbr -a -- systemd-cron systemd.cron
 abbr -a -- fs_display display.enable
+abbr -a -- trash-empty trash.empty
+abbr -a -- trim files.lines.no.empty
+abbr -a -- strip lines.no.empty
