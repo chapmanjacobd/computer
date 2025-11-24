@@ -1,5 +1,5 @@
 # Defined interactively
-function stdin_or_file
+function stdin.or.file
     set file (coalesce $argv[1] /dev/stdin)
 
     cat "$file" | while read line

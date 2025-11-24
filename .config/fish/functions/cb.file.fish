@@ -1,5 +1,5 @@
 # Defined interactively
-function cbfile
+function cb.file
     if status --is-command-substitution
         cb | psub $argv
     else

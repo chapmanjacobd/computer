@@ -1,5 +1,5 @@
 # Defined interactively
-function feed
+function sdcard.dump.footage
     udisksctl status
     udisksctl mount -b /dev/sdi1
     rsync -ah --info=progress2 --no-inc-recursive --remove-sent-files /run/media/xk/LUMIX/DCIM/ ~/d/dump/projects/cinematograph/footage/

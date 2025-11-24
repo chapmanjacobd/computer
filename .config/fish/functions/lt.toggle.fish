@@ -1,5 +1,5 @@
 # Defined interactively
-function lt-toggle
+function lt.toggle
     if pgrep -f 'lb listen'; or pgrep -f 'lb lt'
         lb stop
     else

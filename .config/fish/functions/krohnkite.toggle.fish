@@ -1,5 +1,5 @@
 # Defined interactively
-function krohnkite_toggle
+function krohnkite.toggle
     set is_enabled (kreadconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled)
 
     if test "$is_enabled" = true

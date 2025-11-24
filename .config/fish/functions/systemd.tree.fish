@@ -1,4 +1,4 @@
 # Defined via `source`
-function service-status
+function systemd.tree
     pstree -a -p (systemctl --user show --value -p MainPID $argv)
 end

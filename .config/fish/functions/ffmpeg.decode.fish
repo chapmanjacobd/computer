@@ -1,4 +1,4 @@
 # Defined interactively
-function ffmpeg-check-corrupt
+function ffmpeg.decode
     ffmpeg -v error -i $argv -f null -
 end

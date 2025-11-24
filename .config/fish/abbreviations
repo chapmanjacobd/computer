@@ -99,7 +99,7 @@ abbr -a -- gitWhoAddedOrDeleted 'git log main... --reverse --pretty=format:"%h%x
 abbr -a -- ps ps -o 'pid,etime,%cpu,command' ww
 abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
-abbr -a -- cbf cbfile
+abbr -a -- cbf cb.file
 abbr -a -- inotify kde-inotify-survey
 abbr -a -- syss timer-status
 abbr -a -- dl eval-shuf-repeat
@@ -413,3 +413,24 @@ abbr -a -- pipe_code tee.code
 abbr -a -- html_forum_code html.forum.code
 abbr -a -- html_details_code html.details.code
 abbr -a -- ffmpegBurnInSubtitlesBitmap video.subtitle.hardcode
+abbr -a -- cbfile cb.file
+abbr -a -- audioActualTime ffmpeg.decode
+abbr -a -- ffmpeg-check-corrupt ffmpeg.decode
+abbr -a -- decode-url urls.decode
+abbr -a -- path_explode path.explode
+abbr -a -- service-status systemd.tree
+abbr -a -- jotree jo.tree
+abbr -a -- feed sdcard.dump.footage
+abbr -a -- sqlite-row-like sqlite.row.like
+abbr -a -- connectable-ssh servers.ssh.connectable
+abbr -a -- mousewiggle input.mouse.wiggle
+abbr -a -- krohnkite_toggle krohnkite.toggle
+abbr -a -- ip_link_toggle ip.link.toggle
+abbr -a -- lt-toggle lt.toggle
+abbr -a -- dns-set-google system.dns.google
+abbr -a -- not_in lines.not.in.file
+abbr -a -- stdin_or_file stdin.or.file
+abbr -a -- has_sub ffprobe.has.subtitle
+abbr -a -- yts yt.subtitle
+abbr -a -- gitls-blame paths.git.blame
+abbr -a -- virtual_console tty.theme

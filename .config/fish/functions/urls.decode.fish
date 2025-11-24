@@ -1,5 +1,5 @@
 # Defined interactively
-function decode-url
+function urls.decode
     python -c 'from library.utils.web import url_decode
 from library.utils.arg_utils import stdarg
 for s in stdarg():
