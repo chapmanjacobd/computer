@@ -1,4 +1,4 @@
 # Defined interactively
-function want
+function ai.suggest
     gh copilot suggest -t shell $argv
 end
