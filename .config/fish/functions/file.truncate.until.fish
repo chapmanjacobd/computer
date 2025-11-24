@@ -1,5 +1,5 @@
 # Defined in /home/xk/.config/fish/functions/match-trunc-tail.fish @ line 2
-function match-trunc-tail --argument file word
+function file.truncate.until --argument file word
     set word (string replace \/ \\\/ -- (string escape --style=regex "$word"))
 
     set count (grep -c "$word" "$file")

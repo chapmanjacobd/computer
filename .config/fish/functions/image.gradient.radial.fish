@@ -1,4 +1,4 @@
 # Defined interactively
-function img_radial_gradient
+function image.gradient.radial
     magick $argv -size %wx%h radial-gradient: -colorspace RGB -compose copyopacity -composite $argv
 end

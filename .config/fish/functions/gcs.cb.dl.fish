@@ -1,5 +1,5 @@
 # Defined interactively
-function gscbdl
+function gcs.cb.dl
     for l in (cb)
         gsutil -m cp $l\* .
     end

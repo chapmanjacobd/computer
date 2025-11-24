@@ -17,5 +17,5 @@ function mam.update
         python ~/bin/mam_search.py --cookie $MAM_COOKIE ~/lb/sites/mam/mam.db (string split ' ' -- $l) ''
     end
 
-    mam_db_dl ~/lb/sites/mam/mam.db
+    mam.db.dl ~/lb/sites/mam/mam.db
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function not-fish --description 'A minimal prompt'
+function prompt.minimal --description 'A minimal prompt'
     set -g fish_autosuggestion_enabled 0
     fish_config theme choose None
 

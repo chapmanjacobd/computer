@@ -1,5 +1,5 @@
 # Defined interactively
-function xxdall
+function xxd.all
     for f in (fd -HI -tf)
         echo $f
         hexyl $f

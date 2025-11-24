@@ -1,5 +1,5 @@
 # Defined interactively
-function standuphorizontally
+function standup.horizontal
     if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
         kscreen-doctor output.DisplayPort-0.disable output.HDMI-A-0.disable output.DVI-D-0.disable
         kscreen-doctor output.DVI-D-0.enable output.DVI-D-0 output.DVI-D-0.mode.1920x1080@60

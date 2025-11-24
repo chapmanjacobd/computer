@@ -5,5 +5,5 @@ function restartplasma
     systemctl --user restart pipewire-pulse.socket pipewire-pulse.service pipewire.service wireplumber.service
 
     sleep 3
-    maximize_all
+    windows.maximize.all
 end

@@ -291,7 +291,7 @@ abbr -a -- head 'head -n$LINES'
 abbr -a -- highcpu 'ps -eo pid,etime,%cpu,command ww --sort=-pcpu | head -n 5'
 abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
 abbr -a -- continue-from match-first-tail
-abbr -a -- continue-to match-first-head
+abbr -a -- continue-to lines.until
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
 abbr -a -- editcb 'cb | vipe | cb'
@@ -585,3 +585,23 @@ abbr -a -- ffsmall.audio audio.shrink
 abbr -a -- image-folder-ask-keep folders.images.ask
 abbr -a -- mergerfs_add_disk mergerfs.add.disk
 abbr -a -- unlidisk unli.disk
+abbr -a -- is_vertical_video video.is.vertical
+abbr -a -- gitignore-local git.ignore.local
+abbr -a -- img_radial_gradient image.gradient.radial
+abbr -a -- not-fish prompt.minimal
+abbr -a -- standuphorizontally standup.horizontal
+abbr -a -- eval-file file.eval
+abbr -a -- eval-dir folder.eval
+abbr -a -- fish-map lines.eval
+abbr -a -- gscbdl gcs.cb.dl
+abbr -a -- mam_db_dl mam.db.dl
+abbr -a -- argstail args.tail
+abbr -a -- ptail ps.tail
+abbr -a -- match-trunc-tail file.truncate.until
+abbr -a -- match-first-head lines.until
+abbr -a -- xxdall xxd.all
+abbr -a -- pipupgrade pip.upgrade.all
+abbr -a -- presume-all ps.resume.all
+abbr -a -- trash-restore-all trash.restore.all
+abbr -a -- minimize_all windows.minimize.all
+abbr -a -- maximize_all windows.maximize.all

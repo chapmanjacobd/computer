@@ -1,11 +1,11 @@
 # Defined interactively
-function minimize_all
+function windows.maximize.all
     for win in (lswin | grep -iv plasma | cut -f1 -d' ')
         wmctrl -i -r $win -b toggle,maximized_horz,maximized_vert
-        wmctrl -i -r $win -b remove,maximized_horz,maximized_vert
+        wmctrl -i -r $win -b add,maximized_horz,maximized_vert
     end
 
-    set is_enabled (kreadconfig5 --file kwinrc --group Plugins --key monocle_ultrawideEnabled)
+    set is_enabled (kreadconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled)
     if test "$is_enabled" = true
         krohnkite.off
         sleep 0.5

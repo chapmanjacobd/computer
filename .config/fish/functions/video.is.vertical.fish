@@ -1,5 +1,5 @@
 # Defined interactively
-function is_vertical_video --argument file
+function video.is.vertical --argument file
     set width (ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$file")
     set height (ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$file")
 
