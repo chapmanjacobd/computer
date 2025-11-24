@@ -1,4 +1,4 @@
 # Defined interactively
-function filter-0
+function lines.not.0
     sed '/^0$/d'
 end
