@@ -323,3 +323,5 @@ abbr -a -- shutdown sudo shutdown now
 abbr -a -- su sudo su
 abbr -a -- userd systemctl --user
 abbr -a -- unardel lb unardel -v
+abbr -a -- ps.unit systemctl whoami
+abbr -a -- stat.web http HEAD
