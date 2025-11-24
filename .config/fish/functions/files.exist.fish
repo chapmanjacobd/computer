@@ -1,5 +1,5 @@
 # Defined interactively
-function exists
+function files.exist
     while read -l path
         if test -f "$path"
             echo "$path"

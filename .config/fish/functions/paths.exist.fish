@@ -1,5 +1,5 @@
 # Defined interactively
-function filter-deleted
+function paths.exist
     while read -l line
         if test -e $line
             echo $line
