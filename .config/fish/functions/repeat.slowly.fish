@@ -1,5 +1,5 @@
 # Defined interactively
-function repeatslowly
+function repeat.slowly
     while $argv
         and sleep 1.4
     end

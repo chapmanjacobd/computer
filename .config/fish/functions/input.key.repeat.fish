@@ -1,5 +1,5 @@
 # Defined interactively
 function input.key.repeat
     sleep 1
-    repeatslowly xdotool key $argv
+    repeat.slowly xdotool key $argv
 end

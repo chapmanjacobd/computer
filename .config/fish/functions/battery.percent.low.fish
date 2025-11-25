@@ -1,5 +1,5 @@
 # Defined interactively
-function low_battery_percent
+function battery.percent.low
     set battery_percentage (battery.percent)
 
     if test -n "$battery_percentage"

@@ -1,5 +1,5 @@
 # Defined interactively
-function wdl
+function dl.httpindex
     for url in $argv
         set parent (string unescape --style=url (path basename $url))
         mkdir $parent/

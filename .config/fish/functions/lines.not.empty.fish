@@ -1,4 +1,4 @@
 # Defined interactively
-function filter-empty-lines
+function lines.not.empty
     sed '/^$/d'
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function prefix --description 'Add prefix to every line (filter)' --argument-names prefix
+function lines.prefix --description 'Add prefix to every line (filter)' --argument-names prefix
     if test -z "$prefix"
         echo "Error: prefix argument is required" >&2
         return 1

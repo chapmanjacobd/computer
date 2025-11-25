@@ -1,5 +1,5 @@
 # Defined interactively
-function ffmpeg.keyframes
+function video.to.keyframes.slow
     set -l tmpfile (mktemp --suffix .mkv --dry-run)
     mkfifo $tmpfile
 

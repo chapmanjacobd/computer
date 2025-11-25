@@ -1,5 +1,5 @@
 # Defined interactively
-function mv-by-filename-alpha
+function files.mv.charprefix
     # before resorting to something like this, try exiftool:
     # exiftool '-Filename<${Artist;}/' -ext .opus .
 

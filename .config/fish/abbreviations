@@ -249,7 +249,7 @@ abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/l
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
-abbr -a -- autoclicker repeatdelay 0.1 xdotool click 1
+abbr -a -- autoclicker repeat.delay 0.1 xdotool click 1
 abbr -a -- exiftool 'exiftool -g -a -u'
 abbr -a -- ip-addr ip.public
 abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -376,7 +376,7 @@ abbr -a -- btrfs_temp_device_add btrfs.tempdevice.add
 abbr -a -- blockchannel yt.downloadarchive.add
 abbr -a -- gitcopystaged git.copy.staged
 abbr -a -- psd ps.blocked
-abbr -a -- ffmpeg.keyframes.io video.to.keyframes.slow.named
+abbr -a -- video.to.keyframes.slow.io video.to.keyframes.slow.named
 abbr -a -- ppaused ps.paused
 abbr -a -- restore_undermount_files d.files.undermounted
 abbr -a -- lsfd_paths ls.fd
@@ -420,7 +420,7 @@ abbr -a -- path_explode path.explode
 abbr -a -- service-status systemd.tree
 abbr -a -- jotree jo.tree
 abbr -a -- feed sdcard.dump.footage
-abbr -a -- sqlite-row-like sqlite.row.like
+abbr -a -- sqlite.row-like sqlite.row.like
 abbr -a -- connectable-ssh servers.ssh.connectable
 abbr -a -- mousewiggle input.mouse.wiggle
 abbr -a -- krohnkite_toggle krohnkite.toggle
@@ -746,7 +746,7 @@ abbr -a -- gcsweblink link.gcs
 abbr -a -- gsgdalinfo gdalinfo.gcs
 abbr -a -- gsogr ogrinfo.gcs
 abbr -a -- redarc_pics redarc.pics
-abbr -a -- ffmpeg.keyframes.images video.to.images
+abbr -a -- video.to.keyframes.slow.images video.to.images
 abbr -a -- gitdiffall git.diff.branches
 abbr -a -- zombies ps.zombies
 abbr -a -- sqlite-tables sqlite.tables
@@ -755,7 +755,7 @@ abbr -a -- check_local search.files
 abbr -a -- html_titles cb.html.titles
 abbr -a -- getsubtitles search.subtitles
 abbr -a -- ffmpeg.frames ffprobe.video.frames
-abbr -a -- ffmpeg.keyframes.quick video.to.keyframes
+abbr -a -- video.to.keyframes.slow.quick video.to.keyframes
 abbr -a -- ffmpeg.scenes video.to.scenes
 abbr -a -- ffmpeg.scenes.images video.to.images.scenes
 abbr -a -- ffmpeg.frametypes ffprobe.video.frametypes
@@ -780,7 +780,7 @@ abbr -a -- sqlite-columns sqlite.columns
 abbr -a -- clean_home_advanced home.clean.permissions
 abbr -a -- gittodos git.todos
 abbr -a -- mu pmaps
-abbr -a -- ffmpeg.keyframes.timestamps ffprobe.video.keyframes.timestamps
+abbr -a -- video.to.keyframes.slow.timestamps ffprobe.video.keyframes.timestamps
 abbr -a -- ffmpeg.pkt.dts ffprobe.audio.dts.timestamps
 abbr -a -- git_remote_use_https git.remote.https
 abbr -a -- githubstars gh.stars
@@ -899,3 +899,29 @@ abbr -a -- csv_grep grep.csv
 abbr -a -- sqlite-preview sqlite.preview
 abbr -a -- text_preview text.preview
 abbr -a -- random-filename path.new
+abbr -a -- printnew repeat.new
+abbr -a -- randomPhoto image.slideshow
+abbr -a -- low_battery_percent battery.percent.low
+abbr -a -- ffmpeg.keyframes video.to.keyframes.slow
+abbr -a -- sqlite-row sqlite.row
+abbr -a -- wdl dl.httpindex
+abbr -a -- ytm.playlist yt.print.playlistindex
+abbr -a -- prefix lines.prefix
+abbr -a -- mv-by-filename-alpha files.mv.charprefix
+abbr -a -- wgetfilename wget.force.suffix
+abbr -a -- suffix lines.suffix
+abbr -a -- fileSuffix path.withsuffix
+abbr -a -- repeatdelay repeat.delay
+abbr -a -- sqlite-group-by sqlite.group.by
+abbr -a -- pdfsmall_grey pdf.shrink.grey
+abbr -a -- priv-daily priv.daily
+abbr -a -- repeatslowly repeat.slowly
+abbr -a -- mkexecpy mkexec.py
+abbr -a -- py_stat stat.python
+abbr -a -- pulumi-cp-secret pulumi.secret.copy
+abbr -a -- gitcopy git.copy
+abbr -a -- mam_db_dl_query mam.db.dl.query
+abbr -a -- firefox-history search.firefoxhistory
+abbr -a -- ffquality ffmpeg.decode.quality
+abbr -a -- tmux-close-empty tmux.close.empty
+abbr -a -- filter-empty-lines lines.not.empty

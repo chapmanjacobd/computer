@@ -1,4 +1,4 @@
 # Defined interactively
-function gitcopy
+function git.copy
     ssh $argv "cd $(pwd); git diff" | git apply -
 end

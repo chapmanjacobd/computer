@@ -74,7 +74,7 @@ function fish_prompt --description 'Write out the prompt'
         set -e CMD_DURATION
     end
 
-    set battery_percentage (low_battery_percent)
+    set battery_percentage (battery.percent.low)
     if test -n "$battery_percentage"
         echo -n "$battery_percentage "
     end

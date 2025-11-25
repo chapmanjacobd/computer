@@ -1,5 +1,5 @@
 # Defined interactively
-function mam_db_dl_query --argument db
+function mam.db.dl.query --argument db
     load.env.mam
 
     lb.dev fs "$db" -w 'my_snatched=0' 'seeders>0' $argv[2..-1] -pa
