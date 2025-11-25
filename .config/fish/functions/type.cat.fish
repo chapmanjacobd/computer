@@ -1,4 +1,4 @@
 # Defined interactively
-function typebin
+function type.cat
     cat (command -v $argv)
 end

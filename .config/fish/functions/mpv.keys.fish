@@ -1,4 +1,4 @@
 # Defined interactively
-function mpvkeys
+function mpv.keys
     mpv --input-test --force-window --idle
 end

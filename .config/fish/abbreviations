@@ -281,7 +281,7 @@ abbr -a -- exts 'chars.ext | asc'
 abbr -a -- cv 'search.video (cb | chars.no.quote)'
 abbr -a -- cl 'search.files (cb | chars.no.quote)'
 abbr -a -- perftop sudo perf top
-abbr -a -- catbin typebin
+abbr -a -- catbin type.cat
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
 abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
 abbr -a -- port-user portuser
@@ -809,3 +809,23 @@ abbr -a -- timers-status timers.status
 abbr -a -- sqlite-views sqlite.views
 abbr -a -- lswin windows
 abbr -a -- sqlite-rows sqlite.rows
+abbr -a -- mpvkeys mpv.keys
+abbr -a -- typebin type.cat
+abbr -a -- git-cat gh.cat
+abbr -a -- eval-shuf-repeat file.eval.shuf.repeat
+abbr -a -- eval-repeat file.eval.repeat
+abbr -a -- eval-repeat-dir folder.eval.repeat
+abbr -a -- keyboard-repeat-char input.key.repeat
+abbr -a -- random_thousanths random.float
+abbr -a -- percent_from_float percent.from.float
+abbr -a -- json-compress json.compact
+abbr -a -- trash-inspect trash.inspect
+abbr -a -- trash-restore-d-folder trash.restore.d.folder
+abbr -a -- ffvcs video.to.contactsheet
+abbr -a -- getignore git.ignore.get
+abbr -a -- brightness_lg_get brightness.lg.get
+abbr -a -- brightness_get brightness.get
+abbr -a -- mpvprop mpv.get
+abbr -a -- brightness_lg_set brightness.lg.set
+abbr -a -- brightness_set brightness.set
+abbr -a -- mpvset mpv.set

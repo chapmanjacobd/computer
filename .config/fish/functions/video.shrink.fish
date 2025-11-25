@@ -1,7 +1,7 @@
 # Defined interactively
 function video.shrink
     # while test (pgrep ffmpeg | count) -ge 3
-    #    sleep (random_thousanths 0 5000)
+    #    sleep (random.float 0 5000)
     # end
 
     set filen (string split -r -m1 . "$argv[1]")[1]

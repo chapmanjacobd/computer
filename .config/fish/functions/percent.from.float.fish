@@ -1,4 +1,4 @@
 # Defined interactively
-function percent_from_float
+function percent.from.float
     awk '{printf "%.2f%%\n", $0 * 100}'
 end

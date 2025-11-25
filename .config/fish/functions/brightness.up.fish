@@ -3,6 +3,6 @@ function brightness.up
     if test pakon = (hostname)
         brightness.lg.up
     else
-        brightness_set (math (brightness_get)+(brightness.step))
+        brightness.set (math (brightness.get)+(brightness.step))
     end
 end
