@@ -1,4 +1,4 @@
 # Defined interactively
-function screenheight
+function resolution.height
     xdotool getdisplaygeometry | cut -f2 -d' '
 end

@@ -119,7 +119,7 @@ abbr -a -- trashrestore trash.restore.d
 abbr -a -- file 'file -bi'
 abbr -a -- ytd 'lb dladd ~/lb/dl/video.db (cb)'
 abbr -a -- osq osqueryi
-abbr -a -- revsort rightsort
+abbr -a -- revsort sort.right
 abbr -a -- pcontinue ps.resume
 abbr -a -- lsgpu lsgpu -p
 abbr -a -- restore_snapshot folder.snapshot.restore
@@ -829,3 +829,23 @@ abbr -a -- mpvprop mpv.get
 abbr -a -- brightness_lg_set brightness.lg.set
 abbr -a -- brightness_set brightness.set
 abbr -a -- mpvset mpv.set
+abbr -a -- screen-reset xcalib.reset
+abbr -a -- restorechmod chmod.reset
+abbr -a -- restartplasma kde.reset
+abbr -a -- reset-display-len display.len.reset
+abbr -a -- timers-reset timers.reset
+abbr -a -- reset-amdgpu gpu.reset
+abbr -a -- gitresetindex git.index.reset
+abbr -a -- sticky_config system.config.preset
+abbr -a -- duckdb2parquet duckdb.to.parquet
+abbr -a -- mouseleft input.mouse.left
+abbr -a -- poplinehead file.line.popleft
+abbr -a -- screenheight resolution.height
+abbr -a -- mouseright input.mouse.right
+abbr -a -- rightsort sort.right
+abbr -a -- resume-edit resume.edit
+abbr -a -- per_line_stdin lines.eval.split
+abbr -a -- splitcsv text.csv.split
+abbr -a -- tmuxsplit tmux.split
+abbr -a -- catt_set_default catt.default
+abbr -a -- defaultset setdefault

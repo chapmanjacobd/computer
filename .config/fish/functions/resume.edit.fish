@@ -1,5 +1,5 @@
 # Defined interactively
-function resume-edit
+function resume.edit
     cd ~/github/o/resume/
     code .
 

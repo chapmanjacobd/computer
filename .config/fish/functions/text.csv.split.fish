@@ -1,4 +1,4 @@
-function splitcsv
+function text.csv.split
     awk -v l=2000000 '(NR==1){header=$0;next}
                 (NR%l==2) { 
                    c=sprintf("%0.5d",c+1); 

@@ -1,4 +1,4 @@
 # Defined interactively
-function screen-reset
+function xcalib.reset
     xcalib -clear
 end

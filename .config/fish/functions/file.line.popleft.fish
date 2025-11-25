@@ -1,5 +1,5 @@
 # Defined via `source`
-function poplinehead
+function file.line.popleft
     head -n1 "$argv"
     sed -i 1d "$argv"
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function sticky_config
+function system.config.preset
     sudo rm /etc/xdg/plasma-workspace/env/nx-sourceenv.sh
 
     if not grep (hostnamectl | grep -i "static hostname:" | cut -f2- -d:) /etc/hosts

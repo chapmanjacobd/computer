@@ -1,6 +1,6 @@
 function daily
     ~/
-    sticky_config
+    system.config.preset
     rm ~/.ssh/control/*
     pkill -f /.ssh/control/
     rm /run/user/1000/app/org.signal.Signal/.org.chromium.Chromium.*
