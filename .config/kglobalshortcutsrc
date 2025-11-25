@@ -333,44 +333,11 @@ _launch=Alt+K
 [services][fish-11.desktop]
 _launch=Alt+Shift+K
 
-[services][fish-12.desktop]
-_launch=Alt+Shift+D
-
-[services][fish-13.desktop]
-_launch=Alt+Shift+C
-
-[services][fish-14.desktop]
-_launch=Alt+[
-
-[services][fish-15.desktop]
-_launch=Alt+]
-
-[services][fish-16.desktop]
-_launch=Alt+D
-
-[services][fish-17.desktop]
-_launch=Alt+C
-
-[services][fish-18.desktop]
-_launch=Ctrl+Shift+Space
-
 [services][fish-19.desktop]
 _launch=Alt+J
 
-[services][fish-2.desktop]
-_launch=Alt+T
-
 [services][fish-21.desktop]
 _launch=Alt+B
-
-[services][fish-3.desktop]
-_launch=Alt+F
-
-[services][fish-4.desktop]
-_launch=Alt+W
-
-[services][fish-5.desktop]
-_launch=Alt+P
 
 [services][fish-6.desktop]
 _launch=Ctrl+Alt+Shift+P
@@ -387,7 +354,28 @@ _launch=Alt+G
 [services][lb.desktop]
 _launch=Alt+Shift+T
 
-[services][net.local.fish.desktop]
+[services][net.local.fish-2.desktop]
+_launch=Alt+W
+
+[services][net.local.fish-3.desktop]
+_launch=Alt+F
+
+[services][net.local.fish-4.desktop]
+_launch=Alt+C
+
+[services][net.local.fish-5.desktop]
+_launch=Alt+D
+
+[services][net.local.fish-6.desktop]
+_launch=Alt+P
+
+[services][net.local.fish-7.desktop]
+_launch=Ctrl+Shift+Space
+
+[services][net.local.fish-8.desktop]
+_launch=Alt+T
+
+[services][net.local.fish-9.desktop]
 _launch=Alt+0
 
 [services][net.local.pkill.desktop]
