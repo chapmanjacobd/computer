@@ -1,9 +1,9 @@
 # Defined interactively
-function unroman --description 'Convert Roman numeral to number (filter)'
+function roman.to.number --description 'Convert Roman numeral to number (filter)'
     # Read from stdin if no argument
     if test (count $argv) -eq 0
         while read -l number.to.roman
-            unroman $roman
+            roman.to.number $roman
         end
         return
     end

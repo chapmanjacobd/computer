@@ -1,4 +1,4 @@
 # Defined interactively
-function referer
+function logs.nginx.referer
     awk -F'"' '{print $4}'
 end

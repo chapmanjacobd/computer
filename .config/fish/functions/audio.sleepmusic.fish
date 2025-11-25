@@ -5,6 +5,6 @@ function audio.sleepmusic
     sleep 8
     catt volume 25
     sleep 2700
-    lt-stop
+    lt.stop
     catt -d "Xylo and Orchestra" set_default
 end

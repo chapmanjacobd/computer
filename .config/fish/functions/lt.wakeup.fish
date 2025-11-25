@@ -1,5 +1,5 @@
 # Defined interactively
-function lt-wakeup
+function lt.wakeup
     catt volume 1
     b lt -c sync/audio
     catt.volume.ramp 25
