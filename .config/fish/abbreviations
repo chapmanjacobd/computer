@@ -278,7 +278,7 @@ abbr -a -- swaps sudo swapin.bt
 abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- exts 'chars.ext | asc'
-abbr -a -- cv 'check_local_video (cb | chars.no.quote)'
+abbr -a -- cv 'search.video (cb | chars.no.quote)'
 abbr -a -- cl 'check_local (cb | chars.no.quote)'
 abbr -a -- perftop sudo perf top
 abbr -a -- catbin typebin
@@ -676,3 +676,20 @@ abbr -a -- fs_display display.enable
 abbr -a -- trash-empty trash.empty
 abbr -a -- trim files.lines.no.empty
 abbr -a -- strip lines.no.empty
+abbr -a -- ffprobejson ffprobe.json
+abbr -a -- yaml2json yaml.to.json
+abbr -a -- volumedown catt.volume.down
+abbr -a -- brightness_lg_down brightness.lg.down
+abbr -a -- brightness_down brightness.down
+abbr -a -- gittodo git.todo
+abbr -a -- redarc_video redarc.video
+abbr -a -- fzf_mpv_preview fzf.video
+abbr -a -- check_local_video search.video
+abbr -a -- has_video ffprobe.has.video
+abbr -a -- relaxvid relax.video
+abbr -a -- ffprint stat.ffprobe
+abbr -a -- redarc_audio redarc.audio
+abbr -a -- ffa video.to.audio
+abbr -a -- has_audio ffprobe.has.audio
+abbr -a -- keepscreenon screen.blank.no
+abbr -a -- not_exists paths.exists.no

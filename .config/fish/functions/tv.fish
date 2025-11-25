@@ -8,7 +8,7 @@ function tv
         kscreen-doctor output.DP-1.disable output.DVI-D-0.disable
     end
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
-    keepscreenon && xset s off
+    screen.blank.no && xset s off
     #breaktimer disable && pkill breaktimer
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     vol 65

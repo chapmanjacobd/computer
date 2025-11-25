@@ -1,6 +1,6 @@
 # Defined interactively
 function has_both_audio_video
-    if has_audio "$argv"; and has_video "$argv"
+    if ffprobe.has.audio "$argv"; and ffprobe.has.video "$argv"
         return 0
     else
         return 1

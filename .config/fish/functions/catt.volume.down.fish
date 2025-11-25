@@ -1,7 +1,7 @@
 # Defined interactively
-function volumedown
+function catt.volume.down
     if pgrep -f 'catt '; or catt status | grep 'State: PLAYING'
-        catt volumedown 3
+        catt volume.down 3
     else
         vol -3
     end

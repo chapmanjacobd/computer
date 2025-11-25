@@ -1,5 +1,5 @@
 # Defined interactively
-function check_local_video
+function search.video
     echo $argv
     lb playlists ~/lb/torrents.db -s "$argv" -p --cols title,size 2>/dev/null
 

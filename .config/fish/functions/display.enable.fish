@@ -5,7 +5,7 @@ function display.enable --argument target
     end
     kscreen-doctor output.$target.enable output.$target.mode.1920x1080@60
     krohnkite.off
-    keepscreenon && xset s off
+    screen.blank.no && xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     ~/bin/autostart.sh &
 end

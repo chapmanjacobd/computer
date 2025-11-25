@@ -1,4 +1,4 @@
 # Defined interactively
-function has_video
+function ffprobe.has.video
     ffprobe -show_streams -select_streams v -loglevel error -i "$argv" | count >/dev/null
 end
