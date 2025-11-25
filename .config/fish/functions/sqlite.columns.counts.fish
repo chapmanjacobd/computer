@@ -1,5 +1,5 @@
 # Defined interactively
-function sqlite.columns-counts --argument db table
+function sqlite.columns.counts --argument db table
     echo "## $db -- $table"
     echo
     for col in (sqlite.columns $db $table)

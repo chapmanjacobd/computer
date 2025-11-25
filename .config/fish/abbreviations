@@ -925,3 +925,4 @@ abbr -a -- firefox-history search.firefoxhistory
 abbr -a -- ffquality ffmpeg.decode.quality
 abbr -a -- tmux-close-empty tmux.close.empty
 abbr -a -- filter-empty-lines lines.not.empty
+abbr -a -- fish_functions fish.functions

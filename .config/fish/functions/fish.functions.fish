@@ -1,5 +1,5 @@
 # Defined interactively
-function fish_functions
+function fish.functions
     if count $argv >/dev/null
         rg "$argv" ~/.config/fish/functions/
     else
