@@ -20,7 +20,7 @@ function weekly
     end
 
     lb.refresh
-    lb-rebuild-fts
+    lb.rebuild.fts
 
     pip install --upgrade yt-dlp gallery-dl praw library
 

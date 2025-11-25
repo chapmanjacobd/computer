@@ -3,7 +3,7 @@ function forganize
     dorganize
 
     lb.refresh
-    lb-rebuild-fts
+    lb.rebuild.fts
 
     lb.load
     yes | lb dedupe-media --fs ~/lb/fs/video.db -v

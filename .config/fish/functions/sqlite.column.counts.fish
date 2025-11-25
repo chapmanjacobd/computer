@@ -1,5 +1,5 @@
 # Defined via `source`
-function sqlite-column-counts --argument db table col
+function sqlite.column.counts --argument db table col
     set total (sqlite-count $db $table)
 
     set null (sqlite --raw-lines $db "select count(*) from $table where $col is null")

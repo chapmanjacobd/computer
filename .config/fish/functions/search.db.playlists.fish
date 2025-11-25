@@ -1,5 +1,5 @@
 # Defined interactively
-function sqlgrep_playlists
+function search.db.playlists
     for db in $argv[2..-1]
         echo $db
         lb sdb $db playlists $argv[1]

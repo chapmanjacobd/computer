@@ -1,4 +1,4 @@
 # Defined interactively
-function timer-status
+function timer.status
     log --user -u $argv
 end

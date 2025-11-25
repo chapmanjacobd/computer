@@ -22,7 +22,7 @@ abbr -a -- grep 'grep -i'
 abbr -a -- hibernate 'systemctl hibernate'
 abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
 abbr -a -- ipa 'ip a'
-abbr -a -- lbmu 'lb mu (mergerfs_disk_mounts)'
+abbr -a -- lbmu 'lb mu (mergerfs.disk.mounts)'
 abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
 abbr -a -- lines.mv 'lines.mv -s""'
@@ -100,7 +100,7 @@ abbr -a -- gitrm git rm --cached
 abbr -a -- color pastel
 abbr -a -- cbf cb.file
 abbr -a -- inotify kde-inotify-survey
-abbr -a -- syss timer-status
+abbr -a -- syss timer.status
 abbr -a -- dl file.eval.shuf-repeat
 abbr -a -- re file.eval.random
 abbr -a -- random-eval file.eval.random
@@ -226,7 +226,7 @@ abbr -a -- fc filecount
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ps.paused | less -FSRXc'
 abbr -a -- less ov
-abbr -a -- running 'timers-status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
+abbr -a -- running 'timers.status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
 abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb-dev torrents --dl -pa | ov'
@@ -790,3 +790,22 @@ abbr -a -- coolpeople people.mentors
 abbr -a -- attrs file.attrs
 abbr -a -- process_media media.process
 abbr -a -- process_audio audio.process
+abbr -a -- rdp_headless rdp.headless
+abbr -a -- tube_update_delay tube.db.stats
+abbr -a -- links-status links.db.stats
+abbr -a -- torrents-db-stats torrents.db.stats
+abbr -a -- library-stats lb.stats
+abbr -a -- bracket_digits chars.numbers.brackets
+abbr -a -- lb-rebuild-fts lb.rebuild.fts
+abbr -a -- priv-allocate-torrents priv.allocate.torrents
+abbr -a -- dl_torrents dl.torrents
+abbr -a -- sqlite-column-counts sqlite.column.counts
+abbr -a -- sqlite-columns-counts sqlite.columns.counts
+abbr -a -- mergerfs_disk_mounts mergerfs.disk.mounts
+abbr -a -- sqlgrep_playlists search.db.playlists
+abbr -a -- random_choice random.status
+abbr -a -- timer-status timer.status
+abbr -a -- timers-status timers.status
+abbr -a -- sqlite-views sqlite.views
+abbr -a -- lswin windows
+abbr -a -- sqlite-rows sqlite.rows

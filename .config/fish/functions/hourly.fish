@@ -7,7 +7,7 @@ function hourly
 
     torganize
     if test (uptime_secs) -gt 3600; and not copying
-        priv-allocate-torrents
+        priv.allocate.torrents
     end
     torrents.maintenance
     qbt.unseed.old

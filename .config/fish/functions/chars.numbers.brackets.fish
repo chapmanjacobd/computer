@@ -1,4 +1,4 @@
 # Defined interactively
-function bracket_digits
+function chars.numbers.brackets
     sed -E 's/.*\[([0-9]+)\].*/\1/' $argv
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function rdp_headless
+function rdp.headless
     pkill Xvfb
     b Xvfb :99 -screen 0 1024x768x24
     sleep 2

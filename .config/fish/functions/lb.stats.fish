@@ -1,5 +1,5 @@
 # Defined in /home/xk/.config/fish/functions/library-stats.fish @ line 2
-function library-stats
+function lb.stats
     for db in ~/lb/fs/tax.db ~/lb/fs/video.db
         echo $db
         lb wt $db -p a
@@ -22,6 +22,6 @@ function library-stats
         lb bigdirs $db -L 5
     end
 
-    links-status ~/mc/cine.db ~/mc/links.db ~/mc/music.db ~/mc/tv.db ~/lb/sites/manual/*.db
+    links.db.stats ~/mc/cine.db ~/mc/links.db ~/mc/music.db ~/mc/tv.db ~/lb/sites/manual/*.db
     dlstatus ~/lb/dl/tax_sounds.db ~/lb/dl/video.db ~/lb/dl/tax.db ~/lb/dl/91_New_Art.db ~/lb/dl/audio.db ~/lb/dl/61_Photos_Unsorted.db
 end
