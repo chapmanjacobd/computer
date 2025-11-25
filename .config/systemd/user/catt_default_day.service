@@ -4,4 +4,4 @@ Description='On *-*-* 06:15:00 run cr'
 [Service]
 Type=simple
 RemainAfterExit=no
-ExecStart=/usr/bin/fish -c 'catt_set_default Xylo and Orchestra'
+ExecStart=/usr/bin/fish -c 'catt.default Xylo and Orchestra'

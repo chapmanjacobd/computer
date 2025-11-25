@@ -4,4 +4,4 @@ Description='On *-*-* 21:15:00 run git config --file=/home/xk/.config/catt/catt.
 [Service]
 Type=simple
 RemainAfterExit=no
-ExecStart=/usr/bin/fish -c 'catt_set_default Bedroom'
+ExecStart=/usr/bin/fish -c 'catt.default Bedroom'

@@ -6,5 +6,5 @@ Type=simple
 RemainAfterExit=no
 TimeoutStartSec=infinity
 ExecStartPre=/bin/sleep 600
-ExecStart='/usr/bin/fish' '-c' 'brightness_lg_set 10'
+ExecStart='/usr/bin/fish' '-c' 'brightness.lg.set 10'
 

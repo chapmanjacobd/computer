@@ -5,7 +5,7 @@ After=network-online.target var-mnt-d.mount mnt-d.mount
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/fish -c "eval-dir .local/jobs/"
+ExecStart=/usr/bin/fish -c "folder.eval .local/jobs/"
 Restart=always
 RestartSec=15m
 RuntimeMaxSec=10m
