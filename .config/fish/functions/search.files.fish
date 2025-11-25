@@ -3,7 +3,7 @@ function search.files
     echo $argv
     lb playlists ~/lb/torrents.db -s "$argv" -pf --cols title 2>/dev/null | lb rs 2>/dev/null
 
-    set hosts (connectable-ssh $servers_local)
+    set hosts (servers.ssh.connectable $servers_local)
     locate_remote_mv.py -v --flex --hosts $hosts -- $argv
     print $hosts | parallel server.ssh {} lb torrents -- $argv
 

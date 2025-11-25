@@ -11,8 +11,8 @@ function torganize
     lb mv -etorrent ~/Downloads/ ~/.local/data/qbittorrent/queue/
     lb torrents-add ~/lb/torrents.db ~/.local/data/qbittorrent/queue/ -v --delete-files
 
-    lb computer-add ~/lb/computers.local.db (connectable-ssh $servers_local) -v
-    for pc in (connectable-ssh $servers_remote)
+    lb computer-add ~/lb/computers.local.db (servers.ssh.connectable $servers_local) -v
+    for pc in (servers.ssh.connectable $servers_remote)
         lb computer-add ~/lb/computers.remote.db $pc -v
     end
 
