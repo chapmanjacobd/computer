@@ -2,7 +2,7 @@ function systemd.cron
     # systemd.cron wakeup '*-*-* 9:30' lt.wakeup
     # hint: you can check if your systemd calendar argument likeso
     # systemd-analyze calendar "Mon..Fri *-*-* 10:00:00"
-    # hint: also see timers-start, timers.stop, and timers.reset
+    # hint: also see timers.start, timers.stop, and timers.reset
     set unit $argv[1]
     set cal $argv[2]
     set cmd $argv[3..-1]

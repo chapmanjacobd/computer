@@ -1,5 +1,5 @@
 # Defined via `source`
-function battery_percent
+function battery.percent
     if set -q CONTAINER_ID; or set -q container
         return
     end

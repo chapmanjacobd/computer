@@ -1,5 +1,5 @@
 # Defined interactively
-function lt-start
+function lt.start
     lt.stop
     lt -r -c
 end

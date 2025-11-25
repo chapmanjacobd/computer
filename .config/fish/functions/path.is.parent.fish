@@ -1,4 +1,4 @@
-function isparent --description 'Check if a given [parent] path is above a given [child]' --argument parent child
+function path.is.parent --description 'Check if a given [parent] path is above a given [child]' --argument parent child
     set parent (greadlink -f -- "$parent" | string trim -r -c '/')
     set child (greadlink -f -- "$child" | string trim -r -c '/')
 

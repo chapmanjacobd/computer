@@ -1,4 +1,4 @@
 # Defined interactively
-function match-last-tail --argument pattern
+function lines.after.last --argument pattern
     tac $argv[2] | sed '/'$pattern'/q' | tac
 end

@@ -9,7 +9,7 @@ function lt.toggle
             if ssh xk@192.168.1.114 pgrep lb >/dev/null
                 ssh xk@192.168.1.114 lt.stop
             else
-                ssh xk@192.168.1.114 lt-start
+                ssh xk@192.168.1.114 lt.start
             end
         else
             lt

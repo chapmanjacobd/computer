@@ -1,5 +1,5 @@
 # Defined interactively
-function stdin_count_failed
+function eval.stdin.status.count
     set count_failed 0
     set count_success 0
 

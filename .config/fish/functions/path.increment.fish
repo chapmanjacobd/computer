@@ -1,5 +1,5 @@
 # Defined in - @ line 2
-function increment -a file
+function path.increment -a file
     set match (string match -e -r '(.+)\.(\d+)\.([^.]+)' $file)
     if test $status -eq 0
         set root $match[-3]

@@ -1,4 +1,4 @@
-function kill-on-port --description 'kills the process using the provided port'
+function killport --description 'kills the process using the provided port'
     set -l pid (lsof -t -i:$argv[1])
     if count $pid >/dev/null
         set -l cmd (ps -p $pid -o command | tail -n 1)

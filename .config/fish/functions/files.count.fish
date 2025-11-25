@@ -1,4 +1,4 @@
 # Defined interactively
-function filecount
+function files.count
     fd -tf . $argv | count
 end

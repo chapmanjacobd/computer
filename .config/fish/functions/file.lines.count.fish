@@ -1,4 +1,4 @@
 # Defined interactively
-function filelength
+function file.lines.count
     wc -l $argv | cut -f1 -d ' '
 end

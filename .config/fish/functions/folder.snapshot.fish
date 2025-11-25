@@ -1,5 +1,5 @@
 # Defined via `source`
-function snapshot
+function folder.snapshot
     set folder (path basename (pwd))
     set snapshot_folder $folder-(date +"%Y%m%d-%H%M%S")-snapshot
 

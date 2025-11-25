@@ -1,4 +1,4 @@
-function git_recent
+function git.recent
     for line in (git log --format="%H %P")
         set parts (string split ' ' $line)
         set commit $parts[1]

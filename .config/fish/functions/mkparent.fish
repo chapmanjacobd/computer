@@ -1,4 +1,4 @@
 # Defined interactively
-function mkpdir
+function mkparent
     mkdir (path dirname $argv)
 end

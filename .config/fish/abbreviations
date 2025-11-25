@@ -222,7 +222,7 @@ abbr -a -- btrfs_new_uuid btrfstune -u
 abbr -a -- fdisk sudo fdisk -l
 abbr -a -- iostat iostat -xh 4
 abbr -a -- rclone rclone --transfers 12 --multi-thread-streams 4 --progress --metadata --human-readable --error-on-no-transfer --checkers 18 --no-update-modtime --timeout=45s --ignore-existing --check-first
-abbr -a -- fc filecount
+abbr -a -- fc files.count
 abbr -a -- tp 'tee | parallel'
 abbr -a -- stopped 'ps.paused | less -FSRXc'
 abbr -a -- less ov
@@ -232,7 +232,7 @@ abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-serve
 abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb-dev torrents --dl -pa | ov'
 abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
-abbr -a -- wipc gitstash-checkpoint
+abbr -a -- wipc git.checkpoint
 abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
 abbr -a -- ipy ipython --pdb
@@ -850,3 +850,27 @@ abbr -a -- tmuxsplit tmux.split
 abbr -a -- catt_set_default catt.default
 abbr -a -- defaultset setdefault
 abbr -a -- lines lines.count
+abbr -a -- git_recent git.recent
+abbr -a -- sparse_percent file.sparse.percent
+abbr -a -- battery_percent battery.percent
+abbr -a -- increment path.increment
+abbr -a -- isparent path.is.parent
+abbr -a -- mkpdir mkparent
+abbr -a -- gitstash-checkpoint git.checkpoint
+abbr -a -- sqlite-count sqlite.count
+abbr -a -- filecount files.count
+abbr -a -- filelength file.lines.count
+abbr -a -- stdin_count_failed eval.stdin.status.count
+abbr -a -- json-keys-count json.keys.count
+abbr -a -- torrent_count torrent.count
+abbr -a -- snapshot folder.snapshot
+abbr -a -- iiab-start iiab.start
+abbr -a -- timers-start timers.start
+abbr -a -- lt-start lt.start
+abbr -a -- ffreport ffmpeg.decode.report
+abbr -a -- kill-on-port killport
+abbr -a -- ffmpegFixAudioChromecast audio.to.chromecast
+abbr -a -- lastconfigaccessed files.modified.last
+abbr -a -- match-last-head lines.until.last
+abbr -a -- match-last-tail lines.after.last
+abbr -a -- last_watched wt.last

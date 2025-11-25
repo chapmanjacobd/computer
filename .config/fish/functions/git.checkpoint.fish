@@ -1,5 +1,5 @@
 # Defined interactively
-function gitstash-checkpoint
+function git.checkpoint
     git add .
     git stash push --keep-index
 end
