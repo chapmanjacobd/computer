@@ -29,7 +29,7 @@ function trash.empty.no.snapshot
 
     if contains -- -f $opts; or gum confirm --default=no 'Empty trash?'
         for d in $args
-            command trash.empty -f --trash-dir $d
+            command trash-empty -f --trash-dir $d
         end
     end
 end

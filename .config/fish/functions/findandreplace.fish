@@ -1,8 +1,8 @@
 # Defined interactively
-function findandreplace --argument-names find --argument-names replace
-    rg --no-heading --no-line-number -j1 "$find"
+function findandreplace -a find -a replace
+    set -l files (rg -i -. --files-with-matches --fixed-strings "$find" | tee /dev/tty)
 
     if confirm
-        fd --type file --exec sd "$find" "$replace"
+        sd --string-mode "$find" "$replace" $files
     end
 end

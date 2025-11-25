@@ -67,7 +67,7 @@ abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut
 abbr -a -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -- tl files.lines.truncate 1
 abbr -a -- suspend sudo systemctl suspend
-abbr -a -- vpn-partial sshuttle --dns -HNvr pakon
+abbr -a -- vpn.partial sshuttle --dns -HNvr pakon
 abbr -a -- hexdump hexdump -C
 abbr -a -- gdh git diff HEAD^
 abbr -a -- mpv480 mpv -vf scale:-2:480:flags=fast_bilinear
@@ -151,7 +151,7 @@ abbr -a -- timezone_update tzupdate
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
 abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
 abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
-abbr -a -- punpause-all ps.resume-all
+abbr -a -- punpause-all ps.resume.all
 abbr -a -- punpause-fzf ps.fzf.resume
 abbr -a -- punpause ps.resume
 abbr -a -- recommit wipam
@@ -174,15 +174,15 @@ abbr -a -- lsram sudo dmidecode -t 17
 abbr -a -- grm git restore --source=HEAD --staged --worktree --
 abbr -a -- cless colorpager
 abbr -a -- ssh_close_port ssh -O cancel -L 4102:localhost:4000 pakon
-abbr -a -- debug-fish kill -TRAP
+abbr -a -- debug kill -TRAP
 abbr -a -- wipam git amend
 abbr -a -- utf8 iconv -f utf-8 -t utf-8 --silent
 abbr -a -- time /bin/time -v
 abbr -a -- failed systemctl --user status --failed
-abbr -a -- reset-failed systemctl --user reset-failed --state transient
+abbr -a -- reset.failed systemctl --user reset-failed --state transient
 abbr -a -- gpf git push --force-with-lease --force-if-includes
 abbr -a -- start open
-abbr -a -- terminal-color-test msgcat --color=test
+abbr -a -- terminal.color.test msgcat --color=test
 abbr -a -- colors palette
 abbr -a -- splitlines string split \n
 abbr -a -- teecb 'tee | cb'
@@ -190,14 +190,14 @@ abbr -a -- cmd commandline --insert
 abbr -a -- cmdexpand 'commandline --insert (cb | cmd.unquote)'
 abbr -a -- vpipe vipe
 abbr -a -- words /usr/share/dict/words
-abbr -a -- power-save sudo cpupower frequency-set -g powersave
-abbr -a -- power-performance sudo cpupower frequency-set -g performance
+abbr -a -- power.save sudo cpupower frequency-set -g powersave
+abbr -a -- power.performance sudo cpupower frequency-set -g performance
 abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | lines.sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
 abbr -a -- ext4 sudo mkfs.ext4 -T largefile -m 0 -e continue
-abbr -a -- trash-dirs trash-list --trash-dirs
+abbr -a -- trash.dirs trash-list --trash-dirs
 abbr -a -- lsfs lsblk -fa -o FSAVAIL,MOUNTPOINTS,NAME,FSTYPE,FSVER
 abbr -a -- gitauthors git shortlog -sn
 abbr -a -- gitroot 'cd (git rev-parse --show-cdup)'
@@ -212,7 +212,7 @@ abbr -a -- arpa sudo arp-scan 192.168.1.0/24
 abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
 abbr -a -- locateremote 'locate_remote_mv.py --hosts backup r730xd -- (cb | chars.no.quote)'
-abbr -a -- power-balanced sudo cpupower frequency-set -g schedutil
+abbr -a -- power.balanced sudo cpupower frequency-set -g schedutil
 abbr -a -- powerinfo cpupower frequency-info
 abbr -a -- tags git tag -n9 --sort=-creatordate
 abbr -a -- top TERM=screen htop
@@ -229,7 +229,7 @@ abbr -a -- less ov
 abbr -a -- running 'timers.status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
-abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb.dev torrents --dl -pa | ov'
+abbr -a -- torrent.status 'print $servers | parallel server.ssh {} lb.dev torrents --dl -pa | ov'
 abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
 abbr -a -- wipc git.checkpoint
@@ -251,15 +251,15 @@ abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
 abbr -a -- autoclicker repeat.delay 0.1 xdotool click 1
 abbr -a -- exiftool 'exiftool -g -a -u'
-abbr -a -- ip-addr ip.public
-abbr -a -- update-grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+abbr -a -- ip.addr ip.public
+abbr -a -- update.grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 abbr -a -- added.unstaged untracked
 abbr -a -- lower string lower
-abbr -a -- tmux-slow tmux detach-client -a
+abbr -a -- tmux.slow tmux detach-client -a
 abbr -a -- locate 'servers.ssh locate --literal --ignore-case (cb | chars.no.quote)'
 abbr -a -- display set -gx DISPLAY :0
-abbr -a -- large-folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
-abbr -a -- ps-size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
+abbr -a -- large.folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
+abbr -a -- ps.size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
 abbr -a -- unshallow git fetch --unshallow
 abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -x squashfs -Th | sort -k6,6g -k5,5hr'
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
@@ -284,13 +284,13 @@ abbr -a -- perftop sudo perf top
 abbr -a -- catbin type.cat
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
 abbr -a -- partition sudo sgdisk --zap-all -n 0:0:0 -t 0:8300
-abbr -a -- port-user portuser
+abbr -a -- port.user portuser
 abbr -a -- tail 'tail -n$LINES'
 abbr -a -- head 'head -n$LINES'
 abbr -a -- highcpu 'ps -eo pid,etime,%cpu,command ww --sort=-pcpu | head -n 5'
 abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
-abbr -a -- continue-from lines.after
-abbr -a -- continue-to lines.until
+abbr -a -- continue.from lines.after
+abbr -a -- continue.to lines.until
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
 abbr -a -- editcb 'cb | vipe | cb'
