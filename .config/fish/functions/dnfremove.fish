@@ -1,7 +1,7 @@
 # Defined interactively
 function dnfremove --wraps='dnf install'
     for arg in $argv
-        filterfile ~/.github/dnf_installed $arg
+        file.lines.filter ~/.github/dnf_installed $arg
     end
     if command -v rpm-ostree >/dev/null
         sudo rpm-ostree remove $argv

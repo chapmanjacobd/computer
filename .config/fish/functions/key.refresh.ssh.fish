@@ -6,6 +6,6 @@ function key.refresh.ssh
 
     ssh-keygen -t ed25519 -C (hostname) -q -N '' </dev/zero || true
     cat ~/.ssh/id_ed25519.pub >>~/.ssh/authorized_keys
-    filterfile ~/.ssh/authorized_keys (cat $oldkey.pub)
+    file.lines.filter ~/.ssh/authorized_keys (cat $oldkey.pub)
     cat ~/.ssh/id_ed25519.pub
 end

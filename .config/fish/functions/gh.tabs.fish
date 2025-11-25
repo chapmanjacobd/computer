@@ -1,5 +1,5 @@
 # Defined via `source`
-function githubtabs
+function gh.tabs
     for user in (cb | sed "s|https://github.com/\([^/?]*\)/\?.*|\1|")
 
         for lang in rust c lua shell python c%2B%2B c%23 markdown html

@@ -1,5 +1,5 @@
 # Defined interactively
-function git_remote_use_server
+function git.remote.server
     git remote remove origin
     set user (id -un)
     git remote add server ssh://$user@unli.xyz/home/$user/github/(path basename (pwd))/

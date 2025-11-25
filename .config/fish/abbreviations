@@ -289,7 +289,7 @@ abbr -a -- tail 'tail -n$LINES'
 abbr -a -- head 'head -n$LINES'
 abbr -a -- highcpu 'ps -eo pid,etime,%cpu,command ww --sort=-pcpu | head -n 5'
 abbr -a -- highmem 'ps -eo pid,etime,%mem,command ww --sort=-rss | head -n 5'
-abbr -a -- continue-from match-first-tail
+abbr -a -- continue-from lines.after
 abbr -a -- continue-to lines.until
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
@@ -534,7 +534,7 @@ abbr -a -- redarc_site_search redarc.site.search
 abbr -a -- mam_search mam.search
 abbr -a -- lt-search lt.search
 abbr -a -- dockerpatch docker.patch
-abbr -a -- watchfilehandles filehandles.watch
+abbr -a -- watchfilehandles file.handles.watch
 abbr -a -- nomachine_colemak_dh system.settings.nomachine.colemak.dh
 abbr -a -- un_paragraph lines.unparagraph
 abbr -a -- trim-trailing-slash chars.no.trailingslash
@@ -732,3 +732,22 @@ abbr -a -- unroman roman.to.number
 abbr -a -- lsoff lsof.subfolder
 abbr -a -- referer logs.nginx.referer
 abbr -a -- lsof_fuser lsof.fuser
+abbr -a -- match-trunc-head file.truncate.after
+abbr -a -- match-first-tail lines.after
+abbr -a -- filterfile file.lines.filter
+abbr -a -- sqlite-recover sqlite.recover
+abbr -a -- git_remote_use_server git.remote.server
+abbr -a -- has_git_dir git.dir
+abbr -a -- vpn-for sshuttle.vpn.for
+abbr -a -- previousdiff diff.prior
+abbr -a -- smartlba smartctl.lbas
+abbr -a -- githubtabs gh.tabs
+abbr -a -- gcsweblink link.gcs
+abbr -a -- gsgdalinfo gdalinfo.gcs
+abbr -a -- gsogr ogrinfo.gcs
+abbr -a -- redarc_pics redarc.pics
+abbr -a -- ffmpeg.keyframes.images video.to.images
+abbr -a -- gitdiffall git.diff.branches
+abbr -a -- zombies ps.zombies
+abbr -a -- sqlite-tables sqlite.tables
+abbr -a -- filehandles file.handles

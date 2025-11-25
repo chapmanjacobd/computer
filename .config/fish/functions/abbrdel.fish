@@ -1,4 +1,4 @@
 # Defined interactively
 function abbrdel
-    filterfile ~/.config/fish/abbreviations "abbr -a -- $argv[1] "
+    file.lines.filter ~/.config/fish/abbreviations "abbr -a -- $argv[1] "
 end

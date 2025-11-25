@@ -1,5 +1,5 @@
 # Defined interactively
-function smartlba
+function smartctl.lbas
     for dev in (smartls Total_LBAs_Written | tail -n +2 | cut -f1)
         echo $dev
 

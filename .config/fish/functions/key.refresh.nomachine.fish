@@ -6,5 +6,5 @@ function key.refresh.nomachine
 
     ssh-keygen -t rsa -C (hostname) -q -N '' -f ~/.ssh/id_rsa_nx </dev/zero || true
     cat ~/.ssh/id_rsa_nx.pub >>~/.nx/config/authorized.crt
-    filterfile ~/.nx/config/authorized.crt (cat $oldkey.pub)
+    file.lines.filter ~/.nx/config/authorized.crt (cat $oldkey.pub)
 end
