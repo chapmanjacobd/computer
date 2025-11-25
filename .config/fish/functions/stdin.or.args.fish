@@ -1,5 +1,5 @@
 # Defined interactively
-function stdin_or_args
+function stdin.or.args
     if test (count $argv) -eq 0
         cat /dev/stdin
     else

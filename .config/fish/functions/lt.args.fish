@@ -1,5 +1,5 @@
 # Defined via `source`
-function lt_args
+function lt.args
     echo "listen
 -w
 play_count=0

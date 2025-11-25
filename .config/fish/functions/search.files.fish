@@ -1,5 +1,5 @@
 # Defined interactively
-function check_local
+function search.files
     echo $argv
     lb playlists ~/lb/torrents.db -s "$argv" -pf --cols title 2>/dev/null | lb rs 2>/dev/null
 

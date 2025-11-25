@@ -20,7 +20,7 @@ function daily
 
     ~/j/social/
     library tildes ~/lb/sites/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
-    for title in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | lines.no.empty | strip_quotes)
+    for title in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | lines.no.empty | chars.no.quotes)
         sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select text from media where path like '%$title'" >$title.html
     end
     for group in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select distinct topic_group from media')

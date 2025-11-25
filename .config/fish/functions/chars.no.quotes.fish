@@ -1,4 +1,4 @@
 # Defined interactively
-function strip_quotes
+function chars.no.quotes
     sed 's/["\']//g'
 end

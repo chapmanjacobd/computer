@@ -279,7 +279,7 @@ abbr -a -- syscalls sudo syscount.bt
 abbr -a -- socketdata sudo undump.bt
 abbr -a -- exts 'chars.ext | asc'
 abbr -a -- cv 'search.video (cb | chars.no.quote)'
-abbr -a -- cl 'check_local (cb | chars.no.quote)'
+abbr -a -- cl 'search.files (cb | chars.no.quote)'
 abbr -a -- perftop sudo perf top
 abbr -a -- catbin typebin
 abbr -a -- straightquote sed 's/[“”]/"/g; s/[‘’]/\'/g'
@@ -751,3 +751,22 @@ abbr -a -- gitdiffall git.diff.branches
 abbr -a -- zombies ps.zombies
 abbr -a -- sqlite-tables sqlite.tables
 abbr -a -- filehandles file.handles
+abbr -a -- check_local search.files
+abbr -a -- html_titles cb.html.titles
+abbr -a -- getsubtitles search.subtitles
+abbr -a -- ffmpeg.frames ffprobe.video.frames
+abbr -a -- ffmpeg.keyframes.quick video.to.keyframes
+abbr -a -- ffmpeg.scenes video.to.scenes
+abbr -a -- ffmpeg.scenes.images video.to.images.scenes
+abbr -a -- ffmpeg.frametypes ffprobe.video.frametypes
+abbr -a -- only-duplicates lines.duplicates
+abbr -a -- strip_quotes chars.no.quotes
+abbr -a -- len_bytes len.bytes
+abbr -a -- human2bytes human.to.bytes
+abbr -a -- sqlite-drop-indexes sqlite.drop.indexes
+abbr -a -- confirm_default_yes confirm.yes
+abbr -a -- sshhfs server.sshfs
+abbr -a -- redarc_gifs redarc.gifs
+abbr -a -- stdin_or_args stdin.or.args
+abbr -a -- lt_args lt.args
+abbr -a -- rgf search.text.paths
