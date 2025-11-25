@@ -1,5 +1,5 @@
 # Defined via `source`
-function extract_colors
+function image.colors
     for space in sRGB RGB HSV LAB
         set -l temp_file (mktemp)
 

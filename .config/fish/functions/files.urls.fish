@@ -1,5 +1,5 @@
 # Defined interactively
-function url_files
+function files.urls
     find . -type f -print0 | xargs -0 -n1 awk '
     /^https/ {
         url_count++

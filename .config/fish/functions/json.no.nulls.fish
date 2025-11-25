@@ -1,4 +1,4 @@
 # Defined interactively
-function json_filter_nulls
+function json.no.nulls
     jq 'del(..|nulls)'
 end

@@ -164,7 +164,7 @@ abbr -a -- ash ssh
 abbr -a -- insect numbat
 abbr -a -- slurp string join \'\ \'
 abbr -a -- unslurp string split \'\ \'
-abbr -a -- gitstars githubstars
+abbr -a -- gitstars gh.stars
 abbr -a -- qr_decode zbarimg
 abbr -a -- t tmp
 abbr -a -- nmap nmap -Pn
@@ -770,3 +770,23 @@ abbr -a -- redarc_gifs redarc.gifs
 abbr -a -- stdin_or_args stdin.or.args
 abbr -a -- lt_args lt.args
 abbr -a -- rgf search.text.paths
+abbr -a -- smartls smartctl.ls
+abbr -a -- sqlite-utils sqlite.utils
+abbr -a -- json_filter_nulls json.no.nulls
+abbr -a -- url_files files.urls
+abbr -a -- wineprogs wine.programs
+abbr -a -- displays screens
+abbr -a -- sqlite-columns sqlite.columns
+abbr -a -- clean_home_advanced home.clean.permissions
+abbr -a -- gittodos git.todos
+abbr -a -- mu pmaps
+abbr -a -- ffmpeg.keyframes.timestamps ffprobe.video.keyframes.timestamps
+abbr -a -- ffmpeg.pkt.dts ffprobe.audio.dts.timestamps
+abbr -a -- git_remote_use_https git.remote.https
+abbr -a -- githubstars gh.stars
+abbr -a -- filehandlers file.handlers
+abbr -a -- extract_colors image.colors
+abbr -a -- coolpeople people.mentors
+abbr -a -- attrs file.attrs
+abbr -a -- process_media media.process
+abbr -a -- process_audio audio.process

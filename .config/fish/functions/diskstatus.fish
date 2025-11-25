@@ -8,8 +8,8 @@ function diskstatus
 
     smartctl.lbas
 
-    smartls Power_On_Hours Power_Cycle_Count Load_Cycle_Count UDMA_CRC_Error_Count
-    smartls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
+    smartctl.ls Power_On_Hours Power_Cycle_Count Load_Cycle_Count UDMA_CRC_Error_Count
+    smartctl.ls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
 
     for mnt in / (mergerfs_disk_mounts)
         if not sudo btrfs scrub status $mnt | grep -q 'no errors'

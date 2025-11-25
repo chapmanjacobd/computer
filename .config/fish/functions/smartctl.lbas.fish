@@ -1,6 +1,6 @@
 # Defined interactively
 function smartctl.lbas
-    for dev in (smartls Total_LBAs_Written | tail -n +2 | cut -f1)
+    for dev in (smartctl.ls Total_LBAs_Written | tail -n +2 | cut -f1)
         echo $dev
 
         set ss (sudo blockdev --getss $dev)

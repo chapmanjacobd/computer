@@ -1,4 +1,4 @@
 # Defined interactively
-function filehandlers
+function file.handlers
     lsof -n -t $argv
 end

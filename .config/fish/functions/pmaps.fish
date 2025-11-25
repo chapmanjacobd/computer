@@ -1,5 +1,5 @@
 # Defined interactively
-function mu
+function pmaps
     begin
         cat /proc/(pgrep -f $argv)/status
         cat /proc/(pgrep -f $argv)/smaps

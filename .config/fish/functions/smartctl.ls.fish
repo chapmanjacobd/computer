@@ -1,5 +1,5 @@
 # Defined interactively
-function smartls
+function smartctl.ls
     for var in $argv
         echo $var
         for dev in /dev/sd(seqalpha a z)

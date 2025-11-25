@@ -1,5 +1,5 @@
 # Defined interactively
-function clean_home_advanced
+function home.clean.permissions
     find /home/$USER ! -user $USER
     sudo restorecon -rv .
 end

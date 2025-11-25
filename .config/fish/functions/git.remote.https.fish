@@ -1,5 +1,5 @@
 # Defined via `source`
-function git_remote_use_https --description 'Update the origin remote URL to use https:// instead of git@'
+function git.remote.https --description 'Update the origin remote URL to use https:// instead of git@'
     if not git rev-parse --git-dir >/dev/null 2>&1
         echo "Error: Not in a Git repository."
         return 1
