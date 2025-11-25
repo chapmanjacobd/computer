@@ -1,4 +1,4 @@
 # Defined interactively
-function lines
+function lines.count
     wc -l $argv | cut -f1 -d' '
 end

@@ -849,3 +849,4 @@ abbr -a -- splitcsv text.csv.split
 abbr -a -- tmuxsplit tmux.split
 abbr -a -- catt_set_default catt.default
 abbr -a -- defaultset setdefault
+abbr -a -- lines lines.count
