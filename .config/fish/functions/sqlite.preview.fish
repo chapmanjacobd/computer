@@ -1,5 +1,5 @@
 # Defined interactively
-function sqlite-preview
+function sqlite.preview
     for db in $argv
         echo \#\# $db
         for table in (sqlite.tables "$db") (sqlite.views "$db")

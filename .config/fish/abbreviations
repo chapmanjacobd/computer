@@ -229,7 +229,7 @@ abbr -a -- less ov
 abbr -a -- running 'timers.status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
-abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb-dev torrents --dl -pa | ov'
+abbr -a -- torrent-status 'print $servers | parallel server.ssh {} lb.dev torrents --dl -pa | ov'
 abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
 abbr -a -- wipc git.checkpoint
@@ -874,3 +874,28 @@ abbr -a -- lastconfigaccessed files.modified.last
 abbr -a -- match-last-head lines.until.last
 abbr -a -- match-last-tail lines.after.last
 abbr -a -- last_watched wt.last
+abbr -a -- lbtest lb.test
+abbr -a -- stderr_test stderr.test
+abbr -a -- speedtest ssh.speedtest
+abbr -a -- llm_pytest llm.pytest
+abbr -a -- artist ffprobe.artist
+abbr -a -- unboost system.cpu.no.boost
+abbr -a -- tzst files.to.tzst
+abbr -a -- vcut video.cut
+abbr -a -- ftp_put ftp.put
+abbr -a -- search_photo search.web.image.text
+abbr -a -- recommendations_html cb.html.plaintext
+abbr -a -- battery-mode system.battery.cpu
+abbr -a -- ffsmallgpu video.shrink.gpu
+abbr -a -- has_both_audio_video ffprobe.has.av
+abbr -a -- lb-dev lb.dev
+abbr -a -- btrfs-dev btrfs.dev
+abbr -a -- lt-dev lt.dev
+abbr -a -- wt-dev wt.dev
+abbr -a -- sendroid adb.mv
+abbr -a -- load_build_env load.build.env
+abbr -a -- fzf_mpv fzf.mpv
+abbr -a -- csv_grep grep.csv
+abbr -a -- sqlite-preview sqlite.preview
+abbr -a -- text_preview text.preview
+abbr -a -- random-filename path.new

@@ -1,5 +1,5 @@
 # Defined interactively
-function has_both_audio_video
+function ffprobe.has.av
     if ffprobe.has.audio "$argv"; and ffprobe.has.video "$argv"
         return 0
     else

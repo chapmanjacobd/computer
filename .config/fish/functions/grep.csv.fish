@@ -1,4 +1,4 @@
 # Defined via `source`
-function csv_grep
+function grep.csv
     pee 'head -1' "tail -n +1 | grep $argv"
 end

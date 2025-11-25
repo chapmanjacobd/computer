@@ -10,7 +10,7 @@ function btrfs.tempdevice.remove --argument-names btrfs_mount
         return 1
     end
 
-    for dev_lo in (btrfs-dev "$btrfs_mount")
+    for dev_lo in (btrfs.dev "$btrfs_mount")
         if contains -- "$dev_lo" (losetup -O NAME --noheadings)
             while not sudo btrfs device remove --enqueue "$dev_lo" "$btrfs_mount"
                 sleep 10

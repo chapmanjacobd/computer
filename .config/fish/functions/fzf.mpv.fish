@@ -1,5 +1,5 @@
 # Defined interactively
-function fzf_mpv
+function fzf.mpv
     set -l videos
     while read -l line
         set videos $videos $line
