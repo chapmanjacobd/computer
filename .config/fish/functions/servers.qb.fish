@@ -3,6 +3,7 @@ function servers.qb
     set -l all_failed true
 
     for s in 127.0.0.1:8080 (servers.ssh.connectable $servers | grep -v pakon | sed "s|\$|:8888|")
+        echo $s
         $argv --host $s
 
         if test $status -eq 0
