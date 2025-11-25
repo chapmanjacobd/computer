@@ -1,4 +1,4 @@
 # Defined interactively
-function noswap
+function run.noswap
     systemd-run --user --scope -p MemorySwapMax=0M $argv
 end

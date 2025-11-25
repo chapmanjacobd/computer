@@ -1,4 +1,4 @@
 # Defined interactively
-function gitpop
+function git.pop
     git reset --soft HEAD^
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function brightness_step
+function brightness.step
     if test (hostname) = len; and not set -q WAYLAND_DISPLAY
         echo 1
     else

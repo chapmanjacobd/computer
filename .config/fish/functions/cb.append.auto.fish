@@ -1,5 +1,5 @@
 # Defined interactively
-function appendbuffer
+function cb.append.auto
     set out (mktemp)
     echo $out
     watch.py -- cb $argv >>$out

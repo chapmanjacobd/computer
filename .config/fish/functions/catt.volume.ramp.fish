@@ -1,5 +1,5 @@
 # Defined via `source`
-function catt_volume_ramp --argument target_volume
+function catt.volume.ramp --argument target_volume
     if not string match -qr '^[1-9][0-9]?$|^100$' $target_volume
         echo "Error: Target volume must be an integer between 1 and 100."
         return 1

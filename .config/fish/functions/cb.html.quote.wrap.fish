@@ -1,4 +1,4 @@
 # Defined via `source`
-function html_wrap_quote
+function cb.html.quote.wrap
     cb | fold -s | sed 's/^/> /'
 end

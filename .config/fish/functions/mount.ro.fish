@@ -1,4 +1,4 @@
 # Defined interactively
-function ro_mounts
+function mount.ro
     mount | grep -i ro,
 end

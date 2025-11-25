@@ -1,4 +1,4 @@
 # Defined interactively
-function trim-left --argument char
+function lstrip --argument char
     sed "s|^$char||"
 end

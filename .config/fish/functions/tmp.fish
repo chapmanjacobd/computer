@@ -1,4 +1,4 @@
 # Defined interactively
-function mkcdtemp
+function tmp
     cd (mktemp -d)
 end

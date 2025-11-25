@@ -111,7 +111,7 @@ abbr -a -- mv-ln mvln
 abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
 abbr -a -- gd 'git diff; git diff --stat'
 abbr -a -- mod_up clear_mod_keys.sh
-abbr -a -- tmpdir mkcdtemp
+abbr -a -- tmpdir tmp
 abbr -a -- ytda 'lb dladd ~/lb/dl/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
@@ -166,7 +166,7 @@ abbr -a -- slurp string join \'\ \'
 abbr -a -- unslurp string split \'\ \'
 abbr -a -- gitstars githubstars
 abbr -a -- qr_decode zbarimg
-abbr -a -- t mkcdtemp
+abbr -a -- t tmp
 abbr -a -- nmap nmap -Pn
 abbr -a -- evtest sudo python -m evdev.evtest
 abbr -a -- manual man
@@ -693,3 +693,23 @@ abbr -a -- ffa video.to.audio
 abbr -a -- has_audio ffprobe.has.audio
 abbr -a -- keepscreenon screen.blank.no
 abbr -a -- not_exists paths.exists.no
+abbr -a -- slideshowgen images.to.videoo
+abbr -a -- ro_mounts mount.ro
+abbr -a -- appendbuffer cb.append.auto
+abbr -a -- html_wrap_quote cb.html.quote.wrap
+abbr -a -- noswap run.noswap
+abbr -a -- dockercp docker.compose.cp
+abbr -a -- relaxkeep relax.keep
+abbr -a -- brightness_step brightness.step
+abbr -a -- dns-to-ip dns.to.ip
+abbr -a -- clip ffclip
+abbr -a -- whichpip which.pip
+abbr -a -- trim-left lstrip
+abbr -a -- trim-right rstrip
+abbr -a -- vpn_jp vpn.jp
+abbr -a -- catt_volume_ramp catt.volume.ramp
+abbr -a -- gen_from_random_timestamp random.timestamp
+abbr -a -- mkcdtemp tmp
+abbr -a -- ripcd cd.audio.dump
+abbr -a -- popline file.line.pop
+abbr -a -- gitpop git.pop
