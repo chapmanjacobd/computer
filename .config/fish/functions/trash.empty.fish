@@ -1,5 +1,5 @@
 # Defined interactively
-function trash-empty
+function trash.empty
     optparse $argv
 
     if test -z "$args"
@@ -22,7 +22,7 @@ function trash-empty
             end
         end
 
-        command trash-empty -f
+        command trash.empty -f
         wait
 
         for mnt in $args
