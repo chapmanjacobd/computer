@@ -85,9 +85,9 @@ abbr_random_line lnv ~/links
 
 function _abbr_ltc
     if test (hostname) = len
-        echo 'catt_set_default Bedroom; cr && lt -c -t Bedroom'
+        echo 'catt.default Bedroom; cr && lt -c -t Bedroom'
     else
-        echo 'catt_set_default Xylo and Orchestra; cr && lt -c'
+        echo 'catt.default Xylo and Orchestra; cr && lt -c'
     end
 end
 abbr -a ltc --function _abbr_ltc
