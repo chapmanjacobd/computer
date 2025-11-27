@@ -61,7 +61,7 @@
     edit-conflicts = !git conflicts | xargs -r $(git var GIT_EDITOR)
     history = log --follow -p --
     utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
-    amend = !fish -c git_amend
+    amend = !fish -c git.amend
     lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
     keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
     divergence = log --reverse --oneline ..main
