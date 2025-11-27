@@ -1,0 +1,70 @@
+#!/bin/sh -eu
+# https://gitlab.com/hydrargyrum/attic/-/blob/master/cheapthrottle/cheapthrottle
+# SPDX-License-Identifier: WTFPL
+# shellcheck enable=
+
+# typical usage: cheapthrottle PID
+
+# Sends SIGSTOP to PID, waits SLEEPING_SECS, sends SIGCONT, wait ALIVE_SECS.
+# Repeat forever.
+
+sleeping=10
+alive=5
+verbose=
+
+usage () {
+	cat <<- EOF
+		Usage: $0: [-s SLEEPING_SECS] [-a ALIVE_SECS] [-v] PID
+
+		Cheap throttling by repeatedly sending SIGSTOP and SIGCONT to PID.
+		Waits SLEEPING_SECS after SIGSTOP (default: $sleeping)
+		and ALIVE_SECS after SIGCONT (default: $alive).
+
+		With -v, print every signal sent (reusing the same line).
+	EOF
+}
+
+while getopts hvs:a: name
+do
+	case $name in
+	s)
+		sleeping="$OPTARG";;
+	a)
+		alive="$OPTARG";;
+	v)
+		verbose=y;;
+	h)
+		usage
+		exit 0;;
+	?)
+		usage >&2
+		exit 64;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ $# -ne 1 ]
+then
+	usage >&2
+	exit 64
+fi
+
+target="$1"
+
+trap 'kill -CONT "$target"' EXIT
+
+[ -n "$target" ] || {
+	usage >&2
+	exit 2
+}
+
+while true
+do
+	[ -n "$verbose" ] && printf "%s: sending SIGSTOP\r" "$(date +"%F %T")"
+	kill -STOP "$target"
+	sleep "$sleeping"
+
+	[ -n "$verbose" ] && printf "%s: sending SIGCONT\r" "$(date +"%F %T")"
+	kill -CONT "$target"
+	sleep "$alive"
+done
