@@ -1,0 +1,4 @@
+{"type": "rename", "original_name": "NATO.py", "new_name": "text.to.NATO"}
+{"type": "rename", "original_name": "XSPF_Playlist_Extractor.py", "new_name": "xspf.extract"}
+{"type": "rename", "original_name": "adb-cmd", "new_name": "adb.cmd"}
+{"type": "rename", "original_name": "altlines", "new_name": "lines.reversevideo"}
