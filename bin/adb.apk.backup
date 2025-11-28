@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# https://codeberg.org/izzy/Adebar/raw/branch/master/tools/getapk
+# Grab the APK for a given app via ADB
+# based on a post at https://stackoverflow.com/a/4033005/2533433
+
+[[ -z "$1" ]] && {
+  echo
+  echo -e "\n\033[1;37mgetapk\033[0m"
+  echo "Extracting APK files from a connected device."
+  echo "getapk lets you extract a single app's APK, or that of all user apps,"
+  echo "all system apps, or all apps altogether – depending on what parameter"
+  echo "you passed it."
+  echo
+  echo "Syntax: $0 <package_name> | user | system | all [serial]"
+  echo
+  exit;
+}
+
+if [[ -n "$2" ]]; then
+  ADBCMD="adb -s $2"
+else
+  ADBCMD="adb"
+fi
+
+case $1 in
+  all)
+    for i in $(${ADBCMD} shell pm list packages | awk -F':' '{print $2}'); do
+      $0 ${i//[$'\t\r\n']}
+    done
+    exit;
+    ;;
+  user)
+    for i in $(${ADBCMD} shell pm list packages -3 | awk -F':' '{print $2}'); do
+      $0 ${i//[$'\t\r\n']}
+    done
+    exit;
+    ;;
+  system)
+    for i in $(${ADBCMD} shell pm list packages -s | awk -F':' '{print $2}'); do
+      $0 ${i//[$'\t\r\n']}
+    done
+    exit;
+    ;;
+  *) pkgname=${1//[$'\t\r\n']} ;;
+esac
+
+# still here? then we have a package to deal with
+lines=$(${ADBCMD} shell pm path $pkgname | awk -F':' '{print $2}'|wc -l)
+if [[ $lines -eq 0 ]]; then
+  echo "No APK found for $pkgname"
+  exit
+elif [[ $lines -gt 1 ]]; then
+  echo "$pkgname is a split APK having $lines parts, using subdir"
+  mkdir -p $pkgname
+  for path in $(${ADBCMD} shell pm path $pkgname | awk -F':' '{print $2}'); do
+    path="${path//[$'\t\r\n']}"
+    if [[ -n "$path" ]]; then
+      $ADBCMD pull $path $pkgname/$(basename $path)
+    else
+      echo "skipping empty path for split APK"
+    fi
+  done
+else
+  path=$(${ADBCMD} shell pm path $pkgname | awk -F':' '{print $2}')
+  path="${path//[$'\t\r\n']}"
+  if [[ -n "$path" ]]; then
+    $ADBCMD pull $path
+    mv $(basename $path) ${pkgname}.apk
+  else
+    echo "Package $pkgname not found on device."
+    echo
+  fi
+fi
