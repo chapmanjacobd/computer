@@ -6,7 +6,7 @@ function hourly
     mam.promote (mam_slots.py --max 5 --cookie $MAM_COOKIE)
 
     torganize
-    if test (uptime_secs) -gt 3600; and not copying
+    if test (uptime.seconds) -gt 3600; and not copying
         priv.allocate.torrents
     end
     torrents.maintenance
