@@ -59,7 +59,6 @@ abbr -a -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
 abbr -a -- curl curl -s
-abbr -a -- rg rg -i --no-heading --no-line-number -j1
 abbr -a -- bootlogs journalctl -r -b -1
 abbr -a -- usbreset sudo /home/xk/bin/usb-reset.sh
 abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
