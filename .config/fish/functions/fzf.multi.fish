@@ -1,4 +1,4 @@
 # Defined interactively
-function fzf.choose-multi
+function fzf.multi
     fzf.choose --multi --bind ctrl-a:toggle-all
 end
