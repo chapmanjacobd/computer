@@ -925,3 +925,4 @@ abbr -a -- tmux-close-empty tmux.close.empty
 abbr -a -- filter-empty-lines lines.not.empty
 abbr -a -- fish_functions fish.functions
 abbr -a -- note vipe
+abbr -a -- ps.mem sudo ps_mem --split-args --swap
