@@ -22,7 +22,6 @@ input-ipc-server=~/.config/mpv/socket
 ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
 ytdl-raw-options=cookies-from-browser=firefox
 ytdl-raw-options-append='abort-on-error='
-ytdl-raw-options-append='strip-emojis-in-title='
 ytdl-raw-options-append='sub-lang=en,en.*,write-sub='
 
 #vo=gpu
