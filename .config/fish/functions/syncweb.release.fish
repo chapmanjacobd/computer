@@ -21,5 +21,6 @@ function syncweb.release --argument-names newver
         git pull
         git push
         git tag -a "v$newver" && git push --tags
+        pip install --upgrade .
     end
 end
