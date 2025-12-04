@@ -18,6 +18,6 @@ function dorganize
     fd -ersrc -enfo -x rm
     lb relmv --ext mp3,wav,mka . ~/d/dump/audio/
 
-    remove_empty_directories
+    folders.empty.delete
     ls
 end

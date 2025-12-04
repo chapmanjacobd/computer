@@ -14,7 +14,7 @@ function forganize
     for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
         if test -d "$dir"
             "$dir"
-            remove_empty_directories
+            folders.empty.delete
         end
     end
     mktree.py ~/d/
