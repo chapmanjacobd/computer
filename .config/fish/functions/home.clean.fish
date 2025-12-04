@@ -9,4 +9,6 @@ function home.clean
     git add .
     and git pull
     and git reset
+
+    sudo chown :plocate /var/lib/plocate/plocate.db
 end
