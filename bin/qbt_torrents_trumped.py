@@ -17,7 +17,7 @@ def parse_args():
 
 
 def is_trumped_torrent(t):
-    for _tr, msg in torrents_info.get_error_messages(t):
+    for tr, msg in torrents_info.get_error_messages(t):
         if any(
             s in msg.lower()
             for s in [
@@ -37,7 +37,9 @@ def is_trumped_torrent(t):
                 'torrent deleted',
             ]
         ):
-            print(t.name, 'error matched', msg)
+            print(strings.percent(t.progress), t.name)
+            print('     ', msg, tr["url"])
+            print('     ', t.comment)
             return True
 
     return False
@@ -52,7 +54,6 @@ for t in torrents:
     try:
         is_trumped = is_trumped_torrent(t)
         if is_trumped:
-            print(strings.percent(t.progress), t.name, t.comment)
             qbt_client.torrents_add_tags(['library-trumped'], torrent_hashes=[t.hash])
 
     except (qbittorrentapi.APIConnectionError, ConnectionRefusedError):
