@@ -33,6 +33,8 @@ def is_trumped_torrent(t):
                 'unregistered torrent',
                 'torrent not found',
                 'infohash not found',
+                'has been deleted',
+                'torrent deleted',
             ]
         ):
             print(t.name, 'error matched', msg)
