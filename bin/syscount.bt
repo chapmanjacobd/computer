@@ -396,19 +396,12 @@ tracepoint:raw_syscalls:sys_enter
         $name = @sysname[args.id];
     }
 
-    // Aggregate by syscall name and command-line arguments
-    @syscall[$name] = count();
-    @process_and_args[comm] = count();
+    @p[comm, $name] = count();
 }
 
 END
 {
-    printf("\nTop 10 syscalls by Name:\n");
-    print(@syscall, 10);
-    clear(@syscall);
+    print(@p, 90);
+    clear(@p);
     clear(@sysname);
-
-    printf("\nTop 10 processes by Name and Full Command-Line Arguments:\n");
-    print(@process_and_args, 10);
-    clear(@process_and_args);
 }

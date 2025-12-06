@@ -34,7 +34,7 @@
     updateRefs = true
     missingCommitsCheck = warn
 [rerere]
-    enabled = true
+	enabled = true
     autoupdate = true
 [filter "lfs"]
     clean = git-lfs clean -- %f
