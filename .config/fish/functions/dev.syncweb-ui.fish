@@ -1,6 +1,6 @@
 # Defined interactively
-function filestash.dev
-    /home/xk/github/xk/filestash/
+function dev.syncweb-ui
+    /home/xk/github/xk/syncweb-ui/
 
     while true
         pkill filestash
