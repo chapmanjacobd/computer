@@ -2,3 +2,6 @@
 {"type": "rename", "original_name": "XSPF_Playlist_Extractor.py", "new_name": "xspf.extract"}
 {"type": "rename", "original_name": "adb-cmd", "new_name": "adb.cmd"}
 {"type": "rename", "original_name": "altlines", "new_name": "lines.reversevideo"}
+{"type": "skip", "original_name": "applications"}
+{"type": "rename", "original_name": "argo.yaml2py.py", "new_name": "argo.yaml.to.py"}
+{"type": "rename", "original_name": "argo_status.py", "new_name": "argo.status"}
