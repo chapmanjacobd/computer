@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+
+import argparse
+import re
+import sys
+import warnings
+
+import requests
+
+USE_SPACY = False
+NLP = None
+
+try:
+    import spacy
+
+    try:
+        NLP = spacy.load("en_core_web_sm")
+        USE_SPACY = True
+    except OSError:
+        # Model not installed
+        USE_SPACY = False
+except Exception:
+    USE_SPACY = False
+
+try:
+    from phyme import Phyme
+
+    phyme = Phyme()
+except Exception:
+    phyme = None
+
+
+def get_rhymes_datamuse(word):
+    try:
+        r = requests.get("https://api.datamuse.com/words", params={"rel_rhy": word}, timeout=3)
+        if r.status_code == 200:
+            return [w["word"] for w in r.json()]
+    except Exception:
+        pass
+    return []
+
+
+def get_rhymes(word):
+    rhymes = []
+    if phyme:
+        try:
+            fams = phyme.get_rhymes(word)
+            for fam in fams.values():
+                rhymes.extend(fam)
+        except Exception:
+            pass
+
+    if not rhymes:
+        rhymes = get_rhymes_datamuse(word)
+
+    # dedupe
+    seen = set()
+    out = []
+    for r in rhymes:
+        if r in ("a a",):
+            continue
+
+        if r not in seen:
+            seen.add(r)
+            out.append(r)
+    return out
+
+
+def weight_rhyme(c):
+    score = 1
+    parts = c.split()
+    if len(parts) > 1:
+        score += 5 + (len(parts) - 1)
+    score += max(0, 10 - len(c))
+    return score
+
+
+def sort_weighted(cands):
+    return sorted(cands, key=weight_rhyme, reverse=True)
+
+
+def select_candidates(word, full_phrase, include_single):
+    rhymes = get_rhymes(word.lower())
+    if not rhymes:
+        return [word]
+
+    multi = [r for r in rhymes if " " in r]
+    single = [r for r in rhymes if " " not in r]
+
+    if full_phrase:
+        cands = multi + (single if include_single else [])
+        return sort_weighted(cands) if cands else [word]
+
+    heads = [r.split()[0] for r in multi]
+    cands = heads + single if include_single else (heads if heads else single)
+    return sort_weighted(cands) if cands else [word]
+
+
+WORD_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?")
+TOKEN_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?|[^\w\s]")
+
+
+def tokenize(text):
+    return TOKEN_RE.findall(text)
+
+
+def restore_spacing(tokens):
+    out = []
+    for i, t in enumerate(tokens):
+        if i > 0 and t.isalpha():
+            out.append(" ")
+        out.append(t)
+    return "".join(out)
+
+
+def nouns_mask_spacy(tokens):
+    """
+    Return a True/False mask telling which tokens are nouns.
+    Punctuation -> False.
+    """
+    text = " ".join(tokens)
+    doc = NLP(text)
+
+    # Now align spaCy tokens back to original tokens.
+    # Method: greedily match sequential text spans.
+    mask = [False] * len(tokens)
+    tok_i = 0
+
+    for spacy_tok in doc:
+        spacy_txt = spacy_tok.text
+        # find matching token in original stream
+        while tok_i < len(tokens) and tokens[tok_i] != spacy_txt:
+            tok_i += 1
+        if tok_i >= len(tokens):
+            break
+        if spacy_tok.pos_ in ("NOUN", "PROPN"):
+            mask[tok_i] = True
+        tok_i += 1
+
+    return mask
+
+
+def capitalize_like(cand, src):
+    if src.isupper():
+        return cand.upper()
+    if src.istitle():
+        return " ".join(w.capitalize() for w in cand.split())
+    return cand[0].upper() + cand[1:] if cand else cand
+
+
+def build_lines(text, full_phrase=False, include_single=False, nouns_only=False):
+    tokens = tokenize(text)
+
+    # Determine noun positions with spaCy if requested
+    if nouns_only:
+        if not USE_SPACY:
+            warnings.warn("spaCy model en_core_web_sm not available. --nouns ignored.", RuntimeWarning)
+            nouns_only = False
+        else:
+            noun_mask = nouns_mask_spacy(tokens)
+    else:
+        noun_mask = [True] * len(tokens)
+
+    # Build candidate lists
+    candidates = []
+    for i, tok in enumerate(tokens):
+        if WORD_RE.fullmatch(tok):
+            if nouns_only and not noun_mask[i]:
+                candidates.append([tok])
+            else:
+                cands = select_candidates(tok, full_phrase, include_single)
+                if tok[0].isupper():
+                    cands = [capitalize_like(c, tok) for c in cands]
+                candidates.append(cands)
+        else:
+            candidates.append([tok])
+
+    max_len = max(len(c) for c in candidates)
+
+    lines = []
+    for i in range(max_len):
+        out_tokens = []
+        for tok, opts in zip(tokens, candidates):
+            chosen = opts[i % len(opts)]
+            if " " in chosen:
+                out_tokens.extend(chosen.split())
+            else:
+                out_tokens.append(chosen)
+        lines.append(restore_spacing(out_tokens))
+    return lines
+
+def main():
+    ap = argparse.ArgumentParser(description="Cockney Rhyming Slang Translator")
+    ap.add_argument("text", nargs="+", help="Text to translate")
+    ap.add_argument("--full", action="store_true", help="Use full multi-word rhyme phrase")
+    ap.add_argument("--all-rhymes", action="store_true", help="Include single-word rhymes as well")
+    ap.add_argument("--nouns", action="store_true", help="Only replace nouns (spaCy required)")
+    args = ap.parse_args()
+
+    text = " ".join(args.text)
+
+    lines = build_lines(text, full_phrase=args.full, include_single=args.all_rhymes, nouns_only=args.nouns)
+
+    for l in lines:
+        print(l)
+
+
+if __name__ == "__main__":
+    main()
