@@ -1,5 +1,5 @@
 lb openlinks ~/mc/music.db -w 'play_count=0' -rs --prefix https://music.youtube.com/search?q=% --browser
-lb openlinks ~/mc/tv.db -w 'play_count=0' -rs -c p1 --browser
+lb openlinks ~/mc/mydramalist.db -w 'play_count=0' -rs --browser
 lb openlinks ~/mc/cine.db -w 'play_count=0' -rs --prefix https://www.google.com/search?q=% https://rutracker.org/forum/tracker.php?max=1&nm=% --browser
 lb openlinks ~/mc/links.db -w 'play_count=0' -rs --browser
 lb openlinks ~/lb/sites/manual/pornolab.net.db -w 'play_count=0' -rs -c p1 --browser
