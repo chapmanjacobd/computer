@@ -81,7 +81,7 @@ abbr -a parallel --function _abbr_parallel
 
 abbr_random_line wtv ~/watch
 abbr_random_line ltv ~/listen
-abbr_random_line lnv ~/links
+abbr_random_line links ~/links
 
 function _abbr_ltc
     if test (hostname) = len

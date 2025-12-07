@@ -229,7 +229,6 @@ abbr -a -- running 'timers.status && systemctl --user list-timers --all --no-pag
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
 abbr -a -- torrent.status 'print $servers | parallel server.ssh {} lb.dev torrents --dl -pa | ov'
-abbr -a -- links lb openlinks /home/xk/mc/links.db -w play_count=0 -rs --browser
 abbr -a -- zj z j
 abbr -a -- wipc git.checkpoint
 abbr -a -- gitconfig git config -l --show-origin
