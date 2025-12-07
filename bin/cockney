@@ -7,6 +7,7 @@ import warnings
 
 import requests
 
+IGNORED = ("a a", "l a", "fu", "barc1", "tew")
 USE_SPACY = False
 NLP = None
 
@@ -31,12 +32,9 @@ except Exception:
 
 
 def get_rhymes_datamuse(word):
-    try:
-        r = requests.get("https://api.datamuse.com/words", params={"rel_rhy": word}, timeout=3)
-        if r.status_code == 200:
-            return [w["word"] for w in r.json()]
-    except Exception:
-        pass
+    r = requests.get("https://api.datamuse.com/words", params={"rel_rhy": word}, timeout=3)
+    if r.status_code == 200:
+        return [w["word"] for w in r.json() if 'score' in w and w['score'] > 23]
     return []
 
 
@@ -57,7 +55,7 @@ def get_rhymes(word):
     seen = set()
     out = []
     for r in rhymes:
-        if r in ("a a",):
+        if r in IGNORED:
             continue
 
         if r not in seen:
