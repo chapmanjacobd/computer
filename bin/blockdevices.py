@@ -74,8 +74,8 @@ if __name__ == '__main__':
                     if args.unmounted:
                         if not mountpoint:
                             print(dev_path)
-                    else:
-                        print(dev_path)
+                    # else:
+                    #    print(dev_path)
         else:
             for part_path, mountpoint in partition_mounts.items():
                 if args.mountpoints and mountpoint:
@@ -84,5 +84,5 @@ if __name__ == '__main__':
                     if args.unmounted:
                         if not mountpoint:
                             print(part_path)
-                    else:
-                        print(part_path)
+                    # else:
+                    #     print(part_path)
