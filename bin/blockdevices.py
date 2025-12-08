@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import json
+import os
 import re
 import subprocess
 from glob import glob
@@ -12,11 +13,7 @@ def get_block_device_info() -> List[Dict[str, str]]:
     udev_output = subprocess.check_output(['udevadm', 'info', '--json=short', *block_devices], text=True)
     udev_output = [json.loads(l) for l in udev_output.splitlines()]
 
-    devices = [
-        d
-        for d in udev_output
-        if not d["DEVPATH"].startswith("/devices/virtual") and (d.get("ID_FS_TYPE") or '') != "swap"
-    ]
+    devices = [d for d in udev_output if (d.get("ID_FS_TYPE") or '') != "swap"]
     return devices
 
 
@@ -39,7 +36,7 @@ def get_mountpoints():
     lsblk_output = subprocess.check_output(['lsblk', '-J', '-o', 'PATH,MOUNTPOINT'], text=True)
     data = json.loads(lsblk_output)
     return {
-        d["path"]: d["mountpoint"]
+        os.path.realpath(d["path"]) if d["path"].startswith("/dev/mapper/") else d["path"]: d["mountpoint"]
         for d in data['blockdevices']
         if not d["mountpoint"] or (d["mountpoint"] and d["mountpoint"] != "[SWAP]")
     }
