@@ -65,21 +65,21 @@ if __name__ == '__main__':
 
         if not partition_mounts:
             for dev_path, mountpoint in base_mount.items():
-                if args.mountpoints and mountpoint:
-                    print(mountpoint)
+                if args.unmounted:
+                    if not mountpoint:
+                        print(dev_path)
+                elif args.mountpoints:
+                    if mountpoint:
+                        print(mountpoint)
                 else:
-                    if args.unmounted:
-                        if not mountpoint:
-                            print(dev_path)
-                    # else:
-                    #    print(dev_path)
+                    print(dev_path)
         else:
             for part_path, mountpoint in partition_mounts.items():
-                if args.mountpoints and mountpoint:
-                    print(mountpoint)
+                if args.unmounted:
+                    if not mountpoint:
+                        print(part_path)
+                elif args.mountpoints:
+                    if mountpoint:
+                        print(mountpoint)
                 else:
-                    if args.unmounted:
-                        if not mountpoint:
-                            print(part_path)
-                    # else:
-                    #     print(part_path)
+                    print(part_path)
