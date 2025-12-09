@@ -4,7 +4,7 @@ function cb.append.html
     echo "$temp_file" >&2
 
     while true
-        text.preview (cbfile) >&2
+        text.preview (cb.file) >&2
 
         cb -t text/html >>"$temp_file"
         echo "" >>"$temp_file"

@@ -4,7 +4,7 @@ function cb.append --argument-names suffix
     echo "$temp_file" >&2
 
     while true
-        text.preview (cbfile) >&2
+        text.preview (cb.file) >&2
 
         cb >>"$temp_file"
         echo '' >>"$temp_file"
