@@ -14,7 +14,7 @@ function torrents.maintenance
     # remove tagged items
     for s in (servers.ssh.connectable $servers)
         ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing/(datestamp) --delete-rows
-    end >>~/mc/_unfinished.txt
+    end
 
     servers.ssh lb torrents --ul --no-any-exists --no-checking --no-errored --move processing --delete-rows -v -pa
 
