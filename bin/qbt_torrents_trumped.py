@@ -32,6 +32,7 @@ def is_trumped_torrent(t):
                 'invalid torrent',
                 'unregistered torrent',
                 'torrent not found',
+                'torrent not registered',
                 'infohash not found',
                 'has been deleted',
                 'torrent deleted',
