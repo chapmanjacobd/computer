@@ -603,5 +603,6 @@
   "github.copilot.chat.reviewAgent.enabled": false,
   "github.copilot.chat.copilotDebugCommand.enabled": false,
   "github.copilot.chat.reviewSelection.enabled": false,
-  "chat.disableAIFeatures": true
+  "github.copilot.chat.newWorkspaceCreation.enabled": false,
+  "githubPullRequests.codingAgent.codeLens": false
 }
