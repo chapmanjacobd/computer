@@ -1,4 +1,7 @@
 function weekly
+    git gc --prune=now
+    sudo journalctl --vacuum-time=10d
+
     dbackups
     trash ~/sync/.stversions/*
 
