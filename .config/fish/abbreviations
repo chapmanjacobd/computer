@@ -243,7 +243,6 @@ abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- tr trU
 abbr -a -- html_table 'lb tables --type html (cb.file.html)'
 abbr -a -- wtm wt -m 4 --fstack
-abbr -a -- taxes wt -m 4 --fstack -db /home/xk/lb/tax.db --keep-dir /home/xk/d/library/porn/video/ -rs -L inf --mute --pause
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
@@ -929,3 +928,4 @@ abbr -a -- git.apply.cherry git rebase -i HEAD
 abbr -a -- git.deleted git log --all --full-history --diff-filter=D --name-status
 abbr -a -- relink ln -s --no-dereference --force link_target lnk
 abbr -a -- logout qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
+abbr -a -- taxes lb.dev wt -v /home/xk/lb/fs/tax.db --action ask_move --exit-code-confirm --ignore-errors --cmd5 'echo skip' --cmd6 'mv {} /mnt/d/library/porn/vr/' --cmd130 exit_multiple_playback --local-media-only --loop -m 4 --fstack -E /mnt/d10/ /mnt/d1/ --keep-dir :/library/porn/video/ -rs -L inf -S+2200 --fstack --mute --pause

@@ -184,6 +184,7 @@
     "dataframe",
     "daterange",
     "dateutil",
+    "dedupe",
     "DEMUXERS",
     "demuxing",
     "downloadqueue",
