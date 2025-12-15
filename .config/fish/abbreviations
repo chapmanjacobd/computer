@@ -928,3 +928,4 @@ abbr -a -- ps.mem sudo ps_mem --split-args --swap
 abbr -a -- git.apply.cherry git rebase -i HEAD
 abbr -a -- git.deleted git log --all --full-history --diff-filter=D --name-status
 abbr -a -- relink ln -s --no-dereference --force link_target lnk
+abbr -a -- logout qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
