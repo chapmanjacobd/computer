@@ -19,5 +19,5 @@ function forganize
     end
     mktree.py ~/d/
 
-    d.sql.refresh
+    dsql.refresh.all
 end
