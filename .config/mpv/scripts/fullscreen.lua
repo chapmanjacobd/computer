@@ -4,9 +4,9 @@ function toggle_fullscreen_and_focus()
     mp.commandv("cycle", "fullscreen")
 
     if was_fullscreen then
-        mp.commandv("run", "fish", "-c", "focus_follows_mouse")
+        mp.commandv("run", "fish", "-c", "kwin.FocusFollowsMouse")
     else
-        mp.commandv("run", "fish", "-c", "focus_under_mouse")
+        mp.commandv("run", "fish", "-c", "kwin.FocusUnderMouse")
     end
 end
 
