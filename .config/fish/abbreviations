@@ -929,3 +929,4 @@ abbr -a -- git.deleted git log --all --full-history --diff-filter=D --name-statu
 abbr -a -- relink ln -s --no-dereference --force link_target lnk
 abbr -a -- logout qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 abbr -a -- taxes "lb.dev wt -v ~/lb/fs/tax.db --action ask_move --exit-code-confirm --ignore-errors --cmd5 'echo skip' --cmd6 'mv {} /mnt/d/library/porn/vr/' --cmd130 exit_multiple_playback --local-media-only --loop -m 4 --fstack -E /mnt/d10/ /mnt/d1/ --keep-dir :/library/porn/video/ -rs -L inf -S+2200 --fstack --mute --pause"
+abbr -a -- git.squashed git log --first-parent --oneline
