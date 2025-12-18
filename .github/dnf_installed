@@ -251,6 +251,7 @@ strace
 stress
 swtpm
 symlinks
+syncthing
 sysfsutils
 systemtap
 terminus-fonts
