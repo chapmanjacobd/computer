@@ -28,6 +28,7 @@ function daily
         sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select path from media where topic_group = '$group' and path not like 'https://tildes.net/%' and text is null" >>$group_name.list
     end
     fd -S-12b -tf -x rm
+    ~/j/
     git add .
     file.urls.titles.preserve
     git add .
