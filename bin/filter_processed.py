@@ -3,7 +3,7 @@ import argparse
 import os
 from subprocess import TimeoutExpired
 
-from library.utils import arggroups, consts, file_utils, processes
+from library.utils import arggroups, consts, shell_utils, processes
 
 
 def is_processed(filepath):
@@ -44,7 +44,7 @@ def main():
     if args.n:
         args.processed = False
 
-    for p in file_utils.gen_paths(args):
+    for p in shell_utils.gen_paths(args):
         if is_processed(p) is args.processed:
             print(p)
 

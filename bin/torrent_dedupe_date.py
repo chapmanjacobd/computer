@@ -5,7 +5,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from library.utils import file_utils, arggroups, argparse_utils, strings
+from library.utils import shell_utils, arggroups, argparse_utils, strings
 from torrentool.api import Torrent
 
 parser = argparse_utils.ArgumentParser()
@@ -23,7 +23,7 @@ def extract_date(filename):
         return match.group(1)
     return None
 
-paths = list(file_utils.gen_paths(args, ['.torrent']))
+paths = list(shell_utils.gen_paths(args, ['.torrent']))
 
 clusters = defaultdict(list)
 for path in paths:

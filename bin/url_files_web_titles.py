@@ -4,7 +4,7 @@ import shutil
 import sys
 import tempfile
 
-from library.utils import arggroups, argparse_utils, file_utils, web
+from library.utils import arggroups, argparse_utils, shell_utils, web
 
 
 def parse_args():
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     if args.selenium:
         web.load_selenium(args)
     try:
-        for file_path in file_utils.gen_paths(args):
+        for file_path in shell_utils.gen_paths(args):
             if not os.path.exists(file_path):
                 print(f"Error: File not found at '{file_path}'. Skipping.", file=sys.stderr)
                 continue

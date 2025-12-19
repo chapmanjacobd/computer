@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import os
 
-from library.utils import file_utils, arggroups, argparse_utils
+from library.utils import shell_utils, arggroups, argparse_utils
 
 
 def read_in_chunks(file_object, chunk_size=1024 * 1024 * 256):
@@ -38,7 +38,7 @@ def rm_corrupt():
     args = parser.parse_args()
     arggroups.args_post(args, parser)
 
-    for path in file_utils.gen_paths(args):
+    for path in shell_utils.gen_paths(args):
         check_file(args, path)
 
 

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 import psutil
-from library.utils import arggroups, argparse_utils, consts, devices, file_utils, path_utils
+from library.utils import arggroups, argparse_utils, consts, devices, shell_utils, path_utils
 from library.utils.log_utils import log
 
 
@@ -56,7 +56,7 @@ def main():
 
         try:
             src, dest = devices.clobber(args, source_path, dest_path)
-            file_utils.rename_move_file(src, dest, args.simulate)
+            shell_utils.rename_move_file(src, dest, args.simulate)
         except PermissionError:
             log.info("Permission Error %s (skipping)", source_path)
             continue

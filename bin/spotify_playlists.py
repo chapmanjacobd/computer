@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from library.utils import web
 
 
-from library.utils import arggroups, argparse_utils, file_utils, web
+from library.utils import arggroups, argparse_utils, shell_utils, web
 
 
 def parse_args():
@@ -77,7 +77,7 @@ def main():
     if args.selenium:
         web.load_selenium(args)
     try:
-        for url in file_utils.gen_paths(args):
+        for url in shell_utils.gen_paths(args):
             get_spotify_playlist_tracks(args, url)
     finally:
         if args.selenium:

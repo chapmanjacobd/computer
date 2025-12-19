@@ -5,7 +5,7 @@ from pathlib import Path
 
 from library.mediafiles import torrents_start
 from library.playback import torrents_info
-from library.utils import arggroups, argparse_utils, file_utils
+from library.utils import arggroups, argparse_utils, shell_utils
 
 
 def parse_args():
@@ -45,7 +45,7 @@ for t in torrents:
                     fs_files.add(t_folder)
                 elif t_folder not in fs_folders:
                     fs_folders.add(t_folder)
-                    folder_files, _, _ = file_utils.rglob(t_folder, quiet=True)
+                    folder_files, _, _ = shell_utils.rglob(t_folder, quiet=True)
                     fs_files |= folder_files
 
     t_folder_count = defaultdict(int)

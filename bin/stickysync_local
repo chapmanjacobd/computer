@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from library.files import sample_compare
 
-from library.utils import file_utils
+from library.utils import shell_utils
 from library.utils.log_utils import log
 import glob
 
@@ -50,7 +50,7 @@ def stickysync_local(historyfile, from_dir, to_dir):
         with open(historyfile, 'r') as hf:
             history = set(hf.read().splitlines())
 
-    source_files = set(Path(s) for s in file_utils.rglob(from_dir)[0])
+    source_files = set(Path(s) for s in shell_utils.rglob(from_dir)[0])
 
     known_files = set(p for p in source_files if str(p.relative_to(from_dir)) in history)
     source_files -= known_files

@@ -3,7 +3,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 from library.mediafiles import media_check
-from library.utils import arggroups, argparse_utils, file_utils, path_utils, processes, web
+from library.utils import arggroups, argparse_utils, shell_utils, path_utils, processes, web
 
 
 def jav_guru() -> None:
@@ -165,7 +165,7 @@ def jav_guru() -> None:
         return None
 
     process_url(args.path)
-    file_utils.tempdir_unlink("*.xpi")
+    shell_utils.tempdir_unlink("*.xpi")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from pathlib import Path
 
-from library.utils import arg_utils, arggroups, argparse_utils, file_utils
+from library.utils import arg_utils, arggroups, argparse_utils, shell_utils
 
 
 def cp_tree():
@@ -33,7 +33,7 @@ def cp_tree():
         folders = set(p for p in found if p.is_dir())
         files = set(p for p in found if not p.is_dir())
     else:
-        files, _, folders = file_utils.rglob(str(source_folder), args.ext or None)
+        files, _, folders = shell_utils.rglob(str(source_folder), args.ext or None)
 
     dst = Path(args.destination).resolve()
 

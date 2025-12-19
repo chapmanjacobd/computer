@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from library.createdb import torrents_add
-from library.utils import arggroups, argparse_utils, devices, file_utils, nums, printing, strings
+from library.utils import arggroups, argparse_utils, devices, shell_utils, nums, printing, strings
 
 parser = argparse_utils.ArgumentParser()
 arggroups.capability_delete(parser)
@@ -107,4 +107,4 @@ for group in sorted(duplicates, key=len, reverse=True):
         torrent_to_delete = group[0]
 
     if devices.confirm("Delete?"):
-        file_utils.trash(args, torrent_to_delete["path"])
+        shell_utils.trash(args, torrent_to_delete["path"])
