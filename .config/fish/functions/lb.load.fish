@@ -7,9 +7,6 @@ function lb.load
         lb mv --ext jpg,jpeg,png,pdf,tiff,tif,bmp,webp $d/dump/porn/video/ $d/dump/porn/image/from_video/
         lb mv --ext mka,m4a,mp3 $d/dump/porn/video/ $d/dump/porn/audio/from_video/
 
-        $d/dump/porn/video/
-        fd -edb -edcsv -enfo -x rm
-
         lb fsadd ~/lb/fs/tax_sounds.db --audio --delete-unplayable --process --move $d/check/porn/audio/ $d/dump/porn/audio/ -v
         lb fsadd ~/lb/fs/tax_sounds.db --audio --delete-unplayable --process --move $d/check/porn/audio/from_video/ $d/dump/porn/video/
 
