@@ -931,3 +931,4 @@ abbr -a -- taxes "lb.dev wt -v ~/lb/fs/tax.db --action ask_move --exit-code-conf
 abbr -a -- git.squashed git log --first-parent --oneline
 abbr -a -- gs 'git status --short --untracked; echo Why not try Ctrl+S?'
 abbr -a -- aria2c.throttled aria2c -x16 -j16 -s32 --lowest-speed-limit=100K --max-overall-download-limit=32M
+abbr -a -- pip.download pip download --no-binary :all: --no-deps
