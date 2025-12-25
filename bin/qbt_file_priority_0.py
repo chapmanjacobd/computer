@@ -32,12 +32,12 @@ for t in torrents:
 
     matched_indexes = []
     for f in torrents_info.torrent_files(t):
-        # f.name is relative to the torrent root
         for base in t_folders:
-            full_path = normalize(os.path.join(base, f.name))
+            full_path = os.path.join(base, f.name)
             if full_path in input_paths:
                 matched_indexes.append(f.index)
                 break
 
     if matched_indexes:
+        print(t.name, "matched", len(matched_indexes), "files")
         qbt_client.torrents_file_priority(torrent_hash=t.hash, file_ids=matched_indexes, priority=0)
