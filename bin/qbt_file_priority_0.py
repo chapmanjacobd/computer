@@ -26,6 +26,7 @@ input_paths = {normalize(p) for p in args.paths}
 
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
+torrents = [t for t in torrents if not t.state_enum.is_complete]
 
 for t in torrents:
     t_folders = {normalize(p) for p in (t.save_path, t.download_path, t.content_path) if p}
