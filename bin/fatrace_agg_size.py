@@ -4,10 +4,10 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import time
 
-from library.utils import strings, nums
+from library.utils import nums, strings
+from library.utils.printing import MultilineOverwriteConsole
 
 parser = argparse.ArgumentParser(description="Track file modifications with fatrace and show size deltas.")
 parser.add_argument(
@@ -83,8 +83,11 @@ def sort_files():
     return sorted(valid_paths, key=get_sort_key, reverse=sort_desc)
 
 
+console = MultilineOverwriteConsole()
+
+
 def print_status(final=False):
-    os.system("clear")
+    console.reset()
 
     recent = sort_files()
     count = 0
@@ -94,13 +97,13 @@ def print_status(final=False):
         if delta < min_delta:
             continue
         sign = "+" if delta > 0 else "-"
-        print(f"{sign}{strings.file_size(abs(delta)):<9}{path[0:TERMINAL_WIDTH]}")
+        console.print(f"{sign}{strings.file_size(abs(delta)):<9}{path[0:TERMINAL_WIDTH]}")
         count += 1
         if not final and count >= TERMINAL_LINES:
             break
 
-    print(f"{len(recent)} total modified files")
-    sys.stdout.flush()
+    console.print(f"{len(recent)} total modified files")
+    console.flush()
 
 
 proc = subprocess.Popen(
