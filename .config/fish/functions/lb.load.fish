@@ -3,7 +3,7 @@ function lb.load
     lb unardel -vy ~/d/dump/video/ ~/d/dump/porn/video/
 
     for d in /mnt/d(seq 1 10)
-        lb fsadd ~/lb/fs/tax.db --video --hash --delete-unplayable --move $d/check/porn/video/ $d/dump/porn/video/ -v
+        lb fsadd ~/lb/fs/tax.db --video --delete-unplayable --move $d/check/porn/video/ $d/dump/porn/video/ -v
         lb mv --ext jpg,jpeg,png,pdf,tiff,tif,bmp,webp $d/dump/porn/video/ $d/dump/porn/image/from_video/
         lb mv --ext mka,m4a,mp3 $d/dump/porn/video/ $d/dump/porn/audio/from_video/
 
@@ -12,7 +12,7 @@ function lb.load
 
         lb fsadd ~/lb/fs/tax_VR.db --delete-unplayable --move $d/check/porn/vr/ $d/dump/porn/vr/ -v
 
-        lb fsadd ~/lb/fs/video.db --video --hash --delete-unplayable --move $d/check/video/ $d/dump/video/ -v
+        lb fsadd ~/lb/fs/video.db --video --delete-unplayable --move $d/check/video/ $d/dump/video/ -v
 
         lb mv --ext srt,vtt,ass $d/dump/porn/video/ $d/check/porn/video/
         lb mv --ext srt,vtt,ass $d/dump/video/ $d/check/video/
