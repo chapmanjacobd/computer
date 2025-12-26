@@ -2,7 +2,7 @@
 function smartctl.ls
     for var in $argv
         echo $var
-        for dev in /dev/sd(seqalpha a z)
+        for dev in /dev/sd(seq.alpha a z)
             if test -e $dev
                 printf "$dev\t%s\n" (sudo smartctl -A $dev)
             end

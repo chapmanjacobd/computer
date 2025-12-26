@@ -3,7 +3,7 @@ function files.mv.charprefix
     # before resorting to something like this, try exiftool:
     # exiftool '-Filename<${Artist;}/' -ext .opus .
 
-    mkdir (seqalpha A Z) nonalpha
+    mkdir (seq.alpha A Z) nonalpha
 
     for p in (fd -tf --exact-depth 1 . $argv)
         set first_char (string sub --length 1 "$p")
