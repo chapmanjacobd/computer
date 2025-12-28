@@ -130,7 +130,7 @@ def main():
                 print(f"    {sp} -> {strings.file_size(sz)}")
 
         # Choose save_path with maximum matched bytes
-        best_save_path, best_matched = max(p["save_path_hits"].items(), key=lambda kv: kv[1])
+        best_save_path, best_matched = max(p["save_path_hits"].items(), key=lambda kv: (kv[1], -len(kv[0].parts)))
         pct = (best_matched / p["total_size"]) * 100
 
         if pct < args.threshold:
