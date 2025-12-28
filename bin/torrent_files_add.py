@@ -135,15 +135,17 @@ def main():
         for f in candidates:
             size = f.stat().st_size
             for entry in size_index.get(size, []):
-                fut = pool.submit(
-                    check_file_against_torrent,
-                    f,
-                    entry["ti"],
-                    entry["fs"],
-                    entry["file_index"],
-                    1,
-                )
-                futures[fut] = entry
+                torrent_rel_path = entry["fs"].file_path(entry["file_index"])
+                if str(f).endswith(torrent_rel_path):
+                    fut = pool.submit(
+                        check_file_against_torrent,
+                        f,
+                        entry["ti"],
+                        entry["fs"],
+                        entry["file_index"],
+                        1,
+                    )
+                    futures[fut] = entry
 
         for fut in as_completed(futures):
             entry = futures[fut]
@@ -163,15 +165,14 @@ def main():
 
             prog = progress[infohash]
 
+            file_size = fs.file_size(result["file_index"])
+            credited = int(file_size * (result["matches"] / result["total"])) if result["total"] else 0
+            prog["matched_size"] += credited
+
             if prog["save_path"] is None:
                 torrent_rel_path = fs.file_path(result["file_index"])
                 local_path = result["local_path"]
                 prog["save_path"] = compute_save_path(local_path, torrent_rel_path)
-
-            file_size = fs.file_size(result["file_index"])
-            credited = int(file_size * (result["matches"] / result["total"])) if result["total"] else 0
-
-            prog["matched_size"] += credited
 
     results = []
     for p in progress.values():
