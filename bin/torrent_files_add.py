@@ -147,7 +147,7 @@ def main():
             }
         )
 
-    results.sort(key=lambda r: r["pct"], reverse=True)
+    results.sort(key=lambda r: (-r["pct"], r["total_size"]))
     print(f"\nFound {len(results)} torrents ≥ {args.threshold}%")
 
     for r in results:
