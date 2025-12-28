@@ -9,9 +9,9 @@ from library.mediafiles import torrents_start
 from library.utils import arggroups, devices, strings
 
 
-def compute_save_path(local_path: Path, torrent_rel_path: str) -> Path:
+def compute_save_path(local_path: Path, torrent_rel_path: Path) -> Path:
     """Compute the save path by walking up from the local file."""
-    depth = len(Path(torrent_rel_path).parts)
+    depth = len(torrent_rel_path.parts)
     save_path = local_path
     for _ in range(depth):
         save_path = save_path.parent
@@ -66,7 +66,7 @@ def main():
                     "ti": ti,
                     "fs": fs,
                     "torrent_file": t["torrent_file"],
-                    "torrent_rel_path": path,
+                    "torrent_rel_path": Path(path),
                 }
             )
 
@@ -104,7 +104,7 @@ def main():
                 ti = entry["ti"]
                 fs = entry["fs"]
                 torrent_rel_path = entry["torrent_rel_path"]
-                if not str(local_file).endswith(torrent_rel_path):
+                if local_file.name != torrent_rel_path.name or not str(local_file).endswith(str(torrent_rel_path)):
                     continue
 
                 infohash = ti.info_hash().to_string()
