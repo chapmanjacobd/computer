@@ -193,7 +193,7 @@ def main():
 
     for r in results:
         print(
-            f"\n{r['torfile'].name} ({r['ti'].name()}): "
+            f"\n{r['torfile'].name} ({r['save_path']} {r['ti'].name()}): "
             f"{r['pct']:.1f}% "
             f"({strings.file_size(r['matched_size'])}/"
             f"{strings.file_size(r['total_size'])})"
