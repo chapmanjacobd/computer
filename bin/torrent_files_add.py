@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import libtorrent as lt
@@ -51,7 +52,6 @@ def main():
 
     print(f"Loaded {len(torrents)} torrents")
 
-
     size_index = {}
     for t in torrents:
         ti = t["ti"]
@@ -94,23 +94,27 @@ def main():
     print(f"Scanning {len(candidates)} files")
 
     # Match local files to torrent files
-    for local_file in candidates:
-        size = local_file.stat().st_size
-        for entry in size_index.get(size, []):
-            ti = entry["ti"]
-            fs = entry["fs"]
-            torrent_rel_path = entry["torrent_rel_path"]
-            if not str(local_file).endswith(torrent_rel_path):
-                continue
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
+        futures = {executor.submit(lambda f: (f, f.stat().st_size), f) for f in candidates}
 
-            infohash = ti.info_hash().to_string()
-            prog = progress[infohash]
+        for future in as_completed(futures):
+            local_file, size = future.result()
 
-            candidate_save_path = compute_save_path(local_file, torrent_rel_path)
+            for entry in size_index.get(size, []):
+                ti = entry["ti"]
+                fs = entry["fs"]
+                torrent_rel_path = entry["torrent_rel_path"]
+                if not str(local_file).endswith(torrent_rel_path):
+                    continue
 
-            # Credit size to this specific save_path hypothesis
-            prog["save_path_hits"].setdefault(candidate_save_path, 0)
-            prog["save_path_hits"][candidate_save_path] += size
+                infohash = ti.info_hash().to_string()
+                prog = progress[infohash]
+
+                candidate_save_path = compute_save_path(local_file, torrent_rel_path)
+
+                # Credit size to this specific save_path hypothesis
+                prog["save_path_hits"].setdefault(candidate_save_path, 0)
+                prog["save_path_hits"][candidate_save_path] += size
 
     results = []
     for p in progress.values():
