@@ -168,9 +168,12 @@ def main():
 
             qbt_client.torrents_add(
                 torrent_files=open(r["torrent_file"], "rb"),
+                download_path=str(r["save_path"]),
                 save_path=str(r["save_path"]),
+                use_auto_torrent_management=False,
                 is_paused=False,
                 skip_checking=False,
+                add_to_top_of_queue=False,
             )
             print(f"✓ Added {r['torrent_file'].name}")
 
