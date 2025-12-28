@@ -6,8 +6,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import libtorrent as lt
-from library.utils import arggroups, devices, strings
 from library.mediafiles import torrents_start
+from library.utils import arggroups, devices, strings
 
 
 def piecewise_hash(file_path: Path, piece_length: int, piece_hashes: list[bytes]):
@@ -34,10 +34,7 @@ def check_file_against_torrent(file_path, ti, fs, file_index, min_pieces):
     piece_start = offset // piece_length
     piece_end = (offset + size + piece_length - 1) // piece_length
 
-    piece_hashes = [
-        ti.hash_for_piece(i)
-        for i in range(piece_start, piece_end)
-    ]
+    piece_hashes = [ti.hash_for_piece(i) for i in range(piece_start, piece_end)]
 
     matches, total = piecewise_hash(file_path, piece_length, piece_hashes)
 
@@ -53,10 +50,16 @@ def check_file_against_torrent(file_path, ti, fs, file_index, min_pieces):
     }
 
 
+def compute_save_path(local_path: Path, torrent_rel_path: str) -> Path:
+    depth = len(Path(torrent_rel_path).parts)
+    save_path = local_path
+    for _ in range(depth):
+        save_path = save_path.parent
+    return save_path
+
+
 def main():
-    parser = argparse.ArgumentParser(
-        description="Add torrents if ≥ threshold already exists locally"
-    )
+    parser = argparse.ArgumentParser(description="Add torrents if ≥ threshold already exists locally")
     arggroups.qBittorrent(parser)
     arggroups.debug(parser)
 
@@ -76,11 +79,13 @@ def main():
     for torfile in args.torrent_dir.glob("*.torrent"):
         try:
             ti = lt.torrent_info(str(torfile), limits)
-            torrents.append({
-                "ti": ti,
-                "torfile": torfile,
-                "fs": ti.files(),
-            })
+            torrents.append(
+                {
+                    "ti": ti,
+                    "torfile": torfile,
+                    "fs": ti.files(),
+                }
+            )
         except Exception as e:
             print(f"[ERROR] {torfile}: {e}")
 
@@ -93,12 +98,14 @@ def main():
 
         for i in range(ti.num_files()):
             size = fs.file_size(i)
-            size_index.setdefault(size, []).append({
-                "ti": ti,
-                "torfile": t["torfile"],
-                "fs": fs,
-                "file_index": i,
-            })
+            size_index.setdefault(size, []).append(
+                {
+                    "ti": ti,
+                    "torfile": t["torfile"],
+                    "fs": fs,
+                    "file_index": i,
+                }
+            )
 
     progress = {}
     for t in torrents:
@@ -110,7 +117,7 @@ def main():
             "total_size": ti.total_size(),
             "ti": ti,
             "torfile": t["torfile"],
-            "file_map": {},
+            "save_path": None,
         }
 
     candidates = []
@@ -154,18 +161,17 @@ def main():
             fs = entry["fs"]
             infohash = ti.info_hash().to_string()
 
-            torrent_path = fs.file_path(result["file_index"])
-            file_size = fs.file_size(result["file_index"])
-
-            credited = int(
-                file_size * (result["matches"] / result["total"])
-            ) if result["total"] else 0
-
             prog = progress[infohash]
 
-            if torrent_path not in prog["file_map"]:
-                prog["matched_size"] += credited
-                prog["file_map"][torrent_path] = result["local_path"]
+            if prog["save_path"] is None:
+                torrent_rel_path = fs.file_path(result["file_index"])
+                local_path = result["local_path"]
+                prog["save_path"] = compute_save_path(local_path, torrent_rel_path)
+
+            file_size = fs.file_size(result["file_index"])
+            credited = int(file_size * (result["matches"] / result["total"])) if result["total"] else 0
+
+            prog["matched_size"] += credited
 
     results = []
     for p in progress.values():
@@ -174,10 +180,12 @@ def main():
 
         pct = (p["matched_size"] / p["total_size"]) * 100
         if pct >= args.threshold:
-            results.append({
-                "pct": pct,
-                **p,
-            })
+            results.append(
+                {
+                    "pct": pct,
+                    **p,
+                }
+            )
 
     results.sort(key=lambda r: r["pct"], reverse=True)
     print(f"\nFound {len(results)} torrents ≥ {args.threshold}%")
@@ -194,12 +202,13 @@ def main():
         qbt_client = torrents_start.start_qBittorrent(args)
 
         for r in results:
-            first_path = next(iter(r["file_map"].values()))
-            save_path = first_path.parent
+            if r["save_path"] is None:
+                print("  [WARNING] No save path determined!, skipping", r["torfile"])
+                continue
 
             qbt_client.torrents_add(
                 torrent_files=open(r["torfile"], "rb"),
-                save_path=str(save_path),
+                save_path=str(r["save_path"]),
                 is_paused=False,
                 skip_checking=False,
             )
