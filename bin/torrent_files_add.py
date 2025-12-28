@@ -125,13 +125,13 @@ def main():
         if not save_path_hits:
             continue
 
+        save_path_hits = sorted(save_path_hits.items(), key=lambda kv: (-kv[1], len(kv[0].parts)))
         if len(save_path_hits) > 1:
             # Choose save_path with maximum matched bytes
-            save_path_hits = sorted(save_path_hits.items(), key=lambda kv: (kv[1], -len(kv[0].parts)))
-
             print("  competing save paths:")
             for sp, sz in save_path_hits:
                 print(f"    {sp} -> {strings.file_size(sz)}")
+
         best_save_path, best_matched = save_path_hits[0]
 
         pct = (best_matched / p["total_size"]) * 100
