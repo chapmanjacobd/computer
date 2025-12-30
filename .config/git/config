@@ -96,7 +96,7 @@
 [gpg]
 	format = ssh
 [interactive]
-    diffFilter = delta --color-only
+    diffFilter = delta --color-only --features=interactive
 [diff]
     algorithm = histogram
     indentHeuristic = true
