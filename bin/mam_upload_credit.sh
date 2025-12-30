@@ -24,7 +24,9 @@ UPLOADPOINTS=`expr $UPLOAD \* 500 + ${BUFFER}`
 if [ $POINTS -gt $UPLOADPOINTS ]
 then
   echo More than $UPLOADPOINTS points - buying ${UPLOAD}G of upload
-  curl -s -b mam_id=$MAM_COOKIE "https://www.myanonamouse.net/json/bonusBuy.php/?spendtype=VIP&duration=max&_=$(date +%s)"
+  if [ $(date +%w) -eq 0 ]; then
+      curl -s -b mam_id=$MAM_COOKIE "https://www.myanonamouse.net/json/bonusBuy.php/?spendtype=VIP&duration=max&_=$(date +%s)"
+  fi
   curl -s -b mam_id=$MAM_COOKIE 'https://www.myanonamouse.net/json/bonusBuy.php/?spendtype=upload&amount=Max%20Affordable%20&_='$(date +%s) -H 'Referer: https://www.myanonamouse.net/store.php'
 else
   echo " => Not enough points to buy ${UPLOAD}G of upload ($UPLOADPOINTS required)"
