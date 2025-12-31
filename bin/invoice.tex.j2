@@ -41,8 +41,11 @@
 ~< if company.contact >~
 & << company.contact >> & \\
 ~< endif >~
-& << company.website >> & \\
+~< if company.address >~
+& << company.address >> & \\
+~< endif >~
 & << company.phone >> & \\
+& << company.website >> & \\
 & << company.email >> & \\
 \end{tabularx}
 
