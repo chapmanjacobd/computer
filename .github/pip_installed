@@ -69,6 +69,7 @@ pylint
 pymcdm
 pympler
 pynput
+pypandoc
 pypdf
 pypdf_table_extraction
 pytest
