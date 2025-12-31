@@ -75,6 +75,7 @@
     ignore = !printf \"%s\\n\" \"$@\" >> .gitignore
     whoami = !git config user.name && git config user.email
     difflog = log -p --stat
+    diffsbs = -c delta.side-by-side=true diff
     sha = log -n 1 --pretty=format:'%H'
     staged = diff --cached
     commits = rev-list HEAD --count
