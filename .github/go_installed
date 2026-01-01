@@ -1,10 +1,12 @@
 git.sr.ht/~ft/unflac@latest
 github.com/birchb1024/frangipanni@latest
 github.com/chapmanjacobd/mkmetalink@latest
+github.com/chapmanjacobd/splitcopy@latest
 github.com/chapmanjacobd/sqlite-typecaster/cmd/sqlite-typecaster@latest
 github.com/charmbracelet/gum@latest
 github.com/daixiang0/gci@latest
 github.com/dundee/gdu/v5/cmd/gdu@latest
+github.com/erning/gorun@latest
 github.com/go-delve/delve/cmd/dlv@latest
 github.com/mikefarah/yq/v4@latest
 github.com/tdewolff/minify/v2/cmd/minify@latest
