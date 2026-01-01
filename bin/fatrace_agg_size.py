@@ -107,7 +107,7 @@ def print_status(final=False):
 
 
 proc = subprocess.Popen(
-    ["sudo", "fatrace", "-f", "W"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1
+    ["sudo", "fatrace", "-f", "W"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
 )
 
 try:
