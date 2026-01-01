@@ -1,22 +1,22 @@
 #!/bin/bash
-
 parse_args() {
   if [ "$#" -lt 2 ]; then
     echo "Usage: $0 <mountpoint> <command> [args...]"
     exit 1
   fi
-
   args_mnt="$1"
   shift
   args_cmd=("$@")
 }
 
 cleanup() {
+  local sig="${1:-TERM}"
+
   if [ -n "$child_pid" ] && kill -0 "$child_pid" 2>/dev/null; then
     kill -CONT "$child_pid" 2>/dev/null
-    kill -INT "$child_pid" 2>/dev/null
+    kill -"$sig" "$child_pid" 2>/dev/null
   fi
-  exit 0
+  exit 130
 }
 
 get_free_gb() {
@@ -28,27 +28,31 @@ get_free_gb() {
 }
 
 monitor() {
-  trap cleanup SIGTERM SIGINT
+  trap 'cleanup INT' SIGINT
+  trap 'cleanup TERM' SIGTERM
 
+  set -m  # enable job control
   "${args_cmd[@]}" &
   child_pid=$!
-  local paused=0
 
-  while kill -0 "$child_pid" 2>/dev/null; do
-    local free_gb=$(get_free_gb)
+  # Monitor in a subshell that won't interfere with stdin
+  (
+    local paused=0
+    while kill -0 "$child_pid" 2>/dev/null; do
+      local free_gb=$(get_free_gb)
+      if (( free_gb < 20 )) && [ "$paused" -eq 0 ]; then
+        kill -STOP "$child_pid"
+        paused=1
+      elif (( free_gb >= 25 )) && [ "$paused" -eq 1 ]; then
+        kill -CONT "$child_pid"
+        paused=0
+      fi
+      sleep 5
+    done
+  ) &
 
-    if (( free_gb < 20 )) && [ "$paused" -eq 0 ]; then
-      kill -STOP "$child_pid"
-      paused=1
-      echo Paused "$child_pid"
-    elif (( free_gb >= 30 )) && [ "$paused" -eq 1 ]; then
-      kill -CONT "$child_pid"
-      paused=0
-      echo Unpaused "$child_pid"
-    fi
-
-    sleep 5
-  done
+  # Wait for the child process in the foreground
+  wait "$child_pid"
 }
 
 parse_args "$@"

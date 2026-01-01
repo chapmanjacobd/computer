@@ -1,0 +1,47 @@
+#!/bin/bash
+
+term_count=0
+
+handle_term() {
+  ((term_count++))
+  echo "Received SIGTERM (count: $term_count)"
+  if [ "$term_count" -ge 2 ]; then
+    echo "SIGTERM received 2 times, exiting..."
+    exit 0
+  fi
+}
+
+handle_int() {
+  ((term_count++))
+  echo "Received SIGINT (count: $term_count)"
+  if [ "$term_count" -ge 2 ]; then
+    echo "SIGINT received 2 times, exiting..."
+    exit 0
+  fi
+}
+
+handle_hup() {
+  echo "Received SIGHUP"
+}
+
+handle_usr1() {
+  echo "Received SIGUSR1"
+}
+
+handle_usr2() {
+  echo "Received SIGUSR2"
+}
+
+# Set up traps for various signals
+trap handle_term SIGTERM
+trap handle_int SIGINT
+trap handle_hup SIGHUP
+trap handle_usr1 SIGUSR1
+trap handle_usr2 SIGUSR2
+
+echo "Signal tester started (PID: $$)"
+
+# Keep running
+while true; do
+  sleep 1
+done
