@@ -40,9 +40,11 @@ monitor() {
     if (( free_gb < 20 )) && [ "$paused" -eq 0 ]; then
       kill -STOP "$child_pid"
       paused=1
-    elif (( free_gb >= 25 )) && [ "$paused" -eq 1 ]; then
+      echo Paused "$child_pid"
+    elif (( free_gb >= 30 )) && [ "$paused" -eq 1 ]; then
       kill -CONT "$child_pid"
       paused=0
+      echo Unpaused "$child_pid"
     fi
 
     sleep 5
