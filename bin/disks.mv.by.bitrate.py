@@ -6,7 +6,7 @@ import sqlite3
 import subprocess
 from dataclasses import dataclass
 from typing import List, Optional
-
+from library.utils import arggroups
 
 @dataclass
 class MountInfo:
@@ -203,6 +203,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
 
 def main():
     parser = argparse.ArgumentParser()
+    arggroups.debug(parser)
     parser.add_argument('paths', nargs='+', help='SQLite database paths')
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
