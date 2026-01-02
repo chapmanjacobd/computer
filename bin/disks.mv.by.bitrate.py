@@ -114,7 +114,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     # We iterate multiple times to allow space to "open up" from previous moves
     work_queue = files.copy()
     iteration = 0
-    while iteration < 2 and work_queue:
+    while iteration < 3 and work_queue:
         still_waiting = []
         for f in work_queue:
             best_target = None
