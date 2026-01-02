@@ -3,10 +3,11 @@ import argparse
 import os
 import sqlite3
 import subprocess
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional
 
-from library.utils import arggroups, argparse_utils, devices
+from library.utils import arggroups, argparse_utils, devices, strings
 from library.utils.log_utils import log
 
 
@@ -220,6 +221,14 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     print(f"    High-BR:     {sum(1 for f, _ in planned_moves if f.is_high_br)} ({high_br_bytes / 1024**3:.2f} GB)")
     print(f"     Low-BR:     {sum(1 for f, _ in planned_moves if not f.is_high_br)} ({low_br_bytes / 1024**3:.2f} GB)")
     print("-" * 22)
+
+    by_mount = defaultdict(lambda: {"count": 0, "size": 0})
+    for f, target in planned_moves:
+        key = (f.mount.path, target.path)
+        by_mount[key]["count"] += 1
+        by_mount[key]["size"] += f.size
+    for (src, dst), data in by_mount.items():
+        print(f"{src} -> {dst} | {data['count']} files ({strings.file_size(data['size'])})")
 
     if planned_moves and devices.confirm("\nExecute moves?"):
         for f, target in planned_moves:
