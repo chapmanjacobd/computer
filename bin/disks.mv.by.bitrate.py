@@ -138,9 +138,10 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
                     best_target = target
                     break
 
-            if not os.path.exists(f.path):
-                continue
-            elif best_target:
+            if best_target:
+                if not os.path.exists(f.path):
+                    continue
+
                 planned_moves.append((f, best_target))
                 best_target.free_space -= f.size
                 f.mount.free_space += f.size  # Simulate space recovery
