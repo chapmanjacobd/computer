@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import argparse
-import logging
 import os
 import sqlite3
 import subprocess
 from dataclasses import dataclass
 from typing import List, Optional
-from library.utils import arggroups
+from library.utils import arggroups, devices
+from library.utils.log_utils import log
 
 @dataclass
 class MountInfo:
@@ -81,7 +81,7 @@ def query_databases(args: argparse.Namespace, mounts: List[MountInfo]) -> List[M
                             )
                         )
         except Exception as e:
-            logging.error(f"Error reading {db_path}: {e}")
+            log.error(f"Error reading {db_path}: {e}")
     return files
 
 
@@ -92,18 +92,18 @@ def move_file(src, dst) -> bool:
     try:
         os.makedirs(os.path.dirname(dst), exist_ok=True)
     except OSError:
-        logging.error(f"Failed to mkdir for {dst}")
+        log.error(f"Failed to mkdir for {dst}")
         return False
 
     try:
-        logging.info("%s", src)
-        logging.info("--> %s", dst)
+        log.info("%s", src)
+        log.info("--> %s", dst)
 
         subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
         os.remove(src)
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f"Failed to move {src}: {e.stderr.decode()}")
+        log.error(f"Failed to move {src}: {e.stderr.decode()}")
         return False
 
 
@@ -194,7 +194,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     print(f"     Low-BR:     {sum(1 for f, _ in planned_moves if not f.is_high_br)} ({low_br_bytes / 1024**3:.2f} GB)")
     print("-" * 22)
 
-    if planned_moves and input("\nExecute moves? (y/N): ").lower() == 'y':
+    if planned_moves and devices.confirm("\nExecute moves? (y/N): "):
         for f, target in planned_moves:
             rel_path = os.path.relpath(f.path, f.mount.path)
             dest_path = os.path.join(target.path, rel_path)
@@ -206,7 +206,6 @@ def main():
     arggroups.debug(parser)
     parser.add_argument('paths', nargs='+', help='SQLite database paths')
     args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
     mounts = get_mounts()
     all_files = query_databases(args, mounts)
