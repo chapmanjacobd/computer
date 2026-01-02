@@ -173,10 +173,9 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     low_br_bytes = sum(f.size for f, _ in planned_moves if not f.is_high_br)
 
     print(f"\n--- Rebalance Plan ---")
-    print(f"Total Moves:     {len(planned_moves)}")
-    print(f"Total Data:      {total_bytes / 1024**3:.2f} GB")
-    print(f"  High-BR:       {high_br_bytes / 1024**3:.2f} GB")
-    print(f"  Low-BR:        {low_br_bytes / 1024**3:.2f} GB")
+    print(f"Total Moves:     {len(planned_moves)} ({total_bytes / 1024**3:.2f} GB)")
+    print(f"  High-BR:       {sum(1 for in planned_moves if f.is_high_br)} ({high_br_bytes / 1024**3:.2f} GB)")
+    print(f"  Low-BR:        {sum(1 for in planned_moves if not f.is_high_br)} ({low_br_bytes / 1024**3:.2f} GB)")
     print("-" * 22)
 
     if planned_moves and input("\nExecute moves? (y/N): ").lower() == 'y':
