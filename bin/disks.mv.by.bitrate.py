@@ -58,7 +58,7 @@ def query_databases(args: argparse.Namespace, mounts: List[MountInfo]) -> List[M
         try:
             with sqlite3.connect(db_path) as conn:
                 conn.row_factory = sqlite3.Row
-                cursor = conn.execute("SELECT path, size, duration FROM media WHERE duration > 0 AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))")
+                cursor = conn.execute("SELECT path, size, duration FROM media WHERE time_deleted = 0 AND duration > 0 AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))")
                 for row in cursor:
                     m = find_mount(row['path'], mounts)
                     if m:
