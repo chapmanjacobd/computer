@@ -934,3 +934,4 @@ abbr -a -- aria2c.throttled aria2c -x16 -j16 -s32 --lowest-speed-limit=100K --ma
 abbr -a -- pip.download pip download --no-binary :all: --no-deps
 abbr -a -- cp cp -aT
 abbr -a -- mvt mv -T
+abbr -a -- inodes df -i
