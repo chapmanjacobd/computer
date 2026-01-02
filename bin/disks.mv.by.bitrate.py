@@ -64,7 +64,13 @@ def query_databases(args: argparse.Namespace, mounts: List[MountInfo]) -> List[M
             with sqlite3.connect(db_path) as conn:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.execute(
-                    "SELECT path, size, duration FROM media WHERE time_deleted = 0 AND duration > 0 AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))"
+                    f"""SELECT path, size, duration
+                    FROM media
+                    WHERE time_deleted = 0
+                        AND duration > 0
+                        AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))
+                        AND video_count {'= 0' if args.audio else '> 0'}
+                    """
                 )
                 for row in cursor:
                     m = find_mount(row['path'], mounts)
@@ -194,7 +200,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     print(f"     Low-BR:     {sum(1 for f, _ in planned_moves if not f.is_high_br)} ({low_br_bytes / 1024**3:.2f} GB)")
     print("-" * 22)
 
-    if planned_moves and devices.confirm("\nExecute moves? (y/N): "):
+    if planned_moves and devices.confirm("\nExecute moves?"):
         for f, target in planned_moves:
             rel_path = os.path.relpath(f.path, f.mount.path)
             dest_path = os.path.join(target.path, rel_path)
@@ -203,7 +209,9 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--audio")
     arggroups.debug(parser)
+
     parser.add_argument('paths', nargs='+', help='SQLite database paths')
     args = parser.parse_args()
 
