@@ -89,11 +89,16 @@ def move_file(src, dst) -> bool:
     if not os.path.exists(src):
         return False
 
-    print(src)
-    print("-->", dst)
-
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
     try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+    except OSError:
+        logging.error(f"Failed to mkdir for {dst}")
+        return False
+
+    try:
+        logging.info("%s", src)
+        logging.info("--> %s", dst)
+
         subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
         os.remove(src)
         return True
