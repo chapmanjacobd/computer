@@ -32,14 +32,15 @@ def get_mounts() -> List[MountInfo]:
 
     mounts = []
     for part in psutil.disk_partitions():
-        if part.mountpoint in [os.sep, "/var", "/etc", "/usr"] or part.mountpoint.startswith(("/boot", "/sysroot")):
+        mountpoint = part.mountpoint
+        if mountpoint in [os.sep, "/var", "/etc", "/usr"] or mountpoint.startswith(("/boot", "/sysroot")):
             continue
+        if mountpoint in ("/var/home", "/home"):
+            mountpoint = os.path.expanduser('~')
 
         try:
-            usage = psutil.disk_usage(part.mountpoint)
-            mounts.append(
-                MountInfo(path=os.path.abspath(part.mountpoint), total_size=usage.total, free_space=usage.free)
-            )
+            usage = psutil.disk_usage(mountpoint)
+            mounts.append(MountInfo(path=os.path.abspath(mountpoint), total_size=usage.total, free_space=usage.free))
         except (PermissionError, OSError):
             continue
 
@@ -62,7 +63,9 @@ def query_databases(args: argparse.Namespace, mounts: List[MountInfo]) -> List[M
         try:
             with sqlite3.connect(db_path) as conn:
                 conn.row_factory = sqlite3.Row
-                cursor = conn.execute("SELECT path, size, duration FROM media WHERE time_deleted = 0 AND duration > 0 AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))")
+                cursor = conn.execute(
+                    "SELECT path, size, duration FROM media WHERE time_deleted = 0 AND duration > 0 AND ((path NOT LIKE '%/seeding/%' AND path NOT LIKE '%/downloading/%') OR (path LIKE '%/process%'))"
+                )
                 for row in cursor:
                     m = find_mount(row['path'], mounts)
                     if m:
@@ -155,7 +158,15 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
             else:
                 still_waiting.append(f)
 
-        print("Planning iteration", iteration, "planned", len(planned_moves), "; still waiting for", len(still_waiting), "files")
+        print(
+            "Planning iteration",
+            iteration,
+            "planned",
+            len(planned_moves),
+            "; still waiting for",
+            len(still_waiting),
+            "files",
+        )
         work_queue = still_waiting
         iteration += 1
 
