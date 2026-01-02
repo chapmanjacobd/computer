@@ -96,7 +96,7 @@ def move_file(src, dst) -> bool:
 
 
 def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
-    min_free = 20 * 1024 * 1024 * 1024
+    min_free = 30 * 1024 * 1024 * 1024
     planned_moves = []
 
     # Calculate Mismatch Scores
