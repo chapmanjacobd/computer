@@ -5,8 +5,10 @@ import sqlite3
 import subprocess
 from dataclasses import dataclass
 from typing import List, Optional
-from library.utils import arggroups, devices
+
+from library.utils import arggroups, argparse_utils, devices
 from library.utils.log_utils import log
+
 
 @dataclass
 class MountInfo:
@@ -27,22 +29,41 @@ class MediaFile:
     mismatch_score: float = 0.0
 
 
-def get_mounts() -> List[MountInfo]:
-    import psutil
-
+def get_mounts(args) -> List[MountInfo]:
     mounts = []
-    for part in psutil.disk_partitions():
-        mountpoint = part.mountpoint
-        if mountpoint in [os.sep, "/var", "/etc", "/usr"] or mountpoint.startswith(("/boot", "/sysroot")):
-            continue
-        if mountpoint in ("/var/home", "/home"):
-            mountpoint = os.path.expanduser('~')
 
-        try:
-            usage = psutil.disk_usage(mountpoint)
-            mounts.append(MountInfo(path=os.path.abspath(mountpoint), total_size=usage.total, free_space=usage.free))
-        except (PermissionError, OSError):
-            continue
+    if args.mounts:
+        for mountpoint in args.mounts:
+            try:
+                # Use stat -f to get filesystem info
+                result = subprocess.run(
+                    ['stat', '-f', '-c', '%S %a %b', mountpoint], capture_output=True, text=True, check=True
+                )
+                block_size, available_blocks, total_blocks = map(int, result.stdout.strip().split())
+
+                total_size = block_size * total_blocks
+                free_space = block_size * available_blocks
+
+                mounts.append(MountInfo(path=os.path.abspath(mountpoint), total_size=total_size, free_space=free_space))
+            except (PermissionError, OSError, subprocess.CalledProcessError, ValueError):
+                continue
+    else:
+        import psutil
+
+        for part in psutil.disk_partitions():
+            mountpoint = part.mountpoint
+            if mountpoint in [os.sep, "/var", "/etc", "/usr"] or mountpoint.startswith(("/boot", "/sysroot")):
+                continue
+            if mountpoint in ("/var/home", "/home"):
+                mountpoint = os.path.expanduser('~')
+
+            try:
+                usage = psutil.disk_usage(mountpoint)
+                mounts.append(
+                    MountInfo(path=os.path.abspath(mountpoint), total_size=usage.total, free_space=usage.free)
+                )
+            except (PermissionError, OSError):
+                continue
 
     return mounts
 
@@ -210,12 +231,13 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio")
+    parser.add_argument("--mounts", "-m", action=argparse_utils.ArgparseList, help="Mount points to check (optional)")
     arggroups.debug(parser)
 
     parser.add_argument('paths', nargs='+', help='SQLite database paths')
     args = parser.parse_args()
 
-    mounts = get_mounts()
+    mounts = get_mounts(args)
     all_files = query_databases(args, mounts)
 
     if all_files:
