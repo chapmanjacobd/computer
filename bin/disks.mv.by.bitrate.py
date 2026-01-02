@@ -82,6 +82,9 @@ def move_file(src, dst) -> bool:
     if not os.path.exists(src):
         return False
 
+    print(src)
+    print("-->", dst)
+
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     try:
         subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
