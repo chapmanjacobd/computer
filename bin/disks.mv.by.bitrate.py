@@ -239,7 +239,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--audio")
+    parser.add_argument("--audio", action="store_true")
     parser.add_argument("--mounts", "-m", action=argparse_utils.ArgparseList, help="Mount points to check (optional)")
     arggroups.debug(parser)
 
