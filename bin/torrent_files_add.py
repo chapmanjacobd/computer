@@ -174,7 +174,7 @@ def main():
                 save_path=str(r["save_path"]),
                 use_auto_torrent_management=False,
                 is_paused=False,
-                skip_checking=False,
+                skip_checking=True,
                 add_to_top_of_queue=False,
             )
             print(f"✓ Added {r['torrent_file'].name}")
