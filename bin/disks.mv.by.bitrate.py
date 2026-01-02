@@ -32,6 +32,9 @@ def get_mounts() -> List[MountInfo]:
 
     mounts = []
     for part in psutil.disk_partitions():
+        if part.mountpoint in [os.sep, "/var", "/etc", "/usr"] or part.mountpoint.startswith(("/boot", "/sysroot")):
+            continue
+
         try:
             usage = psutil.disk_usage(part.mountpoint)
             mounts.append(
@@ -39,6 +42,7 @@ def get_mounts() -> List[MountInfo]:
             )
         except (PermissionError, OSError):
             continue
+
     return mounts
 
 
