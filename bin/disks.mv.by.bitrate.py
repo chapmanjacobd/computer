@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 import argparse
-import sqlite3
-import os
-import subprocess
 import logging
-from pathlib import Path
+import os
+import sqlite3
+import subprocess
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -83,10 +82,6 @@ def move_file(src, dst) -> bool:
     if not os.path.exists(src):
         return False
 
-    print(src)
-    print(dst)
-
-    raise
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     try:
         subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
@@ -106,11 +101,14 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     avg_br = sum(f.bitrate for f in files) / len(files)
     for f in files:
         f.is_high_br = f.bitrate > avg_br
+        if f.is_high_br and f.path.endswith((".mka", ".av1.mkv")):
+            f.is_high_br = False
         gb_size = f.mount.total_size / 1e9
         f.mismatch_score = f.bitrate / gb_size if f.is_high_br else gb_size / (f.bitrate + 1)
 
     # Sort by extreme mismatches first
     files.sort(key=lambda x: x.mismatch_score, reverse=True)
+    files = files[: len(files) // 2]  # only move extreme cases
 
     # Simulation/Planning Loop
     # We iterate multiple times to allow space to "open up" from previous moves
@@ -125,14 +123,14 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
             if f.is_high_br:
                 # Want largest available drive that is bigger than current
                 targets = sorted(
-                    [m for m in mounts if m.total_size > (f.mount.total_size * 1.5)],
+                    [m for m in mounts if m.total_size > (f.mount.total_size * 2)],
                     key=lambda x: x.total_size,
                     reverse=True,
                 )
             else:
                 # Want smallest available drive that is smaller than current
                 targets = sorted(
-                    [m for m in mounts if m.total_size < (f.mount.total_size / 1.5)], key=lambda x: x.total_size
+                    [m for m in mounts if m.total_size < (f.mount.total_size / 2)], key=lambda x: x.total_size
                 )
 
             for target in targets:
@@ -140,7 +138,9 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
                     best_target = target
                     break
 
-            if best_target:
+            if not os.path.exists(f.path):
+                continue
+            elif best_target:
                 planned_moves.append((f, best_target))
                 best_target.free_space -= f.size
                 f.mount.free_space += f.size  # Simulate space recovery
@@ -152,12 +152,12 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
         iteration += 1
 
     # Print Plan
-    for f, target in planned_moves:
-        label = "HI" if f.is_high_br else "LO"
-        print(
-            f"[{label}] {os.path.basename(f.path)[:40]:<40} | "
-            f"{f.mount.total_size // 10**12}TB -> {target.total_size // 10**12}TB"
-        )
+    # for f, target in planned_moves:
+    #     label = "HI" if f.is_high_br else "LO"
+    #     print(
+    #         f"[{label}] {os.path.basename(f.path)[:40]:<40} | "
+    #         f"{f.mount.total_size // 10**12}TB -> {target.total_size // 10**12}TB"
+    #     )
 
     # Calculate Totals
     total_bytes = sum(f.size for f, _ in planned_moves)
