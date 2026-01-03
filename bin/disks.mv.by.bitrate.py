@@ -142,10 +142,16 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
     # Calculate Mismatch Scores
     # High Score = High Bitrate on Small Drive OR Low Bitrate on Large Drive
     avg_br = sum(f.bitrate for f in files) / len(files)
+    print("Avg. bitrate:", strings.file_size(avg_br) + '/s')
     for f in files:
         f.is_high_br = f.bitrate > avg_br
-        if f.is_high_br and f.path.endswith((".mka", ".av1.mkv")):
-            f.is_high_br = False
+        if f.is_high_br:
+            if f.path.endswith((".mka", ".av1.mkv")):
+                f.is_high_br = False
+        else:
+            if f.path.lower().endswith((".vob", ".iso", ".img")):
+                f.is_high_br = True
+
         gb_size = f.mount.total_size / 1e9
         f.mismatch_score = f.bitrate / gb_size if f.is_high_br else gb_size / (f.bitrate + 1)
 
