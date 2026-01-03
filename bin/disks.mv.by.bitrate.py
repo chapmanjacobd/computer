@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional
 
-from library.utils import arggroups, argparse_utils, devices, strings
+from library.utils import arggroups, argparse_utils, devices, strings, nums
 from library.utils.log_utils import log
 
 
@@ -47,7 +47,10 @@ def get_mounts(args) -> List[MountInfo]:
 
                 mounts.append(MountInfo(path=os.path.abspath(mountpoint), total_size=total_size, free_space=free_space))
             except (PermissionError, OSError, subprocess.CalledProcessError, ValueError):
-                continue
+                if args.exists:
+                    continue
+                else:
+                    mounts.append(MountInfo(path=mountpoint, total_size=nums.human_to_bytes("3TB"), free_space=0))
     else:
         import psutil
 
@@ -135,7 +138,7 @@ def move_file(src, dst) -> bool:
         return False
 
 
-def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
+def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
     min_free = 50 * 1024 * 1024 * 1024
     planned_moves = []
 
@@ -257,7 +260,7 @@ def main():
     all_files = query_databases(args, mounts)
 
     if all_files:
-        plan_and_execute(all_files, mounts)
+        plan_and_execute(args, all_files, mounts)
 
 
 if __name__ == "__main__":
