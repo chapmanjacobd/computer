@@ -188,7 +188,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
                     break
 
             if best_target:
-                if not os.path.exists(f.path):
+                if args.exists and not os.path.exists(f.path):
                     continue
 
                 planned_moves.append((f, best_target))
@@ -246,6 +246,7 @@ def plan_and_execute(files: List[MediaFile], mounts: List[MountInfo]):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio", action="store_true")
+    parser.add_argument("--exists", action="store_true")
     parser.add_argument("--mounts", "-m", action=argparse_utils.ArgparseList, help="Mount points to check (optional)")
     arggroups.debug(parser)
 
