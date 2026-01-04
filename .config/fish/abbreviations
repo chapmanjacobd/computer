@@ -935,4 +935,4 @@ abbr -a -- pip.download pip download --no-binary :all: --no-deps
 abbr -a -- cp cp -aT
 abbr -a -- mvt mv -T
 abbr -a -- inodes df -i
-abbr -a -- fuser fuser -Mmki
+abbr -a -- fuser fuser -Mmuki
