@@ -182,7 +182,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
             else:
                 # Want smallest available drive that is smaller than current
                 targets = sorted(
-                    [m for m in mounts if m.total_size < (f.mount.total_size / 2)], key=lambda x: x.total_size
+                    [m for m in mounts if m.total_size < (f.mount.total_size / 1.5)], key=lambda x: x.total_size
                 )
 
             for target in targets:
