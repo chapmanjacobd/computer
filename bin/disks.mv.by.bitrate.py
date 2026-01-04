@@ -160,7 +160,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
 
     # Sort by extreme mismatches first
     files.sort(key=lambda x: x.mismatch_score, reverse=True)
-    files = files[: len(files) // 2]  # only move extreme cases
+    files = files[: (len(files) * 2) // 3]  # only move extreme cases
 
     # Simulation/Planning Loop
     # We iterate multiple times to allow space to "open up" from previous moves
