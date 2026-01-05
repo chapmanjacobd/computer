@@ -53,4 +53,4 @@ UUID=cb1814b4-46ba-4708-a44c-4b81b476d2a9 /mnt/x25   ext4  defaults,users,noatim
 #UUID=14c96f00-df9e-44d8-90fa-cf372e5b4f7e /mnt/x26   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 UUID=9830707a-ca0a-4a99-b22c-af80e28a0d39 /mnt/x27   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
 UUID=02afa30b-5433-43ff-83cb-710ec034bbd2 /mnt/x28   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
-UUID=a116996d-f046-4772-95e0-8317f855401f /mnt/x29   ext4  defaults,users,noatime,nodiratime,commit=20,nofail,x-systemd.mount-timeout=999 0 0
+UUID=10e8bc52-6809-43b6-9c21-2bea0c9c8b3f /mnt/x29   btrfs defaults,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
