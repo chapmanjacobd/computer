@@ -215,11 +215,10 @@ def main():
     excess_duration = staging_duration - duration_max if staging_duration > duration_max else 0
 
     if excess_size > 0 or excess_duration > 0:
-        print(f"\nStaging exceeds goal. Need to remove:")
         if excess_size > 0:
-            print(f"  Size: {strings.file_size(excess_size)}")
+            print(f"  - Size: -{strings.file_size(excess_size)}")
         if excess_duration > 0:
-            print(f"  Duration: {strings.duration_short(excess_duration)}")
+            print(f"  - Duration: -{strings.duration_short(excess_duration)}")
 
         sorted_files = sort_files(staging_files, args.sort, reverse=not args.reverse)
 
@@ -239,14 +238,13 @@ def main():
             removed_size += file_info.size
             removed_duration += file_info.duration or 0
 
-        print(f"\nRemoved: {strings.file_size(removed_size)}, {strings.duration_short(removed_duration)}")
+        print(f"\nRemoved from staging: {strings.file_size(removed_size)}, {strings.duration_short(removed_duration)}")
 
     elif need_size > 0 or need_duration > 0:
-        print(f"\nStaging below goal. Need to add:")
         if need_size > 0:
-            print(f"  Size: {strings.file_size(need_size)}")
+            print(f"  - Size: +{strings.file_size(need_size)}")
         if need_duration > 0:
-            print(f"  Duration: {strings.duration_short(need_duration)}")
+            print(f"  - Duration: +{strings.duration_short(need_duration)}")
 
         print(f"\nScanning backing directory: {args.backing_dir}")
         backing_files = scan_directory(args.backing_dir)
@@ -270,7 +268,7 @@ def main():
             added_size += file_info.size
             added_duration += file_info.duration or 0
 
-        print(f"\nAdded: {strings.file_size(added_size)}, {strings.duration_short(added_duration)}")
+        print(f"\nAdded to staging: {strings.file_size(added_size)}, {strings.duration_short(added_duration)}")
 
     else:
         print("\nStaging directory is within goal constraints. No changes needed.")
