@@ -1,0 +1,11 @@
+#!/bin/sh
+
+sudo stap -ve '
+  global allocated, allocatedctx
+
+  probe syscall.io_setup {
+    allocatedctx[pid()] += maxevents; allocated[pid()]++;
+    printf("%d AIO events requested by PID %d (%s)\n",
+      maxevents, pid(), cmdline_str());
+  }
+'
