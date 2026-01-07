@@ -140,7 +140,6 @@ def move_file(src, dst) -> bool:
 
 def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
     min_free = 50 * 1024 * 1024 * 1024
-    planned_moves = []
 
     # Calculate Mismatch Scores
     # High Score = High Bitrate on Small Drive OR Low Bitrate on Large Drive
@@ -166,6 +165,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
     # We iterate multiple times to allow space to "open up" from previous moves
     work_queue = files.copy()
     iteration = 0
+    planned_moves = []
     while iteration < 3 and work_queue:
         still_waiting = []
         for f in work_queue:
