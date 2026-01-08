@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Optional
 
-from library.utils import arggroups, argparse_utils, devices, strings, nums
+from library.utils import arggroups, argparse_utils, devices, nums, strings
 from library.utils.log_utils import log
 
 
@@ -139,8 +139,6 @@ def move_file(src, dst) -> bool:
 
 
 def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
-    min_free = 50 * 1024 * 1024 * 1024
-
     # Calculate Mismatch Scores
     # High Score = High Bitrate on Small Drive OR Low Bitrate on Large Drive
     avg_br = sum(f.bitrate for f in files) / len(files)
@@ -186,7 +184,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
                 )
 
             for target in targets:
-                if target.free_space > (f.size + min_free):
+                if target.free_space > (f.size + args.min_free):
                     best_target = target
                     break
 
@@ -250,6 +248,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio", action="store_true")
     parser.add_argument("--exists", action="store_true")
+    parser.add_argument("--min-free", default="50GiB", type=nums.human_to_bytes)
     parser.add_argument("--mounts", "-m", action=argparse_utils.ArgparseList, help="Mount points to check (optional)")
     arggroups.debug(parser)
 
