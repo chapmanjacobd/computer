@@ -16,4 +16,5 @@ golang.org/x/tools/cmd/goimports@latest
 honnef.co/go/tools/cmd/staticcheck@latest
 mvdan.cc/gofumpt@latest
 robpike.io/cmd/freq@latest
+robpike.io/cmd/strings@latest
 robpike.io/cmd/typo@latest
