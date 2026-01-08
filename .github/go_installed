@@ -18,3 +18,4 @@ mvdan.cc/gofumpt@latest
 robpike.io/cmd/freq@latest
 robpike.io/cmd/strings@latest
 robpike.io/cmd/typo@latest
+robpike.io/cmd/unicode@latest
