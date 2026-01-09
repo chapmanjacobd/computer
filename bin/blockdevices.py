@@ -17,12 +17,16 @@ def get_block_device_info() -> List[Dict[str, str]]:
     return devices
 
 
-def filter_and_sort_devices(devices: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def filter_and_sort_devices(args, devices: List[Dict[str, str]]) -> List[Dict[str, str]]:
     filtered_devices = []
     # grep -vE '^DEVNAME=/dev/(loop|zram)'
     for device in devices:
-        if not re.match(r'^/dev/(loop|zram)', device['DEVNAME']):
-            filtered_devices.append(device)
+        if re.match(r'^/dev/(loop|zram)', device['DEVNAME']):
+            continue
+        id_bus = device.get("ID_BUS")
+        if args.usb and (id_bus is None or id_bus != 'usb'):
+            continue
+        filtered_devices.append(device)
 
     # Convert USEC_INITIALIZED to an integer for numerical sorting
     sorted_devices = [
@@ -48,11 +52,12 @@ if __name__ == '__main__':
     )
     parser.add_argument('--mountpoints', action='store_true')
     parser.add_argument('--unmounted', action='store_true')
+    parser.add_argument('--usb', action='store_true')
 
     args = parser.parse_args()
 
     device_data = get_block_device_info()
-    sorted_devices = filter_and_sort_devices(device_data)
+    sorted_devices = filter_and_sort_devices(args, device_data)
     mounts = get_mountpoints()
 
     for base_path in sorted_devices:
