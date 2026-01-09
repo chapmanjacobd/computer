@@ -936,3 +936,4 @@ abbr -a -- cp cp -aT
 abbr -a -- mvt mv -T
 abbr -a -- inodes df -i
 abbr -a -- fuser fuser -Mmuki
+abbr -a -- pkill pkill -f
