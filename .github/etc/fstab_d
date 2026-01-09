@@ -24,6 +24,8 @@ UUID=73de9464-09c5-4f68-8797-81b7308c446f  /mnt/d7                 btrfs   defau
 UUID=37a53dfa-d5d9-497f-89ad-196881db1d9e  /mnt/d8                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=2adf9f52-aeb4-4e90-914c-c3a7ed69bbfb  /mnt/d9                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 
+UUID=b019fff4-db0a-42b5-ab1e-e2493ce90723  /mnt/scratch            btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:1,nofail,x-systemd.mount-timeout=999   0 0
+
 /mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=mfs   0 0
 
 # To update mergerfs: sudo mount /mnt/d
