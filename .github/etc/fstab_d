@@ -12,8 +12,8 @@ UUID=ae8138c3-d0c0-45f2-82b4-fa4d4b59ee93  none                    swap    defau
 
 tmpfs                                      /var/lib/upower         tmpfs   nosuid,noexec 0 0
 
-UUID=f252520d-6ae3-4362-8fc9-fd48b90b6b91  /mnt/d1                 btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
-UUID=b4b7d6cb-b762-4792-beb2-30781ba9cfe6  /mnt/d10                btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
+UUID=f252520d-6ae3-4362-8fc9-fd48b90b6b91  /mnt/d1                 btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
+UUID=9b18dd47-f182-4c43-844b-b8d8aed27d48  /mnt/d10                btrfs   defaults,commit=90,users,noatime,nodiratime,compress-force=zstd:5,nofail,x-systemd.mount-timeout=999   0 0
 
 UUID=d9f82690-6f6c-4dc6-8589-d4f9415ae773  /mnt/d2                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=36971ca5-ca2b-454c-b5f0-008c69df0401  /mnt/d3                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
@@ -24,7 +24,7 @@ UUID=73de9464-09c5-4f68-8797-81b7308c446f  /mnt/d7                 btrfs   defau
 UUID=37a53dfa-d5d9-497f-89ad-196881db1d9e  /mnt/d8                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 UUID=2adf9f52-aeb4-4e90-914c-c3a7ed69bbfb  /mnt/d9                 btrfs   defaults,users,noatime,nodiratime,compress-force=zstd:4,nofail,x-systemd.mount-timeout=999   0 0
 
-/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16   0 0
+/mnt/d2:/mnt/d3:/mnt/d4:/mnt/d5:/mnt/d6:/mnt/d7:/mnt/d8:/mnt/d9   /mnt/d   mergerfs   defaults,fsname=mergerfs1,lazy-umount-mountpoint=true,cache.files=off,security_capability=false,cache.readdir=true,func.readdir=cosr:8,moveonenospc=true,minfreespace=20G,threads=16,category.create=mfs   0 0
 
 # To update mergerfs: sudo mount /mnt/d
 # Check running version: sudo mergerfs.ctl -m /mnt/d info
