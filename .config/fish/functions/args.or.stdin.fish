@@ -1,9 +1,8 @@
 # Defined interactively
 function args.or.stdin
-    if test (count $argv) -gt 0
-        echo $argv
+    if count $argv >/dev/null
+        printf "%s\n" $argv
     else
-        tee
+        cat
     end
-
 end
