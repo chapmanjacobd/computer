@@ -1,4 +1,4 @@
 # Defined via `source`
 function media.process
-    lb shrink -vy (fd -td -d2 processing /mnt/ | grep -v /mnt/d/ | grep -v /mnt/dro/) (fd -HI -td -d1 processing /home/xk/) --move ../processed/ --move-broken ../processed-broken/ --delete-unplayable
+    printf 'lb shrink -vy %s --move ../processed/ --move-broken ../processed-broken/ --delete-unplayable\n' (fd -td --exact-depth=2 . /mnt/ | grep -Ev '/lost\+found/|/processed/|/processing-incomplete/|/processed-broken/|/downloading/|/seeding/|/mnt/quest/|/mnt/scratch/') (fd -HI -td -d1 processing /home/xk/) | grep -v /mnt/d/ | tmux.waitgroup
 end
