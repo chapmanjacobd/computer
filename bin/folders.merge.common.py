@@ -157,23 +157,30 @@ def main():
     total_after_files = aggs["to_dest"]["count_all"] + aggs["to_src"]["count_all"]
     total_after_size = aggs["to_dest"]["size_all"] + aggs["to_src"]["size_all"]
 
-    table_data.append(
-        ["TOTAL", total_files, strings.file_size(total_size), total_after_files, strings.file_size(total_after_size)]
-    )
-    print(
-        tabulate(
-            table_data,
-            headers=["Folder (Rel)", "Move: Files", "Move: Size", "Total: Files", "Total: Size"],
-            tablefmt="grid",
+    if total_files:
+        table_data.append(
+            [
+                "TOTAL",
+                total_files,
+                strings.file_size(total_size),
+                total_after_files,
+                strings.file_size(total_after_size),
+            ]
         )
-    )
+        print(
+            tabulate(
+                table_data,
+                headers=["Folder (Rel)", "Move: Files", "Move: Size", "Total: Files", "Total: Size"],
+                tablefmt="grid",
+            )
+        )
 
     if aggs['to_dest']['f']:
         print(f"  Moved to Destination: {aggs['to_dest']['f']} files ({strings.file_size(aggs['to_dest']['s'])})")
     if aggs['to_src']['f']:
         print(f"  Moved to Source:       {aggs['to_src']['f']} files ({strings.file_size(aggs['to_src']['s'])})")
 
-    if devices.confirm("\nProceed with merge?"):
+    if actions and devices.confirm("\nProceed with merge?"):
         for action in actions:
             merge_folders(*action)
 
