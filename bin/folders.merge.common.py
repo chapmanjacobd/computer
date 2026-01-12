@@ -117,61 +117,59 @@ def main():
     matches.sort(key=lambda x: x[0])
 
     actions = []
-    totals = {"m_files": 0, "m_size": 0, "a_files": 0, "a_size": 0}
+    aggs = {
+        "to_dest": {"f": 0, "s": 0, "count_all": 0, "size_all": 0},
+        "to_src": {"f": 0, "s": 0, "count_all": 0, "size_all": 0},
+    }
     table_data = []
     for s_rel, d_rel in matches:
-        s_stats = {"root": args.src, "rel": s_rel, "count": 0, "size": 0}
-        d_stats = {"root": args.dest, "rel": d_rel, "count": 0, "size": 0}
-        s_stats["count"], s_stats["size"] = get_folder_stats(s_stats["root"], s_stats["rel"])
-        d_stats["count"], d_stats["size"] = get_folder_stats(d_stats["root"], d_stats["rel"])
+        s_count, s_size = get_folder_stats(args.src, s_rel)
+        d_count, d_size = get_folder_stats(args.dest, d_rel)
 
-        swapped = args.smallest_move and s_stats["size"] > d_stats["size"]
-        src, dest = (d_stats, s_stats) if swapped else (s_stats, d_stats)
+        src_info = {"r": args.src, "p": s_rel, "c": s_count, "s": s_size}
+        dest_info = {"r": args.dest, "p": d_rel, "c": d_count, "s": d_size}
 
-        actions.append(
-            (
-                os.path.join(src["root"], src["rel"]),
-                os.path.join(dest["root"], dest["rel"]),
-            )
-        )
+        swapped = args.smallest_move and s_size > d_size
+        if swapped:
+            src_info, dest_info = dest_info, src_info
 
-        after_files = s_stats["count"] + d_stats["count"]
-        after_size = s_stats["size"] + d_stats["size"]
+        key = "to_src" if swapped else "to_dest"
+        aggs[key]["f"] += src_info["c"]
+        aggs[key]["s"] += src_info["s"]
+        aggs[key]["count_all"] += s_count + d_count
+        aggs[key]["size_all"] += s_size + d_size
 
-        totals["m_files"] += src["count"]
-        totals["m_size"] += src["size"]
-        totals["a_files"] += after_files
-        totals["a_size"] += after_size
-
-        path_label = f"{s_rel} {'(dest)' if swapped else ''}"
+        actions.append((os.path.join(src_info["r"], src_info["p"]), os.path.join(dest_info["r"], dest_info["p"])))
         table_data.append(
             [
-                path_label,
-                src["count"],
-                strings.file_size(src["size"]),
-                after_files,
-                strings.file_size(after_size),
+                f"{s_rel} {'(dest)' if swapped else ''}",
+                src_info["c"],
+                strings.file_size(src_info["s"]),
+                s_count + d_count,
+                strings.file_size(s_size + d_size),
             ]
         )
 
+    total_files = aggs["to_dest"]["f"] + aggs["to_src"]["f"]
+    total_size = aggs["to_dest"]["s"] + aggs["to_src"]["s"]
+    total_after_files = aggs["to_dest"]["count_all"] + aggs["to_src"]["count_all"]
+    total_after_size = aggs["to_dest"]["size_all"] + aggs["to_src"]["size_all"]
+
     table_data.append(
-        [
-            "TOTAL",
-            totals["m_files"],
-            strings.file_size(totals["m_size"]),
-            totals["a_files"],
-            strings.file_size(totals["a_size"]),
-        ]
+        ["TOTAL", total_files, strings.file_size(total_size), total_after_files, strings.file_size(total_after_size)]
+    )
+    print(
+        tabulate(
+            table_data,
+            headers=["Folder (Rel)", "Move: Files", "Move: Size", "Total: Files", "Total: Size"],
+            tablefmt="grid",
+        )
     )
 
-    headers = [
-        "Folder (Rel)",
-        "Move: Files",
-        "Move: Size",
-        "Total: Files",
-        "Total: Size",
-    ]
-    print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    if aggs['to_dest']['f']:
+        print(f"  Moved to Destination: {aggs['to_dest']['f']} files ({strings.file_size(aggs['to_dest']['s'])})")
+    if aggs['to_src']['f']:
+        print(f"  Moved to Source:       {aggs['to_src']['f']} files ({strings.file_size(aggs['to_src']['s'])})")
 
     if devices.confirm("\nProceed with merge?"):
         for action in actions:
