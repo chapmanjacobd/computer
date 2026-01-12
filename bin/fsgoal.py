@@ -28,7 +28,7 @@ class FileInfo:
     bitrate: Optional[float]
 
 
-def parse_constraint(human_parser: Callable[[str], float], constraint: str) -> tuple:
+def parse_constraint(human_parser: Callable[[str], float], constraint: str):
     """
     Parse constraint string to min/max values.
     Examples:
@@ -225,17 +225,14 @@ def main():
         removed_size = 0
         removed_duration = 0
         for file_info in sorted_files:
+            if removed_size >= excess_size and removed_duration >= excess_duration:
+                break
+
             if not file_info.duration:
                 continue
 
-            would_remove_size = removed_size + file_info.size
-            would_remove_duration = removed_duration + file_info.duration
-
-            new_staging_size = staging_size - would_remove_size
-            new_staging_duration = staging_duration - would_remove_duration
-
-            if removed_size >= excess_size and removed_duration >= excess_duration:
-                break
+            new_staging_size = staging_size - (removed_size + file_info.size)
+            new_staging_duration = staging_duration - (removed_duration + file_info.duration)
             if new_staging_size < size_min or new_staging_duration < duration_min:
                 continue
 
@@ -266,17 +263,14 @@ def main():
         added_size = 0
         added_duration = 0
         for file_info in sorted_files:
+            if added_size >= need_size and added_duration >= need_duration:
+                break
+
             if not file_info.duration:
                 continue
 
-            would_add_size = added_size + file_info.size
-            would_add_duration = added_duration + file_info.duration
-
-            new_staging_size = staging_size + would_add_size
-            new_staging_duration = staging_duration + would_add_duration
-
-            if added_size >= need_size and added_duration >= need_duration:
-                break
+            new_staging_size = staging_size + added_size + file_info.size
+            new_staging_duration = staging_duration + added_duration + file_info.duration
             if new_staging_size > size_max or new_staging_duration > duration_max:
                 continue
 

@@ -286,19 +286,14 @@ def main():
         removed_duration = 0
         removed_folders = 0
         for folder_info in sorted_folders:
-            # Check if removing this folder would drop below min constraints
-            would_remove_size = removed_size + folder_info.size
-            would_remove_duration = removed_duration + folder_info.duration
-
-            new_staging_size = staging_size - would_remove_size
-            new_staging_duration = staging_duration - would_remove_duration
-
             # Stop if we've already met both constraints
             if removed_size >= excess_size and removed_duration >= excess_duration:
                 break
 
             # Skip this folder if removing it would drop below min constraints
-            if new_staging_size < size_min or new_staging_duration < duration_min:
+            new_staging_size = staging_size - (removed_size + folder_info.size)
+            new_staging_duration = staging_duration - (removed_duration + folder_info.duration)
+            if (new_staging_size < size_min) or (new_staging_duration < duration_min):
                 continue
 
             src = folder_info.path
@@ -340,19 +335,14 @@ def main():
         added_duration = 0
         added_folders = 0
         for folder_info in sorted_folders:
-            # Check if adding this folder would exceed the max constraints
-            would_add_size = added_size + folder_info.size
-            would_add_duration = added_duration + folder_info.duration
-
-            new_staging_size = staging_size + would_add_size
-            new_staging_duration = staging_duration + would_add_duration
-
             # Stop if we've already met the min constraints
             if added_size >= need_size and added_duration >= need_duration:
                 break
 
             # Skip this folder if adding it would exceed the max constraints
-            if new_staging_size > size_max or new_staging_duration > duration_max:
+            new_staging_size = staging_size + added_size + folder_info.size
+            new_staging_duration = staging_duration + added_duration + folder_info.duration
+            if (new_staging_size > size_max) or (new_staging_duration > duration_max):
                 continue
 
             src = folder_info.path
