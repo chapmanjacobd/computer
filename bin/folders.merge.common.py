@@ -5,10 +5,10 @@ Scans source and destination directories for matching folder names (1:1 only),
 displays statistics, and merges them after confirmation.
 """
 
+import argparse
 import os
 import shutil
 import sys
-import argparse
 from collections import defaultdict
 
 from library.utils import devices, strings
@@ -72,14 +72,12 @@ def find_matching_folders(src_path, dest_path):
     return matches
 
 
-def merge_folders(src_root, src_rel, dest_root, dest_rel):
-    src_full = os.path.join(src_root, src_rel)
-    dest_full = os.path.join(dest_root, dest_rel)
+def merge_folders(src, dest):
     merged_count = 0
-    for dirpath, _, filenames in os.walk(src_full):
+    for dirpath, _, filenames in os.walk(src):
         # Calculate relative path from src_folder
-        rel_path = os.path.relpath(dirpath, src_full)
-        dest_dir = dest_full if rel_path == "." else os.path.join(dest_full, rel_path)
+        rel_path = os.path.relpath(dirpath, src)
+        dest_dir = dest if rel_path == "." else os.path.join(dest, rel_path)
         os.makedirs(dest_dir, exist_ok=True)
 
         for filename in filenames:
@@ -130,7 +128,12 @@ def main():
         swapped = args.smallest_move and s_stats["size"] > d_stats["size"]
         src, dest = (d_stats, s_stats) if swapped else (s_stats, d_stats)
 
-        actions.append((src["root"], src["rel"], dest["root"], dest["rel"]))
+        actions.append(
+            (
+                os.path.join(src["root"], src["rel"]),
+                os.path.join(dest["root"], dest["rel"]),
+            )
+        )
 
         after_files = s_stats["count"] + d_stats["count"]
         after_size = s_stats["size"] + d_stats["size"]
