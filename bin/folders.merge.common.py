@@ -8,6 +8,7 @@ displays statistics, and merges them after confirmation.
 import os
 import shutil
 import sys
+import argparse
 from collections import defaultdict
 
 from library.utils import devices, strings
@@ -15,13 +16,12 @@ from tabulate import tabulate
 
 
 def get_all_folders(root_path):
-    """Get all non-empty folders in a directory tree."""
     folders = []
     for dirpath, dirnames, filenames in os.walk(root_path):
         # Skip empty folders (no files in this folder or any subdirectories)
         if filenames or any(os.listdir(os.path.join(dirpath, d)) for d in dirnames):
             rel_path = os.path.relpath(dirpath, root_path)
-            if rel_path != '.':
+            if rel_path != ".":
                 folders.append(rel_path)
     return folders
 
@@ -42,6 +42,7 @@ def get_folder_stats(root_path, rel_folder):
                 pass
 
     return count, total_size
+
 
 def find_matching_folders(src_path, dest_path):
     """Find 1:1 matching folder names between src and dest."""
@@ -71,21 +72,14 @@ def find_matching_folders(src_path, dest_path):
     return matches
 
 
-def merge_folders(src_path, dest_path, src_folder, dest_folder):
-    src_full = os.path.join(src_path, src_folder)
-    dest_full = os.path.join(dest_path, dest_folder)
-
+def merge_folders(src_root, src_rel, dest_root, dest_rel):
+    src_full = os.path.join(src_root, src_rel)
+    dest_full = os.path.join(dest_root, dest_rel)
     merged_count = 0
     for dirpath, _, filenames in os.walk(src_full):
         # Calculate relative path from src_folder
         rel_path = os.path.relpath(dirpath, src_full)
-
-        # Create corresponding directory in destination
-        if rel_path != '.':
-            dest_dir = os.path.join(dest_full, rel_path)
-        else:
-            dest_dir = dest_full
-
+        dest_dir = dest_full if rel_path == "." else os.path.join(dest_full, rel_path)
         os.makedirs(dest_dir, exist_ok=True)
 
         for filename in filenames:
@@ -96,84 +90,89 @@ def merge_folders(src_path, dest_path, src_folder, dest_folder):
                 shutil.move(src_file, dest_file)
                 merged_count += 1
             except Exception as e:
-                print(f"  Error copying {src_file}: {e}")
+                print(f"  Error moving {src_file}: {e}")
 
     return merged_count
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <source_path> <destination_path>")
+    parser = argparse.ArgumentParser(description="Merge matching directories.")
+    parser.add_argument("src", help="Source root path")
+    parser.add_argument("dest", help="Destination root path")
+    parser.add_argument(
+        "--smallest-move",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Swap src/dest if dest is larger",
+    )
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.src) or not os.path.isdir(args.dest):
+        print("Error: Invalid directory paths.")
         sys.exit(1)
 
-    src_path = sys.argv[1]
-    dest_path = sys.argv[2]
-    if not os.path.isdir(src_path):
-        print(f"Error: Source path '{src_path}' is not a valid directory")
-        sys.exit(1)
-    if not os.path.isdir(dest_path):
-        print(f"Error: Destination path '{dest_path}' is not a valid directory")
-        sys.exit(1)
-
-    matches = find_matching_folders(src_path, dest_path)
+    matches = find_matching_folders(args.src, args.dest)
     if not matches:
         print("No 1:1 matching folders found.")
         sys.exit(0)
 
     matches.sort(key=lambda x: x[0])
 
-    total_dest_files = 0
-    total_dest_size = 0
-    total_move_files = 0
-    total_move_size = 0
+    actions = []
+    totals = {"m_files": 0, "m_size": 0, "a_files": 0, "a_size": 0}
     table_data = []
-    for src_folder, dest_folder in matches:
-        src_count, src_size = get_folder_stats(src_path, src_folder)
-        dest_count, dest_size = get_folder_stats(dest_path, dest_folder)
+    for s_rel, d_rel in matches:
+        s_stats = {"root": args.src, "rel": s_rel, "count": 0, "size": 0}
+        d_stats = {"root": args.dest, "rel": d_rel, "count": 0, "size": 0}
+        s_stats["count"], s_stats["size"] = get_folder_stats(s_stats["root"], s_stats["rel"])
+        d_stats["count"], d_stats["size"] = get_folder_stats(d_stats["root"], d_stats["rel"])
 
-        total_dest_files += dest_count
-        total_dest_size += dest_size
-        total_move_files += src_count
-        total_move_size += src_size
+        swapped = args.smallest_move and s_stats["size"] > d_stats["size"]
+        src, dest = (d_stats, s_stats) if swapped else (s_stats, d_stats)
 
-        after_count = dest_count + src_count
-        after_size = dest_size + src_size
+        actions.append((src["root"], src["rel"], dest["root"], dest["rel"]))
 
+        after_files = s_stats["count"] + d_stats["count"]
+        after_size = s_stats["size"] + d_stats["size"]
+
+        totals["m_files"] += src["count"]
+        totals["m_size"] += src["size"]
+        totals["a_files"] += after_files
+        totals["a_size"] += after_size
+
+        path_label = f"{s_rel} {'(dest)' if swapped else ''}"
         table_data.append(
             [
-                src_folder,
-                dest_count,
-                strings.file_size(dest_size),
-                src_count,
-                strings.file_size(src_size),
-                after_count,
+                path_label,
+                src["count"],
+                strings.file_size(src["size"]),
+                after_files,
                 strings.file_size(after_size),
             ]
         )
 
-    total_after_files = total_dest_files + total_move_files
-    total_after_size = total_dest_size + total_move_size
     table_data.append(
         [
             "TOTAL",
-            total_dest_files,
-            strings.file_size(total_dest_size),
-            total_move_files,
-            strings.file_size(total_move_size),
-            total_after_files,
-            strings.file_size(total_after_size),
+            totals["m_files"],
+            strings.file_size(totals["m_size"]),
+            totals["a_files"],
+            strings.file_size(totals["a_size"]),
         ]
     )
 
-    headers = ["Folder Path", "Dest: Files", "Dest: Size", "Move: Files", "Move: Size", "After: Files", "After: Size"]
+    headers = [
+        "Folder (Rel)",
+        "Move: Files",
+        "Move: Size",
+        "Total: Files",
+        "Total: Size",
+    ]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
-    print()
 
-    if not devices.confirm("Proceed with merge?"):
-        sys.exit(141)
-
-    for src_folder, dest_folder in matches:
-        merge_folders(src_path, dest_path, src_folder, dest_folder)
+    if devices.confirm("\nProceed with merge?"):
+        for action in actions:
+            merge_folders(*action)
 
 
 if __name__ == "__main__":
