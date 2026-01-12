@@ -125,6 +125,8 @@ def main():
     for s_rel, d_rel in matches:
         s_count, s_size = get_folder_stats(args.src, s_rel)
         d_count, d_size = get_folder_stats(args.dest, d_rel)
+        if s_count == 0 or d_count == 0:
+            continue
 
         src_info = {"r": args.src, "p": s_rel, "c": s_count, "s": s_size}
         dest_info = {"r": args.dest, "p": d_rel, "c": d_count, "s": d_size}
