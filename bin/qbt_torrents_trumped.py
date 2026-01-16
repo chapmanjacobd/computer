@@ -36,6 +36,7 @@ def is_trumped_torrent(t):
                 'infohash not found',
                 'has been deleted',
                 'torrent deleted',
+                'no record found',
             ]
         ):
             print(strings.percent(t.progress), t.name)
