@@ -37,6 +37,8 @@ def is_trumped_torrent(t):
                 'has been deleted',
                 'torrent deleted',
                 'no record found',
+                'not authorized for use with this tracker',
+                'not registered or allowed on this tracker',
             ]
         ):
             print(strings.percent(t.progress), t.name)
