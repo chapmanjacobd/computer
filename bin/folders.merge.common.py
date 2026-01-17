@@ -35,6 +35,9 @@ def get_all_folders(root_paths, exclude_names):
             if basename in exclude_names:
                 continue
 
+            if basename.isnumeric():
+                continue
+
             depth = rel_path.count(os.sep)
             folders[basename].append((root_path, rel_path, depth))
 
