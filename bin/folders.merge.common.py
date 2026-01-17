@@ -232,7 +232,7 @@ def main():
 
             for group in merge_groups:
                 dest_path = os.path.join(group['dest']['root'], group['dest']['rel_path'])
-                print(f"\nMerging '{group['basename']}' into {dest_path}...")
+                print(f"\nMerging '{group['basename']}' into {dest_path}")
 
                 for src in group['sources']:
                     src_path = os.path.join(src['root'], src['rel_path'])
