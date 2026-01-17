@@ -10,7 +10,7 @@ import shutil
 import sys
 from collections import defaultdict
 
-from library.utils import devices, nums, strings, arggroups, argparse_utils, path_utils
+from library.utils import arggroups, argparse_utils, devices, nums, path_utils, strings
 from tabulate import tabulate
 
 
@@ -227,6 +227,9 @@ def main():
         )
 
         if args.simulate or devices.confirm("\nProceed with merge?"):
+            if args.simulate:
+                print("Simulating merging")
+
             for group in merge_groups:
                 dest_path = os.path.join(group['dest']['root'], group['dest']['rel_path'])
                 print(f"\nMerging '{group['basename']}' into {dest_path}...")
