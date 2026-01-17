@@ -67,18 +67,41 @@ def get_folder_stats(root_path, rel_folder):
     return count, total_size
 
 
+def is_descendant_of_duplicate(folder_path, duplicate_paths):
+    """Check if folder_path is a descendant of any path in duplicate_paths."""
+    for dup_path in duplicate_paths:
+        if folder_path.startswith(dup_path + os.sep):
+            return True
+    return False
+
+
 def find_duplicate_folders(args):
     all_folders = get_all_folders(args.paths, args.exclude)
     duplicates = {name: locations for name, locations in all_folders.items() if len(locations) > 1}
 
+    # process shallowest duplicates first
+    duplicates = sorted(duplicates.items(), key=lambda x: min(loc[2] for loc in x[1]))
+    merged_paths = set()  # Track paths that will be merged
+
     merge_groups = []
-    for basename, locations in duplicates.items():
+    for basename, locations in duplicates:
+        # Skip if any of these folders are descendants of folders we're already merging
+        filtered_locations = []
+        for root, rel_path, depth in locations:
+            full_path = os.path.join(root, rel_path)
+            if not is_descendant_of_duplicate(full_path, merged_paths):
+                filtered_locations = locations
+                break
+        else:
+            # All locations are descendants of folders being merged, skip this duplicate
+            continue
+
         # Collect stats for each location
         folder_data = []
         total_files = 0
         total_size = 0
 
-        for root, rel_path, depth in locations:
+        for root, rel_path, depth in filtered_locations:
             count, size = get_folder_stats(root, rel_path)
 
             # Apply individual folder constraints
@@ -111,6 +134,10 @@ def find_duplicate_folders(args):
         # First folder (shallowest) is the destination
         dest = folder_data[0]
         sources = folder_data[1:]
+
+        # Add all source paths to merged_paths
+        for src in sources:
+            merged_paths.add(os.path.join(src['root'], src['rel_path']))
 
         merge_groups.append(
             {
@@ -200,16 +227,31 @@ def main():
             "todo",
             "Source",
             "src",
-            "dotfiles",
-            "files",
-            ".config",
-            ".local",
             "resources",
             "res",
             "docs",
+            "group",
             "out",
             "output",
+            "config",
+            "configs",
             "plugins",
+            "dotfiles",
+            "dotfile",
+            "data",
+            "env",
+            "files",
+            ".config",
+            ".local",
+            "code",
+            "locales",
+            "locale",
+            "repos",
+            "home",
+            "bin",
+            "lib",
+            "var",
+            "etc",
         ]
         + list(string.ascii_lowercase)
         + list(string.digits),
