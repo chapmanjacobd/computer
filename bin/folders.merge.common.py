@@ -7,11 +7,10 @@ merging them into the shallowest depth location.
 
 import os
 import re
-import shutil
 import sys
 from collections import defaultdict
 
-from library.utils import arggroups, argparse_utils, devices, nums, path_utils, strings
+from library.utils import arggroups, argparse_utils, devices, nums, path_utils, shell_utils, strings
 from tabulate import tabulate
 
 
@@ -138,7 +137,7 @@ def merge_folders(src, dest):
             dest_file = os.path.join(dest_dir, filename)
 
             try:
-                shutil.move(src_file, dest_file)
+                shell_utils.rename_move_file(src_file, dest_file)
                 merged_count += 1
             except Exception as e:
                 print(f"  Error moving {src_file}: {e}")
@@ -159,14 +158,24 @@ def main():
             "VIDEO_TS",
             "BDMV",
             "STREAM",
+            "PLAYLIST",
+            "CLIPINF",
+            "CERTIFICATE",
+            "BACKUP",
+            "DL",
+            "META",
             "NA",
             "Extras",
+            "Sample",
+            "Screens",
             "Images",
             "Pictures",
             "Videos",
             "Audio",
             "Music",
             "Soundtrack",
+            "Font",
+            "Fonts",
         ],
         help="Folder names to exclude (can be specified multiple times)",
     )
