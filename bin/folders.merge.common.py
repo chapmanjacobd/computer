@@ -206,7 +206,7 @@ def main():
         )
 
     if table_data:
-        print(f"Found {len(merge_groups)} duplicate folder name(s)")
+        print(f"Found {len(merge_groups)} duplicate folder name(s):")
 
         table_data.append(["TOTAL", "", total_move_files, strings.file_size(total_move_size), "", ""])
         print(
@@ -225,8 +225,6 @@ def main():
                 tablefmt="grid",
             )
         )
-
-        print(f"Will merge {total_move_files} files ({strings.file_size(total_move_size)})")
 
         if devices.confirm("\nProceed with merge?"):
             for group in merge_groups:
