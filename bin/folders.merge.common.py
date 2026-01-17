@@ -60,7 +60,7 @@ def get_folder_stats(root_path, rel_folder):
 
 
 def find_duplicate_folders(args):
-    all_folders = get_all_folders(args.root_paths, args.exclude_names)
+    all_folders = get_all_folders(args.paths, args.exclude_names)
     duplicates = {name: locations for name, locations in all_folders.items() if len(locations) > 1}
 
     merge_groups = []
