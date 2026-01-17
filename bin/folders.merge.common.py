@@ -6,6 +6,7 @@ merging them into the shallowest depth location.
 """
 
 import os
+import re
 import shutil
 import sys
 from collections import defaultdict
@@ -32,10 +33,14 @@ def get_all_folders(root_paths, exclude_names):
                 continue
 
             basename = os.path.basename(dirpath)
-            if basename.casefold() in exclude_names:
+            if basename.isnumeric():
                 continue
 
-            if basename.isnumeric():
+            s = basename.casefold()
+            if s in exclude_names:
+                continue
+
+            if bool(re.match(r"^(disc|disk|season)[ ._-]?\d+$", s, re.IGNORECASE)):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -149,7 +154,7 @@ def main():
         "--exclude",
         "-E",
         action=argparse_utils.ArgparseList,
-        default=[],
+        default=[".git", "VIDEO_TS", "BDMV", "STREAM", "NA", "Extras"],
         help="Folder names to exclude (can be specified multiple times)",
     )
     parser.add_argument("--min-count", type=int, help="Minimum file count per folder")
@@ -250,6 +255,7 @@ def main():
 
             print("-->", dest_path)
             print()
+
 
 if __name__ == "__main__":
     main()
