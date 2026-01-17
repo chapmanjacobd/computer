@@ -25,7 +25,7 @@ function trash.empty.no.snapshot
     for d in $args
         du -hs $d | grep -v ^0 # trash.size
         trash-list --trash-dir $d >>~/.local/share/trashed.txt
-    end
+    end | sort --human-numeric-sort
 
     if contains -- -f $opts; or gum confirm --default=no 'Empty trash?'
         for d in $args
