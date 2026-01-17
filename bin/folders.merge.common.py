@@ -225,24 +225,27 @@ def main():
                 tablefmt="grid",
             )
         )
+        print()
 
-        if args.simulate or devices.confirm("\nProceed with merge?"):
+        if args.simulate or devices.confirm("Proceed with merge?"):
             if args.simulate:
-                print("Simulating merging")
+                print("Simulating merging:")
+            print()
 
             for group in merge_groups:
                 dest_path = os.path.join(group['dest']['root'], group['dest']['rel_path'])
-                print(f"\nMerging '{group['basename']}' into {dest_path}")
+                print(f"Merging {group['basename']}")
 
                 for src in group['sources']:
                     src_path = os.path.join(src['root'], src['rel_path'])
-                    print(f"  From: {src_path}")
-                    if not args.simulate:
-                        merged = merge_folders(src_path, dest_path)
-                        print(f"    Moved {merged} files")
+                    print(src_path)
 
+                    if not args.simulate:
+                        merge_folders(src_path, dest_path)
                         path_utils.bfs_removedirs(src_path)
 
+                print("-->", dest_path)
+                print()
 
 if __name__ == "__main__":
     main()
