@@ -208,7 +208,7 @@ def main():
     if table_data:
         print(f"Found {len(merge_groups)} duplicate folder name(s)")
 
-        table_data.append(["TOTAL", "", "", total_move_files, strings.file_size(total_move_size), "", "", ""])
+        table_data.append(["TOTAL", "", total_move_files, strings.file_size(total_move_size), "", ""])
         print(
             tabulate(
                 table_data,
@@ -240,7 +240,6 @@ def main():
                     print(f"    Moved {merged} files")
 
                     path_utils.bfs_removedirs(src_path)
-
 
 
 if __name__ == "__main__":
