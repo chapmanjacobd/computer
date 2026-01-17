@@ -32,7 +32,7 @@ def get_all_folders(root_paths, exclude_names):
                 continue
 
             basename = os.path.basename(dirpath)
-            if basename in exclude_names:
+            if basename.casefold() in exclude_names:
                 continue
 
             if basename.isnumeric():
@@ -170,7 +170,7 @@ def main():
         if not os.path.isdir(path):
             print(f"Error: Invalid directory path: {path}")
             sys.exit(1)
-    args.exclude = set(args.exclude)
+    args.exclude = set(s.casefold() for s in args.exclude)
 
     merge_groups = find_duplicate_folders(args)
     if not merge_groups:
