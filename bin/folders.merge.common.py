@@ -234,10 +234,11 @@ def main():
                 for src in group['sources']:
                     src_path = os.path.join(src['root'], src['rel_path'])
                     print(f"  From: {src_path}")
-                    merged = merge_folders(src_path, dest_path)
-                    print(f"    Moved {merged} files")
+                    if not args.simulate:
+                        merged = merge_folders(src_path, dest_path)
+                        print(f"    Moved {merged} files")
 
-                    path_utils.bfs_removedirs(src_path)
+                        path_utils.bfs_removedirs(src_path)
 
 
 if __name__ == "__main__":
