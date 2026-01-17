@@ -226,7 +226,7 @@ def main():
             )
         )
 
-        if devices.confirm("\nProceed with merge?"):
+        if args.simulate or devices.confirm("\nProceed with merge?"):
             for group in merge_groups:
                 dest_path = os.path.join(group['dest']['root'], group['dest']['rel_path'])
                 print(f"\nMerging '{group['basename']}' into {dest_path}...")
