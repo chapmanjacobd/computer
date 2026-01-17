@@ -196,36 +196,36 @@ def main():
             [
                 group['basename'],
                 len(group['sources']) + 1,  # Total duplicates
-                dest['depth'],
                 move_files,
                 strings.file_size(move_size),
                 group['total_files'],
                 strings.file_size(group['total_size']),
-                dest_path,
+                # dest['depth'],
+                # dest_path,
             ]
         )
 
     if table_data:
-        table_data.append(["TOTAL", "", "", total_move_files, strings.file_size(total_move_size), "", "", ""])
+        print(f"Found {len(merge_groups)} duplicate folder name(s)")
 
+        table_data.append(["TOTAL", "", "", total_move_files, strings.file_size(total_move_size), "", "", ""])
         print(
             tabulate(
                 table_data,
                 headers=[
                     "Folder Name",
                     "Dups",
-                    "Dest Depth",
                     "Move: Files",
                     "Move: Size",
                     "Total: Files",
                     "Total: Size",
-                    "Destination Path",
+                    # "Dest Depth",
+                    # "Destination Path",
                 ],
                 tablefmt="grid",
             )
         )
 
-        print(f"\nFound {len(merge_groups)} duplicate folder name(s)")
         print(f"Will merge {total_move_files} files ({strings.file_size(total_move_size)})")
 
         if devices.confirm("\nProceed with merge?"):
