@@ -12,8 +12,8 @@ function daily
     files_casefold.py ~/sync/ --run
 
     catt volume 0 && catt volume 40
-    pip install --upgrade pychromecast
     servers.ssh pip install --upgrade --pre yt-dlp[default,curl-cffi] yt-dlp-ejs
+    pip install --upgrade pychromecast
 
     history.sync
     # command trash-empty 10 -f
