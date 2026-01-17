@@ -164,6 +164,7 @@ def main():
             "BACKUP",
             "DL",
             "META",
+            "OEBPS",
             "NA",
             "Extras",
             "Sample",
@@ -176,6 +177,9 @@ def main():
             "Soundtrack",
             "Font",
             "Fonts",
+            "Subtitles",
+            "Subtitle",
+            "Subs",
         ],
         help="Folder names to exclude (can be specified multiple times)",
     )
