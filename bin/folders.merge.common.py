@@ -7,6 +7,7 @@ merging them into the shallowest depth location.
 
 import os
 import re
+import string
 import sys
 from collections import defaultdict
 
@@ -170,6 +171,7 @@ def main():
             "Samples",
             "Sample",
             "Previews",
+            "Screenshots",
             "Screens",
             "Scr",
             "Images",
@@ -193,14 +195,24 @@ def main():
             "New Folder",
             "Originals",
             "[originals]",
+            "old",
+            "new",
+            "todo",
+            "Source",
+            "src",
             "dotfiles",
             "files",
             ".config",
             ".local",
+            "resources",
+            "res",
+            "docs",
             "out",
             "output",
             "plugins",
-        ],
+        ]
+        + list(string.ascii_lowercase)
+        + list(string.digits),
         help="Folder names to exclude (can be specified multiple times)",
     )
     parser.add_argument("--min-count", type=int, help="Minimum file count per folder")
