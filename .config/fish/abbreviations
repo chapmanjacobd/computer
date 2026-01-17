@@ -306,7 +306,6 @@ abbr -a -- torrent lb torrents-dump
 abbr -a -- p systemctl status
 abbr -a -- pu systemctl status --user
 abbr -a -- reboot sudo systemctl reboot
-abbr -a -- remount sudo mount -o remount
 abbr -a -- symlinks.dangling.delete sudo symlinks -r -d .
 abbr -a -- rpmfiles rpmquery -ql
 abbr -a -- boottime systemd-analyze critical-chain --no-pager
