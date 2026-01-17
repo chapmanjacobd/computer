@@ -154,7 +154,20 @@ def main():
         "--exclude",
         "-E",
         action=argparse_utils.ArgparseList,
-        default=[".git", "VIDEO_TS", "BDMV", "STREAM", "NA", "Extras"],
+        default=[
+            ".git",
+            "VIDEO_TS",
+            "BDMV",
+            "STREAM",
+            "NA",
+            "Extras",
+            "Images",
+            "Pictures",
+            "Videos",
+            "Audio",
+            "Music",
+            "Soundtrack",
+        ],
         help="Folder names to exclude (can be specified multiple times)",
     )
     parser.add_argument("--min-count", type=int, help="Minimum file count per folder")
