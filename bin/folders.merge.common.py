@@ -204,6 +204,7 @@ def main():
             "Featurettes",
             "Features",
             "Screenshots",
+            "SS",
             "Screens",
             "_Screens",
             "Scr",
