@@ -308,6 +308,11 @@ def main():
             "var",
             "etc",
             "www",
+            "site",
+            "static",
+            "media",
+            "js",
+            "md",
         ]
         + list(string.ascii_lowercase)
         + list(string.digits),
