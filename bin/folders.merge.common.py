@@ -381,13 +381,14 @@ def main():
     parser.add_argument("paths", nargs="+", help="One or more root directories to scan")
     args = parser.parse_args()
 
+    args.exclude_part = set(s.strip(os.sep).casefold() for s in args.exclude if os.sep in s)
+    args.exclude = set(s.casefold() for s in args.exclude if os.sep not in s)
+
     # Validate paths
     for path in args.paths:
         if not os.path.isdir(path):
             print(f"Error: Invalid directory path: {path}")
             sys.exit(1)
-    args.exclude = set(s.casefold() for s in args.exclude if os.sep not in s)
-    args.exclude_part = set(s.strip(os.sep).casefold() for s in args.exclude if os.sep in s)
 
     merge_groups = find_duplicate_folders(args)
     if not merge_groups:
