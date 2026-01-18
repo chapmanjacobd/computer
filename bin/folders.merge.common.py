@@ -22,7 +22,7 @@ def get_all_folders(root_paths, exclude_names):
     for root_path in root_paths:
         for dirpath, dirnames, filenames in os.walk(root_path):
             # Filter out excluded folder names
-            dirnames[:] = [d for d in dirnames if d not in exclude_names]
+            # dirnames[:] = [d for d in dirnames if d not in exclude_names]
 
             # Skip empty folders
             if not filenames and not dirnames:
@@ -33,14 +33,15 @@ def get_all_folders(root_paths, exclude_names):
                 continue
 
             basename = os.path.basename(dirpath)
-            if basename.isnumeric():
-                continue
 
             s = basename.casefold()
+            if s.rstrip("p").isnumeric():
+                continue
+
             if s in exclude_names:
                 continue
 
-            if bool(re.match(r"^(disc|disk|cd|dvd|d|season|series|s|volume|vol|v|batch|decade|year|month|week|day)[ ._-]?\d+$", s, re.IGNORECASE)):
+            if bool(re.match(r"^(disc|disk|cd|dvd|d|season|series|s|volume|vol|v|batch|decade|year|month|week|day|lesson)[ ._-]?\d+$", s, re.IGNORECASE)):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -198,11 +199,21 @@ def main():
             "OEBPS",
             "Text",
             "xhtml",
+            "html",
+            "links",
+            "about",
+            "readme",
+            "info",
             "NA",
             "None",
             "Extras",
             "Bonus",
             "Bonus Files",
+            "Exercise Files",
+            "Exercises",
+            "Notes",
+            "Translator Notes",
+            "TN",
             "Samples",
             "Sample",
             "Proofs",
@@ -226,9 +237,11 @@ def main():
             "Thumbs",
             "Thumb",
             "Contacts",
+            "Contact",
             "ContactSheets",
             "Screenlists",
             "Scenes",
+            "contents",
             "Images",
             "Image",
             "Photos",
@@ -248,6 +261,9 @@ def main():
             "Subtitles",
             "Subtitle",
             "Subs",
+            "Sub",
+            "SubIdx",
+            "smi",
             "Items",
             "Item",
             "temp",
@@ -272,6 +288,10 @@ def main():
             "Sources",
             "Source",
             "src",
+            "drawings",
+            "illustrations",
+            "Graphics",
+            "models",
             "resources",
             "res",
             "Textures",
@@ -307,10 +327,14 @@ def main():
             "lib",
             "var",
             "etc",
+            "HTML5MediaEmbed",
             "www",
             "site",
             "static",
             "media",
+            "cd",
+            "dvd",
+            "dvd-rom",
             "js",
             "md",
         ]
