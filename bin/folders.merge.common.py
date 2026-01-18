@@ -82,11 +82,20 @@ def is_descendant(duplicate_paths, folder_path):
     return False
 
 
+def fn_sort_duplicates(item):
+    name, locations = item
+
+    paths = [os.path.join(r, p) for r, p, d in locations]
+    depths = [d for r, p, d in locations]
+
+    return (min(depths), min(len(p) for p in paths))
+
+
 def find_duplicate_folders(args):
     all_folders = get_all_folders(args.paths, args.exclude)
     duplicates = {name: locations for name, locations in all_folders.items() if len(locations) > 1}
     # process shallowest duplicates first
-    duplicates = sorted(duplicates.items(), key=lambda x: min(loc[2] for loc in x[1]))
+    duplicates = sorted(duplicates.items(), key=fn_sort_duplicates)
 
     merged_paths = set()
     merge_groups = []
@@ -132,7 +141,7 @@ def find_duplicate_folders(args):
             continue
 
         # Sort by depth (shallowest first), then by path for consistency
-        folder_data.sort(key=lambda x: (x['depth'], x['root'], x['rel_path']))
+        folder_data.sort(key=lambda x: (x['depth'], len(x['root']) + len(x['rel_path']), x['root'], x['rel_path']))
 
         # First folder (shallowest) is the destination
         dest = folder_data[0]
