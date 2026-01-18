@@ -21,9 +21,11 @@ def get_all_folders(args):
 
     for root_path in args.paths:
         for dirpath, dirnames, filenames in os.walk(root_path):
+            # skip hidden folders
+            dirnames[:] = [s for s in dirnames if not s.startswith('.')]
             # skip walking excluded folder names
             if args.exclude_part:
-                dirnames[:] = [d for d in dirnames if d.casefold() not in args.exclude_part]
+                dirnames[:] = [s for s in dirnames if s.casefold() not in args.exclude_part]
 
             # Skip empty folders
             if not filenames and not dirnames:
@@ -194,9 +196,9 @@ def main():
         "-E",
         action=argparse_utils.ArgparseList,
         default=[
-            ".git",
-            "VIDEO_TS",
-            "BDMV",
+            ".git/",
+            "VIDEO_TS/",
+            "BDMV/",
             "STREAM",
             "PLAYLIST",
             "CLIPINF",
