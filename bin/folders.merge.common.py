@@ -425,8 +425,8 @@ def main():
 
     merge_groups.sort(
         key=lambda d: (
-            len(d['sources']),
             count_decile(d["move_count"]) + size_decile(d["move_size"]),
+            len(d['sources']),
             d['basename'],
         )
     )
