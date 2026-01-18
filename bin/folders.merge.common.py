@@ -59,6 +59,173 @@ def get_all_folders(args):
     return folders
 
 
+exclude_defaults = [
+    ".git/",
+    "VIDEO_TS/",
+    "BDMV/",
+    "STREAM",
+    "PLAYLIST",
+    "CLIPINF",
+    "CERTIFICATE",
+    "BACKUP",
+    "DUPLICATE",
+    "DL",
+    "META",
+    "AUXDATA",
+    "JAR",
+    "BDJO",
+    "OEBPS",
+    "Text",
+    "xhtml",
+    "html",
+    "links",
+    "about",
+    "readme",
+    "Guide",
+    "Handbook",
+    "info",
+    "NA",
+    "None",
+    "Extras",
+    "Bonus",
+    "Bonus Files",
+    "Exercise Files",
+    "Exercises",
+    "Notes",
+    "Translator Notes",
+    "TN",
+    "Samples",
+    "Sample",
+    "Proofs",
+    "Proof",
+    "Previews",
+    "Featurettes",
+    "Features",
+    "Special Features",
+    "Special Feature",
+    "Specials",
+    "Special",
+    "Screenshots",
+    "SS",
+    "Screens",
+    "_Screens",
+    "Scr",
+    "Scans",
+    "Covers",
+    "Cover",
+    "Thumbnails",
+    "Thumbs",
+    "Thumb",
+    "Contacts",
+    "Contact",
+    "ContactSheets",
+    "Screenlists",
+    "Scenes",
+    "contents",
+    "Images",
+    "Image",
+    "Photos",
+    "Photo",
+    "Pictures",
+    "Picture",
+    "Pic",
+    "Videos",
+    "Video",
+    "Vid",
+    "Audio",
+    "Aud",
+    "Music",
+    "Soundtrack",
+    "Font",
+    "Fonts",
+    "Subtitles",
+    "Subtitle",
+    "Subs",
+    "Sub",
+    "SubIdx",
+    "smi",
+    "Items",
+    "Item",
+    "temp",
+    "tmp",
+    ".tmp",
+    "footage",
+    "Keep",
+    "unsorted",
+    "Others",
+    "Other",
+    "Misc",
+    "其它",
+    "其他",
+    "New Folder",
+    "Originals",
+    "[originals]",
+    "Filtered",
+    "Exported",
+    "Darktable_Exported",
+    "old",
+    "new",
+    "todo",
+    "app",
+    "history",
+    "Sources",
+    "Source",
+    "src",
+    "Drawings",
+    "Artwork",
+    "Illustrations",
+    "Graphics",
+    "models",
+    "resources",
+    "res",
+    "textures",
+    "docs",
+    "group",
+    "outputs",
+    "output",
+    "out",
+    "configs",
+    "config",
+    "plugins",
+    "templates",
+    "template",
+    "styles",
+    "style",
+    "refs",
+    "ref",
+    "tutorials",
+    "tutorial",
+    "dotfiles",
+    "dotfile",
+    "data",
+    "env",
+    "files",
+    ".config",
+    ".local",
+    "code",
+    "locales",
+    "locale",
+    "repos",
+    "home",
+    "bin",
+    "lib",
+    "var",
+    "etc",
+    "HTML5MediaEmbed",
+    "www",
+    "site",
+    "static",
+    "media",
+    "cd",
+    "dvd",
+    "dvd-rom",
+    "js",
+    "md",
+    "@eaDir",
+    "English",
+]
+
+
 def get_folder_stats(root_path, rel_folder):
     """Get file count and total size for a folder."""
     folder_path = os.path.join(root_path, rel_folder)
@@ -85,10 +252,10 @@ def is_descendant(duplicate_paths, folder_path):
 
 
 def fn_sort_duplicates(item):
-    name, locations = item
+    _name, locations = item
 
-    paths = [os.path.join(r, p) for r, p, d in locations]
-    depths = [d for r, p, d in locations]
+    paths = [os.path.join(r, p) for r, p, _d in locations]
+    depths = [d for _r, _p, d in locations]
 
     return (min(depths), min(len(p) for p in paths))
 
@@ -187,179 +354,33 @@ def merge_folders(src, dest):
     return merged_count
 
 
+def make_rank_decile_func(data_points, n=10):
+    if not data_points:
+        return lambda x: 0
+
+    import bisect
+
+    # Create a sorted mapping of value -> rank-based decile
+    sorted_vals = sorted(data_points)
+    total = len(sorted_vals)
+
+    def get_decile(value):
+        idx = bisect.bisect_left(sorted_vals, value)
+        return min((idx * n) // total, n - 1)
+
+    return get_decile
+
+
 def main():
     parser = argparse_utils.ArgumentParser(
         description="Find and merge duplicate folder names into shallowest location."
     )
+
     parser.add_argument(
         "--exclude",
         "-E",
         action=argparse_utils.ArgparseList,
-        default=[
-            ".git/",
-            "VIDEO_TS/",
-            "BDMV/",
-            "STREAM",
-            "PLAYLIST",
-            "CLIPINF",
-            "CERTIFICATE",
-            "BACKUP",
-            "DUPLICATE",
-            "DL",
-            "META",
-            "AUXDATA",
-            "JAR",
-            "BDJO",
-            "OEBPS",
-            "Text",
-            "xhtml",
-            "html",
-            "links",
-            "about",
-            "readme",
-            "Guide",
-            "Handbook",
-            "info",
-            "NA",
-            "None",
-            "Extras",
-            "Bonus",
-            "Bonus Files",
-            "Exercise Files",
-            "Exercises",
-            "Notes",
-            "Translator Notes",
-            "TN",
-            "Samples",
-            "Sample",
-            "Proofs",
-            "Proof",
-            "Previews",
-            "Featurettes",
-            "Features",
-            "Special Features",
-            "Special Feature",
-            "Specials",
-            "Special",
-            "Screenshots",
-            "SS",
-            "Screens",
-            "_Screens",
-            "Scr",
-            "Scans",
-            "Covers",
-            "Cover",
-            "Thumbnails",
-            "Thumbs",
-            "Thumb",
-            "Contacts",
-            "Contact",
-            "ContactSheets",
-            "Screenlists",
-            "Scenes",
-            "contents",
-            "Images",
-            "Image",
-            "Photos",
-            "Photo",
-            "Pictures",
-            "Picture",
-            "Pic",
-            "Videos",
-            "Video",
-            "Vid",
-            "Audio",
-            "Aud",
-            "Music",
-            "Soundtrack",
-            "Font",
-            "Fonts",
-            "Subtitles",
-            "Subtitle",
-            "Subs",
-            "Sub",
-            "SubIdx",
-            "smi",
-            "Items",
-            "Item",
-            "temp",
-            "tmp",
-            ".tmp",
-            "footage",
-            "Keep",
-            "unsorted",
-            "Others",
-            "Other",
-            "Misc",
-            "其它",
-            "其他",
-            "New Folder",
-            "Originals",
-            "[originals]",
-            "Filtered",
-            "Exported",
-            "Darktable_Exported",
-            "old",
-            "new",
-            "todo",
-            "app",
-            "history",
-            "Sources",
-            "Source",
-            "src",
-            "Drawings",
-            "Artwork",
-            "Illustrations",
-            "Graphics",
-            "models",
-            "resources",
-            "res",
-            "textures",
-            "docs",
-            "group",
-            "outputs",
-            "output",
-            "out",
-            "configs",
-            "config",
-            "plugins",
-            "templates",
-            "template",
-            "styles",
-            "style",
-            "refs",
-            "ref",
-            "tutorials",
-            "tutorial",
-            "dotfiles",
-            "dotfile",
-            "data",
-            "env",
-            "files",
-            ".config",
-            ".local",
-            "code",
-            "locales",
-            "locale",
-            "repos",
-            "home",
-            "bin",
-            "lib",
-            "var",
-            "etc",
-            "HTML5MediaEmbed",
-            "www",
-            "site",
-            "static",
-            "media",
-            "cd",
-            "dvd",
-            "dvd-rom",
-            "js",
-            "md",
-            "@eaDir",
-            "English",
-        ]
+        default=exclude_defaults
         + list(string.ascii_lowercase)
         + list(string.digits)
         + list(consts.ARCHIVE_EXTENSIONS)
@@ -395,30 +416,25 @@ def main():
         print("No duplicate folders found matching criteria.")
         sys.exit(0)
 
-    # Sort by basename for consistent output
-    merge_groups.sort(key=lambda x: x['basename'])
+    for group in merge_groups:
+        group["move_count"] = sum(src['count'] for src in group['sources'])
+        group["move_size"] = sum(src['size'] for src in group['sources'])
+        group["move_weight"] = group["move_count"] * group["move_size"]
+    get_decile = make_rank_decile_func([group["move_weight"] for group in merge_groups])
 
-    # Display results
+    merge_groups.sort(key=lambda d: (len(d['sources']), get_decile(d["move_weight"]), d['basename']))
+
     table_data = []
-    total_move_files = 0
-    total_move_size = 0
-
     for group in merge_groups:
         dest = group['dest']
         dest_path = os.path.join(dest['root'], dest['rel_path'])
-
-        move_files = sum(src['count'] for src in group['sources'])
-        move_size = sum(src['size'] for src in group['sources'])
-
-        total_move_files += move_files
-        total_move_size += move_size
 
         table_data.append(
             [
                 group['basename'],
                 len(group['sources']) + 1,  # Total duplicates
-                move_files,
-                strings.file_size(move_size),
+                group["move_count"],
+                strings.file_size(group["move_size"]),
                 group['total_files'],
                 strings.file_size(group['total_size']),
                 # dest['depth'],
@@ -429,7 +445,10 @@ def main():
     if table_data:
         print(f"Found {len(merge_groups)} duplicate folder name(s):")
 
+        total_move_files = sum(group["move_count"] for group in merge_groups)
+        total_move_size = sum(group["move_size"] for group in merge_groups)
         table_data.append(["TOTAL", "", total_move_files, strings.file_size(total_move_size), "", ""])
+
         print(
             tabulate(
                 table_data,
