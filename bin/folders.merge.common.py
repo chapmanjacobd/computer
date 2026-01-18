@@ -209,6 +209,8 @@ def main():
             "Thumbs",
             "Contacts",
             "ContactSheets",
+            "Screenlists",
+            "Scenes",
             "Images",
             "Pictures",
             "Videos",
