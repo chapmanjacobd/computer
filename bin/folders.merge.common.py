@@ -21,8 +21,8 @@ def get_all_folders(root_paths, exclude_names):
 
     for root_path in root_paths:
         for dirpath, dirnames, filenames in os.walk(root_path):
-            # Filter out excluded folder names
-            # dirnames[:] = [d for d in dirnames if d not in exclude_names]
+            # skip walking excluded folder names
+            dirnames[:] = [d for d in dirnames if d not in exclude_names]
 
             # Skip empty folders
             if not filenames and not dirnames:
@@ -68,8 +68,7 @@ def get_folder_stats(root_path, rel_folder):
     return count, total_size
 
 
-def is_descendant_of_duplicate(folder_path, duplicate_paths):
-    """Check if folder_path is a descendant of any path in duplicate_paths."""
+def is_descendant(duplicate_paths, folder_path):
     for dup_path in duplicate_paths:
         if folder_path.startswith(dup_path + os.sep):
             return True
@@ -79,22 +78,18 @@ def is_descendant_of_duplicate(folder_path, duplicate_paths):
 def find_duplicate_folders(args):
     all_folders = get_all_folders(args.paths, args.exclude)
     duplicates = {name: locations for name, locations in all_folders.items() if len(locations) > 1}
-
     # process shallowest duplicates first
     duplicates = sorted(duplicates.items(), key=lambda x: min(loc[2] for loc in x[1]))
-    merged_paths = set()  # Track paths that will be merged
 
+    merged_paths = set()
     merge_groups = []
     for basename, locations in duplicates:
-        # Skip if any of these folders are descendants of folders we're already merging
-        filtered_locations = []
+        # Skip any descendants of folders we're already merging
         for root, rel_path, depth in locations:
             full_path = os.path.join(root, rel_path)
-            if not is_descendant_of_duplicate(full_path, merged_paths):
-                filtered_locations = locations
+            if not is_descendant(merged_paths, full_path):
                 break
-        else:
-            # All locations are descendants of folders being merged, skip this duplicate
+        else:  # All locations are descendants of folders being merged, skip this duplicate
             continue
 
         # Collect stats for each location
@@ -102,7 +97,7 @@ def find_duplicate_folders(args):
         total_files = 0
         total_size = 0
 
-        for root, rel_path, depth in filtered_locations:
+        for root, rel_path, depth in locations:
             count, size = get_folder_stats(root, rel_path)
 
             # Apply individual folder constraints
