@@ -15,15 +15,15 @@ from library.utils import arggroups, argparse_utils, consts, devices, nums, path
 from tabulate import tabulate
 
 
-def get_all_folders(root_paths, exclude_names):
+def get_all_folders(args):
     """Get all folders from root paths with their stats."""
     folders = defaultdict(list)  # basename -> list of (root, rel_path, depth)
 
-    for root_path in root_paths:
+    for root_path in args.paths:
         for dirpath, dirnames, filenames in os.walk(root_path):
             # skip walking excluded folder names
-            # TODO: split --exclude into --exclude and --exclude-parent
-            dirnames[:] = [d for d in dirnames if d not in exclude_names]
+            if args.exclude_part:
+                dirnames[:] = [d for d in dirnames if d.casefold() not in args.exclude_part]
 
             # Skip empty folders
             if not filenames and not dirnames:
@@ -39,7 +39,7 @@ def get_all_folders(root_paths, exclude_names):
             if s.rstrip("p").isnumeric():
                 continue
 
-            if s in exclude_names:
+            if s in args.exclude:
                 continue
 
             if bool(
@@ -92,7 +92,7 @@ def fn_sort_duplicates(item):
 
 
 def find_duplicate_folders(args):
-    all_folders = get_all_folders(args.paths, args.exclude)
+    all_folders = get_all_folders(args)
     duplicates = {name: locations for name, locations in all_folders.items() if len(locations) > 1}
     # process shallowest duplicates first
     duplicates = sorted(duplicates.items(), key=fn_sort_duplicates)
@@ -295,6 +295,8 @@ def main():
             "Originals",
             "[originals]",
             "Filtered",
+            "Exported",
+            "Darktable_Exported",
             "old",
             "new",
             "todo",
@@ -382,7 +384,8 @@ def main():
         if not os.path.isdir(path):
             print(f"Error: Invalid directory path: {path}")
             sys.exit(1)
-    args.exclude = set(s.casefold() for s in args.exclude)
+    args.exclude = set(s.casefold() for s in args.exclude if os.sep not in s)
+    args.exclude_part = set(s.strip(os.sep).casefold() for s in args.exclude if os.sep in s)
 
     merge_groups = find_duplicate_folders(args)
     if not merge_groups:
