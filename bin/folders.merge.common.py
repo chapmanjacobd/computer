@@ -40,7 +40,7 @@ def get_all_folders(root_paths, exclude_names):
             if s in exclude_names:
                 continue
 
-            if bool(re.match(r"^(disc|disk|dvd|d|season|s)[ ._-]?\d+$", s, re.IGNORECASE)):
+            if bool(re.match(r"^(disc|disk|dvd|d|season|s|volume|vol|v|batch)[ ._-]?\d+$", s, re.IGNORECASE)):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -195,6 +195,7 @@ def main():
             "JAR",
             "BDJO",
             "OEBPS",
+            "Text",
             "xhtml",
             "NA",
             "None",
@@ -213,6 +214,7 @@ def main():
             "Screens",
             "_Screens",
             "Scr",
+            "Scans",
             "Thumbnails",
             "Thumbs",
             "Contacts",
@@ -220,6 +222,7 @@ def main():
             "Screenlists",
             "Scenes",
             "Images",
+            "Image",
             "Pictures",
             "Pic",
             "Vid",
@@ -232,6 +235,8 @@ def main():
             "Subtitles",
             "Subtitle",
             "Subs",
+            "Items",
+            "Item",
             "temp",
             "tmp",
             ".tmp",
@@ -253,6 +258,7 @@ def main():
             "src",
             "resources",
             "res",
+            "Textures",
             "docs",
             "group",
             "outputs",
