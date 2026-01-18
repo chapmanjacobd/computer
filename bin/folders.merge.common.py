@@ -231,6 +231,8 @@ def main():
             "tmp",
             ".tmp",
             "footage",
+            "Keep",
+            "unsorted",
             "Other",
             "Misc",
             "其它",
