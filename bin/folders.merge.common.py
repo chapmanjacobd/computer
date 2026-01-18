@@ -40,7 +40,7 @@ def get_all_folders(root_paths, exclude_names):
             if s in exclude_names:
                 continue
 
-            if bool(re.match(r"^(disc|disk|season)[ ._-]?\d+$", s, re.IGNORECASE)):
+            if bool(re.match(r"^(disc|disk|d|season|s)[ ._-]?\d+$", s, re.IGNORECASE)):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -204,6 +204,9 @@ def main():
             "Screenshots",
             "Screens",
             "Scr",
+            "Thumbnails",
+            "Thumbs",
+            "Contacts",
             "Images",
             "Pictures",
             "Videos",
