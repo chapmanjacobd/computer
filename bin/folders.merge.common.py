@@ -108,7 +108,6 @@ exclude_defaults = [
     "Screenshots",
     "SS",
     "Screens",
-    "_Screens",
     "Scr",
     "Scans",
     "Covers",
@@ -403,7 +402,8 @@ def main():
     args = parser.parse_args()
 
     args.exclude_part = set(s.strip(os.sep).casefold() for s in args.exclude if os.sep in s)
-    args.exclude = set(s.casefold() for s in args.exclude if os.sep not in s)
+    base = set(s.casefold() for s in args.exclude if os.sep not in s)
+    args.exclude = base | {p + s for s in base for p in ("!", "_")}
 
     # Validate paths
     for path in args.paths:
