@@ -192,6 +192,8 @@ def main():
             "BACKUP",
             "DL",
             "META",
+            "JAR",
+            "BDJO",
             "OEBPS",
             "NA",
             "None",
