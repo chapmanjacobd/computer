@@ -213,6 +213,8 @@ def main():
             "Scenes",
             "Images",
             "Pictures",
+            "Pic",
+            "Vid",
             "Videos",
             "Audio",
             "Music",
