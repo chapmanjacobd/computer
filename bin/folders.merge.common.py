@@ -40,7 +40,7 @@ def get_all_folders(root_paths, exclude_names):
             if s in exclude_names:
                 continue
 
-            if bool(re.match(r"^(disc|disk|cd|dvd|d|season|s|volume|vol|v|batch)[ ._-]?\d+$", s, re.IGNORECASE)):
+            if bool(re.match(r"^(disc|disk|cd|dvd|d|season|series|s|volume|vol|v|batch|decade|year|month|week|day)[ ._-]?\d+$", s, re.IGNORECASE)):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -190,6 +190,7 @@ def main():
             "CLIPINF",
             "CERTIFICATE",
             "BACKUP",
+            "DUPLICATE",
             "DL",
             "META",
             "JAR",
@@ -209,14 +210,21 @@ def main():
             "Previews",
             "Featurettes",
             "Features",
+            "Special Features",
+            "Special Feature",
+            "Specials",
+            "Special",
             "Screenshots",
             "SS",
             "Screens",
             "_Screens",
             "Scr",
             "Scans",
+            "Covers",
+            "Cover",
             "Thumbnails",
             "Thumbs",
+            "Thumb",
             "Contacts",
             "ContactSheets",
             "Screenlists",
@@ -248,6 +256,7 @@ def main():
             "footage",
             "Keep",
             "unsorted",
+            "Others",
             "Other",
             "Misc",
             "其它",
