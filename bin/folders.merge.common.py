@@ -201,6 +201,8 @@ def main():
             "Samples",
             "Sample",
             "Previews",
+            "Featurettes",
+            "Features",
             "Screenshots",
             "Screens",
             "_Screens",
