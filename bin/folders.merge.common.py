@@ -419,10 +419,17 @@ def main():
     for group in merge_groups:
         group["move_count"] = sum(src['count'] for src in group['sources'])
         group["move_size"] = sum(src['size'] for src in group['sources'])
-        group["move_weight"] = group["move_count"] * group["move_size"]
-    get_decile = make_rank_decile_func([group["move_weight"] for group in merge_groups])
 
-    merge_groups.sort(key=lambda d: (len(d['sources']), get_decile(d["move_weight"]), d['basename']))
+    count_decile = make_rank_decile_func([d["move_count"] for d in merge_groups])
+    size_decile = make_rank_decile_func([d["move_size"] for d in merge_groups])
+
+    merge_groups.sort(
+        key=lambda d: (
+            len(d['sources']),
+            count_decile(d["move_count"]) + size_decile(d["move_size"]),
+            d['basename'],
+        )
+    )
 
     table_data = []
     for group in merge_groups:
