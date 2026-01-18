@@ -11,7 +11,7 @@ import string
 import sys
 from collections import defaultdict
 
-from library.utils import arggroups, argparse_utils, devices, nums, path_utils, shell_utils, strings
+from library.utils import arggroups, argparse_utils, consts, devices, nums, path_utils, shell_utils, strings
 from tabulate import tabulate
 
 
@@ -42,7 +42,13 @@ def get_all_folders(root_paths, exclude_names):
             if s in exclude_names:
                 continue
 
-            if bool(re.match(r"^(disc|disk|cd|dvd|d|season|series|act|s|volume|vol|v|batch|decade|year|month|week|day|lesson)[ ._-]?\d+$", s, re.IGNORECASE)):
+            if bool(
+                re.match(
+                    r"^(disc|disk|cd|dvd|d|season|series|act|s|volume|vol|v|batch|decade|year|month|week|day|lesson|book|chapter|issue|part|section)[ ._-]?\d+$",
+                    s,
+                    re.IGNORECASE,
+                )
+            ):
                 continue
 
             depth = rel_path.count(os.sep)
@@ -200,6 +206,8 @@ def main():
             "links",
             "about",
             "readme",
+            "Guide",
+            "Handbook",
             "info",
             "NA",
             "None",
@@ -277,6 +285,7 @@ def main():
             "New Folder",
             "Originals",
             "[originals]",
+            "Filtered",
             "old",
             "new",
             "todo",
@@ -336,9 +345,14 @@ def main():
             "js",
             "md",
             "@eaDir",
+            "English",
         ]
         + list(string.ascii_lowercase)
-        + list(string.digits),
+        + list(string.digits)
+        + list(consts.ARCHIVE_EXTENSIONS)
+        + list(consts.CALIBRE_EXTENSIONS)
+        + list(consts.VIDEO_EXTENSIONS)
+        + list(consts.AUDIO_ONLY_EXTENSIONS),
         help="Folder names to exclude (can be specified multiple times)",
     )
     parser.add_argument("--min-count", type=int, help="Minimum file count per folder")
