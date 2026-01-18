@@ -17,6 +17,9 @@ source ~/.config/fish/functions/ls.fish
 fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp
 _env_vars_update_servers
 
+bind pageup "kitty @ scroll-window 1p-"
+bind pagedown "kitty @ scroll-window 1p"
+
 bind ctrl-backspace backward-kill-word
 bind ctrl-left backward-word
 bind ctrl-right forward-word
