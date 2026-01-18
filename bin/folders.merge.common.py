@@ -200,6 +200,8 @@ def main():
             "Extras",
             "Samples",
             "Sample",
+            "Proofs",
+            "Proof",
             "Previews",
             "Featurettes",
             "Features",
