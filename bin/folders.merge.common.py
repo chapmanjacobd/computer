@@ -447,10 +447,11 @@ def main():
         )
         print()
 
+        if not args.simulate and not devices.confirm("Proceed with merge?"):
+            args.simulate = True
+
         if args.simulate:
             print("Simulating merging:")
-        elif not devices.confirm("Proceed with merge?"):
-            return
         print()
 
         for group in merge_groups:
