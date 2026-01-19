@@ -353,7 +353,7 @@ def merge_folders(src, dest):
     return merged_count
 
 
-def make_rank_decile_func(data_points, n=10):
+def make_rank_decile_func(data_points, n=100):
     if not data_points:
         return lambda x: 0
 
