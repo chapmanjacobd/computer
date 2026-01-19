@@ -1,7 +1,7 @@
 function tmux.waitgroup
     set -l panes
 
-    trap "tmux.kill '$panes'; return 1" SIGINT SIGTERM
+    trap "tmux.kill $panes; return 1" SIGINT SIGTERM
 
     args.or.stdin $argv | while read -l cmd
         set -l p_id (tmux new-window -d -P -F "#{pane_id}" "$cmd")
