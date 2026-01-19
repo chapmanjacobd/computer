@@ -38,7 +38,7 @@ def get_all_folders(args):
             basename = os.path.basename(dirpath)
 
             s = basename.casefold()
-            if s.rstrip("p").isnumeric():
+            if s.rstrip("s").rstrip("p").isnumeric():
                 continue
 
             if s in args.exclude:
