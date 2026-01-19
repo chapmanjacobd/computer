@@ -6,7 +6,19 @@ function tmux.waitgroup
         set -a panes $p_id
     end
 
-    trap "tmux.kill $panes; return 1" SIGINT SIGTERM
+    function tmux.waitgroup.cleanup --on-signal SIGINT --on-signal SIGTERM --inherit-variable panes
+        echo $panes
+        for p_id in $panes
+            if tmux has-session -t $p_id 2>/dev/null
+                tmux kill-pane -t $p_id
+            end
+        end
+
+        functions -e tmux.waitgroup.cleanup
+    end
+
+    echo $panes
+
     while set -q panes[1]
         for i in (seq (count $panes))
             set -l p_id $panes[$i]
