@@ -1,16 +1,22 @@
-# Defined via `source`
 function tmux.waitgroup
-    set -l session_id (random)
-    set -l signals
+    set -l panes
+
+    trap "tmux.kill '$panes'; return 1" SIGINT SIGTERM
 
     args.or.stdin $argv | while read -l cmd
-        set -l sig "sig_$session_id"_(random)
-        set -a signals $sig
-        # The window runs the command, then signals it is done
-        tmux new-window "$cmd; tmux wait-for -S $sig"
+        set -l p_id (tmux new-window -d -P -F "#{pane_id}" "$cmd")
+        set -a panes $p_id
     end
 
-    for sig in $signals
-        tmux wait-for $sig
+    while set -q panes[1]
+        for i in (seq (count $panes))
+            set -l p_id $panes[$i]
+
+            if not tmux has-session -t $p_id 2>/dev/null
+                set -e panes[$i]
+                break # Break to re-index the list
+            end
+        end
+        sleep 0.2
     end
 end
