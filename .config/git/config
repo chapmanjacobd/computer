@@ -23,7 +23,6 @@
     fsckobjects = true
 [receive]
     fsckObjects = true
-
 [init]
     defaultBranch = main
 [pull]
@@ -48,23 +47,23 @@
 [log]
     date = relative-local
 [alias]
-    create = !git switch $(git config --get init.defaultBranch) && git switch -c
+    create = !git switch $(git main) && git switch -c
     ccp = "!f() { git create \"$1\"; shift; git cherry-pick \"$@\"; }; f"
     delete = branch -D
     rename = branch -M
     grame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
-    startover = "!f() { git reset --hard $(git merge-base main HEAD); git rebase main; }; f"
+    startover = "!f() { git reset --hard $(git merge-base $(git main) HEAD); git rebase $(git main); }; f"
     diffbranch = diff --ignore-all-space -U0 DEV...HEAD
     branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
     unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
-    conflicts = !git diff --name-only --diff-filter U
+    conflicts = diff --name-only --diff-filter U
     edit-conflicts = !git conflicts | xargs -r $(git var GIT_EDITOR)
     history = log --follow -p --
     utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
     amend = !fish -c git.amend
     lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
     keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
-    divergence = log --reverse --oneline ..main
+    divergence = !git log --reverse --oneline ..$(git main)
     tagged = describe --tags --exact-match
     tags = tag --sort=creatordate --contains
     reword = commit --amend -m
@@ -80,6 +79,7 @@
     staged = diff --cached
     commits = rev-list HEAD --count
     find = !git-fzf-checkout
+    main = "!f() { m=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'); echo ${m:-main}; }; f"
 [advice]
     skippedCherryPicks = false
 [branch]
