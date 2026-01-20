@@ -12,6 +12,23 @@ end
 ################################################################################ interactive zone ##
 ################################################################################                  ##
 
+function fish_prompt_postexec --on-event fish_postexec
+    set -l last_pipestatus $pipestatus
+
+    printf (random.block)
+    printf (random.block)
+    printf (random.block)
+    printf (random.block)
+    printf ' '
+
+    if set -q CMD_DURATION; and test $CMD_DURATION -gt 300
+        printf '%s %s\n' (math -s1 $CMD_DURATION / 1000)s (__fish_print_pipestatus $last_pipestatus)
+        set -e CMD_DURATION
+    else
+        printf '%s\n' (__fish_print_pipestatus $last_pipestatus)
+    end
+end
+
 source ~/.config/fish/functions/ls.fish
 
 fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp

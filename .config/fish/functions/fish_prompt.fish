@@ -1,8 +1,4 @@
 function fish_prompt --description 'Write out the prompt'
-    set -l last_status $status
-    set -l last_pipestatus $pipestatus
-    set -lx __fish_last_status $status # Export for __fish_print_pipestatus.
-
     if not set -q __fish_git_prompt_show_informative_status
         set -g __fish_git_prompt_show_informative_status 1
     end
@@ -69,31 +65,24 @@ function fish_prompt --description 'Write out the prompt'
     set -q VIRTUAL_ENV
     and set -l venv (echo $VIRTUAL_ENV | md5sum | md5sum | string sub -l 4)
 
-    if set -q CMD_DURATION; and test $CMD_DURATION -gt 300
-        printf '%s %s \n' (date '+%H%M') (math -s1 $CMD_DURATION / 1000)s
-        set -e CMD_DURATION
-    end
-
     set battery_percentage (battery.percent.low)
     if test -n "$battery_percentage"
         echo -n "$battery_percentage "
     end
 
     set_color $color_host
+    printf '%s ' (date '+%H%M')
+
     if set -q venv
         printf '(%s) ' "$venv"
     else if set -q CONTAINER_ID
         printf '(%s) ' "$CONTAINER_ID"
     else if set -q COMMAND_PREFIX
         printf '(%s) ' "$COMMAND_PREFIX"
-    else
-        printf (random.block)
-        printf (random.block)
-        printf (random.block)
-        printf (random.block)
-        printf ' '
     end
     set_color normal
+
+    #__fish_print_pipestatus $pipestatus
 
     set -l color_cwd
     set -l prefix
@@ -136,8 +125,6 @@ function fish_prompt --description 'Write out the prompt'
     set_color normal
 
     printf '%s ' $vcs_prompt
-
-    __fish_print_pipestatus $last_pipestatus
 
     echo -n "$suffix "
 end
