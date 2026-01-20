@@ -15,7 +15,10 @@ end
 function fish_prompt_postexec --on-event fish_postexec
     set -l last_pipestatus $pipestatus
 
-    if test (math max $last_pipestatus) -eq 0 -a $CMD_DURATION -le 300
+    for s in $last_pipestatus
+        test $s -eq 0; or set -l failed 1
+    end
+    if not set -q failed; and test $CMD_DURATION -le 300
         return
     end
 
