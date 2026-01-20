@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+import sys
+
+mapping = {
+    ord('‘'): "'",
+    ord('’'): "'",
+    ord('“'): '"',
+    ord('”'): '"',
+    ord('–'): "-",
+    ord('—'): "-",
+}
+
+for line in sys.stdin:
+    sys.stdout.write(line.translate(mapping))
