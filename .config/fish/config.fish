@@ -15,10 +15,13 @@ end
 function fish_prompt_postexec --on-event fish_postexec
     set -l last_pipestatus $pipestatus
 
+    set -l failed 0
     for s in $last_pipestatus
-        test $s -eq 0; or set -l failed 1
+        if test $s -ne 0
+            set failed 1
+        end
     end
-    if not set -q failed; and test $CMD_DURATION -le 300
+    if test $failed -eq 0 -a $CMD_DURATION -le 300
         return
     end
 
