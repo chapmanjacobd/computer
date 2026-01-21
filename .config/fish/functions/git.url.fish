@@ -29,7 +29,12 @@ function git.url --description 'Print web URL for git path(s)'
         end
 
         set -l abs_path (realpath "$path")
-        set -l git_root (git -C "$abs_path" rev-parse --show-toplevel 2>/dev/null)
+        set -l search_dir "$abs_path"
+        if test -f "$abs_path"
+            set search_dir (dirname "$abs_path")
+        end
+
+        set -l git_root (git -C "$search_dir" rev-parse --show-toplevel 2>/dev/null)
         if test -z "$git_root"
             echo "Error: '$path' is not in a git repo." >&2
             continue
