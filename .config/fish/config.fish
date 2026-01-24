@@ -21,7 +21,7 @@ function fish_prompt_postexec --on-event fish_postexec
             set failed 1
         end
     end
-    if test $failed -eq 0 -a $CMD_DURATION -le 300
+    if set -q CMD_DURATION; and test $failed -eq 0 -a $CMD_DURATION -le 300
         return
     end
 
