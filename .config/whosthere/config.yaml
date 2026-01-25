@@ -9,8 +9,7 @@ scan_duration: 10s
 
 # Splash screen configuration
 splash:
-  enabled: true
-  delay: 1s
+  enabled: false
 
 # Theme configuration
 theme:
