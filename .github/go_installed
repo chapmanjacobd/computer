@@ -9,6 +9,7 @@ github.com/dundee/gdu/v5/cmd/gdu@latest
 github.com/erning/gorun@latest
 github.com/go-delve/delve/cmd/dlv@latest
 github.com/mikefarah/yq/v4@latest
+github.com/ramonvermeulen/whosthere@latest
 github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 github.com/tdewolff/minify/v2/cmd/minify@latest
 github.com/x-motemen/gore/cmd/gore@latest
