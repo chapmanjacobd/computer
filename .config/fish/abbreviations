@@ -937,3 +937,4 @@ abbr -a -- inodes df -i
 abbr -a -- fuser fuser -Mmuki
 abbr -a -- pkill pkill -f
 abbr -a -- lsn ls --sort=name
+abbr -a -- gap git add --patch
