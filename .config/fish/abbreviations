@@ -938,3 +938,4 @@ abbr -a -- fuser fuser -Mmuki
 abbr -a -- pkill pkill -f
 abbr -a -- lsn ls --sort=name
 abbr -a -- gap git add --patch
+abbr -a -- xargs xargs --no-run-if-empty -n1
