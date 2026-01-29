@@ -191,7 +191,6 @@ abbr -a -- vpipe vipe
 abbr -a -- words /usr/share/dict/words
 abbr -a -- power.save sudo cpupower frequency-set -g powersave
 abbr -a -- power.performance sudo cpupower frequency-set -g performance
-abbr -a -- bios systemctl reboot --firmware-setup
 abbr -a -- teesum 'tee | lines.sum'
 abbr -a -- dnferase dnfremove
 abbr -a -- sde dnfremove
@@ -939,3 +938,4 @@ abbr -a -- pkill pkill -f
 abbr -a -- lsn ls --sort=name
 abbr -a -- gap git add --patch
 abbr -a -- xargs xargs --no-run-if-empty -n1
+abbr -a -- bios sudo systemctl reboot --firmware-setup -i
