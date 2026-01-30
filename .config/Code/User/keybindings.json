@@ -55,22 +55,28 @@
     "when": "editorTextFocus"
   },
   {
-      "key": "alt+right",
-      "command": "moveby.regex",
-      "when": "editorTextFocus",
-      "args": {
-          "regex": "\\s+",
-          "properties": ["next", "start"]
-      }
+    "key": "alt+right",
+    "command": "moveby.regex",
+    "when": "editorTextFocus",
+    "args": {
+      "regex": "\\s+",
+      "properties": [
+        "next",
+        "start"
+      ]
+    }
   },
   {
-      "key": "alt+left",
-      "command": "moveby.regex",
-      "when": "editorTextFocus",
-      "args": {
-          "regex": "\\s+",
-          "properties": ["prev", "start"]
-      }
+    "key": "alt+left",
+    "command": "moveby.regex",
+    "when": "editorTextFocus",
+    "args": {
+      "regex": "\\s+",
+      "properties": [
+        "prev",
+        "start"
+      ]
+    }
   },
   {
     "key": "alt+shift+right",
@@ -79,7 +85,9 @@
     "args": {
       "forward": "\\S+",
       "forwardInclude": true,
-      "properties": ["end"]
+      "properties": [
+        "end"
+      ]
     }
   },
   {
@@ -89,7 +97,29 @@
     "args": {
       "backward": "\\S+",
       "backwardInclude": true,
-      "properties": ["start"]
+      "properties": [
+        "start"
+      ]
     }
-  }
+  },
+  {
+    "key": "ctrl+l",
+    "command": "expandLineSelection",
+    "when": "textInputFocus"
+  },
+  {
+    "key": "ctrl+t",
+    "command": "workbench.action.chat.newChat",
+    "when": "chatIsEnabled && inChat"
+  },
+  {
+    "key": "ctrl+t",
+    "command": "antigravity.prioritized.chat.open",
+    "when": "!terminalFocus"
+  },
+  {
+    "key": "ctrl+t",
+    "command": "antigravity.sendTerminalToChat",
+    "when": "terminalFocus"
+  },
 ]
