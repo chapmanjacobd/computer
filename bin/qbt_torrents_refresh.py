@@ -21,7 +21,7 @@ args = parse_args()
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
 
-MAX_RETRIES = 5
+MAX_RETRIES = 1
 error_torrents = []
 restart_torrents = []
 for t in torrents:
