@@ -20,6 +20,7 @@ args = parse_args()
 
 qbt_client = torrents_start.start_qBittorrent(args)
 torrents = qbt_client.torrents_info()
+torrents = [t for t in torrents if not t.state_enum.is_complete]
 
 MAX_RETRIES = 1
 error_torrents = []
