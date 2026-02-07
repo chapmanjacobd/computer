@@ -7,5 +7,5 @@ Requires=firefox.service
 Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
-ExecStart="/usr/bin/fish" "-c" "lb tabs --max-same-domain 2 /home/xk/lb/tabs.db"
-ExecStartPost="/usr/bin/fish" "-c" "lb openlinks --max-same-domain 2 ~/mc/links.db -w 'play_count=0' -rs --browser"
+ExecStart="/usr/bin/fish" "-c" "daily.links"
+ExecStartPost="/usr/bin/fish" "-c" "daily.links.extra"
