@@ -2,6 +2,6 @@
 function links.db.stats
     for s in ~/mc/*.db
         echo $s
-        lb fs $s -pa
+        lb openlinks $s -L inf $argv -pa
     end
 end
