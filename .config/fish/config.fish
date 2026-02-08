@@ -105,7 +105,7 @@ end
 abbr -a cbargs --function _abbr_cbargs
 
 function _abbr_parallel
-    echo until parallel --eta --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed --timeout 8000%
+    echo until.slowly parallel --eta --joblog ~/.jobs/joblog_(date +%Y-%m-%dT%H%M%S).log --shuf --resume-failed --timeout 8000%
 end
 abbr -a parallel --function _abbr_parallel
 
