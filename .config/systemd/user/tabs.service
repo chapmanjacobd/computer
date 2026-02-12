@@ -8,4 +8,4 @@ Type=simple
 RemainAfterExit=no
 Environment="DISPLAY=:0"
 ExecStart="/usr/bin/fish" "-c" "daily.links"
-ExecStartPost="/usr/bin/fish" "-c" "daily.links.extra"
+ExecStartPost="/usr/bin/fish" "-c" "daily.links.extra -c p0"
