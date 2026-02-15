@@ -180,6 +180,7 @@ partprobe
 pax-utils
 pciutils-devel
 pdfarranger
+pdftk
 perf
 perl
 perl-CPAN
