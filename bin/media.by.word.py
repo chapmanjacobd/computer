@@ -19,7 +19,7 @@ def main():
     cursor = conn.cursor()
 
     try:
-        cursor.execute(f"SELECT path, size FROM {table_name}")
+        cursor.execute(f"SELECT path, size FROM {table_name} where coalesce(time_deleted,0)=0")
     except sqlite3.OperationalError as e:
         print(f"Error: {e}")
         sys.exit(1)
