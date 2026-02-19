@@ -13,17 +13,16 @@ alive=5
 verbose=
 
 usage () {
-	cat <<- EOF
-		Usage: $0: [-s SLEEPING_SECS] [-a ALIVE_SECS] [-v] PID
+        cat << EOF
+Usage: $0: [-s SLEEPING_SECS] [-a ALIVE_SECS] [-v] PID...
 
-		Cheap throttling by repeatedly sending SIGSTOP and SIGCONT to PID.
-		Waits SLEEPING_SECS after SIGSTOP (default: $sleeping)
-		and ALIVE_SECS after SIGCONT (default: $alive).
+Cheap throttling by repeatedly sending SIGSTOP and SIGCONT to PIDs.
+Waits SLEEPING_SECS after SIGSTOP (default: $sleeping)
+and ALIVE_SECS after SIGCONT (default: $alive).
 
-		With -v, print every signal sent (reusing the same line).
-	EOF
+With -v, print every signal sent (reusing the same line).
+EOF
 }
-
 while getopts hvs:a: name
 do
 	case $name in
@@ -43,28 +42,28 @@ do
 done
 shift $((OPTIND - 1))
 
-if [ $# -ne 1 ]
+if [ $# -lt 1 ]
 then
-	usage >&2
-	exit 64
+        usage >&2
+        exit 64
 fi
 
-target="$1"
+targets="$*"
 
-trap 'kill -CONT "$target"' EXIT
+trap 'kill -CONT $targets' EXIT
 
-[ -n "$target" ] || {
-	usage >&2
-	exit 2
+[ -n "$targets" ] || {
+        usage >&2
+        exit 2
 }
 
 while true
 do
-	[ -n "$verbose" ] && printf "%s: sending SIGSTOP\r" "$(date +"%F %T")"
-	kill -STOP "$target"
-	sleep "$sleeping"
+        [ -n "$verbose" ] && printf "%s: sending SIGSTOP to %s\r" "$(date +"%F %T")" "$targets"
+        kill -STOP $targets
+        sleep "$sleeping"
 
-	[ -n "$verbose" ] && printf "%s: sending SIGCONT\r" "$(date +"%F %T")"
-	kill -CONT "$target"
-	sleep "$alive"
+        [ -n "$verbose" ] && printf "%s: sending SIGCONT to %s\r" "$(date +"%F %T")" "$targets"
+        kill -CONT $targets
+        sleep "$alive"
 done
