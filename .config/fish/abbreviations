@@ -941,3 +941,4 @@ abbr -a -- bios sudo systemctl reboot --firmware-setup -i
 abbr -a -- cp cp -a
 abbr -a -- g gemini
 abbr -a -- trash.restore trash-restore
+abbr -a -- gz zg
