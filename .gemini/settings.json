@@ -1,0 +1,33 @@
+{
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    },
+    "environmentVariableRedaction": {
+      "enabled": true
+    },
+    "disableYoloMode": true
+  },
+  "ui": {
+    "theme": "ANSI Light",
+    "autoThemeSwitching": false,
+    "showStatusInTitle": false,
+    "hideBanner": true,
+    "footer": {
+      "hideContextPercentage": false
+    },
+    "showCitations": true,
+    "showSpinner": false,
+    "hideWindowTitle": true,
+    "accessibility": {
+      "enableLoadingPhrases": false
+    }
+  },
+  "general": {
+    "previewFeatures": true,
+    "defaultApprovalMode": "auto_edit"
+  },
+  "tools": {
+    "approvalMode": "auto_edit"
+  }
+}
