@@ -66,7 +66,7 @@
     divergence = !git log --reverse --oneline ..$(git main)
     tagged = describe --tags --exact-match
     tags = tag --sort=creatordate --contains
-    reword = commit --amend -m
+    reword = "!f() { git commit --amend -m \"$*\"; }; f"
     pushf = push --force-with-lease --force-if-includes
     head = show HEAD
     remotes = remote -v
