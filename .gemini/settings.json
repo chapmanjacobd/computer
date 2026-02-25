@@ -25,7 +25,12 @@
   },
   "general": {
     "previewFeatures": true,
-    "defaultApprovalMode": "auto_edit"
+    "defaultApprovalMode": "auto_edit",
+    "sessionRetention": {
+      "warningAcknowledged": true,
+      "enabled": true,
+      "maxAge": "30d"
+    }
   },
   "tools": {
     "approvalMode": "auto_edit"
