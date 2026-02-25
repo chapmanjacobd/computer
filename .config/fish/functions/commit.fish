@@ -1,4 +1,8 @@
 # Defined interactively
 function commit
-    git utccommit -m "$argv"
+    if count $argv >/dev/null
+        git utccommit -m "$argv"
+    else
+        git utccommit
+    end
 end
