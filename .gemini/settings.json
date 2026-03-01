@@ -21,7 +21,8 @@
     "hideWindowTitle": true,
     "accessibility": {
       "enableLoadingPhrases": false
-    }
+    },
+    "loadingPhrases": "off"
   },
   "general": {
     "previewFeatures": true,
