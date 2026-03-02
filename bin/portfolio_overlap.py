@@ -2,10 +2,16 @@
 
 import csv
 import sys
+from collections import defaultdict
 
 
 def load_holdings(path):
-    holdings = {}
+    """
+    Load CSV and aggregate Percent of Assets by Symbol.
+    Returns:
+        { symbol: total_percent }
+    """
+    holdings = defaultdict(float)
 
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
@@ -17,7 +23,6 @@ def load_holdings(path):
             symbol = row.get("Symbol")
             percent = row.get("Percent of Assets")
 
-            # Skip rows with missing data
             if not symbol or not percent:
                 continue
 
@@ -30,14 +35,19 @@ def load_holdings(path):
             except ValueError:
                 continue
 
-            holdings[symbol] = percent
+            # 🔥 Aggregate instead of overwrite
+            holdings[symbol] += percent
 
-    return holdings
+    return dict(holdings)
 
 
 def calculate_overlap(fund_a, fund_b):
-    shared_symbols = set(fund_a) & set(fund_b)
-    return sum(min(fund_a[s], fund_b[s]) for s in shared_symbols)
+    """
+    Weight-based overlap:
+        sum(min(weight_a, weight_b)) over shared symbols
+    """
+    shared = set(fund_a) & set(fund_b)
+    return sum(min(fund_a[s], fund_b[s]) for s in shared)
 
 
 def main():
