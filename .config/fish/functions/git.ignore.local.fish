@@ -1,6 +1,6 @@
 # Defined interactively
 function git.ignore.local --description 'Add path(s) to .git/info/exclude'
-    set root (git rev-parse --show-toplevel) ^/dev/null
+    set root (git rev-parse --show-toplevel 2>/dev/null)
     or begin
         echo "Not inside a git repository" >&2
         return 1
