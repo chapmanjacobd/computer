@@ -130,6 +130,7 @@ libcec
 libheif-freeworld
 libicu
 libicu-devel
+libjpeg-turbo
 libmediainfo
 libnatpmp
 libnl3-devel
