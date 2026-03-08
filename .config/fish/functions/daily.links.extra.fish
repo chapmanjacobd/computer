@@ -1,6 +1,6 @@
 # Defined interactively
 function daily.links.extra
     for db in ~/mc/*.db ~/lb/sites/manual/pornolab.net.db
-        lb openlinks --max-same-domain 1 "$db" -w 'play_count=0' -rs --browser $argv
+        command links open -R -m1 -L7 --db "$db"
     end
 end
