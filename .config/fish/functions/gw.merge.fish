@@ -35,6 +35,7 @@ function gw.merge --argument-names target
         cd $main_repo
         git merge $branch
         git worktree remove $target_path
+        git branch --delete "$chosen_branch"
         return
     end
 
@@ -88,4 +89,5 @@ function gw.merge --argument-names target
     git commit
 
     git worktree remove $target_path
+    git branch --delete "$chosen_branch"
 end
