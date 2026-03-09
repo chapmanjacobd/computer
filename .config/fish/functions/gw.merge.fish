@@ -33,10 +33,7 @@ function gw.merge --argument-names target
         end
 
         cd $main_repo
-        echo "Squash merging '$branch'..."
-        git merge --squash $branch
-        git commit -m "Merge $branch (squash)"
-
+        git merge $branch
         git worktree remove $target_path
         return
     end
