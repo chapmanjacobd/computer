@@ -28,12 +28,11 @@ function gw.merge --argument-names target
     set -l branches
     set -l paths
 
-    git worktree list --porcelain | while read -l line
-        switch $line
-            case 'worktree *'
-                set paths $paths (string split ' ' $line)[2]
-            case 'branch *'
-                set branches $branches (string replace 'refs/heads/' '' (string split ' ' $line)[2])
+    for line in (git worktree list --porcelain)
+        if string match -q 'worktree *' $line
+            set -a paths (string trim (string replace 'worktree ' '' $line))
+        else if string match -q 'branch *' $line
+            set -a branches (string replace 'refs/heads/' '' (string trim (string replace 'branch ' '' $line)))
         end
     end
 
@@ -54,7 +53,7 @@ function gw.merge --argument-names target
             return 1
         end
     else
-        set -l sel (printf "%s\t%s\n" $branches $paths | fzf)
+        set -l sel (for i in (seq (count $branches)); printf "%s\t%s\n" $branches[$i] $paths[$i]; end | fzf --select-1)
         set chosen_branch (string split \t $sel)[1]
         set target_path (string split \t $sel)[2]
     end
