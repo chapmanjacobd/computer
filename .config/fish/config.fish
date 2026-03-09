@@ -44,7 +44,7 @@ source ~/.config/fish/functions/ls.fish
 fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp
 _env_vars_update_servers
 
-if not test -n "$TMUX"
+if test -z "$SSH_TTY"; and test -z "$TMUX"
     bind pageup "kitty @ scroll-window 1p-"
     bind pagedown "kitty @ scroll-window 1p"
 end
