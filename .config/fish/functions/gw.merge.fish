@@ -1,10 +1,27 @@
 # Defined via `source`
 function gw.merge --argument-names target
-    set -l main_repo (git rev-parse --show-toplevel)
     set -l cwd (pwd)
+    set -l git_dir (git rev-parse --git-dir)
+    
+    # Check if we're in a worktree (worktrees have .git as a file, not a directory)
+    set -l is_worktree 0
+    if test -f "$cwd/.git"
+        set is_worktree 1
+    end
+    
+    # Get main repo path from worktree's .git file
+    set -l main_repo ""
+    if test $is_worktree -eq 1
+        set -l git_file (cat "$cwd/.git")
+        set -l gitdir_path (string trim (string replace 'gitdir: ' '' $git_file))
+        # gitdir points to <main-repo>/.git/worktrees/<name>, go back to main repo
+        set main_repo (dirname (dirname (dirname $gitdir_path)))
+    else
+        set main_repo (git rev-parse --show-toplevel)
+    end
 
     # --- if inside worktree ---
-    if test "$cwd" != "$main_repo"
+    if test $is_worktree -eq 1
         set -l branch (git branch --show-current)
         set -l target_path $cwd
 
@@ -24,7 +41,7 @@ function gw.merge --argument-names target
         return
     end
 
-    # --- gather worktrees ---
+    # --- gather worktrees (excluding main repo) ---
     set -l branches
     set -l paths
 
@@ -35,6 +52,18 @@ function gw.merge --argument-names target
             set -a branches (string replace 'refs/heads/' '' (string trim (string replace 'branch ' '' $line)))
         end
     end
+
+    # Filter out the main repo (first entry)
+    set -l filtered_branches
+    set -l filtered_paths
+    for i in (seq (count $branches))
+        if test "$paths[$i]" != "$main_repo"
+            set -a filtered_branches $branches[$i]
+            set -a filtered_paths $paths[$i]
+        end
+    end
+    set branches $filtered_branches
+    set paths $filtered_paths
 
     # --- resolve target ---
     set -l chosen_branch
