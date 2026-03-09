@@ -1,6 +1,6 @@
 # Defined interactively
 function g
-    argparse 'b/branch=' 'p/provider=' -- $argv
+    argparse 'p/provider=' 'b/branch=' -- $argv
     set -l args $argv
 
     set -l wt_root "$HOME/.git-worktrees"
@@ -8,9 +8,6 @@ function g
 
     if not set -q _flag_branch
         set _flag_branch $args[1]
-    end
-    if not set -q _flag_provider
-        set _flag_provider gemini # Default to gemini, supports 'qwen'
     end
 
     set -l target_path "$wt_root/$_flag_branch"
