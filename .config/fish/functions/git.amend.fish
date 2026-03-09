@@ -1,23 +1,21 @@
-# Defined via `source`
-function git.amend
-    set tags (git tag --points-at HEAD)
-    if test -n "$tags"
-        if not confirm "Tags found pointing to HEAD: $tags. Continue? (y/N)"
-            return 1
-        end
+# Defined interactively
+function git.amend --argument-names target
+    if test -n "$target"
+        set commit $target
+    else
+        set commit (
+            git log --oneline --decorate --color=always |
+                fzf --ansi --no-sort --reverse --tiebreak=index \
+                                    --prompt="fixup commit > " \
+                                    --preview 'git show --color=always (echo {} | cut -d" " -f1)' |
+                awk '{print $1}'
+        )
     end
 
-    git commit --amend --no-edit
-
-    if test -n "$tags"
-        for tag in $tags
-            git tag -f "$tag" HEAD
-        end
+    if test -z "$commit"
+        return
     end
 
-    git push -f --force-with-lease --force-if-includes
-
-    if test -n "$tags"
-        git push -f --tags
-    end
+    git commit --fixup=$commit
+    git push
 end
