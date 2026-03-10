@@ -83,6 +83,7 @@
     diff-ignore-moved = "!f() { unbuffer git --no-pager diff --color-moved=plain --color=always \"$@\" | grep -vE \"^\\[[0-9;]*(34|35|36)m[+-]\"; }; f"
     diff-deleted = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*31m-\"; }; f"
     diff-added = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*32m\\+\"; }; f"
+	pop = !git.pop
 [advice]
     skippedCherryPicks = false
 [branch]
