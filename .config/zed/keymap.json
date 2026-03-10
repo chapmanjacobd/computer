@@ -1,0 +1,26 @@
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-`": "workspace::ToggleFocusMode",
+      "ctrl-e": "workspace::ToggleLeftDock",
+      "ctrl-r": "workspace::Save",
+      "ctrl-q": "zed::Quit"
+    }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-b": "editor::SelectNext",
+      "alt-x": "editor::Redo",
+      "alt-z": "editor::ToggleSoftWrap",
+      "ctrl-backspace": "editor::DeleteToPreviousSubwordStart",
+      "alt-backspace": "editor::DeleteToPreviousWordStart",
+      "alt-right": "editor::MoveToNextWordEnd",
+      "alt-left": "editor::MoveToPreviousWordStart",
+      "alt-shift-right": "editor::SelectToNextWordEnd",
+      "alt-shift-left": "editor::SelectToPreviousWordStart",
+      "ctrl-l": "editor::SelectLine"
+    }
+  }
+]
