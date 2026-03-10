@@ -77,7 +77,7 @@
   "soft_wrap": "none",
   "icon_theme": "Zed (Default)",
   "ui_font_size": 16,
-  "buffer_font_size": 15,
+  "buffer_font_size": 17,
   "theme": {
     "mode": "light",
     "light": "One Light",
