@@ -945,3 +945,4 @@ abbr -a -- wm commit
 abbr -a -- gc commit
 abbr -a -- g qwen
 abbr -a -- wipam git.amend HEAD
+abbr -a -- phone.cb ssh phone cb

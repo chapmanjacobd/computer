@@ -2,13 +2,13 @@
 function gw.merge --argument-names target
     set -l cwd (pwd)
     set -l git_dir (git rev-parse --git-dir)
-    
+
     # Check if we're in a worktree (worktrees have .git as a file, not a directory)
     set -l is_worktree 0
     if test -f "$cwd/.git"
         set is_worktree 1
     end
-    
+
     # Get main repo path from worktree's .git file
     set -l main_repo ""
     if test $is_worktree -eq 1
