@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "languages": {
+    "YAML": {
+      "format_on_save": "off"
+    }
+  },
   "agent_servers": {
     "qwen-code": {
       "type": "registry"
