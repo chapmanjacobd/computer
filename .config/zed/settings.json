@@ -80,7 +80,7 @@
   "buffer_font_size": 17,
   "theme": {
     "mode": "light",
-    "light": "One Light",
-    "dark": "Ayu Dark",
+    "light": "Medium Contrast Light",
+    "dark": "Medium Contrast Dark",
   },
 }
