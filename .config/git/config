@@ -80,6 +80,7 @@
     commits = rev-list HEAD --count
     find = !git-fzf-checkout
     main = "!f() { m=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'); echo ${m:-main}; }; f"
+    diff-ignore-moved = "!f() { unbuffer git --no-pager diff --color-moved=plain --color=always \"$@\" | grep -vE \"^\\[[0-9;]*(34|35|36)m[+-]\"; }; f"
 [advice]
     skippedCherryPicks = false
 [branch]
