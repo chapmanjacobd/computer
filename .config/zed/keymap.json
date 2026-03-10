@@ -2,11 +2,11 @@
   {
     "context": "Workspace",
     "bindings": {
-      "ctrl-`": "workspace::ToggleFocusMode",
+      "ctrl-`": "workspace::ToggleZoom",
       "ctrl-e": "workspace::ToggleLeftDock",
       "ctrl-r": "workspace::Save",
-      "ctrl-q": "zed::Quit"
-    }
+      "ctrl-q": "zed::Quit",
+    },
   },
   {
     "context": "Editor",
@@ -20,7 +20,7 @@
       "alt-left": "editor::MoveToPreviousWordStart",
       "alt-shift-right": "editor::SelectToNextWordEnd",
       "alt-shift-left": "editor::SelectToPreviousWordStart",
-      "ctrl-l": "editor::SelectLine"
-    }
-  }
+      "ctrl-l": "editor::SelectLine",
+    },
+  },
 ]
