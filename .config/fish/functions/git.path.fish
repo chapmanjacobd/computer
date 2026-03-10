@@ -1,28 +1,28 @@
 # Defined interactively
 function git.path --description 'Print path relative to git repo root'
-    if not git rev-parse --show-toplevel >/dev/null 2>&1
+    set root (git rev-parse --show-toplevel 2>/dev/null) || begin
         echo "Not inside a git repository" >&2
         return 1
     end
 
-    set root (git rev-parse --show-toplevel)
-
     if test (count $argv) -eq 0
         echo $root
-        return 0
+        return
     end
 
     for arg in $argv
-        # Resolve to absolute path
-        if type -q realpath
-            set abs (realpath $arg)
-        else
-            set abs (readlink -f $arg)
+        set p $arg
+
+        # If it doesn't exist, treat "/foo" as repo-root relative
+        if not test -e $p
+            if string match -q "/*" -- $p
+                set p "$root/"(string trim -l -c / $p)
+            end
         end
 
-        # Strip repo root prefix
-        set rel (string replace -r "^$root/?" "" $abs)
+        set abs (path resolve $p)
 
-        echo $rel
+        # Strip repo root prefix
+        echo (string replace -r "^$root/?" "" -- $abs)
     end
 end

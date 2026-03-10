@@ -338,3 +338,6 @@
 /.config/configstore
 /.config/disco
 /.git-worktrees
+/.local/zed.app
+/.claude.json
+/.claude

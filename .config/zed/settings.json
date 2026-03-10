@@ -1,0 +1,86 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "agent_servers": {
+    "qwen-code": {
+      "type": "registry"
+    }
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": true
+  },
+  "terminal": {
+    "font_family": "DejaVu Sans Mono",
+    "font_fallbacks": [
+      "monospace",
+      "monospace"
+    ]
+  },
+  "base_keymap": "VSCode",
+  "status_bar": {
+    "experimental.show": true
+  },
+  "tab_bar": {
+    "show": false
+  },
+  "search": {
+    "include_ignored": false
+  },
+  "scroll_sensitivity": 1.0,
+  "gutter": {
+    "line_numbers": true
+  },
+  "minimap": {
+    "show": "never",
+    "thumb": "always",
+    "max_width_columns": 80
+  },
+  "cursor_shape": "block",
+  "autosave": "on_focus_change",
+  "buffer_font_fallbacks": [
+    "monospace",
+    "monospace"
+  ],
+  "buffer_font_family": "DejaVu Sans Mono",
+  "file_types": {
+    "python": [
+      "*.py"
+    ],
+    "html": [
+      "*.svelte"
+    ],
+    "haskell": [
+      "*.tidal"
+    ],
+    "sql": [
+      "*.tsql"
+    ],
+    "jinja-sql": [
+      "*.sql"
+    ]
+  },
+  "auto_indent_on_paste": true,
+  "ensure_final_newline_on_save": true,
+  "indent_guides": {
+    "enabled": false
+  },
+  "wrap_guides": [
+    120
+  ],
+  "soft_wrap": "none",
+  "icon_theme": "Zed (Default)",
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "light",
+    "light": "One Light",
+    "dark": "Ayu Dark",
+  },
+}

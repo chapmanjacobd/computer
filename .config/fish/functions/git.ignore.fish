@@ -6,8 +6,9 @@ function git.ignore --description 'Add path(s) to .gitignore'
         return 1
     end
 
-    for rel in (git.path $argv)
-        echo $rel >>$root/.gitignore
+    for arg in $argv
+        set rel (git.path $arg)
+        echo /$rel >>$root/.gitignore
 
         echo git reset -- $root/$rel
         echo git rm --cached -- $root/$rel
