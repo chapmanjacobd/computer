@@ -36,7 +36,6 @@ def is_trumped_torrent(t):
                 'infohash not found',
                 'has been deleted',
                 'torrent deleted',
-                'no record found',
                 'not authorized for use with this tracker',
                 'not registered or allowed on this tracker',
             ]
