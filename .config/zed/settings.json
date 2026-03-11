@@ -6,6 +6,7 @@
     // ══════════════════════════════════════════════════════════════════════════════
 
     // ── Typography ────────────────────────────────────────────────────────────────
+    "always_treat_brackets_as_autoclosed": true,
     "preferred_line_length": 101,
     "use_smartcase_search": true,
     "buffer_font_family": "DejaVu Sans Mono",
