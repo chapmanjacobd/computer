@@ -17,7 +17,7 @@
     // chrome including the completions menu, so this is the closest knob.
     "ui_font_size": 17,
 
-    "buffer_line_height": "comfortable",
+    "buffer_line_height": "standard",
 
     // ── Cursor ────────────────────────────────────────────────────────────────────
     // editor.cursorStyle: "block" → direct mapping
