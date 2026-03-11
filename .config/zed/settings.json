@@ -6,6 +6,7 @@
     // ══════════════════════════════════════════════════════════════════════════════
 
     // ── Typography ────────────────────────────────────────────────────────────────
+    "preferred_line_length": 101,
     "use_smartcase_search": true,
     "buffer_font_family": "DejaVu Sans Mono",
     "buffer_font_size": 17,
@@ -27,7 +28,7 @@
     "hard_tabs": false,
 
     // editor.wordWrap: "off"
-    "soft_wrap": "none",
+    "soft_wrap": "preferred_line_length",
 
     // editor.scrollBeyondLastLine: true
     // VS Code is a boolean; Zed uses an enum. "one_page" replicates the feel of
