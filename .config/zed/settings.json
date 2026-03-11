@@ -1,91 +1,332 @@
-// Zed settings
-//
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
-//
-// To see all of Zed's default settings without changing your
-// custom settings, run `zed: open default settings` from the
-// command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "languages": {
-    "YAML": {
-      "format_on_save": "off"
-    }
-  },
-  "agent_servers": {
-    "qwen-code": {
-      "type": "registry"
-    }
-  },
-  "telemetry": {
-    "diagnostics": false,
-    "metrics": true
-  },
-  "terminal": {
-    "font_family": "DejaVu Sans Mono",
-    "font_fallbacks": [
-      "monospace",
-      "monospace"
-    ]
-  },
-  "base_keymap": "VSCode",
-  "status_bar": {
-    "experimental.show": true
-  },
-  "tab_bar": {
-    "show": false
-  },
-  "search": {
-    "include_ignored": false
-  },
-  "scroll_sensitivity": 1.0,
-  "gutter": {
-    "line_numbers": true
-  },
-  "minimap": {
-    "show": "never",
-    "thumb": "always",
-    "max_width_columns": 80
-  },
-  "cursor_shape": "block",
-  "autosave": "on_focus_change",
-  "buffer_font_fallbacks": [
-    "monospace",
-    "monospace"
-  ],
-  "buffer_font_family": "DejaVu Sans Mono",
-  "file_types": {
-    "python": [
-      "*.py"
+    // ══════════════════════════════════════════════════════════════════════════════
+    // ZED SETTINGS — translated from VS Code settings.json
+    //
+    // Indirect mappings and VS Code→Zed differences are noted inline.
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    // ── Typography ────────────────────────────────────────────────────────────────
+    "buffer_font_family": "DejaVu Sans Mono",
+    "buffer_font_size": 17,
+
+    // VS Code: editor.suggestFontSize: 17
+    // Zed has no dedicated completion-popup font size. ui_font_size governs all UI
+    // chrome including the completions menu, so this is the closest knob.
+    "ui_font_size": 17,
+
+    "buffer_line_height": "comfortable",
+
+    // ── Cursor ────────────────────────────────────────────────────────────────────
+    // editor.cursorStyle: "block" → direct mapping
+    "cursor_shape": "block",
+    "cursor_blink": true,
+
+    // ── Editor Behaviour ──────────────────────────────────────────────────────────
+    "tab_size": 4,
+    "hard_tabs": false,
+
+    // editor.wordWrap: "off"
+    "soft_wrap": "none",
+
+    // editor.scrollBeyondLastLine: true
+    // VS Code is a boolean; Zed uses an enum. "one_page" replicates the feel of
+    // being able to scroll one screen past the last line.
+    "scroll_beyond_last_line": "one_page",
+
+    // editor.mouseWheelScrollSensitivity: 1
+    "scroll_sensitivity": 1.0,
+
+    // editor.rulers: [80, 100, 120]
+    "show_wrap_guides": true,
+    "wrap_guides": [80, 100, 120],
+
+    // files.trimTrailingWhitespace: true
+    "remove_trailing_whitespace_on_save": true,
+
+    // files.insertFinalNewline: true
+    "ensure_final_newline_on_save": true,
+
+    // editor.formatOnSave: false
+    "format_on_save": "off",
+
+    // files.autoSave: "onFocusChange"
+    "autosave": "on_focus_change",
+
+    // editor.autoIndent: "none"
+    // VS Code has five granularity levels; Zed's boolean "false" maps to "none".
+    "auto_indent": false,
+
+    // editor.formatOnPaste: false
+    // Zed's closest analogue — prevents re-indenting pasted content automatically.
+    "auto_indent_on_paste": false,
+
+    // editor.bracketPairColorization: true (rainbow brackets)
+    "colorize_brackets": true,
+
+    // editor.snippetSuggestions: "top"
+    "snippet_sort_order": "top",
+
+    // editor.inlineSuggest.enabled: true
+    // VS Code inline suggestions ≈ Zed edit predictions.
+    // NOTE: You disabled Copilot entirely in VS Code. In Zed, edit predictions use
+    // Zed's own model (not Copilot), so enabling them here is safe and opt-in.
+    "show_edit_predictions": true,
+
+    // ── Inlay Hints ───────────────────────────────────────────────────────────────
+    // editor.inlayHints.enabled: "off"
+    "inlay_hints": {
+        "enabled": false,
+    },
+
+    // ── Minimap ───────────────────────────────────────────────────────────────────
+    // editor.minimap.enabled: false
+
+    // ── Gutter / Line Numbers ─────────────────────────────────────────────────────
+    // editor.lineNumbers: "on"
+    "gutter": {
+        "line_numbers": true,
+        "folds": true,
+        "runnables": true,
+        "breakpoints": true,
+    },
+
+    // ── Indent Guides ─────────────────────────────────────────────────────────────
+    // editor.guides.indentation: false
+    "indent_guides": {
+        "enabled": false,
+    },
+
+    // ── Search ────────────────────────────────────────────────────────────────────
+    "search": {
+        "case_sensitive": false,
+        "whole_word": false,
+        "regex": false,
+        "include_ignored": false,
+    },
+
+    // ── Telemetry ─────────────────────────────────────────────────────────────────
+    // telemetry.telemetryLevel: "off"
+    "telemetry": {
+        "diagnostics": false,
+        "metrics": false,
+    },
+
+    // ── Auto Update ───────────────────────────────────────────────────────────────
+    // update.mode: "none"
+    "auto_update": false,
+
+    // ── Git ───────────────────────────────────────────────────────────────────────
+    // git.blame.editorDecoration.enabled: true
+    "git": {
+        "inline_blame": {
+            "enabled": true,
+            "delay_ms": 0,
+        },
+    },
+
+    // ── Terminal ──────────────────────────────────────────────────────────────────
+    "terminal": {
+        "font_family": "DejaVu Sans Mono",
+        "font_size": 16,
+
+        // terminal.integrated.scrollback: 10000
+        "max_scroll_history_lines": 10000,
+
+        // terminal.integrated.defaultProfile.linux: "fish"
+        // VS Code uses profiles; Zed uses a single shell setting.
+        "shell": {
+            "program": "fish",
+        },
+
+        "working_directory": "current_project_directory",
+        "blinking": "terminal_controlled",
+        "copy_on_select": false,
+        "line_height": "standard",
+    },
+
+    // ── File Scan Exclusions ──────────────────────────────────────────────────────
+    // files.exclude: { "**/*.pyc", "**/__pycache__", "**/node_modules", ... }
+    // VS Code's files.exclude hides items from the explorer; Zed's
+    // file_scan_exclusions removes them from indexing AND the project panel.
+    // The effect on navigation/search is the same; the mechanism is unified.
+    "file_scan_exclusions": [
+        "**/.git",
+        "**/.svn",
+        "**/.hg",
+        "**/.jj",
+        "**/.sl",
+        "**/CVS",
+        "**/.DS_Store",
+        "**/Thumbs.db",
+        "**/__pycache__",
+        "**/__pypackages__",
+        "**/*.pyc",
+        "**/node_modules",
+        "**/venv",
+        "**/.venv",
+        "**/htmlcov",
+        "**/*.egg-info",
+        "**/build",
     ],
-    "html": [
-      "*.svelte"
-    ],
-    "haskell": [
-      "*.tidal"
-    ],
-    "sql": [
-      "*.tsql"
-    ],
-    "jinja-sql": [
-      "*.sql"
-    ]
-  },
-  "auto_indent_on_paste": true,
-  "ensure_final_newline_on_save": true,
-  "indent_guides": {
-    "enabled": false
-  },
-  "wrap_guides": [
-    120
-  ],
-  "soft_wrap": "none",
-  "icon_theme": "Zed (Default)",
-  "ui_font_size": 16,
-  "buffer_font_size": 17,
-  "theme": {
-    "mode": "light",
-    "light": "Medium Contrast Light",
-    "dark": "Medium Contrast Dark",
-  },
+
+    // ── Language-Specific Settings ────────────────────────────────────────────────
+    "languages": {
+        "YAML": {
+            "format_on_save": "off",
+        },
+        // ── Python ──────────────────────────────────────────────────────────────────
+        "Python": {
+            // python.languageServer: "Pylance"
+            // Pylance is a Microsoft proprietary extension and does not exist in Zed.
+            // basedpyright is an open-source fork of pyright (the engine behind Pylance)
+            // and is the recommended drop-in replacement — essentially the same analysis
+            // engine, same diagnosticSeverityOverrides, same type stubs.
+            "language_servers": [
+                "basedpyright",
+                "ruff",
+                "!pyright",
+                "!pylsp",
+                "...",
+            ],
+
+            // python.formatting.provider: "black" with --line-length=120 --skip-string-normalization
+            // Zed has no Black extension; the external formatter command replicates it
+            // exactly. Alternatively, ruff's formatter is Black-compatible and faster
+            // — to use it instead, replace with: "formatter": { "language_server": { "name": "ruff" } }
+            // and add [tool.ruff.format] line-length = 120  /  quote-style = "preserve" to pyproject.toml.
+            "formatter": {
+                "external": {
+                    "command": "black",
+                    "arguments": [
+                        "--line-length=120",
+                        "--skip-string-normalization",
+                        "--quiet",
+                        "-",
+                    ],
+                },
+            },
+
+            // editor.codeActionsOnSave: { "source.organizeImports": "never" }
+            "code_actions_on_format": {
+                "source.organizeImports.ruff": false,
+            },
+
+            "format_on_save": "off",
+        },
+
+        // ── Go ──────────────────────────────────────────────────────────────────────
+        "Go": {
+            // go.useLanguageServer: true — gopls is Zed's default Go LSP; no change needed.
+            // gopls.formatting.gofumpt is configured under the top-level "lsp" key (see below)
+            // because Zed passes initialization_options at the server level, not per-language.
+            "hard_tabs": true,
+            "code_actions_on_format": {
+                "source.organizeImports": true,
+            },
+        },
+
+        // ── TypeScript / JavaScript ──────────────────────────────────────────────────
+        // typescript.preferences.quoteStyle: "single" / javascript.preferences.quoteStyle: "single"
+        // Zed doesn't have a quoteStyle setting; configure this in .prettierrc or
+        // tsconfig-level prettier options. Enabling prettier here lets those config
+        // files take effect automatically.
+        "TypeScript": {
+            "language_servers": ["!typescript-language-server", "vtsls", "..."],
+            "prettier": { "allowed": true },
+        },
+        "TSX": {
+            "language_servers": ["!typescript-language-server", "vtsls", "..."],
+            "prettier": { "allowed": true },
+        },
+        "JavaScript": {
+            "language_servers": ["!typescript-language-server", "vtsls", "..."],
+            "prettier": { "allowed": true },
+        },
+
+        // ── Markdown ─────────────────────────────────────────────────────────────────
+        "Markdown": {
+            "format_on_save": "off",
+            "soft_wrap": "editor_width",
+            "remove_trailing_whitespace_on_save": false,
+        },
+
+        // ── JSON / YAML ───────────────────────────────────────────────────────────────
+        "JSON": { "prettier": { "allowed": true } },
+        "JSONC": { "prettier": { "allowed": true } },
+
+        // ── SQL ────────────────────────────────────────────────────────────────────────
+        // sql.format.enable: false
+        "SQL": { "format_on_save": "off" },
+
+        // ── Git Commit ────────────────────────────────────────────────────────────────
+        "Git Commit": {
+            "soft_wrap": "editor_width",
+            "preferred_line_length": 72,
+        },
+    },
+
+    // ── LSP Settings ──────────────────────────────────────────────────────────────
+    "lsp": {
+        // ── gopls ───────────────────────────────────────────────────────────────────
+        // go.useLanguageServer + gopls.formatting.gofumpt: true
+        // VS Code lets you set gopls options directly as top-level settings keys.
+        // In Zed, all LSP initialization options are namespaced under the server name.
+        "gopls": {
+            "initialization_options": {
+                "formatting": {
+                    "gofumpt": true,
+                },
+            },
+        },
+
+        // ── basedpyright ────────────────────────────────────────────────────────────
+        // python.analysis.diagnosticSeverityOverrides (VS Code / Pylance)
+        // basedpyright accepts the same override keys under analysis.diagnosticSeverityOverrides.
+        "basedpyright": {
+            "initialization_options": {
+                "analysis": {
+                    "diagnosticSeverityOverrides": {
+                        "reportUnusedImport": "warning",
+                        "reportMissingParameterType": "none",
+                        "reportMissingTypeStubs": "none",
+                        "reportUnknownMemberType": "none",
+                        "reportUnknownArgumentType": "none",
+                        "reportUnknownParameterType": "none",
+                        "reportUnknownLambdaType": "none",
+                        "reportUnknownVariableType": "none",
+                    },
+                },
+            },
+        },
+    },
+    "agent_servers": {
+        "qwen-code": {
+            "type": "registry",
+        },
+    },
+    "base_keymap": "VSCode",
+    "status_bar": {
+        "experimental.show": true,
+    },
+    "tab_bar": {
+        "show": false,
+    },
+    "minimap": {
+        "show": "never",
+        "thumb": "always",
+        "max_width_columns": 120,
+    },
+    "file_types": {
+        "python": ["*.py"],
+        "html": ["*.svelte"],
+        "haskell": ["*.tidal"],
+        "sql": ["*.tsql"],
+        "jinja-sql": ["*.sql"],
+    },
+    "icon_theme": "Zed (Default)",
+    "theme": {
+        "mode": "light",
+        "light": "Medium Contrast Light",
+        "dark": "Medium Contrast Dark",
+    },
 }
