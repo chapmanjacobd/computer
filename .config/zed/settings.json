@@ -54,10 +54,12 @@
 
     // files.autoSave: "onFocusChange"
     "autosave": "on_focus_change",
+    "restore_on_file_reopen": true,
+    "restore_on_startup": "last_session",
 
     // editor.autoIndent: "none"
     // VS Code has five granularity levels; Zed's boolean "false" maps to "none".
-    "auto_indent": false,
+    "auto_indent": true,
 
     // editor.formatOnPaste: false
     // Zed's closest analogue — prevents re-indenting pasted content automatically.
