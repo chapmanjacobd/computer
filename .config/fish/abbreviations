@@ -948,3 +948,4 @@ abbr -a -- wipam git.amend HEAD
 abbr -a -- phone.cb ssh phone cb
 abbr -a -- code zed
 abbr -a -- gdc 'git diff | cb'
+abbr -a -- c commit
