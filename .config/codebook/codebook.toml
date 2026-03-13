@@ -1,1 +1,4 @@
-words = ["ffprobe"]
+words = [
+    "ffprobe",
+    "fts",
+]
