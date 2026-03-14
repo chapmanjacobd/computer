@@ -1,6 +1,6 @@
 # Defined interactively
 function sdb
-    for db in ~/mc/*.db ~/lb/tabs.db
+    for db in ~/mc/*.db ~/lb/tabs.db ~/lb/dl/*.db
         echo $db
         lb sdb $db media $argv
     end
