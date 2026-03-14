@@ -37,6 +37,7 @@
     "approvalMode": "auto_edit"
   },
   "model": {
-    "name": "auto-gemini-3"
+    "name": "auto-gemini-3",
+    "compressionThreshold": 0.45
   }
 }
