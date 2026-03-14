@@ -28,7 +28,7 @@
     "hard_tabs": false,
 
     // editor.wordWrap: "off"
-    "soft_wrap": "preferred_line_length",
+    "soft_wrap": "editor_width",
     "preferred_line_length": 118,
 
     // editor.scrollBeyondLastLine: true
