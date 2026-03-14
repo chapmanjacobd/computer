@@ -305,10 +305,7 @@
         },
     },
     "agent_servers": {
-        "qwen-code": {
-            "type": "registry",
         },
-    },
     "base_keymap": "VSCode",
     "status_bar": {
         "experimental.show": true,

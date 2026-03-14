@@ -17,5 +17,5 @@ function git.amend --argument-names target
     end
 
     git commit --fixup=$commit
-    git push
+    # git push
 end
