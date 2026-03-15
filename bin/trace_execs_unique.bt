@@ -1,0 +1,12 @@
+#!/usr/bin/env bpftrace
+
+tracepoint:syscalls:sys_enter_execve,
+tracepoint:syscalls:sys_enter_execveat
+{
+    $cmd = str(args->filename);
+    if (!@seen[$cmd]) {
+        @seen[$cmd] = 1;
+        printf("comm=%s pid=%d args: ", $cmd, pid);
+        join(args->argv);
+    }
+}
