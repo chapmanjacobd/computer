@@ -1,4 +1,4 @@
 # Defined via `source`
 function disco.dev
-    go run -tags bleve ./cmd/disco $argv
+    go run -tags fts5 ./cmd/disco $argv
 end
