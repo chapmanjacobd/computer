@@ -272,18 +272,6 @@
 
     // ── LSP Settings ──────────────────────────────────────────────────────────────
     "lsp": {
-        // ── gopls ───────────────────────────────────────────────────────────────────
-        // go.useLanguageServer + gopls.formatting.gofumpt: true
-        // VS Code lets you set gopls options directly as top-level settings keys.
-        // In Zed, all LSP initialization options are namespaced under the server name.
-        "gopls": {
-            "initialization_options": {
-                "formatting": {
-                    "gofumpt": true,
-                },
-            },
-        },
-
         // ── basedpyright ────────────────────────────────────────────────────────────
         // python.analysis.diagnosticSeverityOverrides (VS Code / Pylance)
         // basedpyright accepts the same override keys under analysis.diagnosticSeverityOverrides.
