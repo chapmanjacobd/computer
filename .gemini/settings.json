@@ -14,7 +14,17 @@
     "showStatusInTitle": false,
     "hideBanner": true,
     "footer": {
-      "hideContextPercentage": false
+      "hideContextPercentage": false,
+      "showLabels": false,
+      "items": [
+        "workspace",
+        "git-branch",
+        "sandbox",
+        "model-name",
+        "context-used",
+        "quota",
+        "token-count"
+      ]
     },
     "showCitations": true,
     "showSpinner": false,
@@ -33,9 +43,7 @@
       "maxAge": "30d"
     }
   },
-  "tools": {
-    "approvalMode": "auto_edit"
-  },
+  "tools": {},
   "model": {
     "name": "auto-gemini-3",
     "compressionThreshold": 0.45
