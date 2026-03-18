@@ -6,7 +6,10 @@
     "environmentVariableRedaction": {
       "enabled": true
     },
-    "disableYoloMode": true
+    "disableYoloMode": true,
+    "enablePermanentToolApproval": true,
+    "blockGitExtensions": true,
+    "enableConseca": true
   },
   "ui": {
     "theme": "ANSI Light",
@@ -32,7 +35,8 @@
     "accessibility": {
       "enableLoadingPhrases": false
     },
-    "loadingPhrases": "off"
+    "loadingPhrases": "off",
+    "hideTips": true
   },
   "general": {
     "previewFeatures": true,
@@ -40,12 +44,34 @@
     "sessionRetention": {
       "warningAcknowledged": true,
       "enabled": true,
-      "maxAge": "30d"
+      "maxAge": "10d"
+    },
+    "plan": {
+      "directory": "todos"
     }
   },
   "tools": {},
   "model": {
     "name": "auto-gemini-3",
     "compressionThreshold": 0.45
+  },
+  "billing": {
+    "overageStrategy": "never"
+  },
+  "advanced": {
+    "autoConfigureMemory": true
+  },
+  "experimental": {
+    "toolOutputMasking": {
+      "enabled": true
+    },
+    "useOSC52Paste": true,
+    "modelSteering": true
+  },
+  "skills": {
+    "enabled": false
+  },
+  "hooksConfig": {
+    "enabled": false
   }
 }
