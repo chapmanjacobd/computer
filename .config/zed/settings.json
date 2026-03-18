@@ -186,13 +186,7 @@
             // basedpyright is an open-source fork of pyright (the engine behind Pylance)
             // and is the recommended drop-in replacement — essentially the same analysis
             // engine, same diagnosticSeverityOverrides, same type stubs.
-            "language_servers": [
-                "basedpyright",
-                "ruff",
-                "!pyright",
-                "!pylsp",
-                "...",
-            ],
+            "language_servers": ["basedpyright", "ruff", "!pyright", "!pylsp", "..."],
 
             // python.formatting.provider: "black" with --line-length=120 --skip-string-normalization
             // Zed has no Black extension; the external formatter command replicates it
@@ -202,12 +196,7 @@
             "formatter": {
                 "external": {
                     "command": "black",
-                    "arguments": [
-                        "--line-length=120",
-                        "--skip-string-normalization",
-                        "--quiet",
-                        "-",
-                    ],
+                    "arguments": ["--line-length=120", "--skip-string-normalization", "--quiet", "-"],
                 },
             },
 
@@ -291,9 +280,25 @@
                 },
             },
         },
-    },
-    "agent_servers": {
+        "gopls": {
+            "initialization_options": {
+                "buildFlags": ["-tags=fts5"],
+                "usePlaceholders": true,
+                "completeUnimported": true,
+                "experimentalPostfixCompletions": true,
+                "hints": {
+                    // "assignVariableTypes": false,
+                    // "compositeLiteralFields": false,
+                    // "compositeLiteralTypes": false,
+                    "constantValues": true,
+                    "functionTypeParameters": true,
+                    "parameterNames": true,
+                    "rangeVariableTypes": true,
+                },
+            },
         },
+    },
+    "agent_servers": {},
     "base_keymap": "VSCode",
     "status_bar": {
         "experimental.show": true,
