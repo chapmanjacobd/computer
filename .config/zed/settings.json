@@ -50,7 +50,7 @@
     "ensure_final_newline_on_save": true,
 
     // editor.formatOnSave: false
-    "format_on_save": "off",
+    "format_on_save": "on",
 
     // files.autoSave: "onFocusChange"
     "autosave": "on_focus_change",
