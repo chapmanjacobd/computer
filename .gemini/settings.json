@@ -40,7 +40,7 @@
   },
   "general": {
     "previewFeatures": true,
-    "defaultApprovalMode": "plan",
+    "defaultApprovalMode": "auto_edit",
     "sessionRetention": {
       "warningAcknowledged": true,
       "enabled": true,
