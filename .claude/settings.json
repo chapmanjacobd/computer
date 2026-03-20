@@ -1,0 +1,15 @@
+{
+  "allowedTools": [
+    "Task",
+    "Bash(git log:*)",
+    "Glob",
+    "Grep",
+    "LS",
+    "Read",
+    "Edit",
+    "MultiEdit",
+    "Write",
+    "WebFetch",
+    "WebSearch"
+  ]
+}
