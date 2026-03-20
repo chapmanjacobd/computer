@@ -9,7 +9,7 @@
     "disableYoloMode": true,
     "enablePermanentToolApproval": true,
     "blockGitExtensions": true,
-    "enableConseca": true
+    "enableConseca": false
   },
   "ui": {
     "theme": "ANSI Light",
@@ -47,7 +47,7 @@
       "maxAge": "10d"
     },
     "plan": {
-      "directory": "todos"
+      "directory": ""
     }
   },
   "tools": {},
@@ -66,7 +66,8 @@
       "enabled": true
     },
     "useOSC52Paste": true,
-    "modelSteering": true
+    "modelSteering": true,
+    "plan": true
   },
   "skills": {
     "enabled": false
