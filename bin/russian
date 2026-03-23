@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import sys
+
+ENG_TO_RU_LETTERS = {'a':'а', 'b':'б', 'v':'в', 'g':'г', 'd':'д', 'e':'е',
+ 'z':'з', 'i':'и', 'k':'к', 'l':'л', 'm':'м', 'n':'н', 'o':'о', 'p':'п',
+ 'r':'р', 's':'с', 't':'т', 'f':'ф', 'h':'х', 'e':'э', 'u':'у', 'j':'й',
+ 'y':'й'}
+
+ENG_TO_RU_DIPHTHONGS = {"ch":"ч", "yu":"ю", "ts":"ц", "ya":"я", "sh":"ш",
+ "yo":"ё", "oo":"у", "ih":"ы", "ly":"лЬ", "zh":"ж"}
+
+if len(sys.argv) < 2:
+	print("Usage:", sys.argv[0], "<phrase>")
+	exit(1)
+
+phrase = ""
+for i in range(1, len(sys.argv)):
+	phrase += sys.argv[i] + " "
+
+for key in ENG_TO_RU_DIPHTHONGS.keys():
+	phrase = phrase.replace(key, ENG_TO_RU_DIPHTHONGS[key])
+
+for letter in phrase:
+	try:
+		phrase = phrase.replace(letter, ENG_TO_RU_LETTERS[letter])
+	except:
+		pass
+
+print(phrase)
