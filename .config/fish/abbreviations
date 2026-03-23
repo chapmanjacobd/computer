@@ -952,3 +952,4 @@ abbr -a -- c commit
 abbr -a -- df.tmp 'df -t tmpfs -t efivarfs -t devtmpfs -t overlay -t squashfs -Th | sort -k6,6g -k5,5hr'
 abbr -a -- grf git reset --hard FETCH_HEAD
 abbr -a -- gpp git push
+abbr -a -- lbu lb.upgrade
