@@ -2,6 +2,7 @@ ast-grep
 bandwhich
 binocle
 cargo-edit
+cargo-release
 choose
 dbcrossbar
 dezoomify-rs
