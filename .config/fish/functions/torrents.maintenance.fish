@@ -13,10 +13,10 @@ function torrents.maintenance
     end
     # remove tagged items
     for s in (servers.ssh.connectable $servers)
-        ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move processing --delete-rows
+        ssh -T $s library torrents --tagged library-trumped --stop --delete-incomplete --move dump --delete-rows
     end
 
-    servers.ssh lb torrents --ul --no-any-exists --no-checking --no-errored --move processing --delete-rows -v -pa
+    servers.ssh lb torrents --ul --no-any-exists --no-checking --no-errored --move dump --delete-rows -v -pa
 
     servers.qb lb torrents --dl --no-stopped --downloaded=+0 --time-active=+1days --force-start -pa >/dev/null
     servers.qb lb torrents --ul --no-stopped --no-force-start -pa >/dev/null
