@@ -67,6 +67,7 @@ fpart
 fpsync
 freerdp
 freerdp-server
+fuse-libs
 gamemode
 gdal
 gdal-devel
