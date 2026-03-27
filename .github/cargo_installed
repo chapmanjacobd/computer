@@ -3,6 +3,7 @@ bandwhich
 binocle
 cargo-edit
 cargo-release
+cargo-tarpaulin
 choose
 dbcrossbar
 dezoomify-rs
