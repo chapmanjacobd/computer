@@ -1,0 +1,5 @@
+[share.d]
+paths = ["/mnt/d2", "/mnt/d3","/mnt/d4", "/mnt/d5", "/mnt/d6", "/mnt/d7", "/mnt/d8", "/mnt/d9"]
+ro_paths = ["/mnt/d10"]
+nc_paths = ["/mnt/d1"]
+create_policy = "mfs"
