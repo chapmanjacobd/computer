@@ -953,3 +953,4 @@ abbr -a -- df.tmp 'df -t tmpfs -t efivarfs -t devtmpfs -t overlay -t squashfs -T
 abbr -a -- grf git reset --hard FETCH_HEAD
 abbr -a -- gpp git push
 abbr -a -- lbu lb.refresh
+abbr -a -- gdscb 'git diff --staged | cb'
