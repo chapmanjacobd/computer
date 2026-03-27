@@ -43,3 +43,4 @@ complete -o nospace -o default -F _python_argcomplete bsed
 
 export R_HOME="$HOME/.local/lib/R/library/"
 xmodmap -e "clear Lock"
+. "/home/xk/.local/share/cargo/env"

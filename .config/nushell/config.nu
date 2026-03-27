@@ -1006,3 +1006,4 @@ def where_any [ query: string ] {
         })
     }
 }
+source "/home/xk/.local/share/cargo/env.nu"

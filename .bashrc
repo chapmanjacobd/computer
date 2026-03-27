@@ -40,3 +40,4 @@ then
     complete -r cd
 fi
 
+. "/home/xk/.local/share/cargo/env"
