@@ -48,16 +48,9 @@ fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/
 
 sudo dnf remove -y kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror chromium autokey kontact dolphin Kontact dolphin kwrite calligra\* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring bolt
 
-sudo dnf group install -y "C Development Tools and Libraries"
-sudo dnf install liburing-devel
+sudo dnf group install -y c-development
 
-cd ~/ && mkdir -p bin/ && cd bin/ && rm -rf bfs/ && git clone https://github.com/tavianator/bfs.git
-cd bfs && ./configure --enable-release && make && sudo make install
-
-# flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-# flatpak install flathub org.freedesktop.Platform.ffmpeg-full
-
-for package in (cat ~/.github/dnf_installed)
+for package in $(cat ~/.github/dnf_installed)
     sudo dnf install -y $package
 end
 
