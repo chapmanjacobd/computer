@@ -61,7 +61,7 @@ for package in $(cat ~/.github/dnf_installed); do
     sudo dnf install -y "$package"
 done
 
-sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 # sudo usermod -aG docker xk
 # mkdir -p ~/.docker/cli-plugins/
