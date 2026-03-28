@@ -13,8 +13,8 @@ sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
 # fpsync /home/xk/ 192.168.68.65:/home/xk/
 # fpsync /mnt/d/ 192.168.68.65:/mnt/d/
 
-sudo dnf group update core -y
-sudo dnf --with-optional -y groupinstall Multimedia
+sudo dnf group install core -y
+sudo dnf group install Multimedia -y
 sudo dnf install -y gstreamer1-plugins-{bad-\*,good-\*,base} gstreamer1-plugin-openh264 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
 sudo dnf install -y lame\* --exclude=lame-devel
 
@@ -44,7 +44,7 @@ sudo dnf install -y codium
 sudo dnf copr enable cboxdoerfer/fsearch
 
 sudo dnf update
-sudo dnf install -y mpv ffmpeg python3 python3-pip git android-tools R ImageMagick bat code copyq darktable java-latest-openjdk detox cowsay dnscrypt-proxy exa evince expect fdk-aac fdupes fish gdal fzf gdal-devel ffmpeg-devel gdal-java geos-devel gdal-python-tools gimp git-delta git-lfs htop inotify-tools jq kdiff3 keepassxc kitty krename lato-fonts libpq-devel libreoffice mediawriter meld moreutils ncdu nmon nomacs pdfmod pg_top picard plasma-workspace-x11 podman-docker pspg python3-qgis python3.8 ripgrep rstudio-desktop syncthing udunits2 wine xdotool xclip xbacklight trash-cli wget fedora-workstation-repositories dnf-plugins-extras-tracer cpufrequtils postgresql-devel breeze-gtk gdal-devel sqlite-devel bash-completion fd-find krusader xmodmap sxhkd xsel xinput kcron parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance ddcutil dnf-automatic xset rmlint skanpage mpv-mpris code fsearch
+sudo dnf install -y mpv ffmpeg python3 python3-pip git android-tools R ImageMagick bat code copyq darktable java-latest-openjdk detox cowsay dnscrypt-proxy exa evince expect fdk-aac fdupes fish gdal fzf gdal-devel ffmpeg-devel gdal-java geos-devel gdal-python-tools gimp git-delta git-lfs htop inotify-tools jq kdiff3 keepassxc kitty krename lato-fonts libpq-devel libreoffice mediawriter meld moreutils ncdu nmon nomacs pdfmod pg_top picard plasma-workspace-x11 podman-docker pspg python3-qgis ripgrep rstudio-desktop syncthing udunits2 wine xdotool xclip xbacklight trash-cli wget fedora-workstation-repositories dnf-plugins-extras-tracer cpufrequtils postgresql-devel breeze-gtk gdal-devel sqlite-devel bash-completion fd-find krusader xmodmap sxhkd xsel xinput kcron parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance ddcutil dnf-automatic xset rmlint skanpage mpv-mpris code fsearch
 
 #setxkbmap us -variant altgr-intl -option caps:backspace
 
@@ -61,10 +61,8 @@ done
 python -m pip install yt-dlp pipenv catt library
 
 #rsync -ah --info=progress2 --no-inc-recursive /run/media/xk/backup/xk/ ~/
-cd ~ && restorecon -vR .
+cd ~ && sudo restorecon -vR .
 #reboot
 R --slave -e 'update.packages()'
-
-sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 # sudo podman-compose systemd -a create-unit

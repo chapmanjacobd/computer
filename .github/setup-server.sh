@@ -61,14 +61,14 @@ for package in $(cat ~/.github/dnf_installed); do
     sudo dnf install -y "$package"
 done
 
-wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+wget1 -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
 # sudo usermod -aG docker xk
 # mkdir -p ~/.docker/cli-plugins/
 # curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
 # chmod +x ~/.docker/cli-plugins/docker-compose
 
-sudo systemctl enable --now apcupsd
+# sudo systemctl enable --now apcupsd
 
 sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
@@ -80,11 +80,11 @@ for dep in $(cat .github/cargo_installed); do
     cargo install $dep
 done
 
-sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
-sudo dnf install -y xpra
+# sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
+# sudo dnf install -y xpra
 
 # alternatives: https://github.com/wg-easy/wg-easy https://github.com/juanfont/headscale ZeroTier netbird
-sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
 sudo dnf install tailscale
 
 echo 'unqualified-search-registries = ["docker.io"]' | sudo tee /etc/containers/registries.conf
