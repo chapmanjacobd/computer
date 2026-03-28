@@ -34,7 +34,12 @@ sudo dnf group install -y multimedia --setopt="install_weak_deps=False" --exclud
 sudo dnf group install -y sound-and-video
 
 sudo systemctl start btrfsmaintenance-refresh
-sudo systemctl enable --now dnf-automatic-install.timer
+
+echo '
+[commands]
+apply_updates = yes
+' | sudo tee -a /etc/dnf/automatic.conf
+sudo systemctl enable --now dnf5-automatic.timer
 
 sudo rm /etc/profile.d/which2.sh
 sudo loginctl enable-linger xk
