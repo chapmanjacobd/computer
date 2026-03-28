@@ -2,12 +2,19 @@
 
 set -Eeuox pipefail
 
+kwriteconfig6 --file powermanagementprofilesrc --group AC --group SuspendSession --key suspendType 0 || true
+
 sudo hostnamectl hostname pakon
 sudo localectl set-keymap us-colemak_dh
 
 ssh-keygen -t ed25519 -q -N '' </dev/zero || true
 cat .ssh/id_ed25519.pub >> .ssh/authorized_keys
 sudo visudo
+
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+sudo systemctl set-default multi-user.target
+sudo systemctl disable --now systemd-journald-audit.socket
+sudo systemctl mask systemd-journald-audit.socket
 
 echo -e '127.0.0.1\t' $(hostnamectl | grep -i "static hostname:" | cut -f2- -d:) | sudo tee -a /etc/hosts
 
@@ -26,7 +33,7 @@ sudo dnf update -y
 sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
-sudo dnf install --allowerasing ffmpeg python3 python3-pip git android-tools ImageMagick detox dnscrypt-proxy expect fish fzf git-lfs htop inotify-tools jq libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli wget dnf-plugins-extras-tracer cpufrequtils postgresql-devel sqlite-devel bash-completion fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance dnf-automatic intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted moby-engine freerdp-server
+sudo dnf install --allowerasing ffmpeg python3 python3-pip git android-tools ImageMagick detox dnscrypt-proxy expect fish fzf git-lfs htop inotify-tools jq libpq-devel moreutils ncdu nmon pg_top pspg ripgrep syncthing trash-cli wget dnf-plugins-extras-tracer cpufrequtils postgresql-devel sqlite-devel bash-completion fd-find parallel mkvtoolnix oniguruma-devel libacl-devel libattr-devel libcap-devel btrfsmaintenance dnf-automatic intel-media-driver rpmfusion-free-release-tainted rpmfusion-nonfree-release-tainted moby-engine freerdp-server kitty-terminfo tmux
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
@@ -50,9 +57,9 @@ sudo dnf remove -y kcalc PackageKit konversation falkon dragon konversation falk
 
 sudo dnf group install -y c-development
 
-for package in $(cat ~/.github/dnf_installed)
-    sudo dnf install -y $package
-end
+for package in $(cat ~/.github/dnf_installed); do
+    sudo dnf install -y "$package"
+done
 
 sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
@@ -63,18 +70,9 @@ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | 
 
 sudo systemctl enable --now apcupsd
 
-sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
-sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
-#sudo dnf swap mesa-va-drivers.i686 mesa-va-drivers-freeworld.i686
-#sudo dnf swap mesa-vdpau-drivers.i686 mesa-vdpau-drivers-freeworld.i686
-
 sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
-sudo systemctl set-default multi-user.target
 sudo systemctl disable --now /usr/lib/systemd/system/sysstat-*.timer
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-sudo systemctl disable --now systemd-journald-audit.socket
-sudo systemctl mask systemd-journald-audit.socket
 
 # rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd  # Plasma 6 does not like this...
 

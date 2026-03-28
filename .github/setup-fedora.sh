@@ -5,6 +5,11 @@ set -Eeuox pipefail
 #source "${BASH_SOURCE%/setup-server.sh}"
 sudo systemctl set-default graphical.target
 
+sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
+sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld
+#sudo dnf swap mesa-va-drivers.i686 mesa-va-drivers-freeworld.i686
+#sudo dnf swap mesa-vdpau-drivers.i686 mesa-vdpau-drivers-freeworld.i686
+
 # fpsync /home/xk/ 192.168.68.65:/home/xk/
 # fpsync /mnt/d/ 192.168.68.65:/mnt/d/
 
@@ -62,10 +67,4 @@ R --slave -e 'update.packages()'
 
 sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
-echo '
-[commands]
-apply_updates = yes
-' | sudo tee -a /etc/dnf/automatic.conf
-sudo systemctl enable --now dnf5-automatic.timer
-
-sudo podman-compose systemd -a create-unit
+# sudo podman-compose systemd -a create-unit
