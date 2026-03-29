@@ -49,10 +49,10 @@ for i in range(len(torrents)):
         files2 = t2['files_sizes']
 
         if len(files1) == 0:
-            log.warning('Empty torrent %s', t1)
+            # log.warning('Empty torrent %s', t1)
             continue
         if len(files2) == 0:
-            log.warning('Empty torrent %s', t2)
+            # log.warning('Empty torrent %s', t2)
             continue
 
         size_ratio = min(t1['total_size'], t2['total_size']) / max(t1['total_size'], t2['total_size'])
