@@ -109,6 +109,7 @@
     colormoved = zebra
     context = 5
     mnemonicPrefix = true
+	guitool = kdiff3
 [delta]
     navigate = true
 [diff "sqlite3"]
@@ -123,6 +124,7 @@
     diffstat = true
     log = 50
 	tool = kdiff3
+	guitool = kdiff3
 [merge "mergiraf"]
 	name = mergiraf
 	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
@@ -147,3 +149,7 @@
     separator = cyan
 [difftool]
 	prompt = false
+[difftool "kdiff3"]
+	trustExitCode = false
+[mergetool "kdiff3"]
+	trustExitCode = false
