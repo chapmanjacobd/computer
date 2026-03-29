@@ -344,3 +344,5 @@
 /.codex
 /.go
 /.rustup
+/dump
+/check
