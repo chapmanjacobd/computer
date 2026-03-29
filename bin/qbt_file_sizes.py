@@ -56,9 +56,9 @@ for i in range(len(torrents)):
             continue
 
         size_ratio = min(t1['total_size'], t2['total_size']) / max(t1['total_size'], t2['total_size'])
-        if size_ratio >= 0.73:
+        if size_ratio >= 0.8:
             similarity = iterables.similarity(files1, files2)
-            if similarity > 0.50:
+            if similarity > 0.8:
                 print(similarity)
                 print(t1['host'], t1['torrent_name'], t1['tracker'], sep='\t')
                 print(t2['host'], t2['torrent_name'], t2['tracker'], sep='\t')
