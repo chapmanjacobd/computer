@@ -105,8 +105,7 @@
 [diff]
     algorithm = histogram
     indentHeuristic = true
-    tool = delta
-    difftool = delta
+	tool = kdiff3
     colormoved = zebra
     context = 5
     mnemonicPrefix = true
@@ -123,6 +122,7 @@
     summary = true
     diffstat = true
     log = 50
+	tool = kdiff3
 [merge "mergiraf"]
 	name = mergiraf
 	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
@@ -145,3 +145,5 @@
     lineNumber = green
     column = green
     separator = cyan
+[difftool]
+	prompt = false
