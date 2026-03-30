@@ -1,7 +1,7 @@
 # Defined interactively
 function cd.audio.dump
-    ~/d/check/internals/audio/
+    (nofs which check/internals/audio/)
     whipper cd cd.audio.dump --offset=+6
     echo 'remember to copy to library'
-    echo cp -r ./ ~/d/dump/audio/music/
+    echo cp -r ./ (d dump/audio/music/)
 end

@@ -48,12 +48,12 @@ function weekly
         lb linksupdate $db
     end
 
-    ~/d/dump/image/art/
+    (d dump/image/art/)
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/91_New_Art-instagram.txt | shuf | head -15 | psub)
 
-    ~/d/dump/image/memes/
+    (d dump/image/memes/)
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/95_Memes-instagram.txt | shuf | head -15 | psub)
 
-    ~/d/dump/porn/image/
+    (d dump/porn/image/)
     gallery-dl --input-file (sed 's|^|https://www.instagram.com/\0|' ~/mc/61_Photos_Unsorted-instagram.txt | shuf | head -15 | psub)
 end

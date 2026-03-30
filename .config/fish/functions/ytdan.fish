@@ -1,5 +1,5 @@
 # Defined interactively
 function ytdan
-    ~/d/dump/audio/music/
+    (d dump/audio/music/)
     yta --reject-title '' $argv
 end

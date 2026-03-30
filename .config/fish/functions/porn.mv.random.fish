@@ -4,7 +4,7 @@ function porn.mv.random
     ~/sync/porn/video/
     folders.empty.delete
 
-    lb mv ~/sync/porn/video/keep/ ~/d/library/porn/video/
+    lb mv ~/sync/porn/video/keep/ (d library/porn/video/)
     mkdir ~/sync/porn/video/keep/
 
     lb mv ~/sync/porn/video/mnt/ /mnt/

@@ -1,7 +1,7 @@
 function video.mv.random
     lb copy-play-counts ~/lb/video.db /home/xk/lb/fs/video.db --source-prefix ~/sync/video/keep/mnt/ --target-prefix /mnt/
 
-    lb mv ~/sync/video/keep/ ~/d/library/video/
+    lb mv ~/sync/video/keep/ (d library/video/)
     mkdir ~/sync/video/keep/
 
     lb relmv (
