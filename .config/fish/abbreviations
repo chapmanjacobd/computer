@@ -22,7 +22,6 @@ abbr -a -- grep 'grep -i'
 abbr -a -- hibernate 'systemctl hibernate'
 abbr -a -- iftop 'sudo iftop -n -b -P -t -o 40s -L 4'
 abbr -a -- ipa 'ip a'
-abbr -a -- lbmu 'lb mu (mergerfs.disk.mounts)'
 abbr -a -- lsdev 'sudo lshw -class disk -class tape -short'
 abbr -a -- milky projectM-jack
 abbr -a -- lines.mv 'lines.mv -s""'
@@ -573,7 +572,6 @@ abbr -a -- wiiso wii.shrink
 abbr -a -- ffsmall video.shrink
 abbr -a -- ffsmall.audio audio.shrink
 abbr -a -- image-folder-ask-keep folders.images.ask
-abbr -a -- mergerfs_add_disk mergerfs.add.disk
 abbr -a -- unlidisk unli.disk
 abbr -a -- is_vertical_video video.is.vertical
 abbr -a -- gitignore-local git.ignore.local
@@ -792,7 +790,6 @@ abbr -a -- priv-allocate-torrents priv.allocate.torrents
 abbr -a -- dl_torrents dl.torrents
 abbr -a -- sqlite-column-counts sqlite.column.counts
 abbr -a -- sqlite-columns-counts sqlite.columns.counts
-abbr -a -- mergerfs_disk_mounts mergerfs.disk.mounts
 abbr -a -- sqlgrep_playlists search.db.playlists
 abbr -a -- random_choice random.status
 abbr -a -- timer-status timer.status

@@ -11,7 +11,7 @@ function forganize
     yes | lb dedupe-media --fs ~/lb/fs/audio.db -v
 
     ~/
-    for dir in /mnt/d(seq 1 $MERGERFS_DISKS)/*
+    for dir in (nofs which -a /)*
         if test -d "$dir"
             "$dir"
             folders.empty.delete
