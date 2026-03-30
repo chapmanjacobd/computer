@@ -25,7 +25,7 @@ function lb.load
         lb fsadd ~/lb/fs/tax_image.db --move $d/check/porn/image/ --process --image $d/dump/porn/image/ --delete-unplayable -v
         lb fsadd ~/lb/fs/tax.db --move $d/check/porn/video/image/ --process $d/dump/porn/image/ --delete-unplayable --threads 3
 
-        lb mv --ext mka,mp3,oga,opus $d/check/porn/video/ $d/dump/porn/image/ /mnt/d/dump/porn/audio/from_video/
+        lb mv --ext mka,mp3,oga,opus $d/check/porn/video/ $d/dump/porn/image/ (d dump/porn/audio/from_video/)
     end
 
     lb fs ~/lb/fs/video.db -w 'video_count=0 and audio_count>=1' -pf | parallel lb relmv {} ~/d/dump/audio/from_video/

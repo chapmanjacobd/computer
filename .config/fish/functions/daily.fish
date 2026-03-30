@@ -5,7 +5,7 @@ function daily
     pkill -f /.ssh/control/
     rm /run/user/1000/app/org.signal.Signal/.org.chromium.Chromium.*
 
-    lb mv ~/sync/video/keep/ /mnt/d/archive/video/keep/
+    lb mv ~/sync/video/keep/ (d archive/video/keep/)
     mkdir ~/sync/video/keep/
 
     lb christen --run ~/sync/
@@ -35,7 +35,7 @@ function daily
     url_files_web_titles.py (files.urls)
     morganize.all
 
-    # library download ~/lb/dl/audio.db --audio --prefix /mnt/d/dump/audio/ -w m.time_modified=0
+    # library download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
 
     lb hnadd --oldest ~/lb/hackernews/hn.db
 

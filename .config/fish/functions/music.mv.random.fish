@@ -1,7 +1,7 @@
 function music.mv.random
-    lb copy-play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/ --target-prefix /mnt/d/
+    lb copy-play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/mnt/ --target-prefix /mnt/
 
-    lb mv ~/sync/audio/weekly/ /mnt/d/check/audio/
+    lb mv ~/sync/audio/weekly/ (d check/audio/)
 
     lb relmv (
         lb media ~/lb/fs/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 1600 -p f

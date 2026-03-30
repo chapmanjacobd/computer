@@ -124,9 +124,16 @@ local opt = require 'mp.options'
 
 local SCRIPT_NAME = "mpv-splice"
 
+
+local utils = require 'mp.utils'
+local res = utils.subprocess({
+    args = {"nofs", "create", "/"},
+})
+local base = (res.stdout or ""):gsub("%s+$", "")
+
 local splice_options = {
 	tmp_location = "/tmp/XXXX",
-	output_location = '/mnt/d/dump/projects/cinematograph/clips/mpv' or mp.get_property("working-directory")
+	output_location = base .. '/dump/projects/cinematograph/clips/mpv' or mp.get_property("working-directory")
 }
 opt.read_options(splice_options, SCRIPT_NAME)
 
