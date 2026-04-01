@@ -221,6 +221,7 @@ qemu-user-static
 quickemu
 qutebrowser
 R-devel
+rb_libtorrent
 rclone
 remove-retired-packages
 reptyr
