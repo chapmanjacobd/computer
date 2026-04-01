@@ -222,6 +222,7 @@ quickemu
 qutebrowser
 R-devel
 rb_libtorrent
+rb_libtorrent-python3
 rclone
 remove-retired-packages
 reptyr
