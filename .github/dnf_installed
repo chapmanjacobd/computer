@@ -182,6 +182,7 @@ patchutils
 pax-utils
 pciutils-devel
 pdfarranger
+pdfroff
 pdftk
 perf
 perl
