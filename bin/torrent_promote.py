@@ -12,20 +12,6 @@ from library.utils import arggroups, argparse_utils, iterables
 from library.utils.log_utils import log
 from torrentool.api import Torrent
 
-IGNORE_DOMAINS = []
-PORN_DOMAINS = [
-    'bitporn.eu',
-    'exoticaz.to',
-    'scenetime.com',
-    'superbits.org',
-    'pussytorrents.org',
-    'happyfappy.org',
-    'plab.site',
-    'empornium.is',
-    'empornium.sx',
-]
-
-
 def get_tracker_dirname(torrent: Torrent):
     if torrent.announce_urls is None:
         return torrent.source
@@ -35,11 +21,7 @@ def get_tracker_dirname(torrent: Torrent):
     for tracker in iterables.flatten(torrent.announce_urls):
         url = urlparse(tracker)
         domain = '.'.join(url.netloc.rsplit(':')[0].rsplit('.', 2)[-2:]).lower()
-        if domain not in IGNORE_DOMAINS:
-            if domain in PORN_DOMAINS:
-                return ''.join(['porn/', domain])
-            else:
-                return ''.join(['seed/', domain])
+        return ''.join(['seed/', domain])
 
     return torrent.source
 
