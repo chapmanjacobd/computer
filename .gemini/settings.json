@@ -47,7 +47,8 @@
       "maxAge": "10d"
     },
     "plan": {
-      "directory": ""
+      "directory": "",
+      "enabled": true
     }
   },
   "tools": {},
@@ -66,13 +67,15 @@
       "enabled": true
     },
     "useOSC52Paste": true,
-    "modelSteering": true,
-    "plan": true
+    "modelSteering": true
   },
   "skills": {
     "enabled": false
   },
   "hooksConfig": {
     "enabled": false
+  },
+  "agents": {
+    "overrides": {}
   }
 }
