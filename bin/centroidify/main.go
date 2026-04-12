@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,7 +75,7 @@ func main() {
 	results := make(chan Result, numWorkers*2)
 
 	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
+	for range numWorkers {
 		wg.Add(1)
 		go worker(jobs, results, &wg)
 	}
@@ -207,9 +209,11 @@ func worker(jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
 		if isPoint {
 			res.OutBytes = job.Raw
 		} else {
-			// ToGeoJSON returns a single string (no error).
-			ptJSON := pt.ToGeoJSON(0) // 0 = no indent
+			// Truncate lat/lng to 5 decimal places (~1.1m precision at equator)
+			ptJSON := fmt.Sprintf(`{"type":"Point","coordinates":[%s,%s]}`,
+				formatCoord(pt.X()), formatCoord(pt.Y()))
 			rf["geometry"] = json.RawMessage(ptJSON)
+
 			outBytes, err := json.Marshal(rf)
 			if err != nil {
 				log.Printf("line %d: marshal failed, skipping: %v", job.LineNum, err)
@@ -316,4 +320,12 @@ func midpointOfLongestLine(multi *geos.Geom) (*geos.Geom, error) {
 	return safeGeom(func() *geos.Geom {
 		return longest.InterpolateNormalized(0.5)
 	})
+}
+
+// formatCoord formats a float to 5 decimal places, trimming trailing zeros.
+func formatCoord(f float64) string {
+	s := strconv.FormatFloat(f, 'f', 5, 64)
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimRight(s, ".")
+	return s
 }
