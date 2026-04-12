@@ -1,34 +1,3 @@
-// centroidify: reads grouped_by_wikipedia.geojsonl and writes
-// final_wikipedia_pois.geojsonl with every geometry replaced by a Point.
-//
-// Strategy by geometry type:
-//
-//	Point                         → kept as-is
-//	LineString                    → InterpolateNormalized(0.5)  (true arc-length midpoint)
-//	MultiLineString               → InterpolateNormalized(0.5) on the longest component
-//	Polygon / MultiPolygon        → Centroid if it intersects, else PointOnSurface
-//	GeometryCollection / unknown  → PointOnSurface fallback
-//
-// Features with null/missing geometry are dropped.
-//
-// NOTE: go-geos methods do NOT return errors — they panic on bad input.
-// All geometry calls are wrapped in safeGeom() which recovers panics and
-// converts them to normal Go errors so one bad feature never kills the run.
-//
-// Dependencies (GEOS must be installed on the host):
-//
-//	Ubuntu/Debian: sudo apt install libgeos-dev
-//	macOS:         brew install geos
-//	go get github.com/twpayne/go-geos@latest
-//
-// Build:
-//
-//	go mod tidy && go build -o centroidify .
-//
-// Run:
-//
-//	./centroidify [input.geojsonl [output.geojsonl]]
-//	(defaults: grouped_by_wikipedia.geojsonl → final_wikipedia_pois.geojsonl)
 package main
 
 import (
@@ -37,42 +6,58 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 
+	"github.com/alecthomas/kong"
 	"github.com/twpayne/go-geos"
 )
+
+// CLI defines the command-line arguments and flags.
+type CLI struct {
+	Input  string `arg:"" help:"Input GeoJSONL file." default:"grouped_by_wikipedia.geojsonl" type:"path"`
+	Output string `arg:"" help:"Output GeoJSONL file." default:"wikipedia_pois.geojsonl" type:"path"`
+}
 
 // rawFeature preserves every key in the source JSON untouched.
 type rawFeature map[string]json.RawMessage
 
+// Job represents a single line of input JSON to be processed.
+type Job struct {
+	LineNum int64
+	Raw     []byte
+}
+
+// Result represents the processed geometry or metadata for writing.
+type Result struct {
+	LineNum       int64
+	OutBytes      []byte
+	SkippedNoGeom bool
+	SkippedErr    bool
+}
+
 func main() {
-	inputPath := "grouped_by_wikipedia.geojsonl"
-	outputPath := "final_wikipedia_pois.geojsonl"
+	var cli CLI
+	kong.Parse(&cli,
+		kong.Name("centroidify"),
+		kong.Description("Reads grouped_by_wikipedia.geojsonl and writes wikipedia_pois.geojsonl with every geometry replaced by a Point."),
+		kong.UsageOnError(),
+	)
 
-	if len(os.Args) > 1 {
-		inputPath = os.Args[1]
-	}
-	if len(os.Args) > 2 {
-		outputPath = os.Args[2]
-	}
-
-	in, err := os.Open(inputPath)
+	in, err := os.Open(cli.Input)
 	if err != nil {
 		log.Fatalf("open input: %v", err)
 	}
-	defer in.Close()
 
-	out, err := os.Create(outputPath)
+	out, err := os.Create(cli.Output)
 	if err != nil {
+		_ = in.Close() // Best effort close before fatal
 		log.Fatalf("create output: %v", err)
 	}
-	defer out.Close()
 
 	// 2 MiB write buffer — important for a 6 GB+ output file.
 	bw := bufio.NewWriterSize(out, 2<<20)
-	defer bw.Flush()
-
-	ctx := geos.NewContext()
 
 	// 128 MiB line buffer — safe for large multipolygon geometries.
 	scanner := bufio.NewScanner(in)
@@ -83,6 +68,62 @@ func main() {
 		start                                     = time.Now()
 	)
 
+	numWorkers := runtime.NumCPU()
+	jobs := make(chan Job, numWorkers*2)
+	results := make(chan Result, numWorkers*2)
+
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go worker(jobs, results, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	// Output writer goroutine
+	writerDone := make(chan struct{})
+	go func() {
+		defer close(writerDone)
+		buffer := make(map[int64]Result)
+		var nextLineNum int64 = 1
+
+		for res := range results {
+			buffer[res.LineNum] = res
+
+			for {
+				bufferedRes, ok := buffer[nextLineNum]
+				if !ok {
+					break // waiting for nextLineNum to arrive
+				}
+				delete(buffer, nextLineNum)
+
+				if bufferedRes.SkippedNoGeom {
+					skippedNoGeom++
+				} else if bufferedRes.SkippedErr {
+					skippedErr++
+				} else {
+					if _, err := bw.Write(bufferedRes.OutBytes); err != nil {
+						log.Fatalf("write failed: %v", err)
+					}
+					if err := bw.WriteByte('\n'); err != nil {
+						log.Fatalf("write byte failed: %v", err)
+					}
+					written++
+				}
+
+				if nextLineNum%50_000 == 0 {
+					elapsed := time.Since(start).Round(time.Second)
+					fmt.Fprintf(os.Stderr, "  %d processed, %d written (%v elapsed)\n",
+						nextLineNum, written, elapsed)
+				}
+				nextLineNum++
+			}
+		}
+	}()
+
 	for scanner.Scan() {
 		raw := scanner.Bytes()
 		if len(raw) == 0 {
@@ -90,56 +131,13 @@ func main() {
 		}
 		total++
 
-		// Decode into a raw map so ALL keys survive unchanged.
-		var rf rawFeature
-		if err := json.Unmarshal(raw, &rf); err != nil {
-			log.Printf("line %d: JSON parse error, skipping: %v", total, err)
-			skippedErr++
-			continue
-		}
+		// make a copy of the line to send to the worker
+		rawCopy := make([]byte, len(raw))
+		copy(rawCopy, raw)
 
-		geomRaw, hasGeom := rf["geometry"]
-		if !hasGeom || isNullJSON(geomRaw) {
-			skippedNoGeom++
-			continue
-		}
-
-		// Parse geometry — NewGeomFromGeoJSON does return (geom, error).
-		g, err := ctx.NewGeomFromGeoJSON(string(geomRaw))
-		if err != nil {
-			log.Printf("line %d: invalid geometry, skipping: %v", total, err)
-			skippedErr++
-			continue
-		}
-
-		// Pick the representative point (panics recovered inside).
-		pt, err := representativePoint(g, total)
-		if err != nil {
-			log.Printf("line %d: %v, skipping", total, err)
-			skippedErr++
-			continue
-		}
-
-		// ToGeoJSON returns a single string (no error).
-		ptJSON := pt.ToGeoJSON(0) // 0 = no indent
-
-		rf["geometry"] = json.RawMessage(ptJSON)
-
-		outBytes, err := json.Marshal(rf)
-		if err != nil {
-			log.Printf("line %d: marshal failed, skipping: %v", total, err)
-			skippedErr++
-			continue
-		}
-
-		bw.Write(outBytes)
-		bw.WriteByte('\n')
-		written++
-
-		if total%50_000 == 0 {
-			elapsed := time.Since(start).Round(time.Second)
-			fmt.Fprintf(os.Stderr, "  %d processed, %d written (%v elapsed)\n",
-				total, written, elapsed)
+		jobs <- Job{
+			LineNum: total,
+			Raw:     rawCopy,
 		}
 	}
 
@@ -147,10 +145,83 @@ func main() {
 		log.Fatalf("scanner error: %v", err)
 	}
 
+	close(jobs)
+	<-writerDone
+
+	if err := bw.Flush(); err != nil {
+		log.Fatalf("flush output: %v", err)
+	}
+	if err := out.Close(); err != nil {
+		log.Fatalf("close output: %v", err)
+	}
+	if err := in.Close(); err != nil {
+		log.Fatalf("close input: %v", err)
+	}
+
 	elapsed := time.Since(start).Round(time.Millisecond)
 	fmt.Fprintf(os.Stderr,
 		"\nDone in %v\n  total lines : %d\n  written     : %d\n  no geometry : %d\n  errors      : %d\n",
 		elapsed, total, written, skippedNoGeom, skippedErr)
+}
+
+func worker(jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
+	defer wg.Done()
+	ctx := geos.NewContext() // each worker gets its own GEOS context
+
+	for job := range jobs {
+		res := Result{LineNum: job.LineNum}
+
+		var rf rawFeature
+		if err := json.Unmarshal(job.Raw, &rf); err != nil {
+			log.Printf("line %d: JSON parse error, skipping: %v", job.LineNum, err)
+			res.SkippedErr = true
+			results <- res
+			continue
+		}
+
+		geomRaw, hasGeom := rf["geometry"]
+		if !hasGeom || isNullJSON(geomRaw) {
+			res.SkippedNoGeom = true
+			results <- res
+			continue
+		}
+
+		// Parse geometry — NewGeomFromGeoJSON does return (geom, error).
+		g, err := ctx.NewGeomFromGeoJSON(string(geomRaw))
+		if err != nil {
+			log.Printf("line %d: invalid geometry, skipping: %v", job.LineNum, err)
+			res.SkippedErr = true
+			results <- res
+			continue
+		}
+
+		// Pick the representative point (panics recovered inside).
+		pt, isPoint, err := representativePoint(g, job.LineNum)
+		if err != nil {
+			log.Printf("line %d: %v, skipping", job.LineNum, err)
+			res.SkippedErr = true
+			results <- res
+			continue
+		}
+
+		if isPoint {
+			res.OutBytes = job.Raw
+		} else {
+			// ToGeoJSON returns a single string (no error).
+			ptJSON := pt.ToGeoJSON(0) // 0 = no indent
+			rf["geometry"] = json.RawMessage(ptJSON)
+			outBytes, err := json.Marshal(rf)
+			if err != nil {
+				log.Printf("line %d: marshal failed, skipping: %v", job.LineNum, err)
+				res.SkippedErr = true
+				results <- res
+				continue
+			}
+			res.OutBytes = outBytes
+		}
+
+		results <- res
+	}
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -181,39 +252,44 @@ func safeBool(f func() bool) (result bool, err error) {
 }
 
 // representativePoint returns the best single Point for any geometry type.
-func representativePoint(g *geos.Geom, lineNum int64) (*geos.Geom, error) {
+func representativePoint(g *geos.Geom, lineNum int64) (*geos.Geom, bool, error) {
 	switch g.TypeID() {
 
 	case geos.TypeIDPoint:
-		return g, nil
+		return g, true, nil
 
 	case geos.TypeIDLineString:
-		return safeGeom(func() *geos.Geom {
+		pt, err := safeGeom(func() *geos.Geom {
 			return g.InterpolateNormalized(0.5)
 		})
+		return pt, false, err
 
 	case geos.TypeIDMultiLineString:
 		pt, err := midpointOfLongestLine(g)
 		if err != nil {
 			log.Printf("line %d: MultiLineString midpoint failed (%v), falling back to PointOnSurface", lineNum, err)
-			return safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			fallback, fbErr := safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			return fallback, false, fbErr
 		}
-		return pt, nil
+		return pt, false, nil
 
 	case geos.TypeIDPolygon, geos.TypeIDMultiPolygon:
 		centroid, err := safeGeom(func() *geos.Geom { return g.Centroid() })
 		if err != nil {
-			return safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			fallback, fbErr := safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			return fallback, false, fbErr
 		}
 		intersects, err := safeBool(func() bool { return g.Intersects(centroid) })
 		if err != nil || !intersects {
-			return safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			fallback, fbErr := safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+			return fallback, false, fbErr
 		}
-		return centroid, nil
+		return centroid, false, nil
 
 	default:
 		// GeometryCollection, LinearRing, etc.
-		return safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+		fallback, fbErr := safeGeom(func() *geos.Geom { return g.PointOnSurface() })
+		return fallback, false, fbErr
 	}
 }
 
