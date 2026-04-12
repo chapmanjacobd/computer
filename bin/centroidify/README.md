@@ -38,3 +38,22 @@ centroidify input.geojsonl output.geojsonl
 ```
 
 Progress is printed to stderr every 50k features.
+
+## OSM planet.pbf to Wikipedia POIs
+
+```sh
+osmium tags-filter planet-260330.osm.pbf /wikipedia -o wikipedia_pois.osm.pbf
+# (one hour)
+
+osmium export wikipedia_pois.osm.pbf -f jsonseq  --format-option=print_record_separator=false | \
+    jq -sc 'group_by(.properties.wikipedia) | map(max_by(.properties | length)) | sort_by(.properties | length) | reverse[]' \
+    > grouped_by_wikipedia.geojsonl
+# (six hours)
+# .rw-r--r--@ 9.7G xk    9 Apr 16:09  grouped_by_wikipedia.geojsonl
+
+rm -f wikipedia_pois.osm.pbf
+
+centroidify grouped_by_wikipedia.geojsonl wikipedia.POIs.geojson
+# (5 mins)
+# .rw-r--r--@ 605M xk   11 Apr 20:12  wikipedia_pois.geojsonl
+```
