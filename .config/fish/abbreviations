@@ -953,3 +953,4 @@ abbr -a -- lbu lb.refresh
 abbr -a -- gdscb 'git diff --staged | cb'
 abbr -a -- dfi df -i
 abbr -a -- amend git commit --amend --no-edit
+abbr -a -- gin git add --intent-to-add .
