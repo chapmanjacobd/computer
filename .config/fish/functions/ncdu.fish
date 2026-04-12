@@ -1,6 +1,6 @@
 # Defined interactively
-function ncdu
+function ncdu -w ncdu
     for s in $argv
-        NO_COLOR=1 ncdu $s
+        NO_COLOR=1 command ncdu $s
     end
 end
