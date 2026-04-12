@@ -37,4 +37,4 @@ go install github.com/chapmanjacobd/computer/bin/centroidify@latest
 centroidify input.geojsonl output.geojsonl
 ```
 
-Progress is printed to stderr every 500k features.
+Progress is printed to stderr every 50k features.

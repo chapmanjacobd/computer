@@ -136,7 +136,7 @@ func main() {
 		bw.WriteByte('\n')
 		written++
 
-		if total%500_000 == 0 {
+		if total%50_000 == 0 {
 			elapsed := time.Since(start).Round(time.Second)
 			fmt.Fprintf(os.Stderr, "  %d processed, %d written (%v elapsed)\n",
 				total, written, elapsed)
