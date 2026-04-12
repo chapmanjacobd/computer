@@ -1,4 +1,4 @@
-module centroidify
+module github.com/chapmanjacobd/computer/bin/centroidify
 
 go 1.26.1
 
