@@ -110,6 +110,7 @@
     context = 5
     mnemonicPrefix = true
 	guitool = kdiff3
+	colorMovedWS = ignore-all-space
 [delta]
     navigate = true
 [diff "sqlite3"]
