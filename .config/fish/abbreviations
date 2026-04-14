@@ -939,7 +939,6 @@ abbr -a -- trashls trash-list
 abbr -a -- trash.list trash-list
 abbr -a -- wm commit
 abbr -a -- gc commit
-abbr -a -- g qwen
 abbr -a -- wipam git.amend HEAD
 abbr -a -- phone.cb ssh phone cb
 abbr -a -- code zed
@@ -954,3 +953,4 @@ abbr -a -- dfi df -i
 abbr -a -- amend git commit --amend --no-edit
 abbr -a -- gin git add --intent-to-add .
 abbr -a -- gem gemini
+abbr -a -- g gemini
