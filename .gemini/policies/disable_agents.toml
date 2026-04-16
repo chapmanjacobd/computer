@@ -1,0 +1,5 @@
+[[rule]]
+toolName = "generalist"
+decision = "deny"
+priority = 500
+denyMessage = "generalist is restricted for this session. because it sucks. use sed or awk instead?"
