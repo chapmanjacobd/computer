@@ -954,3 +954,4 @@ abbr -a -- amend git commit --amend --no-edit
 abbr -a -- gin git add --intent-to-add .
 abbr -a -- gem gemini
 abbr -a -- g gemini
+abbr -a -- fixup git.amend
