@@ -298,7 +298,11 @@
             },
         },
     },
-    "agent_servers": {},
+    "agent_servers": {
+        "github-copilot-cli": {
+            "type": "registry"
+        }
+    },
     "base_keymap": "VSCode",
     "status_bar": {
         "experimental.show": true,
