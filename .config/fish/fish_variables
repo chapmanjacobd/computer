@@ -39,6 +39,7 @@ SETUVAR --export NUMEXPR_NUM_THREADS:4
 SETUVAR --export OMP_NUM_THREADS:16
 SETUVAR --export OPENSSL_CONF:/etc/ssl
 SETUVAR --export PARALLEL_HOME:/home/xk/\x2econfig/parallel
+SETUVAR --export PASSWORD_STORE_GPG_OPTS:\x2d\x2dpinentry\x2dmode\x3dloopback
 SETUVAR --export PASTEL_COLOR_MODE:24bit
 SETUVAR --export PIPENV_VERBOSITY:\x2d1
 SETUVAR --export PSQLRC:/home/xk/\x2econfig/pg/psqlrc
