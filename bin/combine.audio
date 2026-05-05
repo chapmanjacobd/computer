@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+import argparse
+import numpy as np
+import librosa
+import soundfile as sf
+from scipy.signal import correlate
+
+def get_audio_similarity(chunk, haystack):
+    if np.max(np.abs(chunk)) < 1e-4:
+        return 0.0
+    
+    # Perform cross-correlation to find best match anywhere in haystack
+    # mode='valid' ensures the chunk is fully contained in haystack
+    corr = correlate(haystack, chunk, mode='valid', method='fft')
+    
+    # Normalize correlation to a 0.0 - 1.0 range
+    # Peak correlation / (Energy of chunk * Energy of haystack_segment)
+    norm_factor = np.sqrt(np.sum(chunk**2) * np.sum(haystack**2) / (len(haystack)/len(chunk)))
+    if norm_factor == 0:
+        return 0.0
+        
+    return np.max(corr) / norm_factor
+
+def process_audio(args):
+    # Load audio files
+    y1, sr = librosa.load(args['file1'], sr=None)
+    y2, _ = librosa.load(args['file2'], sr=sr)
+    
+    window_samples = int(sr * (args['window_ms'] / 1000))
+    output_chunks = []
+    
+    # Rolling search: Process file1 in discrete steps
+    for i in range(0, len(y1) - window_samples, window_samples):
+        chunk = y1[i : i + window_samples]
+        
+        # Check if this 200ms chunk exists ANYWHERE in file2
+        similarity = get_audio_similarity(chunk, y2)
+        is_match = similarity >= args['threshold']
+        
+        # Combine logic (mimicking moreutils/combine)
+        keep = False
+        op = args['operator'].lower()
+        
+        if op == 'and':
+            keep = is_match
+        elif op == 'not':
+            keep = not is_match
+        elif op == 'or':
+            keep = True # Always keep file1 content
+        elif op == 'xor':
+            keep = not is_match # Simplistic XOR: only keep if unique to file1
+            
+        if keep:
+            output_chunks.append(chunk)
+        else:
+            # Optionally append silence to maintain timing, 
+            # or skip to "compact" the file like combine does with lines.
+            if not args['compact']:
+                output_chunks.append(np.zeros_like(chunk))
+
+    if output_chunks:
+        out_data = np.concatenate(output_chunks)
+        sf.write(args['output'], out_data, sr)
+        print(f"Success: {args['output']} created.")
+    else:
+        print("No segments matched the criteria.")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Rolling audio similarity operator.")
+    parser.add_argument("file1", help="Primary audio file")
+    parser.add_argument("operator", choices=['and', 'not', 'or', 'xor'], help="Boolean-style operation")
+    parser.add_argument("file2", help="Audio file to search against")
+    parser.add_argument("-o", "--output", default="output.wav", help="Output filename")
+    parser.add_argument("--threshold", type=float, default=0.5, help="Similarity threshold (0.0-1.0)")
+    parser.add_argument("--window_ms", type=int, default=200, help="Search window size")
+    parser.add_argument("--compact", action="store_true", help="Remove non-matching segments instead of silencing them")
+
+    args = vars(parser.parse_args())
+    process_audio(args)
+
