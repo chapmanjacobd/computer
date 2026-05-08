@@ -41,16 +41,6 @@ dub
 earlyoom
 easyeffects
 edk2-tools
-emacs-dockerfile-mode
-emacs-f
-emacs-flycheck
-emacs-goodies
-emacs-iedit
-emacs-magit
-emacs-nw
-emacs-popup
-emacs-python-environment
-emacs-s
 evtest
 exiv2-devel
 expect
@@ -137,7 +127,6 @@ libXxf86vm-devel
 libyaml-devel
 libzstd-devel
 lockfile-progs
-lsb
 lshw
 lutris
 lynis
