@@ -57,9 +57,7 @@ sudo dnf remove -y kcalc PackageKit konversation falkon dragon konversation falk
 
 sudo dnf group install -y c-development
 
-for package in $(cat ~/.github/dnf_installed); do
-    sudo dnf install -y "$package"
-done
+sudo dnf install -y --skip-unavailable $(cat ~/.github/dnf_installed)
 
 wget1 -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
