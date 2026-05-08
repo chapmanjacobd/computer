@@ -14,7 +14,6 @@ sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld || true
 # fpsync /mnt/d/ 192.168.68.65:/mnt/d/
 
 sudo dnf group install core -y
-sudo dnf group install Multimedia -y
 sudo dnf install -y gstreamer1-plugins-{bad-\*,good-\*,base} gstreamer1-plugin-openh264 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
 sudo dnf install -y lame\* --exclude=lame-devel
 
