@@ -105,7 +105,7 @@ shadeSortColumn=true
 toolBarFont=Sans Serif,10,-1,5,50,0,0,0,0,0
 
 [Icons]
-Theme=Fluent-dark
+Theme=breeze
 
 [KDE]
 AnimationDurationFactor=0

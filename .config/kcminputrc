@@ -13,7 +13,7 @@ XLbInptAccelProfileFlat=false
 XLbInptPointerAcceleration=1
 XLbInptScrollOnButtonDown=true
 cursorSize=48
-cursorTheme=Breeze_Light
+cursorTheme=Bibata-Modern-Ice
 
 [Tmp]
 update_info=delete_cursor_old_default_size.upd:DeleteCursorOldDefaultSize
