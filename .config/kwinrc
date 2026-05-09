@@ -71,6 +71,9 @@ TabBoxAlternative=false
 [Effect-kwin4_effect_translucency]
 Inactive=48
 
+[Effect-overview]
+BorderActivate=9
+
 [Effect-presentwindows]
 BorderActivate=9
 BorderActivateAll=9

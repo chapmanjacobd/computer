@@ -349,3 +349,5 @@
 /broken
 /.aws
 /.copilot
+/library
+/.config/mozilla
