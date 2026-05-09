@@ -178,9 +178,6 @@ ShowDesktopMode=0
 ShowTabBox=false
 SwitchingMode=0
 
-[Tiling]
-padding=4
-
 [Tiling][0fd7312b-d1e1-5121-804a-365a2633e868]
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
@@ -188,6 +185,10 @@ tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"wi
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][7db63634-f471-55c4-bdc4-eeee60320bab]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][8583a7c4-76d8-48b0-b7a4-d62e9a781503][92d54b45-3562-475f-a40e-b2e13189f97f]
+padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][e80d1460-49d0-5dad-949b-3fff0e2883f8]
@@ -232,6 +233,9 @@ ShadeHoverInterval=250
 SnapOnlyWhenOverlapping=false
 TitlebarDoubleClickCommand=Maximize
 WindowSnapZone=10
+
+[Xwayland]
+Scale=1.25
 
 [org.kde.kdecoration2]
 BorderSize=None
