@@ -93,12 +93,9 @@ ForegroundNormal=0,0,0
 ForegroundPositive=128,255,128
 ForegroundVisited=192,128,255
 
-[DirSelect Dialog]
-DirSelectDialog Size=764,686
-History Items[$e]=file:$HOME/lb
-
 [General]
 AllowKDEAppsToRememberWindowPositions=false
+ColorScheme=ZionReversed2InactiveMod
 ColorSchemeHash=d04bd8f5135a1f128e498ae4d223a867346bfbbc
 Name=Breeze Dark
 UseSystemBell=true
@@ -112,21 +109,17 @@ Theme=Fluent-dark
 
 [KDE]
 AnimationDurationFactor=0
-LookAndFeelPackage=org.kde.breezedark.desktop
+LookAndFeelPackage=org.kde.breeze.desktop
 ScrollbarLeftClickNavigatesByPage=false
 contrast=4
 globalscale=100
 scale=100
-widgetStyle=Breeze
 
 [KFileDialog Settings]
 Allow Expansion=false
 Automatically select filename extension=true
 Breadcrumb Navigation=false
 Decoration position=0
-LocationCombo Completionmode=5
-PathCombo Completionmode=5
-Show Bookmarks=false
 Show Full Path=false
 Show Inline Previews=true
 Show Preview=false
@@ -135,25 +128,27 @@ Show hidden files=true
 Sort by=Date
 Sort directories first=false
 Sort hidden files last=false
-Sort reversed=true
+Sort reversed=false
 Speedbar Width=185
 View Style=Detail
 listViewIconSize=0
 
 [KScreen]
-ScreenScaleFactors=DisplayPort-0=1;DisplayPort-1=1;DisplayPort-2=1;HDMI-A-0=1;DVI-D-0=1;
+ScaleFactor=1.25
+ScreenScaleFactors=DisplayPort-0=1.25;DisplayPort-1=1.25;DisplayPort-2=1.25;HDMI-A-0=1.25;DVI-D-0=1.25;
 
 [KShortcutsDialog Settings]
-Dialog Size=1600,878
+Dialog Size=1536,822
 
 [MainToolbarIcons]
 Size=36
 
-[Shortcuts]
-Quit=
-
 [SmallIcons]
 Size=24
+
+[Sounds]
+Enable=false
+Theme=oxygen
 
 [ToolbarIcons]
 Size=36

@@ -110,16 +110,14 @@ CommandWindowWheel=Scroll
 
 [NightColor]
 Active=true
-LatitudeAuto=40.4591
-LongitudeAuto=-90.6805
-NightTemperature=3400
+NightTemperature=4700
 
 [Plugins]
 cubeslideEnabled=false
 desktopchangeosdEnabled=false
 desktopgridEnabled=false
 diminactiveEnabled=true
-krohnkiteEnabled=true
+krohnkiteEnabled=false
 kwin4_effect_dialogparentEnabled=false
 kwin4_effect_fadedesktopEnabled=false
 kwin4_effect_fadingpopupsEnabled=false
@@ -176,6 +174,24 @@ MultiScreenMode=0
 ShowDesktopMode=0
 ShowTabBox=false
 SwitchingMode=0
+
+[Tiling]
+padding=4
+
+[Tiling][0fd7312b-d1e1-5121-804a-365a2633e868]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][58ca410b-ce44-58d6-82b9-fefe44aba0e3]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][7db63634-f471-55c4-bdc4-eeee60320bab]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][e80d1460-49d0-5dad-949b-3fff0e2883f8]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][f83e10c1-7018-5373-9c1f-299fb256d454]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Wayland]
 InputMethod[$e]=/usr/share/applications/com.github.maliit.keyboard.desktop

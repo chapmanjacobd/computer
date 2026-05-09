@@ -61,5 +61,9 @@ idleTime=420000
 suspendThenHibernate=false
 suspendType=0
 
+[Migration]
+MigratedActivitiesToPlasma6=powerdevilrc
+MigratedProfilesToPlasma6=powerdevilrc
+
 [migration]
 kdedShortcutMigration=true

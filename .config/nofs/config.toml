@@ -3,3 +3,8 @@ paths = ["/mnt/d2", "/mnt/d3","/mnt/d4", "/mnt/d5", "/mnt/d6", "/mnt/d7", "/mnt/
 ro_paths = ["/mnt/d10"]
 nc_paths = ["/mnt/d1"]
 create_policy = "mfs"
+
+[share.all]
+paths = ["/mnt/d2", "/mnt/d3","/mnt/d4", "/mnt/d5", "/mnt/d6", "/mnt/d7", "/mnt/d8", "/mnt/d9", "/net/backup/mnt/b1","/net/backup/mnt/d","/net/backup/mnt/d2","/net/backup/mnt/d4","/net/backup/mnt/d5","/net/backup/mnt/d6","/net/backup/mnt/netac","/net/r730xd/mnt/b2","/net/r730xd/mnt/b4","/net/r730xd/mnt/b6","/net/r730xd/mnt/b8","/net/r730xd/mnt/b9","/net/r730xd/mnt/b10","/net/r730xd/mnt/b11","/net/r730xd/mnt/d","/net/r730xd/mnt/fast","/net/r730xd/mnt/x25","/net/r730xd/mnt/x28","/net/r730xd/mnt/x30","/net/r730xd/mnt/x31", "/home/xk/","/net/backup","/net/r730xd"]
+ro_paths = ["/mnt/d10"]
+nc_paths = ["/mnt/d1"]
