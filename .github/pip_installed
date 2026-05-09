@@ -15,7 +15,6 @@ emoji-country-flag
 evdev
 filprofiler
 freezegun
-frogmouth
 fsspec
 gallery-dl
 gcsfs
@@ -82,7 +81,6 @@ reddit-user-to-sqlite
 rich
 rich-cli
 ruff
-s3fs
 scalene
 scikit-image
 scikit-learn
