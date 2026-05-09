@@ -4,7 +4,6 @@ auditok
 beautifulsoup4
 BetterADBSync
 black
-brotab
 catt
 charset-normalizer
 cython
@@ -36,10 +35,6 @@ internetarchive
 ipdb
 ipython
 isort
-jellex
-keyring
-keyrings.google-artifactregistry-auth
-klara
 library
 line_profiler
 lux
