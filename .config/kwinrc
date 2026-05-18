@@ -181,6 +181,9 @@ SwitchingMode=0
 [Tiling]
 padding=4
 
+[Tiling][05d78ece-fad4-5207-9c63-91d2a69cab87]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
 [Tiling][0fd7312b-d1e1-5121-804a-365a2633e868]
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
