@@ -177,6 +177,7 @@ perl-CPAN
 perl-Image-ExifTool
 pg_activity
 pg_top
+plasma-print-manager
 plasma-workspace-x11
 playerctl
 plocate
