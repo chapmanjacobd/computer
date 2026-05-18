@@ -64,13 +64,13 @@ gdisk
 genisoimage
 gh
 gimp
-gum
 git-delta
 gmp-devel
 golang-github-tdewolff-minify
 google-noto-emoji-fonts
 grep
 gsl-devel
+gum
 gwenview
 hddtemp
 hexyl
@@ -153,6 +153,7 @@ nicotine+
 ninja-build
 nmap
 nomacs
+npm
 nu
 oathtool
 ocaml

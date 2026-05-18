@@ -78,6 +78,12 @@ for dep in $(cat .github/cargo_installed); do
     cargo install $dep
 done
 
+go.upgrade 1.26.3
+
+for dep in $(cat .github/go_installed); do
+    go install $dep
+done
+
 # sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
 # sudo dnf install -y xpra
 

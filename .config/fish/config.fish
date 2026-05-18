@@ -64,7 +64,7 @@ bind alt-r history-token-search-backward
 
 bind \e\[99\;6u fish_clipboard_copy
 
-bind \e, kill-selection backward-kill-token yank yank
+bind \e, kill-selection backward-kill-token yank yank backward-delete-char
 
 bind ctrl-y redo
 bind alt-y yank
