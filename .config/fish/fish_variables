@@ -7,6 +7,7 @@ SETUVAR --export ANSIBLE_STDOUT_CALLBACK:yaml
 SETUVAR --export AWS_CONFIG_FILE:/home/xk/\x2econfig/aws/config
 SETUVAR --export AWS_SHARED_CREDENTIALS_FILE:/home/xk/\x2econfig/aws/credentials
 SETUVAR --export BOTO_CONFIG:/home/xk/\x2econfig/gcloud/boto
+SETUVAR --export BROWSER:/home/xk/\x2elocal/bin/firefox/firefox
 SETUVAR --export CARGO_HOME:/home/xk/\x2elocal/share/cargo
 SETUVAR --export CARGO_NET_GIT_FETCH_WITH_CLI:true
 SETUVAR --export CLOUDSDK_PYTHON:python3\x2e10
