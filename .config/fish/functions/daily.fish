@@ -35,7 +35,7 @@ function daily
     url_files_web_titles.py (files.urls)
     morganize.all
 
-    # library download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
+    library download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
 
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
