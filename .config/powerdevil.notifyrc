@@ -1,0 +1,8 @@
+[Event/criticalbattery]
+Action=
+
+[Event/lowbattery]
+Action=
+
+[Event/lowperipheralbattery]
+Action=
