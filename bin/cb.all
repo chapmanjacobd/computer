@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
+
+# /// script
+# dependencies = ["PyQt6"]
+# ///
+
+from argparse import ArgumentParser
+import sys
+
+from PyQt6.QtGui import QClipboard, QGuiApplication
+
+
+def get_clips_of_mode(mode):
+	ret = {}
+
+	qmime = clipboard.mimeData(mode)
+	for mime in qmime.formats():
+		ret[mime] = bytes(qmime.data(mime))
+	return ret
+
+
+def do_mode(mode):
+	all_data = get_clips_of_mode(mode)
+	if args.mime:
+		try:
+			data = all_data[args.mime]
+		except KeyError:
+			pass
+		else:
+			sys.stdout.buffer.write(data)
+	else:
+		for mime in all_data:
+			if args.list:
+				print(mime)
+				continue
+
+			if mime.startswith("text"):
+				try:
+					print(f"{mime}: {all_data[mime].decode()}")
+				except UnicodeDecodeError:
+					print(f"{mime}: {all_data[mime]!r}")
+			else:
+				print(f"{mime}: {all_data[mime]!r}")
+
+
+parser = ArgumentParser()
+parser.add_argument(
+	"--clipboard", action="store_true",
+	help="Use clipboard (the default)",
+)
+parser.add_argument(
+	"--selection", action="store_true",
+	help="Use X11 selection",
+)
+parser.add_argument(
+	"--mime",
+	help="Only display clipboard data with type MIME (instead of everything)",
+)
+parser.add_argument(
+	"--list", action="store_true",
+	help="Output only MIME types",
+)
+
+args = parser.parse_args()
+
+if not (args.clipboard or args.selection):
+	args.clipboard = True
+if args.clipboard and args.selection and args.mime:
+	parser.error("cannot pass --mime when both --clipboard and --selection are passed")
+
+app = QGuiApplication([])
+clipboard = app.clipboard()
+
+if args.clipboard:
+	do_mode(QClipboard.Mode.Clipboard)
+if args.selection:
+	do_mode(QClipboard.Mode.Selection)
