@@ -98,14 +98,10 @@
 -- Environment Variables:
 --
 -- This script uses environment variables to allow the user to
--- set the temporary location of the video cuts and for setting the location for
--- the resulting video.
+-- set the temporary location of the video cuts.
 --
 -- To set the temporary directory, set the variable MPV_SPLICE_TEMP;
 -- e.g.: export MPV_SPLICE_TEMP="$HOME/temporary_location"
---
--- To set the video output directory, set the variable MPV_SPLICE_OUTPUT;
--- e.g.: export MPV_SPLICE_OUTPUT="$HOME/output_location"
 --
 -- Make sure the directories set in the variables really exist, or else the
 -- script might fail.
@@ -126,14 +122,9 @@ local SCRIPT_NAME = "splice"
 
 
 local utils = require 'mp.utils'
-local res = utils.subprocess({
-    args = {"nofs", "create", "/"},
-})
-local base = (res.stdout or ""):gsub("%s+$", "")
 
 local splice_options = {
-	tmp_location = "/tmp/XXXX",
-	output_location = base .. '/dump/projects/cinematograph/clips/mpv' or mp.get_property("working-directory")
+	tmp_location = "/tmp/XXXX"
 }
 opt.read_options(splice_options, SCRIPT_NAME)
 
@@ -171,6 +162,37 @@ local function get_time()
 	local fmt_time = string.format('%02d:%02d:%05.2f', hours, mins, secs)
 
 	return fmt_time
+end
+
+local function timestamp_to_seconds(timestamp)
+	local hours, mins, secs = timestamp:match("^(%d+):(%d+):(%d+%.%d+)$")
+	return tonumber(hours) * 3600 + tonumber(mins) * 60 + tonumber(secs)
+end
+
+local function get_outer_timecodes()
+	local min_time = times[1].t_start
+	local max_time = times[1].t_end
+	local min_seconds = timestamp_to_seconds(min_time)
+	local max_seconds = timestamp_to_seconds(max_time)
+
+	for i = 2, #times do
+		local start_time = times[i].t_start
+		local end_time = times[i].t_end
+		local start_seconds = timestamp_to_seconds(start_time)
+		local end_seconds = timestamp_to_seconds(end_time)
+
+		if start_seconds < min_seconds then
+			min_time = start_time
+			min_seconds = start_seconds
+		end
+
+		if end_seconds > max_seconds then
+			max_time = end_time
+			max_seconds = end_seconds
+		end
+	end
+
+	return min_time, max_time
 end
 
 function put_time()
@@ -280,7 +302,9 @@ function process_video()
 		local tmp_dir = io.popen(string.format("mktemp -d %s",
 			splice_options.tmp_location)):read("*l")
 		local input_file = mp.get_property("path")
+		local source_dir = utils.split_path(input_file)
 		local ext = string.gmatch(input_file, ".*%.(.*)$")()
+		local min_time, max_time = get_outer_timecodes()
 
 		local rnd_str = ""
 		for i=1,rnd_size,1 do
@@ -288,10 +312,13 @@ function process_video()
 			rnd_str = rnd_str .. alphabet:sub(rnd_index, rnd_index)
 		end
 
-		local output_file = string.format("%s/%s_%s_cut.%s",
-			splice_options.output_location,
+		local output_name = string.format("%s.%s-%dcuts-%s.%s",
 			mp.get_property("filename/no-ext"),
-			rnd_str, ext)
+			min_time,
+			#times,
+			max_time,
+			ext)
+		local output_file = utils.join_path(source_dir, output_name)
 
 		local cat_file_name = string.format("%s/%s", tmp_dir, "concat.txt")
 		local cat_file_ptr = io.open(cat_file_name, "w")
