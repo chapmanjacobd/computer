@@ -122,7 +122,7 @@ local opt = require 'mp.options'
 --------------------------------------------------------------------------------
 -- Default variables
 
-local SCRIPT_NAME = "mpv-splice"
+local SCRIPT_NAME = "splice"
 
 
 local utils = require 'mp.utils'
