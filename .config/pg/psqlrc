@@ -14,7 +14,6 @@ select :'PROMPT1'='%/%R%x%# ' as default_prompt \gset
 \pset null             '<NULL>'                 \\-- Display null values as NULL
 \timing                on                     \\-- Show query timings
 \set pretty '\\pset numericlocale'
-\pset pager 'less -S'
 #\pset pager off
 \set QUIET 1
 -- By default, NULL displays as an empty space. Is it actually an empty
