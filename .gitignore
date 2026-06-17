@@ -352,3 +352,6 @@
 /library
 /.config/mozilla
 /.vscode-oss-shared
+/.konan
+/.gradle
+/.config/.android
