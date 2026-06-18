@@ -1,7 +1,7 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR --export ANDROID_HOME:/home/xk/\x2eandroid\x2dsdk/Sdk/
-SETUVAR --export ANDROID_SDK_ROOT:/home/xk/bin/Android/Sdk/
+SETUVAR --export ANDROID_HOME:/home/xk/\x2eandroid/Sdk
+SETUVAR --export ANDROID_SDK_ROOT:/home/xk/\x2eandroid/Sdk
 SETUVAR --export ANSIBLE_HOME:/home/xk/\x2elocal/share/ansible
 SETUVAR --export ANSIBLE_STDOUT_CALLBACK:yaml
 SETUVAR --export AWS_CONFIG_FILE:/home/xk/\x2econfig/aws/config
