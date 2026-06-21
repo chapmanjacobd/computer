@@ -11,7 +11,7 @@ function forganize
     yes | lb dedupe-media --fs ~/lb/fs/audio.db -v
 
     ~/
-    for dir in (nofs which -a /)*
+    for dir in (nofs which -a d:/)*
         if test -d "$dir"
             "$dir"
             folders.empty.delete

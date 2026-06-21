@@ -3,6 +3,6 @@ function porn.vr.mv.random
     ls ~/quest/Movies/
     if confirm
         mv ~/quest/Movies/* (d library/porn/vr/)
-        fd -tf --max-results=3 . (nofs which -a check/porn/vr/) | xargs -I{} mv {} ~/quest/Movies/
+        fd -tf --max-results=3 . (nofs which -a d:/check/porn/vr/) | xargs -I{} mv {} ~/quest/Movies/
     end
 end

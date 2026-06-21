@@ -1,6 +1,6 @@
 # Defined interactively
 function diskstatus
-    for mnt in / (nofs which -a /)
+    for mnt in / (nofs which -a d:/)
         sudo btrfs device stats $mnt
     end
 
@@ -11,7 +11,7 @@ function diskstatus
     smartctl.ls Power_On_Hours Power_Cycle_Count Load_Cycle_Count UDMA_CRC_Error_Count
     smartctl.ls Reallocated_Sector_Ct Reallocated_Event_Count Current_Pending_Sector Offline_Uncorrectable
 
-    for mnt in / (nofs which -a /)
+    for mnt in / (nofs which -a d:/)
         if not sudo btrfs scrub status $mnt | grep -q 'no errors'
             echo $mnt
             sudo btrfs scrub status $mnt
@@ -20,5 +20,5 @@ function diskstatus
 
     mounts.ro
 
-    lb mu (nofs which -a /)
+    lb mu (nofs which -a d:/)
 end

@@ -1,6 +1,6 @@
 # Defined interactively
 function lb.load
-    lb unardel -vy (nofs which -a dump/video/ dump/porn/video/)
+    lb unardel -vy (nofs which -a d:/dump/video/ d:/dump/porn/video/)
 
     for d in /mnt/d(seq 1 10)
         lb fsadd ~/lb/fs/tax.db --video --delete-unplayable --move $d/check/porn/video/ $d/dump/porn/video/ -v

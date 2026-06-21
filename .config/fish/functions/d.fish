@@ -1,4 +1,4 @@
 # Defined interactively
 function d
-    nofs create $argv
+    nofs create d:/$argv
 end
