@@ -956,3 +956,4 @@ abbr -a -- gem gemini
 abbr -a -- fixup git.amend
 abbr -a -- g copilot
 abbr -a -- sha sha256sum
+abbr -a -- gemini agy
