@@ -17,7 +17,8 @@
       "command(echo)",
       "command(git ls-tree)",
       "command(ls)",
-      "command(sed)"
+      "command(sed)",
+      "command(cat)"
     ]
   }
 }
