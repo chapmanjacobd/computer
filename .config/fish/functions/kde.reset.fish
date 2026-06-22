@@ -1,5 +1,6 @@
 # Defined interactively
 function kde.reset
+    set -x DISPLAY ':0'
     ps.pause ffmpeg
 
     bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
