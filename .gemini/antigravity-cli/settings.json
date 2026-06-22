@@ -1,0 +1,23 @@
+{
+  "model": "Gemini 3.1 Pro (Low)",
+  "permissions": {
+    "allow": [
+      "command(cargo test)",
+      "command(./gradlew)",
+      "command(find)",
+      "command(head)",
+      "command(cargo)",
+      "command(go)",
+      "command(mv)",
+      "command(sort)",
+      "command(mkdir)",
+      "command(git show)",
+      "command(git log)",
+      "command(grep)",
+      "command(echo)",
+      "command(git ls-tree)",
+      "command(ls)",
+      "command(sed)"
+    ]
+  }
+}
