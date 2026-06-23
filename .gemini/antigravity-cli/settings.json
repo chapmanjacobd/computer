@@ -24,7 +24,8 @@
       "command(rustup)",
       "command(wc)",
       "command(git ls-remote)",
-      "command(rg)"
+      "command(rg)",
+      "command(curl -s https://docs\\.rs/)"
     ]
   }
 }
