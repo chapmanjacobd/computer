@@ -20,7 +20,8 @@
       "command(sed)",
       "command(cat)",
       "command(protoc)",
-      "command(git clone)"
+      "command(git clone)",
+      "command(rustup)"
     ]
   }
 }
