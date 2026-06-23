@@ -21,7 +21,8 @@
       "command(cat)",
       "command(protoc)",
       "command(git clone)",
-      "command(rustup)"
+      "command(rustup)",
+      "command(wc)"
     ]
   }
 }
