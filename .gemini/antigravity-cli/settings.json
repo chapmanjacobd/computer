@@ -18,7 +18,8 @@
       "command(git ls-tree)",
       "command(ls)",
       "command(sed)",
-      "command(cat)"
+      "command(cat)",
+      "command(protoc)"
     ]
   }
 }
