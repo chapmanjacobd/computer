@@ -19,7 +19,8 @@
       "command(ls)",
       "command(sed)",
       "command(cat)",
-      "command(protoc)"
+      "command(protoc)",
+      "command(git clone)"
     ]
   }
 }
