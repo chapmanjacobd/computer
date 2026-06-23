@@ -23,7 +23,8 @@
       "command(git clone)",
       "command(rustup)",
       "command(wc)",
-      "command(git ls-remote)"
+      "command(git ls-remote)",
+      "command(rg)"
     ]
   }
 }
