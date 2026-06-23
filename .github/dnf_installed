@@ -189,6 +189,7 @@ podman-docker
 procps
 progress
 proj-devel
+protoc
 ps_mem
 pv
 pybind11-devel
