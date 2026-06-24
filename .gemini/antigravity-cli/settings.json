@@ -27,7 +27,8 @@
       "command(rg)",
       "command(curl -s https://docs\\.rs/)",
       "command(make)",
-      "command(git status)"
+      "command(git status)",
+      "command(git diff)"
     ]
   }
 }
