@@ -30,7 +30,8 @@
       "command(git status)",
       "command(git diff)",
       "command(tail)",
-      "command(rustc)"
+      "command(rustc)",
+      "command(sleep)"
     ]
   }
 }
