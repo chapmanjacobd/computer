@@ -26,7 +26,8 @@
       "command(git ls-remote)",
       "command(rg)",
       "command(curl -s https://docs\\.rs/)",
-      "command(make)"
+      "command(make)",
+      "command(git status)"
     ]
   }
 }
