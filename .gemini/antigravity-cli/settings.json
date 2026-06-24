@@ -29,7 +29,8 @@
       "command(make)",
       "command(git status)",
       "command(git diff)",
-      "command(tail)"
+      "command(tail)",
+      "command(rustc)"
     ]
   }
 }
