@@ -32,7 +32,8 @@
       "command(tail)",
       "command(rustc)",
       "command(sleep)",
-      "command(tree)"
+      "command(tree)",
+      "command(git branch)"
     ]
   },
   "trustedWorkspaces": [
