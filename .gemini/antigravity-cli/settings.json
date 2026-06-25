@@ -31,7 +31,8 @@
       "command(git diff)",
       "command(tail)",
       "command(rustc)",
-      "command(sleep)"
+      "command(sleep)",
+      "command(tree)"
     ]
   }
 }
