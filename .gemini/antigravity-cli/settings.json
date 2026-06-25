@@ -34,5 +34,8 @@
       "command(sleep)",
       "command(tree)"
     ]
-  }
+  },
+  "trustedWorkspaces": [
+    "/home/xk/github/xk/mapa"
+  ]
 }
