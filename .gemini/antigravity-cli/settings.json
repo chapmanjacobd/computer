@@ -34,7 +34,8 @@
       "command(sleep)",
       "command(tree)",
       "command(git branch)",
-      "command(git rm)"
+      "command(git rm)",
+      "command(git restore)"
     ]
   },
   "trustedWorkspaces": [
