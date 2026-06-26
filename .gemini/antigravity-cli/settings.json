@@ -1,5 +1,5 @@
 {
-  "model": "Gemini 3.1 Pro (Low)",
+  "model": "Claude Sonnet 4.6 (Thinking)",
   "permissions": {
     "allow": [
       "command(cargo test)",
@@ -36,7 +36,8 @@
       "command(tree)",
       "command(git branch)",
       "command(git rm)",
-      "command(git restore)"
+      "command(git restore)",
+      "command(cd)"
     ]
   },
   "trustedWorkspaces": [
