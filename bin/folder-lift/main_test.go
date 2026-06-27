@@ -217,3 +217,50 @@ func TestCollapseLayers_RootMatchesTarget(t *testing.T) {
 		t.Errorf("expected file1 to remain at %s, but it was moved", file1)
 	}
 }
+
+func TestCollapseLayers_DotRoot(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "collapse_dot_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Change working directory to tmpDir so "." refers to it
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get wd: %v", err)
+	}
+	defer os.Chdir(originalWd)
+
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to chdir: %v", err)
+	}
+
+	targetDir := "drop"
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		t.Fatalf("failed to create setup dirs: %v", err)
+	}
+
+	file1 := filepath.Join(targetDir, "file1.txt")
+	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+		t.Fatalf("failed to write file1: %v", err)
+	}
+
+	args := MoveArgs{
+		Root:    ".",
+		Targets: map[string]bool{"drop": true},
+	}
+
+	if err := collapseLayers(args); err != nil {
+		t.Fatalf("collapseLayers failed: %v", err)
+	}
+
+	expectedFile1 := "file1.txt"
+	if _, err := os.Stat(expectedFile1); os.IsNotExist(err) {
+		t.Errorf("expected file1 to be lifted to %s, but it does not exist", expectedFile1)
+	}
+
+	if _, err := os.Stat(targetDir); !os.IsNotExist(err) {
+		t.Errorf("expected target directory %s to be deleted, but it still exists", targetDir)
+	}
+}
