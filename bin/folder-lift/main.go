@@ -46,6 +46,15 @@ func collapseLayers(args MoveArgs) error {
 		currentDir := queue[0]
 		queue = queue[1:]
 
+		if info, err := os.Stat(currentDir); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		} else if !info.IsDir() {
+			continue
+		}
+
 		// If the current directory itself matches a target (and isn't the root), collapse it
 		if currentDir != args.Root && args.Targets[filepath.Base(currentDir)] {
 			newPaths, err := liftDirectoryContents(currentDir)
