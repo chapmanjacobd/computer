@@ -83,38 +83,25 @@ func collapseLayers(args MoveArgs) error {
 func liftDirectoryContents(targetDir string) ([]string, error) {
 	parentDir := filepath.Dir(targetDir)
 
-	// Use a temporary name to avoid namespace collisions during nested collapses
-	tmpTargetDir := targetDir + "_collapsing_tmp"
-	if err := os.Rename(targetDir, tmpTargetDir); err != nil {
-		return nil, err
-	}
-
-	entries, err := os.ReadDir(tmpTargetDir)
+	entries, err := os.ReadDir(targetDir)
 	if err != nil {
 		return nil, err
 	}
 
 	var newPaths []string
-
 	for _, entry := range entries {
-		src := filepath.Join(tmpTargetDir, entry.Name())
 		dest := filepath.Join(parentDir, entry.Name())
-
 		fmt.Printf("%s\n--> %s\n\n", filepath.Join(targetDir, entry.Name()), dest)
-		cli := &merge.CLI{
-			Sources:     []string{src},
-			Destination: dest,
-		}
-		if err := merge.Run(cli); err != nil {
-			return nil, err
-		}
-
 		if entry.IsDir() {
 			newPaths = append(newPaths, dest)
 		}
 	}
 
-	if err := os.Remove(tmpTargetDir); err != nil {
+	cli := &merge.CLI{
+		Sources:     []string{targetDir},
+		Destination: parentDir,
+	}
+	if err := merge.Run(cli); err != nil {
 		return nil, err
 	}
 
