@@ -30,14 +30,8 @@ func main() {
 		targetMap[target] = true
 	}
 
-	absRoot, err := filepath.Abs(cli.Root)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-
 	args := MoveArgs{
-		Root:    filepath.Clean(absRoot),
+		Root:    filepath.Clean(cli.Root),
 		Targets: targetMap,
 		Dedupe:  cli.Dedupe,
 	}
@@ -67,7 +61,10 @@ func collapseLayers(args MoveArgs) error {
 		// If the current directory itself matches a target (and isn't the root), collapse it
 		isTarget := args.Targets[filepath.Base(currentDir)]
 		if args.Dedupe && !isTarget {
-			isTarget = hasDuplicateNameInPath(currentDir)
+			absDir, err := filepath.Abs(currentDir)
+			if err == nil {
+				isTarget = hasDuplicateNameInPath(absDir)
+			}
 		}
 
 		if currentDir != args.Root && isTarget {
