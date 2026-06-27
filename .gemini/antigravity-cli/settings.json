@@ -42,6 +42,7 @@
   },
   "trustedWorkspaces": [
     "/home/xk/github/xk/mapa",
-    "/home/xk/bin/folder-lift"
+    "/home/xk/bin/folder-lift",
+    "/home/xk/github/xk/merge"
   ]
 }

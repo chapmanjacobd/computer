@@ -17,17 +17,17 @@ func TestCollapseLayers(t *testing.T) {
 	target := filepath.Join(parent, "match_me")
 	childDir := filepath.Join(target, "subfolder")
 
-	if err := os.MkdirAll(childDir, 0755); err != nil {
+	if err := os.MkdirAll(childDir, 0o755); err != nil {
 		t.Fatalf("failed to create setup dirs: %v", err)
 	}
 
 	file1 := filepath.Join(target, "file1.txt")
 	file2 := filepath.Join(childDir, "file2.txt")
 
-	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("data1"), 0o644); err != nil {
 		t.Fatalf("failed to write file1: %v", err)
 	}
-	if err := os.WriteFile(file2, []byte("data2"), 0644); err != nil {
+	if err := os.WriteFile(file2, []byte("data2"), 0o644); err != nil {
 		t.Fatalf("failed to write file2: %v", err)
 	}
 
@@ -113,10 +113,10 @@ func TestCollapseLayers_MultipleScenarios(t *testing.T) {
 			defer os.RemoveAll(tmpDir)
 
 			for _, d := range tt.setupDirs {
-				os.MkdirAll(filepath.Join(tmpDir, d), 0755)
+				os.MkdirAll(filepath.Join(tmpDir, d), 0o755)
 			}
 			for _, f := range tt.setupFiles {
-				os.WriteFile(filepath.Join(tmpDir, f), []byte("test"), 0644)
+				os.WriteFile(filepath.Join(tmpDir, f), []byte("test"), 0o644)
 			}
 
 			args := MoveArgs{
@@ -154,12 +154,12 @@ func TestCollapseLayers_ParentPrefixMatches(t *testing.T) {
 	root := filepath.Join(parentPrefix, "root")
 	targetInside := filepath.Join(root, "drop")
 
-	if err := os.MkdirAll(targetInside, 0755); err != nil {
+	if err := os.MkdirAll(targetInside, 0o755); err != nil {
 		t.Fatalf("failed to create setup dirs: %v", err)
 	}
 
 	file1 := filepath.Join(targetInside, "file1.txt")
-	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("data1"), 0o644); err != nil {
 		t.Fatalf("failed to write file1: %v", err)
 	}
 
@@ -191,12 +191,12 @@ func TestCollapseLayers_RootMatchesTarget(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	root := filepath.Join(tmpDir, "drop")
-	if err := os.MkdirAll(root, 0755); err != nil {
+	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatalf("failed to create setup dirs: %v", err)
 	}
 
 	file1 := filepath.Join(root, "file1.txt")
-	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("data1"), 0o644); err != nil {
 		t.Fatalf("failed to write file1: %v", err)
 	}
 
@@ -237,12 +237,12 @@ func TestCollapseLayers_DotRoot(t *testing.T) {
 	}
 
 	targetDir := "drop"
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		t.Fatalf("failed to create setup dirs: %v", err)
 	}
 
 	file1 := filepath.Join(targetDir, "file1.txt")
-	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("data1"), 0o644); err != nil {
 		t.Fatalf("failed to write file1: %v", err)
 	}
 

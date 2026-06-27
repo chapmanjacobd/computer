@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
+	"github.com/chapmanjacobd/merge"
 )
 
 type CLI struct {
@@ -91,7 +92,11 @@ func liftDirectoryContents(targetDir string) ([]string, error) {
 		dest := filepath.Join(parentDir, entry.Name())
 
 		fmt.Printf("%s\n--> %s\n\n", filepath.Join(targetDir, entry.Name()), dest)
-		if err := os.Rename(src, dest); err != nil {
+		cli := &merge.CLI{
+			Sources:     []string{src},
+			Destination: dest,
+		}
+		if err := merge.Run(cli); err != nil {
 			return nil, err
 		}
 
