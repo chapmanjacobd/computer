@@ -1,5 +1,5 @@
 {
-  "model": "Claude Sonnet 4.6 (Thinking)",
+  "model": "Gemini 3.1 Pro (Low)",
   "permissions": {
     "allow": [
       "command(cargo test)",
