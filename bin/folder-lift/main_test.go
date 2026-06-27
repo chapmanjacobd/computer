@@ -142,3 +142,78 @@ func TestCollapseLayers_MultipleScenarios(t *testing.T) {
 		})
 	}
 }
+
+func TestCollapseLayers_ParentPrefixMatches(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "collapse_parent_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	parentPrefix := filepath.Join(tmpDir, "drop")
+	root := filepath.Join(parentPrefix, "root")
+	targetInside := filepath.Join(root, "drop")
+
+	if err := os.MkdirAll(targetInside, 0755); err != nil {
+		t.Fatalf("failed to create setup dirs: %v", err)
+	}
+
+	file1 := filepath.Join(targetInside, "file1.txt")
+	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+		t.Fatalf("failed to write file1: %v", err)
+	}
+
+	args := MoveArgs{
+		Root:    root,
+		Targets: map[string]bool{"drop": true},
+	}
+
+	if err := collapseLayers(args); err != nil {
+		t.Fatalf("collapseLayers failed: %v", err)
+	}
+
+	expectedFile1 := filepath.Join(root, "file1.txt")
+	if _, err := os.Stat(expectedFile1); os.IsNotExist(err) {
+		t.Errorf("expected file1 to be lifted to %s, but it does not exist", expectedFile1)
+	}
+
+	unexpectedFile1 := filepath.Join(parentPrefix, "file1.txt")
+	if _, err := os.Stat(unexpectedFile1); err == nil {
+		t.Errorf("file1 was lifted ABOVE the root into %s", unexpectedFile1)
+	}
+}
+
+func TestCollapseLayers_RootMatchesTarget(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "collapse_root_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	root := filepath.Join(tmpDir, "drop")
+	if err := os.MkdirAll(root, 0755); err != nil {
+		t.Fatalf("failed to create setup dirs: %v", err)
+	}
+
+	file1 := filepath.Join(root, "file1.txt")
+	if err := os.WriteFile(file1, []byte("data1"), 0644); err != nil {
+		t.Fatalf("failed to write file1: %v", err)
+	}
+
+	args := MoveArgs{
+		Root:    root,
+		Targets: map[string]bool{"drop": true},
+	}
+
+	if err := collapseLayers(args); err != nil {
+		t.Fatalf("collapseLayers failed: %v", err)
+	}
+
+	if _, err := os.Stat(root); os.IsNotExist(err) {
+		t.Errorf("expected root directory %s to not be removed, but it was", root)
+	}
+
+	if _, err := os.Stat(file1); os.IsNotExist(err) {
+		t.Errorf("expected file1 to remain at %s, but it was moved", file1)
+	}
+}
