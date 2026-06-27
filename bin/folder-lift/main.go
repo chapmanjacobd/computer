@@ -12,11 +12,13 @@ import (
 type CLI struct {
 	Root    string   `arg:"" help:"Root directory to scan." type:"existingdir"`
 	Targets []string `arg:"" help:"Folder names to match and collapse."`
+	Dedupe  bool     `help:"Remove any parent folders with the same name for each given path."`
 }
 
 type MoveArgs struct {
 	Root    string
 	Targets map[string]bool
+	Dedupe  bool
 }
 
 func main() {
@@ -28,9 +30,16 @@ func main() {
 		targetMap[target] = true
 	}
 
+	absRoot, err := filepath.Abs(cli.Root)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
 	args := MoveArgs{
-		Root:    filepath.Clean(cli.Root),
+		Root:    filepath.Clean(absRoot),
 		Targets: targetMap,
+		Dedupe:  cli.Dedupe,
 	}
 
 	if err := collapseLayers(args); err != nil {
@@ -56,7 +65,12 @@ func collapseLayers(args MoveArgs) error {
 		}
 
 		// If the current directory itself matches a target (and isn't the root), collapse it
-		if currentDir != args.Root && args.Targets[filepath.Base(currentDir)] {
+		isTarget := args.Targets[filepath.Base(currentDir)]
+		if args.Dedupe && !isTarget {
+			isTarget = hasDuplicateNameInPath(currentDir)
+		}
+
+		if currentDir != args.Root && isTarget {
 			newPaths, err := liftDirectoryContents(currentDir)
 			if err != nil {
 				return err
@@ -106,4 +120,23 @@ func liftDirectoryContents(targetDir string) ([]string, error) {
 	}
 
 	return newPaths, nil
+}
+
+func hasDuplicateNameInPath(p string) bool {
+	base := filepath.Base(p)
+	if base == string(filepath.Separator) || base == "." || base == ".." {
+		return false
+	}
+	dir := filepath.Dir(p)
+	for {
+		if filepath.Base(dir) == base {
+			return true
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return false
 }
