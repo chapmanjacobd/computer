@@ -37,13 +37,15 @@
       "command(git branch)",
       "command(git rm)",
       "command(git restore)",
-      "command(cd)"
+      "command(cd)",
+      "command(kotlinc)"
     ]
   },
   "trustedWorkspaces": [
     "/home/xk/github/xk/mapa",
     "/home/xk/bin/folder-lift",
     "/home/xk/github/xk/merge",
-    "/home/xk/github/xk/discoteca"
+    "/home/xk/github/xk/discoteca",
+    "/home/xk/github/xk/shrink"
   ]
 }
