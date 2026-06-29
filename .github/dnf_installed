@@ -58,6 +58,7 @@ freerdp
 freerdp-server
 fuse-libs
 gamemode
+gcc-aarch64-linux-gnu
 gdal
 gdal-devel
 gdisk
