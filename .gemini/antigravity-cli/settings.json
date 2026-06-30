@@ -1,5 +1,5 @@
 {
-  "model": "Gemini 3.1 Pro (Low)",
+  "model": "Gemini 3.1 Pro (High)",
   "permissions": {
     "allow": [
       "command(cargo test)",
@@ -38,7 +38,8 @@
       "command(git rm)",
       "command(git restore)",
       "command(cd)",
-      "command(kotlinc)"
+      "command(kotlinc)",
+      "command(git checkout)"
     ]
   },
   "trustedWorkspaces": [
