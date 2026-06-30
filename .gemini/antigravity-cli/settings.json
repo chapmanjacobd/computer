@@ -41,7 +41,8 @@
       "command(kotlinc)",
       "command(git checkout)",
       "command(cp)",
-      "command(emulator)"
+      "command(emulator)",
+      "command(killall )"
     ]
   },
   "trustedWorkspaces": [
