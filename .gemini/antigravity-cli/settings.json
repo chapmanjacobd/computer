@@ -42,7 +42,8 @@
       "command(git checkout)",
       "command(cp)",
       "command(emulator)",
-      "command(killall )"
+      "command(killall )",
+      "command(git fetch)"
     ]
   },
   "trustedWorkspaces": [
@@ -51,6 +52,7 @@
     "/home/xk/github/xk/merge",
     "/home/xk/github/xk/discoteca",
     "/home/xk/github/xk/shrink",
-    "/home/xk/github/xk/links"
+    "/home/xk/github/xk/links",
+    "/home/xk/github/o/pmtiles"
   ]
 }
