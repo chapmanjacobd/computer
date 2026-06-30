@@ -45,7 +45,8 @@
       "command(killall )",
       "command(git fetch)",
       "command(git grep)",
-      "command(git remote)"
+      "command(git remote)",
+      "command(jq)"
     ]
   },
   "trustedWorkspaces": [
