@@ -126,6 +126,7 @@ libXxf86vm
 libXxf86vm-devel
 libyaml-devel
 libzstd-devel
+llama-cpp
 lockfile-progs
 lshw
 lua
