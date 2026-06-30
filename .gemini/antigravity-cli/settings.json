@@ -39,7 +39,9 @@
       "command(git restore)",
       "command(cd)",
       "command(kotlinc)",
-      "command(git checkout)"
+      "command(git checkout)",
+      "command(cp)",
+      "command(emulator)"
     ]
   },
   "trustedWorkspaces": [
