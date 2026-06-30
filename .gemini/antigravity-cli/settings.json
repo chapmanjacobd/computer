@@ -43,7 +43,8 @@
       "command(cp)",
       "command(emulator)",
       "command(killall )",
-      "command(git fetch)"
+      "command(git fetch)",
+      "command(git grep)"
     ]
   },
   "trustedWorkspaces": [
