@@ -140,7 +140,8 @@ def group_by_folders(files: List[FileInfo], base_dir: Path) -> List[FolderInfo]:
             folder = base_dir / relative.parts[0]
         else:
             # File is directly in base_dir (shouldn't happen with media typically)
-            folder = base_dir
+            log.warning("Ignoring loose file: %s", file_info.path)
+            continue
 
         folder_files[folder].append(file_info)
 
@@ -274,6 +275,10 @@ def main():
     need_duration = duration_min - staging_duration if staging_duration < duration_min else 0
     excess_duration = staging_duration - duration_max if staging_duration > duration_max else 0
 
+    if excess_size == 0 and excess_duration == 0 and need_size == 0 and need_duration == 0:
+        print("\nStaging directory is within goal constraints. No changes needed.")
+        return
+
     if excess_size > 0 or excess_duration > 0:
         if excess_size > 0:
             print(f"  - Size: -{strings.file_size(excess_size)}")
@@ -317,8 +322,14 @@ def main():
         print(
             f"\nRemoved from staging: {removed_folders} folders, {strings.file_size(removed_size)}, {strings.duration_short(removed_duration)}"
         )
+        staging_size -= removed_size
+        staging_duration -= removed_duration
 
-    elif need_size > 0 or need_duration > 0:
+    # Recalculate need constraints after potential removals
+    need_size = size_min - staging_size if staging_size < size_min else 0
+    need_duration = duration_min - staging_duration if staging_duration < duration_min else 0
+
+    if need_size > 0 or need_duration > 0:
         if need_size > 0:
             print(f"  - Size: +{strings.file_size(need_size)}")
         if need_duration > 0:
@@ -366,9 +377,6 @@ def main():
         print(
             f"\nAdded to staging: {added_folders} folders, {strings.file_size(added_size)}, {strings.duration_short(added_duration)}"
         )
-
-    else:
-        print("\nStaging directory is within goal constraints. No changes needed.")
 
 
 if __name__ == "__main__":
