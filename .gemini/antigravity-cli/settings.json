@@ -46,7 +46,8 @@
       "command(git fetch)",
       "command(git grep)",
       "command(git remote)",
-      "command(jq)"
+      "command(jq)",
+      "command(aapt)"
     ]
   },
   "trustedWorkspaces": [
