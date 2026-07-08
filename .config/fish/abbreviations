@@ -954,6 +954,6 @@ abbr -a -- amend git commit --amend --no-edit
 abbr -a -- gin git add --intent-to-add .
 abbr -a -- gem gemini
 abbr -a -- fixup git.amend
-abbr -a -- g copilot
 abbr -a -- sha sha256sum
 abbr -a -- gemini agy
+abbr -a -- g copilot --max-ai-credits=400
