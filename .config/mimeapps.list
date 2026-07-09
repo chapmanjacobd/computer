@@ -79,6 +79,7 @@ x-scheme-handler/skycoin=Skycoin.desktop
 x-scheme-handler/slack=slack.desktop
 x-scheme-handler/x-github-client=github-desktop.desktop
 x-scheme-handler/x-github-desktop-auth=github-desktop.desktop
+x-scheme-handler/rpi-imager=com.raspberrypi.rpi-imager-uri-handler.desktop
 
 [Removed Associations]
 application/epub+zip=calibre-gui.desktop;
