@@ -48,7 +48,8 @@
       "command(git remote)",
       "command(jq)",
       "command(aapt)",
-      "command(du)"
+      "command(du)",
+      "command(unzip)"
     ]
   },
   "trustedWorkspaces": [
