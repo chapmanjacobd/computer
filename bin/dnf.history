@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# usage: ./dnf-pkg-history.sh <package-name>
+
+set -euo pipefail
+
+pkg="${1:?Usage: $0 <package-name>}"
+
+# Get every transaction ID (leading digit = a data row in both dnf4/dnf5 output)
+ids=$(sudo dnf history list 2>/dev/null | awk '$1 ~ /^[0-9]+$/ {print $1}')
+
+if [[ -z "$ids" ]]; then
+    echo "No transaction history found."
+    exit 1
+fi
+
+found_any=0
+
+for id in $ids; do
+    info=$(sudo dnf history info "$id" 2>/dev/null)
+    matches=$(echo "$info" | grep -i "$pkg" || true)
+
+    if [[ -n "$matches" ]]; then
+        found_any=1
+        echo "=== Transaction $id ==="
+        echo "$matches"
+        echo
+    fi
+done
+
+if [[ "$found_any" -eq 0 ]]; then
+    echo "No transactions found for package: $pkg"
+fi
