@@ -3,7 +3,7 @@ function wip
     argparse y/yes -- $argv
 
     if count $argv >/dev/null
-        $argv
+        string length -q -- $argv; and $argv
     end
 
     if test (git status --porcelain | count) -eq 0

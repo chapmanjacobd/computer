@@ -1,5 +1,5 @@
 # Defined interactively
 function callback
     fish
-    $argv
+    string length -q -- $argv; and $argv
 end

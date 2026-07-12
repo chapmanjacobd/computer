@@ -3,5 +3,5 @@ function yt.subtitle -w yt-dlp
         --sub-lang 'en,EN,en.*,en-*,EN.*,EN-*eng,ENG,english,English,ENGLISH' \
         --embed-subs --compat-options no-keep-subs \
         --match-filter "requested_subtitles & duration > 59 & duration < 14399 & !is_live & !was_live" \
-        $argv
+        string length -q -- $argv; and $argv
 end
