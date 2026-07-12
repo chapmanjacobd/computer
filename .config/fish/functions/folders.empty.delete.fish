@@ -1,5 +1,5 @@
 # Defined interactively
 function folders.empty.delete
-    $argv
+    string length -q -- $argv; and $argv
     find . -type d -empty -delete
 end
