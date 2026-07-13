@@ -1,4 +1,4 @@
 # Defined interactively
 function pyformat.all
-    pycln --all . && ssort && isort . && black --exclude=__pypackages__ .
+    ruff check . --fix --preview && pycln --all . && ssort && isort . && black --exclude=__pypackages__ .
 end
