@@ -33,7 +33,6 @@ SETUVAR --export LS_COLORS:\x2a\x7e\x3d0\x3b38\x3b2\x3b89\x3b89\x3b89\x3abd\x3d1
 SETUVAR --export MPV_SOCKET:/home/xk/\x2econfig/mpv/socket
 SETUVAR --export NPM_CONFIG_CACHE:/home/xk/\x2ecache/npm
 SETUVAR --export NPM_CONFIG_INIT_MODULE:/home/xk/\x2econfig/npm/config/npm\x2dinit\x2ejs
-SETUVAR --export NPM_CONFIG_TMP:/run/user/1000/npm
 SETUVAR --export NPM_CONFIG_USERCONFIG:/home/xk/\x2econfig/npm/npmrc
 SETUVAR --export NUMEXPR_MAX_THREADS:12
 SETUVAR --export NUMEXPR_NUM_THREADS:4
