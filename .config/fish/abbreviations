@@ -957,3 +957,4 @@ abbr -a -- fixup git.amend
 abbr -a -- sha sha256sum
 abbr -a -- gemini agy
 abbr -a -- g copilot --max-ai-credits=400
+abbr -a -- j journalctl --user -u
