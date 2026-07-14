@@ -369,7 +369,7 @@ abbr -a -- video.to.keyframes.slow.io video.to.keyframes.slow.named
 abbr -a -- ppaused ps.paused
 abbr -a -- restore_undermount_files d.files.undermounted
 abbr -a -- lsfd_paths ls.fd
-abbr -a -- systemd-pid-u userd.pid
+abbr -a -- systemd-pid-u service.pid
 abbr -a -- pscmd ps.cmd
 abbr -a -- last-function-name commandline.last.cmd
 abbr -a -- mpvcmd mpv.cmd
