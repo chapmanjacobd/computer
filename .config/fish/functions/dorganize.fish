@@ -1,6 +1,7 @@
 # Defined via `source`
 function dorganize
     ~/sync/world/downloads/
+    lb unar -y *Subtitle*
 
     unardel *.zip
     unardel *.rar
