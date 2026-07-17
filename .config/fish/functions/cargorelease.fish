@@ -25,7 +25,7 @@ function cargorelease --argument newver
         cargo clippy --fix --allow-staged --tests
         git add .
         if gum confirm --default=no
-            git amend
+            git.fixup
         else
             git restore --source=HEAD --staged --worktree -- .
         end

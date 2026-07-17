@@ -1,5 +1,5 @@
 # Defined interactively
-function git.amend --argument-names target
+function git.fixup --argument-names target
     if test -n "$target"
         set commit $target
     else

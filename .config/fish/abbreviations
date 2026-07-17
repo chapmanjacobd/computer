@@ -375,7 +375,6 @@ abbr -a -- last-function-name commandline.last.cmd
 abbr -a -- mpvcmd mpv.cmd
 abbr -a -- fix_audio audio.fixup.compand
 abbr -a -- d-expand d.expand
-abbr -a -- git_amend git.amend
 abbr -a -- headtee tee.prepend
 abbr -a -- prepend file.prepend
 abbr -a -- cb_append cb.append
@@ -939,7 +938,7 @@ abbr -a -- trashls trash-list
 abbr -a -- trash.list trash-list
 abbr -a -- wm commit
 abbr -a -- gc commit
-abbr -a -- wipam git.amend HEAD
+abbr -a -- wipam git.fixup HEAD
 abbr -a -- phone.cb ssh phone cb
 abbr -a -- code zed
 abbr -a -- gdc 'git diff | cb'
@@ -953,8 +952,9 @@ abbr -a -- dfi df -i
 abbr -a -- amend git commit --amend --no-edit
 abbr -a -- gin git add --intent-to-add .
 abbr -a -- gem gemini
-abbr -a -- fixup git.amend
+abbr -a -- fixup git.fixup
 abbr -a -- sha sha256sum
 abbr -a -- gemini agy
 abbr -a -- g copilot --max-ai-credits=400
 abbr -a -- j journalctl --user -u
+abbr -a -- git.amend git.fixup
