@@ -1,7 +1,7 @@
 # Defined interactively
 function resume.edit
     cd ~/github/o/resume/
-    code .
+    $VISUAL .
 
     open outputs/jchapman_resume.pdf
     while inotifywait -e modify inputs/resume.yaml templates/*/*
