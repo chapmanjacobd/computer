@@ -29,4 +29,6 @@ function btrfs.tempdevice.add --argument-names btrfs_mnt --argument-names new_mn
         echo "Error: Failed to add device to Btrfs."
         return 1
     end
+
+   sudo btrfs device scan
 end

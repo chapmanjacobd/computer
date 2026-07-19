@@ -19,4 +19,6 @@ function btrfs.tempdevice.remove --argument-names btrfs_mount
             loopdev.detach.delete "$dev_lo"
         end
     end
+
+    sudo btrfs device scan
 end
