@@ -16,9 +16,7 @@ function btrfs.tempdevice.remove --argument-names btrfs_mount
                 sleep 10
             end
 
-            set -l back_files (losetup "$dev_lo" -O BACK-FILE --noheadings)
-            sudo losetup --detach "$dev_lo"
-            and rm $back_files
+            loopdev.detach.delete "$dev_lo"
         end
     end
 end
