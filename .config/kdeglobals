@@ -143,6 +143,10 @@ Dialog Size=1536,822
 [MainToolbarIcons]
 Size=36
 
+[PreviewSettings]
+EnableRemoteFolderThumbnail=false
+MaximumRemoteSize=0
+
 [SmallIcons]
 Size=24
 

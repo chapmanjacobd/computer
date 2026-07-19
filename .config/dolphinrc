@@ -1,0 +1,23 @@
+[ContentDisplay]
+UsePermissionsFormat=NumericFormat
+
+[DetailsMode]
+PreviewSize=80
+
+[General]
+DoubleClickViewAction=show_folders_panel
+Version=202
+ViewPropsTimestamp=2026,7,18,16,41,50.154
+
+[IconsMode]
+PreviewSize=224
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[MainWindow]
+MenuBar=Disabled
+
+[PreviewSettings]
+Plugins=com.github.xournalpp.xournalpp,audiothumbnail,blenderthumbnail,evince,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,exrthumbnail,directorythumbnail,fontthumbnail,imagethumbnail,jpegthumbnail,kraorathumbnail,windowsexethumbnail,windowsimagethumbnail,mltpreview,mobithumbnail,opendocumentthumbnail,gsthumbnail,rawthumbnail,svgthumbnail,ffmpegthumbs

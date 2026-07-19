@@ -362,3 +362,5 @@
 /.opencode
 /.ollama
 /.kotlin
+/.config/session
+/.config/ktrashrc
