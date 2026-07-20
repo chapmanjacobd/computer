@@ -30,5 +30,5 @@ function btrfs.tempdevice.add --argument-names btrfs_mnt --argument-names new_mn
         return 1
     end
 
-   sudo btrfs device scan
+    sudo btrfs device scan
 end
