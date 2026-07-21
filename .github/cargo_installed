@@ -1,6 +1,7 @@
 ast-grep
 bandwhich
 binocle
+cargo-bloat
 cargo-doc2readme
 cargo-edit
 cargo-nextest
