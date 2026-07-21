@@ -1,7 +1,9 @@
 ast-grep
 bandwhich
 binocle
+cargo-doc2readme
 cargo-edit
+cargo-nextest
 cargo-release
 cargo-tarpaulin
 choose
