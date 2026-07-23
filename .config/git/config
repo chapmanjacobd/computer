@@ -17,6 +17,7 @@
     autocrlf = false
     logallrefupdates = true
     attributesfile = /home/xk/.config/git/attributes
+	hooksPath = /dev/null
 [transfer]
     fsckobjects = true
 [fetch]
