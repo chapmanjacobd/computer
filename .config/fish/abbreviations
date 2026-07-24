@@ -12,7 +12,6 @@ abbr -a -- fdh fd\ --hidden\ --exclude\ \'.git\'
 abbr -a -- fdwatch 'fd -x fish -c "mpvonce {}"'
 abbr -a -- fi 'sudo btrfs fi usage'
 abbr -a -- funced 'funced -s'
-abbr -a -- ga 'git add .'
 abbr -a -- gcl gitclear
 abbr -a -- gitlog 'git log --oneline --decorate --all --graph --stat'
 abbr -a -- gits 'git log -p -S'
@@ -958,3 +957,4 @@ abbr -a -- g copilot --max-ai-credits=400
 abbr -a -- j journalctl --user -u
 abbr -a -- git.amend git.fixup
 abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb process-audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
+abbr -a -- ga git add -u
