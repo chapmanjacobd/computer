@@ -4,7 +4,7 @@ SETUVAR --export ANDROID_AVD_HOME:/home/xk/\x2eandroid/avd
 SETUVAR --export ANDROID_HOME:/home/xk/\x2eandroid/Sdk
 SETUVAR --export ANDROID_SDK_ROOT:/home/xk/\x2eandroid/Sdk
 SETUVAR --export ANSIBLE_HOME:/home/xk/\x2elocal/share/ansible
-SETUVAR --export ANSIBLE_STDOUT_CALLBACK:yaml
+SETUVAR --export ANSIBLE_STDOUT_CALLBACK:ansible\x2ebuiltin\x2edefault
 SETUVAR --export AWS_CONFIG_FILE:/home/xk/\x2econfig/aws/config
 SETUVAR --export AWS_SHARED_CREDENTIALS_FILE:/home/xk/\x2econfig/aws/credentials
 SETUVAR --export BOTO_CONFIG:/home/xk/\x2econfig/gcloud/boto
