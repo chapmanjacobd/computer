@@ -364,3 +364,4 @@
 /.kotlin
 /.config/session
 /.config/ktrashrc
+/.vscode-shared/sharedStorage
