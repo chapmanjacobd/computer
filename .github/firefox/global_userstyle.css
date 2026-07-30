@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name         Global LightBG Desert Sepia Medium Contrast
-@version      20220415.03.47
+@version      2025-02-08
 @namespace    userstyles.world/user/chapmanjacobd
 @description  Built upon Solarized Dark Modified Colors. I discovered that adjusting my monitor to minimum brightness and using this style allowed a nice contrast so text was easy to read.
 
@@ -18,15 +18,19 @@ Any portion of my own code I release as CC0
 
 @namespace xul url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);
 
+
+@-moz-document url-prefix("https://www.google.com/search") {
+    div[aria-label] {
+        color: #000 !important;
+        background: #cebdab !important;
+    }
+}
 @-moz-document url("about:blank"),
 url-prefix("http://"),
 url-prefix("https://"),
 url-prefix("ftp://"),
 url-prefix("file://") {
-    /*
- * Drop the below regex, after a comma, just before the opening curly bracket above, to exclude websites from solarization:
- * ,regexp("https?://(www\.)?(?!(userstyles\.org|docs\.google|github)\..*).*")
- */
+
     scrollbar {
         -moz-appearance: none !important;
         background: transparent !important;
@@ -52,7 +56,8 @@ url-prefix("file://") {
     .comment .comment,
     .RES-keyNav-activeElement,
     .RES-keyNav-activeElement .md-container,
-    .md-container {
+    .md-container,
+    tr {
         background-color: transparent !important;
     }
 
@@ -67,6 +72,7 @@ url-prefix("file://") {
         border-bottom-color: #444 !important;
         border-left-color: #444 !important;
         border-right-color: #444 !important;
+        scroll-padding-top: 0px !important;
     }
 
 
@@ -84,9 +90,14 @@ url-prefix("file://") {
         color: inherit !important;
     }
 
-    video-voyager div[aria-label] {
-        color: #000 !important;
-        background: #cebdab !important;
+    a img {
+        background-color: #0000004d !important;
+        border: 1px solid #001b48 !important;
+    }
+
+    a:visited img {
+        background-color: #c01169d9 !important;
+        border: 1px solid #662C49 !important;
     }
 
     p::first-letter,
@@ -176,17 +187,10 @@ url-prefix("file://") {
         border-radius: 2px;
         /* background: rgba(168, 153, 132,.9) !important; */;
     }
-
-    /*
-body, *:not(:empty):not(html):not(span):not(a):not(b):not(option):not(img):not([style="display: block;"]):not([onclick*="open"]):not([onclick*="s_objectID"]):not([class*="stars"]):not([id*="stars"]):not([id="rating"]):not([class="rating"]):not([class*="SPRITE"]):not([id*="SPRITE"]):not([class*="item"]):not([id*="item"]):not([class*="thumb"]):not([class*="icon"]):not(.text):not([id*="lbImage"]):not([class*="cc-in"]):not([class*="gr-body"]):not([id*="watch"]):not(#globalsearch):not(.sp),
-.r3_hm, .gmbutton2 b, .gtab-i, .ph, .bstab-iLft, .csb, #pagination div, [style*="sprite2.png"], #mw-head-base, #mw-page-base
-{
-  background-color: rgba(168, 153, 132,0) !important;
-}
-*/
     span:not(:empty):not([class*="icon"]):not([id*="icon"]):not([class*="star"]):not([id*="star"]):not([id*="rating"]):not([class*="rating"]):not([class*="prite"]) {
         background-image: none !important;
         text-indent: 0 !important;
+        background-color: #c7b49fd4 !important;
     }
 
     ::-moz-selection {
@@ -271,7 +275,7 @@ body, *:not(:empty):not(html):not(span):not(a):not(b):not(option):not(img):not([
     }
 
     table table {
-        background: #9b886c !important;
+        background: #cebdab !important;
     }
 
     th,
@@ -284,8 +288,8 @@ body, *:not(:empty):not(html):not(span):not(a):not(b):not(option):not(img):not([
     select,
     option,
     optgroup {
-        color: #ebdbb2 !important;
-        background: none #474137 !important;
+        color: #000 !important;
+        /* background: #cebdab !important; */
         -moz-appearance: none !important;
         -webkit-appearance: none !important;
     }
@@ -302,7 +306,8 @@ body, *:not(:empty):not(html):not(span):not(a):not(b):not(option):not(img):not([
     input[type="submit"],
     input[type="reset"],
     button {
-        background: #474137 !important;
+        /* background: #474137 !important; */
+        border: 1px solid #575757e3 !important;
     }
 
     input[type="button"]:hover,
@@ -310,12 +315,17 @@ body, *:not(:empty):not(html):not(span):not(a):not(b):not(option):not(img):not([
     input[type="reset"]:hover,
     button:hover {
         color: #000000 !important;
-        background: #ebdbb2 !important;
+        background: #ebdbb2aa !important;
     }
 
     /* Youtube Annotation */
     .captions-text {
         color: white !important;
+        background-color: black !important;
+    }
+
+    #container.ytd-player,
+    ytd-player {
         background-color: black !important;
     }
 
