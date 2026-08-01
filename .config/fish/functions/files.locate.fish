@@ -1,6 +1,4 @@
 # Defined interactively
 function files.locate
-    for s in $argv
-        fd -tf . "$s"
-    end | unique | fzf.multi
+    print $argv | xargs -I{} find "{}" -type f
 end
