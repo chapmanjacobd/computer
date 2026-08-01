@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+import argparse
+import subprocess
+import sys
+
+
+def main(args):
+    all_paths = [line.strip() for line in args.input if line.strip()]
+    selected = set()
+
+    while True:
+        available = [path for path in all_paths if path not in selected]
+        if not available:
+            break
+
+        proc = subprocess.Popen(
+            ['fzf', '--multi', '--bind', 'ctrl-a:toggle-all'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True
+        )
+        stdout, _ = proc.communicate(input='\n'.join(available))
+
+        new_selections = [line.strip() for line in stdout.splitlines() if line.strip()]
+        if not new_selections:
+            break
+
+        for item in new_selections:
+            if item not in selected:
+                selected.add(item)
+                print(item)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Repeatedly select paths via fzf until cancelled.")
+    parser.add_argument('input', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
+    args = parser.parse_args()
+    main(args)
