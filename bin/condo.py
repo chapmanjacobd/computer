@@ -51,7 +51,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
     stock_return_m = args["stock_return"] / 12
     renter_results = []
 
-    for start_rent in [1300, 1400, 1500, 1600, 1700, 1800]:
+    for start_rent in [1300, 1600, 1700, 1800, 2200]:
         renter_stocks = args["total_capital"]
 
         for m in range(1, 361):
