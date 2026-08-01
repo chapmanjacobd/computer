@@ -121,25 +121,29 @@ def print_decision_table(scenarios: list[dict]):
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
 
 
+def parse_float_with_commas(s: str) -> float:
+    return float(str(s).replace(',', ''))
+
+
 def main():
     parser = argparse.ArgumentParser(description="30-Year Real Estate vs Renting Decision Table Evaluator")
 
-    parser.add_argument("--price", type=float, default=230000, help="Sale price of the target condo alternative")
-    parser.add_argument("--annual-taxes", type=float, default=3152, help="Annual property taxes")
-    parser.add_argument("--monthly-assessment", type=float, default=320, help="Monthly HOA assessment")
+    parser.add_argument("--price", type=parse_float_with_commas, default=230000, help="Sale price of the target condo alternative")
+    parser.add_argument("--annual-taxes", type=parse_float_with_commas, default=3152, help="Annual property taxes")
+    parser.add_argument("--monthly-assessment", type=parse_float_with_commas, default=320, help="Monthly HOA assessment")
 
-    parser.add_argument("--total-capital", type=float, default=130000, help="Total liquid cash available upfront")
-    parser.add_argument("--base-monthly-budget", type=float, default=2400, help="Baseline monthly cash outlays")
+    parser.add_argument("--total-capital", type=parse_float_with_commas, default=130000, help="Total liquid cash available upfront")
+    parser.add_argument("--base-monthly-budget", type=parse_float_with_commas, default=2100, help="Baseline monthly cash outlays")
     parser.add_argument(
-        "--mortgage-rate", type=float, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
+        "--mortgage-rate", type=parse_float_with_commas, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
     )
     parser.add_argument(
-        "--mortgage-rate-30", type=float, default=0.069, help="Annual mortgage interest rate (30-yr fixed)"
+        "--mortgage-rate-30", type=parse_float_with_commas, default=0.069, help="Annual mortgage interest rate (30-yr fixed)"
     )
-    parser.add_argument("--down-payment-pct", type=float, default=0.20, help="Down payment fraction (e.g. 0.20)")
-    parser.add_argument("--stock-return", type=float, default=0.07, help="Nominal annual stock market return")
-    parser.add_argument("--inflation-rate", type=float, default=0.03, help="Annual inflation for rent/HOA/taxes")
-    parser.add_argument("--appreciation-rate", type=float, default=0.03, help="Annual real estate appreciation rate")
+    parser.add_argument("--down-payment-pct", type=parse_float_with_commas, default=0.20, help="Down payment fraction (e.g. 0.20)")
+    parser.add_argument("--stock-return", type=parse_float_with_commas, default=0.07, help="Nominal annual stock market return")
+    parser.add_argument("--inflation-rate", type=parse_float_with_commas, default=0.03, help="Annual inflation for rent/HOA/taxes")
+    parser.add_argument("--appreciation-rate", type=parse_float_with_commas, default=0.03, help="Annual real estate appreciation rate")
 
     args = parser.parse_args()
     args_dict = vars(args)
