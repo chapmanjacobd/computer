@@ -32,7 +32,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         pmt_curr = pmt if m <= term_months else 0.0
 
         buyer_outlay = pmt_curr + tax_curr + hoa_curr
-        monthly_budget = args["base_monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
+        monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
         total_costs += buyer_outlay
         buyer_stocks += monthly_budget - buyer_outlay
@@ -72,7 +72,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             yr = (m - 1) // 12
 
             rent_curr = start_rent * ((1 + args["inflation_rate"]) ** yr)
-            monthly_budget = args["base_monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
+            monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
             total_costs += rent_curr
             renter_stocks += monthly_budget - rent_curr
@@ -133,7 +133,7 @@ def main():
     parser.add_argument("--monthly-assessment", type=parse_float_with_commas, default=320, help="Monthly HOA assessment")
 
     parser.add_argument("--total-capital", type=parse_float_with_commas, default=130000, help="Total liquid cash available upfront")
-    parser.add_argument("--base-monthly-budget", type=parse_float_with_commas, default=2100, help="Baseline monthly cash outlays")
+    parser.add_argument("--monthly-budget", type=parse_float_with_commas, default=2100, help="Baseline monthly cash outlays")
     parser.add_argument(
         "--mortgage-rate", type=parse_float_with_commas, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
     )
