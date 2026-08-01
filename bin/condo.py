@@ -106,8 +106,8 @@ def main():
     parser.add_argument("--annual-taxes", type=float, default=3152, help="Annual property taxes")
     parser.add_argument("--monthly-assessment", type=float, default=320, help="Monthly HOA assessment")
 
-    parser.add_argument("--total-capital", type=float, default=132940, help="Total liquid cash available upfront")
-    parser.add_argument("--base-monthly-budget", type=float, default=2145.32, help="Baseline monthly cash outlays")
+    parser.add_argument("--total-capital", type=float, default=130000, help="Total liquid cash available upfront")
+    parser.add_argument("--base-monthly-budget", type=float, default=2400, help="Baseline monthly cash outlays")
     parser.add_argument(
         "--mortgage-rate", type=float, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
     )
