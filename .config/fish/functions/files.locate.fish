@@ -1,4 +1,8 @@
-# Defined interactively
+# Defined via `source`
 function files.locate
-    print $argv | xargs -I{} find "{}" -type f
+    if set -q argv[1]
+        print $argv | xargs -I{} find "{}" -type f
+    else
+        xargs -I{} find "{}" -type f
+    end
 end

@@ -37,8 +37,10 @@ def main(args):
         for item in new_selections:
             if item not in selected:
                 selected.add(item)
-                print(item)
 
+    sys.stdout.flush()
+    for item in selected:
+        print(item)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Repeatedly select paths via fzf until cancelled.")
