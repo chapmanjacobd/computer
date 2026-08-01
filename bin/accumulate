@@ -14,7 +14,19 @@ def main(args):
             break
 
         proc = subprocess.Popen(
-            ['fzf', '--multi', '--bind', 'ctrl-a:toggle-all'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True
+            [
+                'fzf',
+                '--multi',
+                '--bind',
+                'ctrl-a:toggle-all',
+                '--preview',
+                "echo -- {} | string replace --regex '^.*? │ ' '' | fish_indent --ansi",
+                '--preview-window',
+                'bottom:3:wrap',
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
         )
         stdout, _ = proc.communicate(input='\n'.join(available))
 
