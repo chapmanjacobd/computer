@@ -4,20 +4,24 @@ import argparse
 from tabulate import tabulate
 
 
-def calculate_buyer_net_worth(args: dict) -> dict:
+def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: float = None) -> dict:
+    if mortgage_rate is None:
+        mortgage_rate = args["mortgage_rate"]
     stock_return_m = args["stock_return"] / 12
-    r_15 = args["mortgage_rate"] / 12
+    r = mortgage_rate / 12
 
     dp_amt = args["price"] * args["down_payment_pct"]
     loan_amt = args["price"] - dp_amt
 
-    pmt_15 = loan_amt * (r_15 * (1 + r_15) ** 180) / ((1 + r_15) ** 180 - 1)
+    term_months = term_years * 12
+    pmt = loan_amt * (r * (1 + r) ** term_months) / ((1 + r) ** term_months - 1)
 
     buyer_stocks = args["total_capital"] - dp_amt
     tax_m = args["annual_taxes"] / 12
     hoa_m = args["monthly_assessment"]
 
-    base_outlay_y1 = pmt_15 + tax_m + hoa_m
+    base_outlay_y1 = pmt + tax_m + hoa_m
+    total_costs = dp_amt
 
     for m in range(1, 361):
         buyer_stocks *= 1 + stock_return_m
@@ -25,22 +29,30 @@ def calculate_buyer_net_worth(args: dict) -> dict:
 
         tax_curr = tax_m * ((1 + args["inflation_rate"]) ** yr)
         hoa_curr = hoa_m * ((1 + args["inflation_rate"]) ** yr)
-        pmt_curr = pmt_15 if m <= 180 else 0.0
+        pmt_curr = pmt if m <= term_months else 0.0
 
         buyer_outlay = pmt_curr + tax_curr + hoa_curr
         monthly_budget = args["base_monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
+        total_costs += buyer_outlay
         buyer_stocks += monthly_budget - buyer_outlay
 
     final_home_val = args["price"] * ((1 + args["appreciation_rate"]) ** 30)
     final_net_worth = buyer_stocks + final_home_val
 
-    y30_outlay = (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 29)
+    y16_outlay = (pmt if term_months > 180 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 15)
+    y31_outlay = (pmt if term_months > 360 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 30)
+
+    scenario_name = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
+    if buyer_stocks < 0:
+        scenario_name += " !!UNDERWATER"
 
     return {
-        "scenario": f"Condo (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})",
+        "scenario": scenario_name,
         "initial_outlay": base_outlay_y1,
-        "y30_outlay": y30_outlay,
+        "y16_outlay": y16_outlay,
+        "y31_outlay": y31_outlay,
+        "total_costs": total_costs,
         "final_stocks": buyer_stocks,
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
@@ -53,6 +65,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 
     for start_rent in [1300, 1500, 1700, 1900, 2100, 2300, 2500]:
         renter_stocks = args["total_capital"]
+        total_costs = 0.0
 
         for m in range(1, 361):
             renter_stocks *= 1 + stock_return_m
@@ -61,15 +74,23 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             rent_curr = start_rent * ((1 + args["inflation_rate"]) ** yr)
             monthly_budget = args["base_monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
+            total_costs += rent_curr
             renter_stocks += monthly_budget - rent_curr
 
-        y30_outlay = start_rent * ((1 + args["inflation_rate"]) ** 29)
+        y16_outlay = start_rent * ((1 + args["inflation_rate"]) ** 15)
+        y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
+
+        scenario_name = f"Renter (${start_rent}/mo starting rent)"
+        if renter_stocks < 0:
+            scenario_name += " !!UNDERWATER"
 
         renter_results.append(
             {
-                "scenario": f"Renter (${start_rent}/mo starting rent)",
+                "scenario": scenario_name,
                 "initial_outlay": float(start_rent),
-                "y30_outlay": y30_outlay,
+                "y16_outlay": y16_outlay,
+                "y31_outlay": y31_outlay,
+                "total_costs": total_costs,
                 "final_stocks": renter_stocks,
                 "final_home_val": 0.0,
                 "total_net_worth": renter_stocks,
@@ -82,15 +103,16 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 def print_decision_table(scenarios: list[dict]):
     scenarios.sort(key=lambda x: x["total_net_worth"], reverse=True)
 
-    headers = ["Scenario", "Init Outlay", "Yr 30 Outlay", "Stocks", "Home Equity", "Net Worth"]
+    headers = ["Scenario", "Init Outlay", "Yr 16 Outlay", "Yr 31 Outlay", "Total Costs", "Home Equity", "Net Worth"]
     table = []
 
     for s in scenarios:
         row = [
             s['scenario'],
             f"${s['initial_outlay']:,.2f}",
-            f"${s['y30_outlay']:,.2f}",
-            f"${s['final_stocks']:,.0f}",
+            f"${s['y16_outlay']:,.2f}",
+            f"${s['y31_outlay']:,.2f}",
+            f"${s['total_costs']:,.0f}",
             f"${s['home_val_30'] if 'home_val_30' in s else s['final_home_val']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
         ]
@@ -111,6 +133,9 @@ def main():
     parser.add_argument(
         "--mortgage-rate", type=float, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
     )
+    parser.add_argument(
+        "--mortgage-rate-30", type=float, default=0.069, help="Annual mortgage interest rate (30-yr fixed)"
+    )
     parser.add_argument("--down-payment-pct", type=float, default=0.20, help="Down payment fraction (e.g. 0.20)")
     parser.add_argument("--stock-return", type=float, default=0.07, help="Nominal annual stock market return")
     parser.add_argument("--inflation-rate", type=float, default=0.03, help="Annual inflation for rent/HOA/taxes")
@@ -121,8 +146,11 @@ def main():
 
     all_scenarios = get_base_renter_scenarios(args_dict)
 
-    new_buyer_scenario = calculate_buyer_net_worth(args_dict)
-    all_scenarios.append(new_buyer_scenario)
+    scenario_15_yr = calculate_buyer_net_worth(args_dict, term_years=15, mortgage_rate=args_dict["mortgage_rate"])
+    all_scenarios.append(scenario_15_yr)
+
+    scenario_30_yr = calculate_buyer_net_worth(args_dict, term_years=30, mortgage_rate=args_dict["mortgage_rate_30"])
+    all_scenarios.append(scenario_30_yr)
 
     print_decision_table(all_scenarios)
 
