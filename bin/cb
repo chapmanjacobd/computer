@@ -11,5 +11,12 @@ if test -t 0
         xclip -sel c -o $argv
     end
 else
-    xsel --clipboard --input
+    set tmp (mktemp)
+    cat > $tmp
+    if test -n "$WAYLAND_DISPLAY"
+        wl-copy < $tmp
+    else
+        xsel --clipboard --input < $tmp
+    end
+    rm -f $tmp
 end
