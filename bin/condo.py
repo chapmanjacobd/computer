@@ -103,14 +103,13 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 def print_decision_table(scenarios: list[dict]):
     scenarios.sort(key=lambda x: x["total_net_worth"], reverse=True)
 
-    headers = ["Scenario", "Init Outlay", "Yr 16 Outlay", "Yr 31 Outlay", "Total Costs", "Home Equity", "Net Worth"]
+    headers = ["Scenario", "Init Outlay", "Yr 31 Outlay", "Total Costs", "Home Equity", "Net Worth"]
     table = []
 
     for s in scenarios:
         row = [
             s['scenario'],
             f"${s['initial_outlay']:,.2f}",
-            f"${s['y16_outlay']:,.2f}",
             f"${s['y31_outlay']:,.2f}",
             f"${s['total_costs']:,.0f}",
             f"${s['home_val_30'] if 'home_val_30' in s else s['final_home_val']:,.0f}",
