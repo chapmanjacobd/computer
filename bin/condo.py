@@ -44,7 +44,6 @@ def get_stay_home_scenario(args: dict) -> dict:
 
     return {
         "scenario": "Stay Home",
-        "address": "",
         "initial_outlay": tax_m,
         "y31_outlay": y31_outlay,
         "total_costs": total_costs,
@@ -114,13 +113,14 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
 
     y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * infl_30 + maint_m * appr_30
 
-    label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
-    if buyer_stocks_after_tax < 0:
-        label += " !!UNDERWATER"
+    address = args.get("_address", "")
+    if address:
+        label = address
+    else:
+        label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
 
     return {
         "scenario": label,
-        "address": args.get("_address", ""),
         "initial_outlay": base_outlay_y1,
         "y31_outlay": y31_outlay,
         "total_costs": total_costs,
@@ -159,13 +159,10 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
 
         scenario_name = f"Rent at ${start_rent}/mo"
-        if renter_stocks_after_tax < 0:
-            scenario_name += " !!UNDERWATER"
 
         renter_results.append(
             {
                 "scenario": scenario_name,
-                "address": "",
                 "initial_outlay": float(start_rent),
                 "y31_outlay": y31_outlay,
                 "total_costs": total_costs,
@@ -222,7 +219,6 @@ def print_decision_table(scenarios: list[dict]):
     baseline_nw = stay_home[0]["total_net_worth"] if stay_home else 0.0
 
     headers = [
-        "Address",
         "Scenario",
         "Init Outlay",
         "Yr 31 Outlay",
@@ -233,19 +229,20 @@ def print_decision_table(scenarios: list[dict]):
     table = []
 
     for s in all_sorted:
-        if baseline_nw != 0:
-            pct_baseline = (s["total_net_worth"] - baseline_nw) / s["total_net_worth"] * 100
+        if s["total_net_worth"] < 0:
+            pct_baseline = "UNDERWATER"
+        elif baseline_nw != 0:
+            pct_baseline = f"{(s['total_net_worth'] - baseline_nw) / s['total_net_worth'] * 100:+.1f}%"
         else:
-            pct_baseline = 0.0
+            pct_baseline = "0.0%"
 
         row = [
-            s.get("address", ""),
             s["scenario"],
-            f"${s['initial_outlay']:,.2f}",
-            f"${s['y31_outlay']:,.2f}",
+            f"${s['initial_outlay']:,.0f}",
+            f"${s['y31_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
-            f"{pct_baseline:+.1f}%",
+            pct_baseline,
         ]
         table.append(row)
 
@@ -285,11 +282,7 @@ def main():
     all_scenarios.extend(get_base_renter_scenarios(defaults))
 
     for sc_config in scenarios_config:
-        address = sc_config.pop("_address", "")
-
         sc = calculate_buyer_net_worth(sc_config, term_years=sc_config["mortgage_term"])
-        sc["address"] = address
-
         all_scenarios.append(sc)
 
     print_decision_table(all_scenarios)
