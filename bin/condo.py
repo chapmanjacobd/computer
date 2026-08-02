@@ -46,7 +46,9 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
             cost_basis += net_cash_flow
 
     stock_gain = max(0, buyer_stocks - cost_basis)
-    stock_tax = stock_gain * args["cap_gains_tax"]
+    # Assuming piecemeal selling below the ~$98,900/yr 0% federal LTCG bracket limit,
+    # but state taxes may still apply to all capital gains (e.g., IL taxes at 4.95%).
+    stock_tax = stock_gain * args["state_tax"]
     buyer_stocks_after_tax = buyer_stocks - stock_tax
 
     appr_30 = (1 + args["appreciation_rate"]) ** 30
@@ -55,7 +57,9 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     nominal_home_val = args["price"] * appr_30
     selling_costs = nominal_home_val * args["selling_cost_pct"]
     home_gain = nominal_home_val - selling_costs - args["price"]
-    home_tax = max(0, home_gain) * args["cap_gains_tax"]
+    # First 500,000 of home profit is exempt from both Federal and state taxes (if state bases tax on AGI like IL)
+    taxable_home_gain = max(0, home_gain - 500000)
+    home_tax = taxable_home_gain * (args["cap_gains_tax"] + args["state_tax"])
     net_home = nominal_home_val - selling_costs - home_tax
 
     final_home_val = net_home / infl_30
@@ -101,7 +105,9 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 cost_basis += net_cash_flow
 
         stock_gain = max(0, renter_stocks - cost_basis)
-        stock_tax = stock_gain * args["cap_gains_tax"]
+        # Assuming piecemeal selling below the ~$98,900/yr 0% federal LTCG bracket limit,
+        # but state taxes may still apply to all capital gains (e.g., IL taxes at 4.95%).
+        stock_tax = stock_gain * args["state_tax"]
         renter_stocks_after_tax = renter_stocks - stock_tax
 
         y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
@@ -170,6 +176,7 @@ def main():
     parser.add_argument("--cap-gains-tax", type=parse_float_with_commas, default=0.15, help="Capital gains tax rate on stock/home gains")
     parser.add_argument("--selling-cost-pct", type=parse_float_with_commas, default=0.06, help="Home sale transaction costs as fraction of sale price")
     parser.add_argument("--maintenance-pct", type=parse_float_with_commas, default=0.01, help="Annual home maintenance as fraction of home price")
+    parser.add_argument("--state-tax", type=parse_float_with_commas, default=0.0495, help="State income tax rate (default 4.95% for IL)")
 
     args = parser.parse_args()
     args_dict = vars(args)
