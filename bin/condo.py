@@ -19,41 +19,60 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     buyer_stocks = args["total_capital"] - dp_amt
     tax_m = args["annual_taxes"] / 12
     hoa_m = args["monthly_assessment"]
+    maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
-    base_outlay_y1 = pmt + tax_m + hoa_m
+    cost_basis = buyer_stocks
+    base_outlay_y1 = pmt + tax_m + hoa_m + maint_m
     total_costs = dp_amt
 
     for m in range(1, 361):
         buyer_stocks *= 1 + stock_return_m
         yr = (m - 1) // 12
 
-        tax_curr = tax_m * ((1 + args["inflation_rate"]) ** yr)
-        hoa_curr = hoa_m * ((1 + args["inflation_rate"]) ** yr)
+        appr_factor = (1 + args["appreciation_rate"]) ** yr
+        infl_factor = (1 + args["inflation_rate"]) ** yr
+        tax_curr = tax_m * appr_factor
+        hoa_curr = hoa_m * infl_factor
+        maint_curr = maint_m * appr_factor
         pmt_curr = pmt if m <= term_months else 0.0
 
-        buyer_outlay = pmt_curr + tax_curr + hoa_curr
-        monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
+        buyer_outlay = pmt_curr + tax_curr + hoa_curr + maint_curr
+        monthly_budget = args["monthly_budget"] * infl_factor
 
         total_costs += buyer_outlay / ((1 + args["inflation_rate"]) ** (m / 12.0))
-        buyer_stocks += monthly_budget - buyer_outlay
+        net_cash_flow = monthly_budget - buyer_outlay
+        buyer_stocks += net_cash_flow
+        if net_cash_flow > 0:
+            cost_basis += net_cash_flow
 
-    final_home_val = (args["price"] * ((1 + args["appreciation_rate"]) ** 30)) / ((1 + args["inflation_rate"]) ** 30)
-    final_net_worth = (buyer_stocks / ((1 + args["inflation_rate"]) ** 30)) + final_home_val
+    stock_gain = max(0, buyer_stocks - cost_basis)
+    stock_tax = stock_gain * args["cap_gains_tax"]
+    buyer_stocks_after_tax = buyer_stocks - stock_tax
 
-    y16_outlay = (pmt if term_months > 180 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 15)
-    y31_outlay = (pmt if term_months > 360 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 30)
+    appr_30 = (1 + args["appreciation_rate"]) ** 30
+    infl_30 = (1 + args["inflation_rate"]) ** 30
+
+    nominal_home_val = args["price"] * appr_30
+    selling_costs = nominal_home_val * args["selling_cost_pct"]
+    home_gain = nominal_home_val - selling_costs - args["price"]
+    home_tax = max(0, home_gain) * args["cap_gains_tax"]
+    net_home = nominal_home_val - selling_costs - home_tax
+
+    final_home_val = net_home / infl_30
+    final_net_worth = (buyer_stocks_after_tax / infl_30) + final_home_val
+
+    y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * infl_30 + maint_m * appr_30
 
     scenario_name = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
-    if buyer_stocks < 0:
+    if buyer_stocks_after_tax < 0:
         scenario_name += " !!UNDERWATER"
 
     return {
         "scenario": scenario_name,
         "initial_outlay": base_outlay_y1,
-        "y16_outlay": y16_outlay,
         "y31_outlay": y31_outlay,
         "total_costs": total_costs,
-        "final_stocks": buyer_stocks,
+        "final_stocks": buyer_stocks_after_tax,
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
     }
@@ -65,6 +84,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 
     for start_rent in [1300, 1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900]:
         renter_stocks = args["total_capital"]
+        cost_basis = renter_stocks
         total_costs = 0.0
 
         for m in range(1, 361):
@@ -75,25 +95,30 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
             total_costs += rent_curr / ((1 + args["inflation_rate"]) ** (m / 12.0))
-            renter_stocks += monthly_budget - rent_curr
+            net_cash_flow = monthly_budget - rent_curr
+            renter_stocks += net_cash_flow
+            if net_cash_flow > 0:
+                cost_basis += net_cash_flow
 
-        y16_outlay = start_rent * ((1 + args["inflation_rate"]) ** 15)
+        stock_gain = max(0, renter_stocks - cost_basis)
+        stock_tax = stock_gain * args["cap_gains_tax"]
+        renter_stocks_after_tax = renter_stocks - stock_tax
+
         y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
 
         scenario_name = f"Rent at ${start_rent}/mo"
-        if renter_stocks < 0:
+        if renter_stocks_after_tax < 0:
             scenario_name += " !!UNDERWATER"
 
         renter_results.append(
             {
                 "scenario": scenario_name,
                 "initial_outlay": float(start_rent),
-                "y16_outlay": y16_outlay,
                 "y31_outlay": y31_outlay,
                 "total_costs": total_costs,
-                "final_stocks": renter_stocks,
+                "final_stocks": renter_stocks_after_tax,
                 "final_home_val": 0.0,
-                "total_net_worth": renter_stocks / ((1 + args["inflation_rate"]) ** 30),
+                "total_net_worth": renter_stocks_after_tax / ((1 + args["inflation_rate"]) ** 30),
             }
         )
 
@@ -142,6 +167,9 @@ def main():
     parser.add_argument("--stock-return", type=parse_float_with_commas, default=0.07, help="Nominal annual stock market return")
     parser.add_argument("--inflation-rate", type=parse_float_with_commas, default=0.03, help="Annual inflation for rent/HOA/taxes")
     parser.add_argument("--appreciation-rate", type=parse_float_with_commas, default=0.03, help="Annual real estate appreciation rate")
+    parser.add_argument("--cap-gains-tax", type=parse_float_with_commas, default=0.15, help="Capital gains tax rate on stock/home gains")
+    parser.add_argument("--selling-cost-pct", type=parse_float_with_commas, default=0.06, help="Home sale transaction costs as fraction of sale price")
+    parser.add_argument("--maintenance-pct", type=parse_float_with_commas, default=0.01, help="Annual home maintenance as fraction of home price")
 
     args = parser.parse_args()
     args_dict = vars(args)
