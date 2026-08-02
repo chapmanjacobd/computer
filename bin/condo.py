@@ -80,7 +80,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         y16_outlay = start_rent * ((1 + args["inflation_rate"]) ** 15)
         y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
 
-        scenario_name = f"Renter (${start_rent}/mo starting rent)"
+        scenario_name = f"Rent at ${start_rent}/mo"
         if renter_stocks < 0:
             scenario_name += " !!UNDERWATER"
 
