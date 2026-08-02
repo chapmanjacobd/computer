@@ -186,7 +186,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "total_capital": 130000,
         "monthly_budget": 2100,
         "mortgage_rate": 0.061,
-        "mortgage_rate_30": 0.069,
+        "mortgage_term": 15,
         "down_payment_pct": 0.20,
         "stock_return": 0.07,
         "inflation_rate": 0.03,
@@ -287,14 +287,10 @@ def main():
     for sc_config in scenarios_config:
         address = sc_config.pop("_address", "")
 
-        s15 = calculate_buyer_net_worth(sc_config, term_years=15, mortgage_rate=sc_config["mortgage_rate"])
-        s15["address"] = address
+        sc = calculate_buyer_net_worth(sc_config, term_years=sc_config["mortgage_term"])
+        sc["address"] = address
 
-        s30 = calculate_buyer_net_worth(sc_config, term_years=30, mortgage_rate=sc_config["mortgage_rate_30"])
-        s30["address"] = address
-
-        all_scenarios.append(s15)
-        all_scenarios.append(s30)
+        all_scenarios.append(sc)
 
     print_decision_table(all_scenarios)
 
