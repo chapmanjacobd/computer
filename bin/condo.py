@@ -176,7 +176,7 @@ def main():
     parser.add_argument("--cap-gains-tax", type=parse_float_with_commas, default=0.15, help="Capital gains tax rate on stock/home gains")
     parser.add_argument("--selling-cost-pct", type=parse_float_with_commas, default=0.06, help="Home sale transaction costs as fraction of sale price")
     parser.add_argument("--maintenance-pct", type=parse_float_with_commas, default=0.01, help="Annual home maintenance as fraction of home price")
-    parser.add_argument("--state-tax", type=parse_float_with_commas, default=0.0495, help="State income tax rate (default 4.95% for IL)")
+    parser.add_argument("--state-tax", type=parse_float_with_commas, default=0.0495, help="State income tax rate (default 4.95%% for IL)")
 
     args = parser.parse_args()
     args_dict = vars(args)
