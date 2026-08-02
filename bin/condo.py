@@ -1,10 +1,60 @@
 #!/usr/bin/python3
 import argparse
+import sys
 
 from tabulate import tabulate
 
+try:
+    import tomllib
+except ImportError:
+    try:
+        import tomli as tomllib
+    except ImportError:
+        print("Error: TOML support requires Python 3.11+ or 'tomli' package. Install with: pip install tomli")
+        sys.exit(1)
 
-def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: float = None) -> dict:
+
+def get_stay_home_scenario(args: dict) -> dict:
+    stock_return_m = args["stock_return"] / 12
+    stocks = args["total_capital"]
+    cost_basis = stocks
+    total_costs = 0.0
+
+    tax_m = 600.0 / 12
+
+    for m in range(1, 361):
+        stocks *= 1 + stock_return_m
+        yr = (m - 1) // 12
+
+        tax_curr = tax_m * ((1 + args["inflation_rate"]) ** yr)
+        monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
+
+        total_costs += tax_curr / ((1 + args["inflation_rate"]) ** (m / 12.0))
+        net_cash_flow = monthly_budget - tax_curr
+        stocks += net_cash_flow
+        if net_cash_flow > 0:
+            cost_basis += net_cash_flow
+
+    stock_gain = max(0, stocks - cost_basis)
+    stock_tax = stock_gain * args["state_tax"]
+    stocks_after_tax = stocks - stock_tax
+
+    infl_30 = (1 + args["inflation_rate"]) ** 30
+    y31_outlay = tax_m * infl_30
+
+    return {
+        "scenario": "Stay Home",
+        "address": "",
+        "initial_outlay": tax_m,
+        "y31_outlay": y31_outlay,
+        "total_costs": total_costs,
+        "final_stocks": stocks_after_tax,
+        "final_home_val": 0.0,
+        "total_net_worth": stocks_after_tax / infl_30,
+    }
+
+
+def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: float | None = None) -> dict:
     if mortgage_rate is None:
         mortgage_rate = args["mortgage_rate"]
     stock_return_m = args["stock_return"] / 12
@@ -46,8 +96,6 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
             cost_basis += net_cash_flow
 
     stock_gain = max(0, buyer_stocks - cost_basis)
-    # Assuming piecemeal selling below the ~$98,900/yr 0% federal LTCG bracket limit,
-    # but state taxes may still apply to all capital gains (e.g., IL taxes at 4.95%).
     stock_tax = stock_gain * args["state_tax"]
     buyer_stocks_after_tax = buyer_stocks - stock_tax
 
@@ -57,7 +105,6 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     nominal_home_val = args["price"] * appr_30
     selling_costs = nominal_home_val * args["selling_cost_pct"]
     home_gain = nominal_home_val - selling_costs - args["price"]
-    # First 500,000 of home profit is exempt from both Federal and state taxes (if state bases tax on AGI like IL)
     taxable_home_gain = max(0, home_gain - 500000)
     home_tax = taxable_home_gain * (args["cap_gains_tax"] + args["state_tax"])
     net_home = nominal_home_val - selling_costs - home_tax
@@ -67,12 +114,13 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
 
     y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * infl_30 + maint_m * appr_30
 
-    scenario_name = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
+    label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
     if buyer_stocks_after_tax < 0:
-        scenario_name += " !!UNDERWATER"
+        label += " !!UNDERWATER"
 
     return {
-        "scenario": scenario_name,
+        "scenario": label,
+        "address": args.get("_address", ""),
         "initial_outlay": base_outlay_y1,
         "y31_outlay": y31_outlay,
         "total_costs": total_costs,
@@ -105,8 +153,6 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 cost_basis += net_cash_flow
 
         stock_gain = max(0, renter_stocks - cost_basis)
-        # Assuming piecemeal selling below the ~$98,900/yr 0% federal LTCG bracket limit,
-        # but state taxes may still apply to all capital gains (e.g., IL taxes at 4.95%).
         stock_tax = stock_gain * args["state_tax"]
         renter_stocks_after_tax = renter_stocks - stock_tax
 
@@ -119,6 +165,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         renter_results.append(
             {
                 "scenario": scenario_name,
+                "address": "",
                 "initial_outlay": float(start_rent),
                 "y31_outlay": y31_outlay,
                 "total_costs": total_costs,
@@ -131,19 +178,74 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
     return renter_results
 
 
-def print_decision_table(scenarios: list[dict]):
-    scenarios.sort(key=lambda x: x["total_net_worth"], reverse=True)
+def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
+    with open(filepath, "rb") as f:
+        data = tomllib.load(f)
 
-    headers = ["Scenario", "Init Outlay", "Yr 31 Outlay", "NPV Total Costs", "NPV Net Worth"]
+    defaults = {
+        "total_capital": 130000,
+        "monthly_budget": 2100,
+        "mortgage_rate": 0.061,
+        "mortgage_rate_30": 0.069,
+        "down_payment_pct": 0.20,
+        "stock_return": 0.07,
+        "inflation_rate": 0.03,
+        "appreciation_rate": 0.03,
+        "cap_gains_tax": 0.15,
+        "selling_cost_pct": 0.06,
+        "maintenance_pct": 0.01,
+        "state_tax": 0.0495,
+    }
+
+    for key in defaults:
+        if key in data:
+            defaults[key] = data[key]
+
+    scenarios = []
+    if "scenario" in data:
+        for address, params in data["scenario"].items():
+            merged = defaults.copy()
+            merged.update(params)
+            merged["_address"] = address
+            scenarios.append(merged)
+
+    return defaults, scenarios
+
+
+def print_decision_table(scenarios: list[dict]):
+    stay_home = [s for s in scenarios if s["scenario"] == "Stay Home"]
+    others = [s for s in scenarios if s["scenario"] != "Stay Home"]
+    others.sort(key=lambda x: x["total_net_worth"], reverse=True)
+
+    all_sorted = stay_home + others
+
+    baseline_nw = stay_home[0]["total_net_worth"] if stay_home else 0.0
+
+    headers = [
+        "Address",
+        "Scenario",
+        "Init Outlay",
+        "Yr 31 Outlay",
+        "NPV Total Costs",
+        "NPV Net Worth",
+        "Percent Baseline",
+    ]
     table = []
 
-    for s in scenarios:
+    for s in all_sorted:
+        if baseline_nw != 0:
+            pct_baseline = (s["total_net_worth"] - baseline_nw) / s["total_net_worth"] * 100
+        else:
+            pct_baseline = 0.0
+
         row = [
-            s['scenario'],
+            s.get("address", ""),
+            s["scenario"],
             f"${s['initial_outlay']:,.2f}",
             f"${s['y31_outlay']:,.2f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
+            f"{pct_baseline:+.1f}%",
         ]
         table.append(row)
 
@@ -157,37 +259,42 @@ def parse_float_with_commas(s: str) -> float:
 def main():
     parser = argparse.ArgumentParser(description="30-Year Real Estate vs Renting Decision Table Evaluator")
 
-    parser.add_argument("--price", type=parse_float_with_commas, default=230000, help="Sale price of the target condo alternative")
-    parser.add_argument("--annual-taxes", type=parse_float_with_commas, default=3152, help="Annual property taxes")
-    parser.add_argument("--monthly-assessment", type=parse_float_with_commas, default=320, help="Monthly HOA assessment")
-
-    parser.add_argument("--total-capital", type=parse_float_with_commas, default=130000, help="Total liquid cash available upfront")
-    parser.add_argument("--monthly-budget", type=parse_float_with_commas, default=2100, help="Baseline monthly cash outlays")
+    parser.add_argument("config", help="Path to TOML configuration file with scenarios")
     parser.add_argument(
-        "--mortgage-rate", type=parse_float_with_commas, default=0.061, help="Annual mortgage interest rate (15-yr fixed)"
+        "--total-capital", type=parse_float_with_commas, help="Override total liquid cash available upfront"
     )
-    parser.add_argument(
-        "--mortgage-rate-30", type=parse_float_with_commas, default=0.069, help="Annual mortgage interest rate (30-yr fixed)"
-    )
-    parser.add_argument("--down-payment-pct", type=parse_float_with_commas, default=0.20, help="Down payment fraction (e.g. 0.20)")
-    parser.add_argument("--stock-return", type=parse_float_with_commas, default=0.07, help="Nominal annual stock market return")
-    parser.add_argument("--inflation-rate", type=parse_float_with_commas, default=0.03, help="Annual inflation for rent/HOA/taxes")
-    parser.add_argument("--appreciation-rate", type=parse_float_with_commas, default=0.03, help="Annual real estate appreciation rate")
-    parser.add_argument("--cap-gains-tax", type=parse_float_with_commas, default=0.15, help="Capital gains tax rate on stock/home gains")
-    parser.add_argument("--selling-cost-pct", type=parse_float_with_commas, default=0.06, help="Home sale transaction costs as fraction of sale price")
-    parser.add_argument("--maintenance-pct", type=parse_float_with_commas, default=0.01, help="Annual home maintenance as fraction of home price")
-    parser.add_argument("--state-tax", type=parse_float_with_commas, default=0.0495, help="State income tax rate (default 4.95%% for IL)")
+    parser.add_argument("--monthly-budget", type=parse_float_with_commas, help="Override baseline monthly cash outlays")
 
     args = parser.parse_args()
-    args_dict = vars(args)
 
-    all_scenarios = get_base_renter_scenarios(args_dict)
+    defaults, scenarios_config = load_toml_config(args.config)
 
-    scenario_15_yr = calculate_buyer_net_worth(args_dict, term_years=15, mortgage_rate=args_dict["mortgage_rate"])
-    all_scenarios.append(scenario_15_yr)
+    if args.total_capital is not None:
+        defaults["total_capital"] = args.total_capital
+    if args.monthly_budget is not None:
+        defaults["monthly_budget"] = args.monthly_budget
 
-    scenario_30_yr = calculate_buyer_net_worth(args_dict, term_years=30, mortgage_rate=args_dict["mortgage_rate_30"])
-    all_scenarios.append(scenario_30_yr)
+    for sc in scenarios_config:
+        for key in ("total_capital", "monthly_budget"):
+            if key not in sc:
+                sc[key] = defaults[key]
+
+    all_scenarios = []
+
+    all_scenarios.append(get_stay_home_scenario(defaults))
+    all_scenarios.extend(get_base_renter_scenarios(defaults))
+
+    for sc_config in scenarios_config:
+        address = sc_config.pop("_address", "")
+
+        s15 = calculate_buyer_net_worth(sc_config, term_years=15, mortgage_rate=sc_config["mortgage_rate"])
+        s15["address"] = address
+
+        s30 = calculate_buyer_net_worth(sc_config, term_years=30, mortgage_rate=sc_config["mortgage_rate_30"])
+        s30["address"] = address
+
+        all_scenarios.append(s15)
+        all_scenarios.append(s30)
 
     print_decision_table(all_scenarios)
 
