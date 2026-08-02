@@ -34,11 +34,11 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         buyer_outlay = pmt_curr + tax_curr + hoa_curr
         monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
-        total_costs += buyer_outlay
+        total_costs += buyer_outlay / ((1 + args["inflation_rate"]) ** (m / 12.0))
         buyer_stocks += monthly_budget - buyer_outlay
 
-    final_home_val = args["price"] * ((1 + args["appreciation_rate"]) ** 30)
-    final_net_worth = buyer_stocks + final_home_val
+    final_home_val = (args["price"] * ((1 + args["appreciation_rate"]) ** 30)) / ((1 + args["inflation_rate"]) ** 30)
+    final_net_worth = (buyer_stocks / ((1 + args["inflation_rate"]) ** 30)) + final_home_val
 
     y16_outlay = (pmt if term_months > 180 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 15)
     y31_outlay = (pmt if term_months > 360 else 0.0) + (tax_m + hoa_m) * ((1 + args["inflation_rate"]) ** 30)
@@ -74,7 +74,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             rent_curr = start_rent * ((1 + args["inflation_rate"]) ** yr)
             monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
-            total_costs += rent_curr
+            total_costs += rent_curr / ((1 + args["inflation_rate"]) ** (m / 12.0))
             renter_stocks += monthly_budget - rent_curr
 
         y16_outlay = start_rent * ((1 + args["inflation_rate"]) ** 15)
@@ -93,7 +93,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 "total_costs": total_costs,
                 "final_stocks": renter_stocks,
                 "final_home_val": 0.0,
-                "total_net_worth": renter_stocks,
+                "total_net_worth": renter_stocks / ((1 + args["inflation_rate"]) ** 30),
             }
         )
 
@@ -103,7 +103,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 def print_decision_table(scenarios: list[dict]):
     scenarios.sort(key=lambda x: x["total_net_worth"], reverse=True)
 
-    headers = ["Scenario", "Init Outlay", "Yr 31 Outlay", "Total Costs", "Home Equity", "Net Worth"]
+    headers = ["Scenario", "Init Outlay", "Yr 31 Outlay", "NPV Total Costs", "NPV Net Worth"]
     table = []
 
     for s in scenarios:
@@ -112,7 +112,6 @@ def print_decision_table(scenarios: list[dict]):
             f"${s['initial_outlay']:,.2f}",
             f"${s['y31_outlay']:,.2f}",
             f"${s['total_costs']:,.0f}",
-            f"${s['home_val_30'] if 'home_val_30' in s else s['final_home_val']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
         ]
         table.append(row)
