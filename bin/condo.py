@@ -80,8 +80,9 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
 
         appr_factor = (1 + args["appreciation_rate"]) ** yr
         infl_factor = (1 + args["inflation_rate"]) ** yr
+        hoa_growth_factor = (1 + args["hoa_growth_rate"]) ** yr
         tax_curr = tax_m * appr_factor
-        hoa_curr = hoa_m * infl_factor
+        hoa_curr = hoa_m * hoa_growth_factor
         maint_curr = maint_m * appr_factor
         pmt_curr = pmt if m <= term_months else 0.0
 
@@ -111,7 +112,8 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     final_home_val = net_home / infl_30
     final_net_worth = (buyer_stocks_after_tax / infl_30) + final_home_val
 
-    y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * infl_30 + maint_m * appr_30
+    hoa_30 = (1 + args["hoa_growth_rate"]) ** 30
+    y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * hoa_30 + maint_m * appr_30
 
     address = args.get("_address", "")
     if address:
@@ -192,6 +194,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "selling_cost_pct": 0.06,
         "maintenance_pct": 0.01,
         "state_tax": 0.0495,
+        "hoa_growth_rate": 0.0672,
     }
 
     for key in defaults:
