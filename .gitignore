@@ -365,3 +365,4 @@
 /.config/session
 /.config/ktrashrc
 /.vscode-shared/sharedStorage
+/.config/fish/completions/copilot.fish
