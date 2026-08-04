@@ -2,10 +2,49 @@
 import os
 import sys
 from pathlib import Path
-from prompt_toolkit import prompt
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from prompt_toolkit.completion import PathCompleter
-from prompt_toolkit.history import FileHistory
+
+
+def get_completion_paths() -> list[str]:
+    paths = []
+    for root, directories, files in os.walk("."):
+        for name in (*directories, *files):
+            path = os.path.normpath(os.path.join(root, name))
+            if os.path.isdir(path):
+                path += os.sep
+            paths.append(path)
+    return paths
+
+
+def set_readline_completion(list_: list[str]) -> None:
+    try:
+        import readline
+    except ModuleNotFoundError:
+        return
+
+    def list_completer(_text: str, state: int) -> str | None:
+        line = readline.get_line_buffer()
+        match_list = [
+            path for path in list_ if path.startswith(line) and path != line
+        ]
+        if not match_list:
+            return None
+
+        if line:
+            min_depth = min(path.count(os.sep) for path in match_list) + 1
+            match_list = [
+                path for path in match_list if path.count(os.sep) <= min_depth
+            ][:15]
+        else:
+            min_depth = min(path.count(os.sep) for path in match_list) + 1
+            match_list = [
+                path for path in match_list if path.count(os.sep) <= min_depth
+            ][:25]
+
+        return match_list[state] if state < len(match_list) else None
+
+    readline.set_completer(list_completer)
+    readline.set_completer_delims("\t")
+    readline.parse_and_bind("tab: complete")
 
 
 def get_history_file(namespace: str) -> str:
@@ -26,19 +65,42 @@ def main() -> None:
 
     hist_file = get_history_file(namespace)
 
+    # Configure readline
+    set_readline_completion(get_completion_paths())
+    try:
+        import readline
+        readline.read_history_file(hist_file)
+    except FileNotFoundError:
+        pass
+
+    # Pre-fill input if last_dest is provided
+    if last_dest:
+        import readline
+
+        def startup_hook():
+            readline.insert_text(last_dest)
+            readline.redisplay()
+
+        readline.set_startup_hook(startup_hook)
+
     prompt_msg = "PATH>"
 
     try:
-        user_input = prompt(
-            prompt_msg,
-            default=last_dest,
-            completer=PathCompleter(expanduser=True),
-            history=FileHistory(hist_file),
-            auto_suggest=AutoSuggestFromHistory(),
-        ).strip()
+        user_input = input(prompt_msg).strip()
         print(user_input)
     except (KeyboardInterrupt, EOFError):
-        print("q")
+        print("\nq")
+    finally:
+        try:
+            # We want to clear the startup hook just in case, though we exit right after
+            import readline
+
+            readline.set_startup_hook(None)
+            # Save the new history, overriding the max if needed
+            readline.set_history_length(1000)
+            readline.write_history_file(hist_file)
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":
