@@ -48,7 +48,6 @@ abbr -a -- wtns 'wt -w subtitle_count=0 -OO'
 abbr -a -- wts 'wt -p -u duration -s'
 abbr -a -- xpaste 'xclip -selection clipboard -o'
 abbr -a -- yt.ogg yta
-abbr -a -- icat kitty +kitten icat
 abbr -a -- str string
 abbr -a -- abbr abbrsave
 abbr -a -- fsadd lb fsadd
@@ -959,3 +958,4 @@ abbr -a -- git.amend git.fixup
 abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb process-audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
 abbr -a -- ga git add -u
 abbr -a -- git.ssh git.remote.ssh
+abbr -a -- icat kitty +kitten icat --align=left --fit=both
