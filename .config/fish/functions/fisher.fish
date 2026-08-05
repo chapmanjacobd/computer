@@ -8,8 +8,8 @@ function fisher --argument-names cmd --description "A plugin manager for Fish"
             echo "fisher, version $fisher_version"
         case "" -h --help
             echo "Usage: fisher install   <plugins...>  Install plugins"
-            echo "       fisher remove    <plugins...>  Remove installed plugins" 
-            echo "       fisher uninstall <plugins...>  Remove installed plugins (alias)" 
+            echo "       fisher remove    <plugins...>  Remove installed plugins"
+            echo "       fisher uninstall <plugins...>  Remove installed plugins (alias)"
             echo "       fisher update    <plugins...>  Update installed plugins"
             echo "       fisher update                  Update all installed plugins"
             echo "       fisher list    [<regex>]       List installed plugins matching regex"
@@ -41,7 +41,7 @@ function fisher --argument-names cmd --description "A plugin manager for Fish"
                     echo "fisher: \"$fish_plugins\" file not found: \"$cmd\"" >&2 && return 1
                 end
                 set arg_plugins $file_plugins
-            else if test "$cmd" = install && ! set --query old_plugins[1] 
+            else if test "$cmd" = install && ! set --query old_plugins[1]
                 set --append arg_plugins $file_plugins
             end
 
