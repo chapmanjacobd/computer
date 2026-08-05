@@ -14,7 +14,7 @@ function icat.mv
         end
 
         echo "----------- $img ---"
-        kitty +kitten icat "$img"
+        kitty +kitten icat --align=left --fit=both "$img"
         echo ""
 
         set -l choice (pathprompt "icat_mv" "$last_dest")
