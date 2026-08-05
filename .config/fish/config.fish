@@ -41,7 +41,7 @@ end
 
 source ~/.config/fish/functions/ls.fish
 
-fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp
+fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp --history=alt-r
 
 if test -z "$SSH_TTY"; and test -z "$TMUX"
     bind pageup "kitty @ scroll-window 1p-"
@@ -58,8 +58,6 @@ bind alt-backspace backward-kill-token
 bind alt-right nextd-or-forward-token
 bind alt-left prevd-or-backward-token
 bind alt-delete kill-token
-
-bind alt-r history-token-search-backward
 
 bind \e\[99\;6u fish_clipboard_copy
 
