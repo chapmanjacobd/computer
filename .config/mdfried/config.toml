@@ -1,0 +1,40 @@
+# font_family = "your-font-name"
+stdio_query_timeout_ms = 2000
+max_image_height = 30
+watch_debounce_milliseconds = 100
+enable_mouse_capture = false
+osc8_links = true
+url_transform_command = "readable | html2text"
+mermaid = "mmdc -i - -o - -e png"
+
+[padding]
+type = "align-left"
+width = 160
+
+[theme]
+blockquote_bar = "▌ "
+link_desc_open = ""
+link_desc_close = ""
+link_url_open = "◖"
+link_url_close = "◗"
+horizontal_rule_char = "─"
+task_checked_mark = "[✓] "
+blockquote_colors = [
+    "202",
+    "203",
+    "204",
+    "205",
+    "206",
+    "207",
+]
+link_bg = "4"
+link_fg = "237"
+prefix_color = "222"
+emphasis_color = "#222222"
+code_bg = "#eeeeee"
+code_fg = "#000000"
+hr_color = "#000000"
+table_border_color = "#000000"
+table_header_color = "#000000"
+header_color = "#000000"
+hide_urls = true
