@@ -41,7 +41,9 @@ end
 
 source ~/.config/fish/functions/ls.fish
 
-fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp --history=alt-r
+fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp --history=ctrl-r
+bind alt-r history-pager
+bind --mode insert alt-r history-pager
 
 if test -z "$SSH_TTY"; and test -z "$TMUX"
     bind pageup "kitty @ scroll-window 1p-"
