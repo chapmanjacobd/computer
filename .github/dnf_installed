@@ -19,6 +19,7 @@ btrfs-progs
 btrfsmaintenance
 cairo-devel
 cargo
+chafa-devel
 chromaprint-tools
 chromium
 clickhouse-client
@@ -182,6 +183,7 @@ perl-CPAN
 perl-Image-ExifTool
 pg_activity
 pg_top
+pkgconf-pkg-config
 plasma-print-manager
 plasma-workspace-x11
 playerctl
