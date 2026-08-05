@@ -18,19 +18,20 @@ function icat.mv
         echo ""
 
         set -l choice (pathprompt "icat_mv" "$last_dest")
+        if test $status -ne 0
+            echo "pathprompt exited with error. Exiting."
+            return 1
+        end
 
         if test "$choice" = q -o "$choice" = quit
             echo "Exiting."
             return 0
-        else if test "$choice" = s -o "$choice" = skip
-            echo "Skipped $img"
-            continue
         else if test -z "$choice"
             if test -n "$last_dest"
                 set dest "$last_dest"
             else
-                echo "No path specified. Skipping $img."
-                continue
+                echo "No path specified. Exiting."
+                return 1
             end
         else
             set dest "$choice"
