@@ -124,7 +124,7 @@ def main():
     table = []
     for r in rows:
         pct_us = r["km2"] / args.us_land_km2 * 100
-        table.append([r["name"], r["features"], f"{r['km2']:,.1f}", f"{pct_us:.3f}%"])
+        table.append([r["name"], r["features"], r["km2"], f"{pct_us:.3f}%"])
 
     if len(rows) > 1:
         base = rows[0]
@@ -135,7 +135,7 @@ def main():
             else:
                 row.append(f"{(r['km2'] - base['km2']) / base['km2'] * 100:+.2f}%")
 
-    print(tabulate(table, headers=headers, tablefmt="grid"))
+    print(tabulate(table, headers=headers, tablefmt="simple", floatfmt=",.1f"))
     print(f"US landmass used: {args.us_land_km2:,.0f} km^2")
 
     if args.overlaps:
@@ -150,14 +150,15 @@ def main():
                     r["name"],
                     measure,
                     r["features"],
-                    f"{km2:,.1f}",
+                    km2,
                     f"{km2 / args.us_land_km2 * 100:.3f}%",
                 ])
         print("\noverlap details:")
         print(tabulate(
             overlap_table,
             headers=["Layer", "Measure", "Features", "Area km^2", "% of US landmass"],
-            tablefmt="grid",
+            tablefmt="simple",
+            floatfmt=",.1f",
         ))
 
     if len(rows) > 1:
@@ -173,7 +174,7 @@ def main():
                 else:
                     line.append(f"{(a['km2'] - b['km2']) / b['km2'] * 100:+.2f}%")
             mat.append(line)
-        print(tabulate(mat, headers=header, tablefmt="grid"))
+        print(tabulate(mat, headers=header, tablefmt="simple"))
 
 
 if __name__ == "__main__":

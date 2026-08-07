@@ -278,11 +278,11 @@ def main():
     if args.simplify > 0:
         print(f"simplified to {args.simplify:g} m before buffering")
     table = [
-        ["raw buffer (unclipped)", f"{raw_km2:,.1f}", f"{pct(raw_km2):.3f}%"],
-        ["clipped to land", f"{clip_km2:,.1f}", f"{pct(clip_km2):.3f}%"],
+        ["raw buffer (unclipped)", raw_km2, f"{pct(raw_km2):.3f}%"],
+        ["clipped to land", clip_km2, f"{pct(clip_km2):.3f}%"],
     ]
     print(tabulate(table, headers=["Measure", "Area km^2", "% of US landmass"],
-                   tablefmt="grid"))
+                   tablefmt="simple", floatfmt=",.1f"))
     if args.target_pct is not None:
         print(f"\nlargest buffer under {args.target_pct}% of US landmass: "
               f"{meters:,.0f} m ({meters / 1000:,.2f} km)")
