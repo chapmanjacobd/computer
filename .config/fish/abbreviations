@@ -959,3 +959,4 @@ abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confir
 abbr -a -- ga git add -u
 abbr -a -- git.ssh git.remote.ssh
 abbr -a -- icat viu -h 30
+abbr -a -- ogrinfo ogrinfo -ro -so -al
