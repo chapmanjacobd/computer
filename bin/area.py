@@ -9,7 +9,7 @@ overlaps more than once,
 and prints a comparison table with tabulate.
 
 Usage:
-    area.py [--us-land-km2 N] LAYER1 [LAYER2 ...]
+    area.py [--us-land-km2 N] [--overlaps] LAYER1 [LAYER2 ...]
 
 Examples:
     area.py tl_2025_us_uac20.zip tl_2025_us_metdiv.zip
@@ -19,6 +19,7 @@ Options:
     --us-land-km2 N   Total US landmass in km^2 to use for the
                       "% of US landmass" column (default: 9147593,
                       the Census land area of the 50 states + DC).
+    --overlaps        Also show naive summed area and overlap area.
 """
 import argparse
 import sys
@@ -80,6 +81,7 @@ def layer_stats(path):
     dst.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     tx = osr.CoordinateTransformation(src, dst)
 
+    naive_m2 = 0.0
     unioned = None
     nfeat = 0
     for feat in lyr:
@@ -88,10 +90,11 @@ def layer_stats(path):
             continue
         g = geom.Clone()
         g.Transform(tx)
+        naive_m2 += g.GetArea()
         unioned = g if unioned is None else unioned.Union(g)
         nfeat += 1
-    total_m2 = unioned.GetArea() if unioned is not None else 0.0
-    return nfeat, total_m2 / 1e6
+    unioned_m2 = unioned.GetArea() if unioned is not None else 0.0
+    return nfeat, unioned_m2 / 1e6, naive_m2 / 1e6
 
 
 def main():
@@ -100,13 +103,22 @@ def main():
     ap.add_argument("layers", nargs="+", help="paths to vector layers (shp, zip, gpkg, ...)")
     ap.add_argument("--us-land-km2", type=float, default=DEFAULT_US_LAND_KM2,
                     help=f"US landmass in km^2 (default {DEFAULT_US_LAND_KM2:,})")
+    ap.add_argument("--overlaps", action="store_true",
+                    help="also show naive summed area and overlap area")
     args = ap.parse_args()
 
     rows = []
     for path in args.layers:
-        n, km2 = layer_stats(path)
+        n, km2, naive_km2 = layer_stats(path)
         name = path.rsplit("/", 1)[-1]
-        rows.append({"path": path, "name": name, "features": n, "km2": km2})
+        rows.append({
+            "path": path,
+            "name": name,
+            "features": n,
+            "km2": km2,
+            "naive_km2": naive_km2,
+            "overlap_km2": naive_km2 - km2,
+        })
 
     headers = ["Layer", "Features", "Area km^2", "% of US landmass"]
     table = []
@@ -125,6 +137,28 @@ def main():
 
     print(tabulate(table, headers=headers, tablefmt="grid"))
     print(f"US landmass used: {args.us_land_km2:,.0f} km^2")
+
+    if args.overlaps:
+        overlap_table = []
+        for r in rows:
+            for measure, km2 in (
+                ("unioned", r["km2"]),
+                ("naive", r["naive_km2"]),
+                ("overlap", r["overlap_km2"]),
+            ):
+                overlap_table.append([
+                    r["name"],
+                    measure,
+                    r["features"],
+                    f"{km2:,.1f}",
+                    f"{km2 / args.us_land_km2 * 100:.3f}%",
+                ])
+        print("\noverlap details:")
+        print(tabulate(
+            overlap_table,
+            headers=["Layer", "Measure", "Features", "Area km^2", "% of US landmass"],
+            tablefmt="grid",
+        ))
 
     if len(rows) > 1:
         print(f"\nbaseline: {base['name']}")
