@@ -152,9 +152,11 @@ def package(clip_path, out_dir, base, fmt, src_proj4, tmpdir):
     elif fmt == "shp":
         run(["ogr2ogr", "-overwrite", final, final_src])
     elif fmt == "fgb":
-        run(["ogr2ogr", "-overwrite", "-f", "FlatGeobuf", final, final_src])
+        run(["ogr2ogr", "-overwrite", "-f", "FlatGeobuf", "-nlt", "PROMOTE_TO_MULTI",
+             final, final_src])
     elif fmt == "gpkg":
-        run(["ogr2ogr", "-overwrite", "-f", "GPKG", final, final_src])
+        run(["ogr2ogr", "-overwrite", "-f", "GPKG", "-nlt", "PROMOTE_TO_MULTI",
+             final, final_src])
     else:
         sys.exit(f"unknown format: {fmt}")
     return final
@@ -203,6 +205,11 @@ def main():
 
         run(["ogr2ogr", "-overwrite", "-t_srs", laea, land_laea,
              layer_source_path(args.land)], "reproject land layer")
+        land_union = os.path.join(tmpdir, "land_union.shp")
+        run(["ogr2ogr", "-overwrite", "-dialect", "SQLite", "-sql",
+             "SELECT ST_Union(geometry) AS geom FROM land_laea",
+             land_union, land_laea],
+            "dissolve land layer into one polygon (don't clip on state lines)")
 
         def area_at(m, dissolve_raw=False):
             buf = os.path.join(tmpdir, "buf.shp")
@@ -213,11 +220,13 @@ def main():
             else:
                 buf = simp
             clip = os.path.join(tmpdir, "clip.shp")
-            run(["ogr2ogr", "-overwrite", "-clipdst", land_laea, clip, buf],
+            run(["ogr2ogr", "-overwrite", "-clipdst", land_union, clip, buf],
                  "clip to land")
 
-            def dissolve(src):
-                out = os.path.join(tmpdir, "dissolved.shp")
+            def union_area(src):
+                """Dissolve all features with ST_Union and return km^2, so
+                overlapping buffers are not double-counted."""
+                out = os.path.join(tmpdir, "union.shp")
                 run(["ogr2ogr", "-overwrite", "-dialect", "SQLite", "-sql",
                      f"SELECT ST_Union(geometry) AS geom FROM {os.path.splitext(os.path.basename(src))[0]}",
                      out, src], "dissolve")
@@ -225,8 +234,8 @@ def main():
                 lyr = ds.GetLayer()
                 return sum(f.GetGeometryRef().Clone().GetArea() for f in lyr) / 1e6
 
-            clip_km2 = dissolve(clip)
-            raw_km2 = dissolve(buf) if dissolve_raw else None
+            clip_km2 = union_area(clip)
+            raw_km2 = union_area(buf) if dissolve_raw else None
             return raw_km2, clip_km2, clip
 
         def pct(km2):

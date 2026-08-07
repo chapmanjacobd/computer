@@ -4,6 +4,8 @@
 Generalizable: accepts any number of shapefiles / zipped shapefiles,
 computes each layer's total area in km^2 using an equal-area projection
 centered on the layer's own extent (works for any region on Earth),
+unions the projected geometries before measuring area to avoid counting
+overlaps more than once,
 and prints a comparison table with tabulate.
 
 Usage:
@@ -78,7 +80,7 @@ def layer_stats(path):
     dst.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     tx = osr.CoordinateTransformation(src, dst)
 
-    total_m2 = 0.0
+    unioned = None
     nfeat = 0
     for feat in lyr:
         geom = feat.GetGeometryRef()
@@ -86,8 +88,9 @@ def layer_stats(path):
             continue
         g = geom.Clone()
         g.Transform(tx)
-        total_m2 += g.GetArea()
+        unioned = g if unioned is None else unioned.Union(g)
         nfeat += 1
+    total_m2 = unioned.GetArea() if unioned is not None else 0.0
     return nfeat, total_m2 / 1e6
 
 
