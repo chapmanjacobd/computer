@@ -145,7 +145,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             renter_stocks *= 1 + stock_return_m
             yr = (m - 1) // 12
 
-            rent_curr = start_rent * ((1 + args["inflation_rate"]) ** yr)
+            rent_curr = start_rent * ((1 + args["rent_growth_rate"]) ** yr)
             monthly_budget = args["monthly_budget"] * ((1 + args["inflation_rate"]) ** yr)
 
             total_costs += rent_curr / ((1 + args["inflation_rate"]) ** (m / 12.0))
@@ -158,7 +158,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         stock_tax = stock_gain * args["state_tax"]
         renter_stocks_after_tax = renter_stocks - stock_tax
 
-        y31_outlay = start_rent * ((1 + args["inflation_rate"]) ** 30)
+        y31_outlay = start_rent * ((1 + args["rent_growth_rate"]) ** 30)
 
         scenario_name = f"Rent at ${start_rent}/mo"
 
@@ -190,6 +190,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "stock_return": 0.07,
         "inflation_rate": 0.03,
         "appreciation_rate": 0.03,
+        "rent_growth_rate": 0.055,
         "cap_gains_tax": 0.15,
         "selling_cost_pct": 0.06,
         "maintenance_pct": 0.01,
