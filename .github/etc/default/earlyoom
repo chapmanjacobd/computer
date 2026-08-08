@@ -1,1 +1,6 @@
-EARLYOOM_ARGS="-r 0 -m 6,4 --prefer '^(Web Content|Isolated Web Co)$' --avoid '^(dnf|packagekitd|fwupd|fwupdmgr|systemd|systemd-logind|dbus-daemon|dbus-broker|cryptsetup|sshd)$'"
+# These default settings were approved by the Fedora Workstation SIG:
+# https://pagure.io/fedora-workstation/issue/119
+
+EARLYOOM_ARGS="-r 0 -m 4 -M 409600 --prefer '^(Web Content|Isolated Web Co)$' --avoid '^(dnf|packagekitd|gnome-shell|gnome-session-c|gnome-session-b|lightdm|sddm|sddm-helper|gdm|gdm-wayland-ses|gdm-session-wor|gdm-x-session|Xorg|Xwayland|systemd|systemd-logind|dbus-daemon|dbus-broker|cinnamon|cinnamon-sessio|kwin_x11|kwin_wayland|plasmashell|ksmserver|plasma_session|startplasma-way|sway|i3|xfce4-session|mate-session|marco|lxqt-session|openbox|cryptsetup|tmux)$'"
+
+# More documentation at `man earlyoom` or `earlyoom -h`.
