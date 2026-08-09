@@ -187,7 +187,7 @@ url-prefix("file://") {
         border-radius: 2px;
         /* background: rgba(168, 153, 132,.9) !important; */;
     }
-    span:not(:empty):not([class*="icon"]):not([id*="icon"]):not([class*="star"]):not([id*="star"]):not([id*="rating"]):not([class*="rating"]):not([class*="prite"]) {
+    span:not(:empty):not([class*="icon"]):not([id*="icon"]):not([class*="star"]):not([id*="star"]):not([id*="rating"]):not([class*="rating"]):not([class*="prite"]):not([class*="diff-text-marker"]) {
         background-image: none !important;
         text-indent: 0 !important;
         background-color: #c7b49fd4 !important;
@@ -221,7 +221,7 @@ url-prefix("file://") {
 
     a:hover {
         color: #004830 !important;
-        background-color: #f9efd3 !important;
+        background-color: #f9efd330 !important;
     }
 
     a:active {
