@@ -14,6 +14,27 @@ except ImportError:
         sys.exit(1)
 
 
+def monthly_tax_savings(args: dict, interest_m: float, prop_tax_m: float) -> float:
+    fed_ded = interest_m + min(prop_tax_m, args["salt_cap"] / 12)
+    fed_savings = args["fed_tax_rate"] * max(0.0, fed_ded - args["fed_std_deduction"] / 12)
+    state_savings = args["state_tax"] * max(0.0, interest_m + prop_tax_m - args["state_std_deduction"] / 12)
+    return fed_savings + state_savings
+
+
+def monthly_pmi(args: dict, loan_amt: float, balance: float, home_value: float) -> float:
+    if args["down_payment_pct"] >= 0.20 or balance <= 0:
+        return 0.0
+    if home_value > 0 and balance / home_value > 0.80:
+        return loan_amt * args["pmi_rate"] / 12
+    return 0.0
+
+
+def stock_gains_tax(args: dict, stock_gain: float, projection_years: int) -> float:
+    annual_room = max(0.0, args["cap_gains_0pct"] - args["taxable_income"])
+    taxable_gain = max(0.0, stock_gain - annual_room * projection_years)
+    return taxable_gain * args["cap_gains_tax"] + stock_gain * args["state_tax"]
+
+
 def get_stay_home_scenario(args: dict) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
@@ -38,7 +59,7 @@ def get_stay_home_scenario(args: dict) -> dict:
             cost_basis += net_cash_flow
 
     stock_gain = max(0, stocks - cost_basis)
-    stock_tax = stock_gain * args["state_tax"]
+    stock_tax = stock_gains_tax(args, stock_gain, projection_years)
     stocks_after_tax = stocks - stock_tax
 
     inflation_factor = (1 + args["inflation_rate"]) ** projection_years
@@ -69,14 +90,27 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     term_months = term_years * 12
     pmt = loan_amt * (r * (1 + r) ** term_months) / ((1 + r) ** term_months - 1)
 
+    schedule = []
+    bal = loan_amt
+    for _ in range(term_months):
+        interest = bal * r
+        schedule.append(interest)
+        bal -= pmt - interest
+
     buyer_stocks = args["total_capital"] - dp_amt
     tax_m = args["annual_taxes"] / 12
     hoa_m = args["monthly_assessment"]
     maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
     cost_basis = buyer_stocks
-    base_outlay_y1 = pmt + tax_m + hoa_m + maint_m
+    base_outlay_y1 = (
+        pmt + tax_m + hoa_m + maint_m
+        + monthly_pmi(args, loan_amt, loan_amt, args["price"])
+        - monthly_tax_savings(args, schedule[0], tax_m)
+    )
     total_costs = dp_amt
+
+    loan_balance = loan_amt
 
     for m in range(1, projection_months + 1):
         buyer_stocks *= 1 + stock_return_m
@@ -89,8 +123,12 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         hoa_curr = hoa_m * hoa_growth_factor
         maint_curr = maint_m * appr_factor
         pmt_curr = pmt if m <= term_months else 0.0
+        interest_curr = schedule[m - 1] if m <= term_months else 0.0
+        pmi_curr = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appr_factor)
+        if m <= term_months:
+            loan_balance -= pmt - interest_curr
 
-        buyer_outlay = pmt_curr + tax_curr + hoa_curr + maint_curr
+        buyer_outlay = pmt_curr + tax_curr + hoa_curr + maint_curr + pmi_curr - monthly_tax_savings(args, interest_curr, tax_curr)
         monthly_budget = args["monthly_budget"] * infl_factor
 
         total_costs += buyer_outlay / ((1 + args["inflation_rate"]) ** (m / 12.0))
@@ -100,7 +138,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
             cost_basis += net_cash_flow
 
     stock_gain = max(0, buyer_stocks - cost_basis)
-    stock_tax = stock_gain * args["state_tax"]
+    stock_tax = stock_gains_tax(args, stock_gain, projection_years)
     buyer_stocks_after_tax = buyer_stocks - stock_tax
 
     appreciation_factor = (1 + args["appreciation_rate"]) ** projection_years
@@ -109,8 +147,8 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     nominal_home_val = args["price"] * appreciation_factor
     selling_costs = nominal_home_val * args["selling_cost_pct"]
     home_gain = nominal_home_val - selling_costs - args["price"]
-    taxable_home_gain = max(0, home_gain - 500000)
-    home_tax = taxable_home_gain * (args["cap_gains_tax"] + args["state_tax"])
+    taxable_home_gain = max(0, home_gain - args["home_gain_exclusion"])
+    home_tax = taxable_home_gain * args["cap_gains_tax"] + home_gain * args["state_tax"]
     if projection_months < term_months:
         remaining_loan = loan_amt * (1 + r) ** projection_months - pmt * (
             ((1 + r) ** projection_months - 1) / r
@@ -123,12 +161,16 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     final_net_worth = (buyer_stocks_after_tax / inflation_factor) + final_home_val
 
     hoa_factor = (1 + args["hoa_growth_rate"]) ** projection_years
+    end_interest = schedule[projection_months] if projection_months < term_months else 0.0
+    end_tax = tax_m * appreciation_factor
+    end_pmi = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appreciation_factor)
     end_year_outlay = (
         (pmt if term_months > projection_months else 0.0)
-        + tax_m * appreciation_factor
+        + end_tax
         + hoa_m * hoa_factor
         + maint_m * appreciation_factor
-    )
+        + end_pmi
+    ) - monthly_tax_savings(args, end_interest, end_tax)
 
     address = args.get("_address", "")
     if address:
@@ -172,7 +214,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 cost_basis += net_cash_flow
 
         stock_gain = max(0, renter_stocks - cost_basis)
-        stock_tax = stock_gain * args["state_tax"]
+        stock_tax = stock_gains_tax(args, stock_gain, projection_years)
         renter_stocks_after_tax = renter_stocks - stock_tax
 
         end_year_outlay = start_rent * ((1 + args["rent_growth_rate"]) ** projection_years)
@@ -214,6 +256,14 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "maintenance_pct": 0.01,
         "state_tax": 0.0495,
         "hoa_growth_rate": 0.0672,
+        "fed_std_deduction": 30000,
+        "state_std_deduction": 5200,
+        "fed_tax_rate": 0.22,
+        "salt_cap": 10000,
+        "home_gain_exclusion": 500000,
+        "pmi_rate": 0.0075,
+        "cap_gains_0pct": 98900,
+        "taxable_income": 5000,
     }
 
     for key in defaults:
