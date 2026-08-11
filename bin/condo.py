@@ -15,6 +15,8 @@ except ImportError:
 
 
 def get_stay_home_scenario(args: dict) -> dict:
+    projection_years = args["projection_years"]
+    projection_months = projection_years * 12
     stock_return_m = args["stock_return"] / 12
     stocks = args["total_capital"]
     cost_basis = stocks
@@ -22,7 +24,7 @@ def get_stay_home_scenario(args: dict) -> dict:
 
     tax_m = 600.0 / 12
 
-    for m in range(1, 361):
+    for m in range(1, projection_months + 1):
         stocks *= 1 + stock_return_m
         yr = (m - 1) // 12
 
@@ -39,21 +41,23 @@ def get_stay_home_scenario(args: dict) -> dict:
     stock_tax = stock_gain * args["state_tax"]
     stocks_after_tax = stocks - stock_tax
 
-    infl_30 = (1 + args["inflation_rate"]) ** 30
-    y31_outlay = tax_m * infl_30
+    inflation_factor = (1 + args["inflation_rate"]) ** projection_years
+    end_year_outlay = tax_m * inflation_factor
 
     return {
         "scenario": "Stay Home",
         "initial_outlay": tax_m,
-        "y31_outlay": y31_outlay,
+        "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "final_stocks": stocks_after_tax,
         "final_home_val": 0.0,
-        "total_net_worth": stocks_after_tax / infl_30,
+        "total_net_worth": stocks_after_tax / inflation_factor,
     }
 
 
 def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: float | None = None) -> dict:
+    projection_years = args["projection_years"]
+    projection_months = projection_years * 12
     if mortgage_rate is None:
         mortgage_rate = args["mortgage_rate"]
     stock_return_m = args["stock_return"] / 12
@@ -74,7 +78,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     base_outlay_y1 = pmt + tax_m + hoa_m + maint_m
     total_costs = dp_amt
 
-    for m in range(1, 361):
+    for m in range(1, projection_months + 1):
         buyer_stocks *= 1 + stock_return_m
         yr = (m - 1) // 12
 
@@ -99,21 +103,26 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     stock_tax = stock_gain * args["state_tax"]
     buyer_stocks_after_tax = buyer_stocks - stock_tax
 
-    appr_30 = (1 + args["appreciation_rate"]) ** 30
-    infl_30 = (1 + args["inflation_rate"]) ** 30
+    appreciation_factor = (1 + args["appreciation_rate"]) ** projection_years
+    inflation_factor = (1 + args["inflation_rate"]) ** projection_years
 
-    nominal_home_val = args["price"] * appr_30
+    nominal_home_val = args["price"] * appreciation_factor
     selling_costs = nominal_home_val * args["selling_cost_pct"]
     home_gain = nominal_home_val - selling_costs - args["price"]
     taxable_home_gain = max(0, home_gain - 500000)
     home_tax = taxable_home_gain * (args["cap_gains_tax"] + args["state_tax"])
     net_home = nominal_home_val - selling_costs - home_tax
 
-    final_home_val = net_home / infl_30
-    final_net_worth = (buyer_stocks_after_tax / infl_30) + final_home_val
+    final_home_val = net_home / inflation_factor
+    final_net_worth = (buyer_stocks_after_tax / inflation_factor) + final_home_val
 
-    hoa_30 = (1 + args["hoa_growth_rate"]) ** 30
-    y31_outlay = (pmt if term_months > 360 else 0.0) + tax_m * appr_30 + hoa_m * hoa_30 + maint_m * appr_30
+    hoa_factor = (1 + args["hoa_growth_rate"]) ** projection_years
+    end_year_outlay = (
+        (pmt if term_months > projection_months else 0.0)
+        + tax_m * appreciation_factor
+        + hoa_m * hoa_factor
+        + maint_m * appreciation_factor
+    )
 
     address = args.get("_address", "")
     if address:
@@ -124,7 +133,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     return {
         "scenario": label,
         "initial_outlay": base_outlay_y1,
-        "y31_outlay": y31_outlay,
+        "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "final_stocks": buyer_stocks_after_tax,
         "final_home_val": final_home_val,
@@ -133,6 +142,8 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
 
 
 def get_base_renter_scenarios(args: dict) -> list[dict]:
+    projection_years = args["projection_years"]
+    projection_months = projection_years * 12
     stock_return_m = args["stock_return"] / 12
     renter_results = []
 
@@ -141,7 +152,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         cost_basis = renter_stocks
         total_costs = 0.0
 
-        for m in range(1, 361):
+        for m in range(1, projection_months + 1):
             renter_stocks *= 1 + stock_return_m
             yr = (m - 1) // 12
 
@@ -158,7 +169,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         stock_tax = stock_gain * args["state_tax"]
         renter_stocks_after_tax = renter_stocks - stock_tax
 
-        y31_outlay = start_rent * ((1 + args["rent_growth_rate"]) ** 30)
+        end_year_outlay = start_rent * ((1 + args["rent_growth_rate"]) ** projection_years)
 
         scenario_name = f"Rent at ${start_rent}/mo"
 
@@ -166,11 +177,11 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             {
                 "scenario": scenario_name,
                 "initial_outlay": float(start_rent),
-                "y31_outlay": y31_outlay,
+                "end_year_outlay": end_year_outlay,
                 "total_costs": total_costs,
                 "final_stocks": renter_stocks_after_tax,
                 "final_home_val": 0.0,
-                "total_net_worth": renter_stocks_after_tax / ((1 + args["inflation_rate"]) ** 30),
+                "total_net_worth": renter_stocks_after_tax / ((1 + args["inflation_rate"]) ** projection_years),
             }
         )
 
@@ -184,6 +195,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
     defaults = {
         "total_capital": 130000,
         "monthly_budget": 2100,
+        "projection_years": 30,
         "mortgage_rate": 0.061,
         "mortgage_term": 15,
         "down_payment_pct": 0.20,
@@ -213,7 +225,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
     return defaults, scenarios
 
 
-def print_decision_table(scenarios: list[dict]):
+def print_decision_table(scenarios: list[dict], projection_years: int):
     stay_home = [s for s in scenarios if s["scenario"] == "Stay Home"]
     others = [s for s in scenarios if s["scenario"] != "Stay Home"]
     others.sort(key=lambda x: x["total_net_worth"], reverse=True)
@@ -225,7 +237,7 @@ def print_decision_table(scenarios: list[dict]):
     headers = [
         "Scenario",
         "Init Outlay",
-        "Yr 31 Outlay",
+        f"Yr {projection_years + 1} Outlay",
         "NPV Total Costs",
         "NPV Net Worth",
         "Percent Baseline",
@@ -243,7 +255,7 @@ def print_decision_table(scenarios: list[dict]):
         row = [
             s["scenario"],
             f"${s['initial_outlay']:,.0f}",
-            f"${s['y31_outlay']:,.0f}",
+            f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
             pct_baseline,
@@ -258,7 +270,7 @@ def parse_float_with_commas(s: str) -> float:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="30-Year Real Estate vs Renting Decision Table Evaluator")
+    parser = argparse.ArgumentParser(description="Real Estate vs Renting Decision Table Evaluator")
 
     parser.add_argument("config", help="Path to TOML configuration file with scenarios")
     parser.add_argument(
@@ -289,7 +301,7 @@ def main():
         sc = calculate_buyer_net_worth(sc_config, term_years=sc_config["mortgage_term"])
         all_scenarios.append(sc)
 
-    print_decision_table(all_scenarios)
+    print_decision_table(all_scenarios, defaults["projection_years"])
 
 
 if __name__ == "__main__":
