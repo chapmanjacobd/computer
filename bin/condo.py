@@ -111,7 +111,13 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     home_gain = nominal_home_val - selling_costs - args["price"]
     taxable_home_gain = max(0, home_gain - 500000)
     home_tax = taxable_home_gain * (args["cap_gains_tax"] + args["state_tax"])
-    net_home = nominal_home_val - selling_costs - home_tax
+    if projection_months < term_months:
+        remaining_loan = loan_amt * (1 + r) ** projection_months - pmt * (
+            ((1 + r) ** projection_months - 1) / r
+        )
+    else:
+        remaining_loan = 0.0
+    net_home = nominal_home_val - selling_costs - home_tax - remaining_loan
 
     final_home_val = net_home / inflation_factor
     final_net_worth = (buyer_stocks_after_tax / inflation_factor) + final_home_val
