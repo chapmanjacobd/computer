@@ -35,6 +35,12 @@ def stock_gains_tax(args: dict, stock_gain: float, projection_years: int) -> flo
     return taxable_gain * args["cap_gains_tax"] + stock_gain * args["state_tax"]
 
 
+def annual_insurance(args: dict) -> float:
+    if args["monthly_assessment"] > 0:
+        return args["condo_insurance_annual"]
+    return args["house_insurance_annual"]
+
+
 def get_stay_home_scenario(args: dict) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
@@ -101,11 +107,12 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     annual_taxes = args.get("annual_taxes", args["price"] * args["effective_tax_rate"])
     tax_m = annual_taxes / 12
     hoa_m = args["monthly_assessment"]
+    insurance_m = annual_insurance(args) / 12
     maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
     cost_basis = buyer_stocks
     base_outlay_y1 = (
-        pmt + tax_m + hoa_m + maint_m
+        pmt + tax_m + hoa_m + insurance_m + maint_m
         + monthly_pmi(args, loan_amt, loan_amt, args["price"])
         - monthly_tax_savings(args, schedule[0], tax_m)
     )
@@ -122,6 +129,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         hoa_growth_factor = (1 + args["hoa_growth_rate"]) ** yr
         tax_curr = tax_m * appr_factor
         hoa_curr = hoa_m * hoa_growth_factor
+        insurance_curr = insurance_m * infl_factor
         maint_curr = maint_m * appr_factor
         pmt_curr = pmt if m <= term_months else 0.0
         interest_curr = schedule[m - 1] if m <= term_months else 0.0
@@ -129,7 +137,15 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         if m <= term_months:
             loan_balance -= pmt - interest_curr
 
-        buyer_outlay = pmt_curr + tax_curr + hoa_curr + maint_curr + pmi_curr - monthly_tax_savings(args, interest_curr, tax_curr)
+        buyer_outlay = (
+            pmt_curr
+            + tax_curr
+            + hoa_curr
+            + insurance_curr
+            + maint_curr
+            + pmi_curr
+            - monthly_tax_savings(args, interest_curr, tax_curr)
+        )
         monthly_budget = args["monthly_budget"] * infl_factor
 
         total_costs += buyer_outlay / ((1 + args["inflation_rate"]) ** (m / 12.0))
@@ -169,6 +185,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         (pmt if term_months > projection_months else 0.0)
         + end_tax
         + hoa_m * hoa_factor
+        + insurance_m * inflation_factor
         + maint_m * appreciation_factor
         + end_pmi
     ) - monthly_tax_savings(args, end_interest, end_tax)
@@ -266,6 +283,8 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "cap_gains_0pct": 98900,
         "taxable_income": 5000,
         "effective_tax_rate": 0.019,
+        "condo_insurance_annual": 600,
+        "house_insurance_annual": 1800,
     }
 
     for key in defaults:
