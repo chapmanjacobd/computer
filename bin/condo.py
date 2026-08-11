@@ -98,7 +98,8 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         bal -= pmt - interest
 
     buyer_stocks = args["total_capital"] - dp_amt
-    tax_m = args["annual_taxes"] / 12
+    annual_taxes = args.get("annual_taxes", args["price"] * args["effective_tax_rate"])
+    tax_m = annual_taxes / 12
     hoa_m = args["monthly_assessment"]
     maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
@@ -176,7 +177,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     if address:
         label = address
     else:
-        label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${args['annual_taxes']:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
+        label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${annual_taxes:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
 
     return {
         "scenario": label,
@@ -264,6 +265,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "pmi_rate": 0.0075,
         "cap_gains_0pct": 98900,
         "taxable_income": 5000,
+        "effective_tax_rate": 0.019,
     }
 
     for key in defaults:
@@ -275,6 +277,8 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         for address, params in data["scenario"].items():
             merged = defaults.copy()
             merged.update(params)
+            if "annual_taxes" not in params:
+                merged["annual_taxes"] = merged["price"] * merged["effective_tax_rate"]
             merged["_address"] = address
             scenarios.append(merged)
 
