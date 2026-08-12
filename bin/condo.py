@@ -377,6 +377,13 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "rent_growth_volatility": 0.02,
         "hoa_growth_volatility": 0.03,
         "mortgage_rate_volatility": 0.01,
+        "appreciation_inflation_beta": 0.9,
+        "rent_growth_inflation_beta": 0.75,
+        "hoa_growth_inflation_beta": 0.35,
+        "stock_inflation_beta": 0.15,
+        "mortgage_inflation_beta": 0.7,
+        "macro_shock_beta": 0.3,
+        "appreciation_rate_sensitivity": -1.5,
         "tax_volatility": 0.10,
         "maintenance_volatility": 0.35,
         "inflation_ar_coeffs": [0.85],
@@ -482,17 +489,22 @@ def ar_log_returns(
     ar_coeffs: list[float] | float,
     minimum: float,
     maximum: float,
+    shared: list[float] | None = None,
+    shared_beta: float = 0.0,
 ) -> list[float]:
     if isinstance(ar_coeffs, (int, float)):
         coeffs = [float(ar_coeffs)] if ar_coeffs else []
     else:
         coeffs = [float(c) for c in ar_coeffs]
     innov_sigma = _ar_innov_sigma(coeffs, volatility)
+    idio_sigma = innov_sigma * math.sqrt(max(0.0, 1.0 - shared_beta**2))
     path = []
     history = []
-    for mean in mean_returns:
+    for t, mean in enumerate(mean_returns):
         w = sum(phi * past for phi, past in zip(coeffs, history))
-        w += rng.gauss(0, innov_sigma)
+        if shared is not None:
+            w += innov_sigma * shared_beta * shared[t]
+        w += rng.gauss(0, idio_sigma)
         history.insert(0, w)
         if len(history) > len(coeffs):
             history.pop()
@@ -505,6 +517,14 @@ def ar_log_returns(
 def make_market_paths(args: dict, rng: random.Random) -> dict:
     years = args["projection_years"]
     inflation_mean = args["inflation_rate"]
+    macro_beta = args["macro_shock_beta"]
+
+    macro = []
+    shock = 0.0
+    persistence = 0.3
+    for _ in range(years):
+        shock = persistence * shock + rng.gauss(0, math.sqrt(1 - persistence**2))
+        macro.append(shock)
 
     inflation = ar_log_returns(
         rng,
@@ -514,58 +534,73 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
         -0.01,
         0.12,
     )
+
+    expected_rate = args["mortgage_rate"] + args["mortgage_inflation_beta"] * (
+        inflation[0] - inflation_mean
+    )
+    mortgage_rate = bounded_normal(
+        rng,
+        expected_rate + macro_beta * args["mortgage_rate_volatility"] * macro[0],
+        args["mortgage_rate_volatility"],
+        0.03,
+        0.10,
+    )
+    rate_surprise = mortgage_rate - expected_rate
+
+    appreciation_mean = [
+        args["appreciation_rate"]
+        + args["appreciation_inflation_beta"] * (infl - inflation_mean)
+        + args["appreciation_rate_sensitivity"] * rate_surprise
+        for infl in inflation
+    ]
     appreciation = ar_log_returns(
         rng,
-        [
-            args["appreciation_rate"] + 0.25 * (infl - inflation_mean)
-            for infl in inflation
-        ],
+        appreciation_mean,
         args["appreciation_volatility"],
         args["appreciation_ar_coeffs"],
         -0.30,
         0.30,
+        shared=macro,
+        shared_beta=macro_beta,
     )
     rent_growth = ar_log_returns(
         rng,
         [
-            args["rent_growth_rate"] + 0.50 * (infl - inflation_mean)
+            args["rent_growth_rate"] + args["rent_growth_inflation_beta"] * (infl - inflation_mean)
             for infl in inflation
         ],
         args["rent_growth_volatility"],
         args["rent_growth_ar_coeffs"],
         -0.05,
         0.12,
+        shared=macro,
+        shared_beta=macro_beta,
     )
     hoa_growth = ar_log_returns(
         rng,
         [
-            args["hoa_growth_rate"] + 0.35 * (infl - inflation_mean)
+            args["hoa_growth_rate"] + args["hoa_growth_inflation_beta"] * (infl - inflation_mean)
             for infl in inflation
         ],
         args["hoa_growth_volatility"],
         args["hoa_growth_ar_coeffs"],
         -0.05,
         0.20,
+        shared=macro,
+        shared_beta=macro_beta,
     )
     stock = ar_log_returns(
         rng,
         [
-            args["stock_return"] + 0.15 * (infl - inflation_mean)
+            args["stock_return"] + args["stock_inflation_beta"] * (infl - inflation_mean)
             for infl in inflation
         ],
         args["stock_volatility"],
         args["stock_ar_coeffs"],
         -0.80,
         1.00,
-    )
-    mortgage_rate = bounded_normal(
-        rng,
-        args["mortgage_rate"] + 0.50 * (inflation[0] - inflation_mean)
-        if inflation
-        else args["mortgage_rate"],
-        args["mortgage_rate_volatility"],
-        0.03,
-        0.10,
+        shared=macro,
+        shared_beta=macro_beta,
     )
     return {
         "stock_return": stock,
