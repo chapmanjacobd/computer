@@ -282,7 +282,7 @@ abbr -a -- continue.from lines.after
 abbr -a -- continue.to lines.until
 abbr -a -- writes fatrace_agg_size.py --min-size=3M --min-delta=2M --sort=size:desc
 abbr -a -- morg 'morganize (modified.staged) (modified) (added) (untracked)'
-abbr -a -- editcb 'cb | vipe | cb'
+abbr -a -- cb.edit 'cb | vipe | cb'
 abbr -a -- journal journalctl -g
 abbr -a -- cipher.caesar tr a-z n-za-m
 abbr -a -- chars wc -c
@@ -960,3 +960,4 @@ abbr -a -- ga git add -u
 abbr -a -- git.ssh git.remote.ssh
 abbr -a -- icat viu -h 30
 abbr -a -- ogrinfo ogrinfo -ro -so -al
+abbr -a -- editcb cb.edit
