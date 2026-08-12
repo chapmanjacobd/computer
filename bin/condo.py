@@ -3,7 +3,7 @@ import argparse
 import math
 import random
 import sys
-from statistics import median
+from statistics import stdev
 
 from tabulate import tabulate
 
@@ -27,9 +27,9 @@ def annual_rate(args: dict, name: str, year: int) -> float:
 
 
 def growth_factor(args: dict, name: str, years: int) -> float:
-    cached_factors = args.get("_mc_growth_factors")
-    if cached_factors and name in cached_factors:
-        return cached_factors[name][years]
+    monthly_factors = args.get("_mc_monthly_factors")
+    if monthly_factors and name in monthly_factors:
+        return monthly_factors[name][years * 12]
 
     factor = 1.0
     for year in range(years):
@@ -38,11 +38,22 @@ def growth_factor(args: dict, name: str, years: int) -> float:
 
 
 def monthly_growth_factor(args: dict, name: str, month: int) -> float:
+    monthly_factors = args.get("_mc_monthly_factors")
+    if monthly_factors and name in monthly_factors:
+        return monthly_factors[name][month]
+
     full_years, remaining_months = divmod(month, 12)
     factor = growth_factor(args, name, full_years)
     if remaining_months:
         factor *= (1 + annual_rate(args, name, full_years)) ** (remaining_months / 12.0)
     return factor
+
+
+def monthly_stock_return(args: dict, name: str, year: int) -> float:
+    monthly_returns = args.get("_mc_monthly_returns")
+    if monthly_returns and name in monthly_returns:
+        return monthly_returns[name][year]
+    return (1 + annual_rate(args, name, year)) ** (1.0 / 12) - 1
 
 
 def renter_move_cost(args: dict, year: int) -> float:
@@ -93,11 +104,11 @@ def get_stay_home_scenario(args: dict) -> dict:
     cost_basis = stocks
     total_costs = 0.0
 
-    tax_m = args.get("_stay_home_tax_annual", 600.0) / 12
+    tax_m = args.get("annual_taxes", args.get("_stay_home_tax_annual", 600.0)) / 12
 
     for m in range(1, projection_months + 1):
         yr = (m - 1) // 12
-        stocks *= 1 + annual_rate(args, "stock_return", yr) / 12
+        stocks *= 1 + monthly_stock_return(args, "stock_return", yr)
 
         inflation_factor = growth_factor(args, "inflation_rate", yr)
         tax_curr = tax_m * inflation_factor
@@ -138,7 +149,10 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     loan_amt = args["price"] - dp_amt
 
     term_months = term_years * 12
-    pmt = loan_amt * (r * (1 + r) ** term_months) / ((1 + r) ** term_months - 1)
+    if r == 0:
+        pmt = loan_amt / term_months
+    else:
+        pmt = loan_amt * (r * (1 + r) ** term_months) / ((1 + r) ** term_months - 1)
 
     schedule = []
     bal = loan_amt
@@ -166,7 +180,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
 
     for m in range(1, projection_months + 1):
         yr = (m - 1) // 12
-        buyer_stocks *= 1 + annual_rate(args, "stock_return", yr) / 12
+        buyer_stocks *= 1 + monthly_stock_return(args, "stock_return", yr)
 
         appr_factor = growth_factor(args, "appreciation_rate", yr)
         infl_factor = growth_factor(args, "inflation_rate", yr)
@@ -211,9 +225,12 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     taxable_home_gain = max(0, home_gain - args["home_gain_exclusion"])
     home_tax = taxable_home_gain * args["cap_gains_tax"] + home_gain * args["state_tax"]
     if projection_months < term_months:
-        remaining_loan = loan_amt * (1 + r) ** projection_months - pmt * (
-            ((1 + r) ** projection_months - 1) / r
-        )
+        if r == 0:
+            remaining_loan = loan_amt - pmt * projection_months
+        else:
+            remaining_loan = loan_amt * (1 + r) ** projection_months - pmt * (
+                ((1 + r) ** projection_months - 1) / r
+            )
     else:
         remaining_loan = 0.0
     net_home = nominal_home_val - selling_costs - home_tax - remaining_loan
@@ -265,7 +282,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
 
         for m in range(1, projection_months + 1):
             yr = (m - 1) // 12
-            renter_stocks *= 1 + annual_rate(args, "stock_return", yr) / 12
+            renter_stocks *= 1 + monthly_stock_return(args, "stock_return", yr)
 
             rent_curr = (
                 start_rent
@@ -362,6 +379,11 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "mortgage_rate_volatility": 0.01,
         "tax_volatility": 0.10,
         "maintenance_volatility": 0.35,
+        "inflation_ar_coeffs": [0.85],
+        "appreciation_ar_coeffs": [0.70],
+        "rent_growth_ar_coeffs": [0.60],
+        "hoa_growth_ar_coeffs": [0.60],
+        "stock_ar_coeffs": [],
         "monte_carlo_simulations": 1000,
         "monte_carlo_seed": 42,
     }
@@ -396,76 +418,162 @@ def lognormal_factor(rng: random.Random, deviation: float, minimum: float, maxim
     return min(max(value, minimum), maximum)
 
 
-def stock_return(rng: random.Random, expected_return: float, volatility: float) -> float:
-    gross_mean = max(0.01, 1 + expected_return)
-    value = math.exp(math.log(gross_mean) - 0.5 * volatility**2 + rng.gauss(0, volatility)) - 1
-    return min(max(value, -0.80), 1.00)
+def _solve_linear(a: list[list[float]], b: list[float]) -> list[float]:
+    n = len(b)
+    for col in range(n):
+        pivot = col
+        for row in range(col + 1, n):
+            if abs(a[row][col]) > abs(a[pivot][col]):
+                pivot = row
+        if abs(a[pivot][col]) < 1e-12:
+            raise ValueError("AR coefficients do not describe a stationary process")
+        if pivot != col:
+            a[col], a[pivot] = a[pivot], a[col]
+            b[col], b[pivot] = b[pivot], b[col]
+        for row in range(col + 1, n):
+            factor = a[row][col] / a[col][col]
+            if factor == 0.0:
+                continue
+            for k in range(col, n):
+                a[row][k] -= factor * a[col][k]
+            b[row] -= factor * b[col]
+    x = [0.0] * n
+    for row in range(n - 1, -1, -1):
+        total = b[row]
+        for k in range(row + 1, n):
+            total -= a[row][k] * x[k]
+        x[row] = total / a[row][row]
+    return x
+
+
+def _ar_autocorrelations(phi: list[float]) -> list[float]:
+    p = len(phi)
+    a = [[0.0] * p for _ in range(p)]
+    b = [0.0] * p
+    for r in range(p):
+        b[r] = phi[r]
+        for c in range(p):
+            coeff = 1.0 if r == c else 0.0
+            if r > c:
+                coeff -= phi[r - c - 1]
+            if r + c + 2 <= p:
+                coeff -= phi[r + c + 1]
+            a[r][c] = coeff
+    return _solve_linear(a, b)
+
+
+def _ar_innov_sigma(phi: list[float], volatility: float) -> float:
+    if not phi:
+        return volatility
+    rho = _ar_autocorrelations(phi)
+    scale = 1.0 - sum(ph * r for ph, r in zip(phi, rho))
+    if scale <= 0.0 or any(abs(r) >= 1.0 for r in rho):
+        raise ValueError(
+            f"AR coefficients {phi} do not describe a stationary process "
+            f"(Yule-Walker variance scale {scale:.3g} <= 0)"
+        )
+    return volatility * math.sqrt(scale)
+
+
+def ar_log_returns(
+    rng: random.Random,
+    mean_returns: list[float],
+    volatility: float,
+    ar_coeffs: list[float] | float,
+    minimum: float,
+    maximum: float,
+) -> list[float]:
+    if isinstance(ar_coeffs, (int, float)):
+        coeffs = [float(ar_coeffs)] if ar_coeffs else []
+    else:
+        coeffs = [float(c) for c in ar_coeffs]
+    innov_sigma = _ar_innov_sigma(coeffs, volatility)
+    path = []
+    history = []
+    for mean in mean_returns:
+        w = sum(phi * past for phi, past in zip(coeffs, history))
+        w += rng.gauss(0, innov_sigma)
+        history.insert(0, w)
+        if len(history) > len(coeffs):
+            history.pop()
+        gross_mean = max(0.01, 1 + mean)
+        value = math.exp(math.log(gross_mean) - 0.5 * volatility**2 + w) - 1
+        path.append(min(max(value, minimum), maximum))
+    return path
 
 
 def make_market_paths(args: dict, rng: random.Random) -> dict:
     years = args["projection_years"]
-    inflation = [
-        bounded_normal(
-            rng,
-            args["inflation_rate"],
-            args["inflation_volatility"],
-            -0.01,
-            0.12,
-        )
-        for _ in range(years)
-    ]
-    appreciation = [
-        bounded_normal(
-            rng,
-            args["appreciation_rate"] + 0.25 * (inflation[year] - args["inflation_rate"]),
-            args["appreciation_volatility"],
-            -0.30,
-            0.30,
-        )
-        for year in range(years)
-    ]
-    rent_growth = [
-        bounded_normal(
-            rng,
-            args["rent_growth_rate"] + 0.50 * (inflation[year] - args["inflation_rate"]),
-            args["rent_growth_volatility"],
-            -0.05,
-            0.12,
-        )
-        for year in range(years)
-    ]
-    hoa_growth = [
-        bounded_normal(
-            rng,
-            args["hoa_growth_rate"] + 0.35 * (inflation[year] - args["inflation_rate"]),
-            args["hoa_growth_volatility"],
-            -0.05,
-            0.20,
-        )
-        for year in range(years)
-    ]
-    return {
-        "stock_return": [
-            stock_return(
-                rng,
-                args["stock_return"] + 0.15 * (inflation[year] - args["inflation_rate"]),
-                args["stock_volatility"],
-            )
-            for year in range(years)
+    inflation_mean = args["inflation_rate"]
+
+    inflation = ar_log_returns(
+        rng,
+        [inflation_mean] * years,
+        args["inflation_volatility"],
+        args["inflation_ar_coeffs"],
+        -0.01,
+        0.12,
+    )
+    appreciation = ar_log_returns(
+        rng,
+        [
+            args["appreciation_rate"] + 0.25 * (infl - inflation_mean)
+            for infl in inflation
         ],
+        args["appreciation_volatility"],
+        args["appreciation_ar_coeffs"],
+        -0.30,
+        0.30,
+    )
+    rent_growth = ar_log_returns(
+        rng,
+        [
+            args["rent_growth_rate"] + 0.50 * (infl - inflation_mean)
+            for infl in inflation
+        ],
+        args["rent_growth_volatility"],
+        args["rent_growth_ar_coeffs"],
+        -0.05,
+        0.12,
+    )
+    hoa_growth = ar_log_returns(
+        rng,
+        [
+            args["hoa_growth_rate"] + 0.35 * (infl - inflation_mean)
+            for infl in inflation
+        ],
+        args["hoa_growth_volatility"],
+        args["hoa_growth_ar_coeffs"],
+        -0.05,
+        0.20,
+    )
+    stock = ar_log_returns(
+        rng,
+        [
+            args["stock_return"] + 0.15 * (infl - inflation_mean)
+            for infl in inflation
+        ],
+        args["stock_volatility"],
+        args["stock_ar_coeffs"],
+        -0.80,
+        1.00,
+    )
+    mortgage_rate = bounded_normal(
+        rng,
+        args["mortgage_rate"] + 0.50 * (inflation[0] - inflation_mean)
+        if inflation
+        else args["mortgage_rate"],
+        args["mortgage_rate_volatility"],
+        0.03,
+        0.10,
+    )
+    return {
+        "stock_return": stock,
         "inflation_rate": inflation,
         "appreciation_rate": appreciation,
         "rent_growth_rate": rent_growth,
         "hoa_growth_rate": hoa_growth,
-        "mortgage_rate": bounded_normal(
-            rng,
-            args["mortgage_rate"] + 0.50 * (inflation[0] - args["inflation_rate"])
-            if inflation
-            else args["mortgage_rate"],
-            args["mortgage_rate_volatility"],
-            0.03,
-            0.10,
-        ),
+        "mortgage_rate": mortgage_rate,
     }
 
 
@@ -476,12 +584,20 @@ def make_trial_args(
     trial["_mc_paths"] = {
         key: values for key, values in market.items() if key != "mortgage_rate"
     }
-    trial["_mc_growth_factors"] = {}
+    monthly_factors = {}
+    monthly_returns = {}
     for name, rates in trial["_mc_paths"].items():
         factors = [1.0]
+        year_returns = []
         for rate in rates:
-            factors.append(factors[-1] * (1 + rate))
-        trial["_mc_growth_factors"][name] = factors
+            monthly_return = (1 + rate) ** (1.0 / 12) - 1
+            year_returns.append(monthly_return)
+            for _ in range(12):
+                factors.append(factors[-1] * (1 + monthly_return))
+        monthly_factors[name] = factors
+        monthly_returns[name] = year_returns
+    trial["_mc_monthly_factors"] = monthly_factors
+    trial["_mc_monthly_returns"] = monthly_returns
     trial["mortgage_rate"] = market["mortgage_rate"]
     trial["maintenance_pct"] = args["maintenance_pct"] * lognormal_factor(
         rng, args["maintenance_volatility"], 0.50, 3.00
@@ -511,31 +627,61 @@ def make_trial_args(
     return trial
 
 
-def median_scenario(results: list[dict]) -> dict:
-    return {
-        "scenario": results[0]["scenario"],
-        **{
-            key: median(result[key] for result in results)
-            for key in ("initial_outlay", "end_year_outlay", "total_costs", "final_stocks", "final_home_val", "total_net_worth")
-        },
-    }
+def aggregate_scenario(results: list[dict]) -> dict:
+    n = len(results)
+    row = dict(results[0])
+    for key in results[0]:
+        if key != "scenario":
+            row[key] = sorted(r[key] for r in results)[n // 2]
+    return row
+
+
+_MASK64 = (1 << 64) - 1
+
+
+def derive_seed(seed: int, *parts: int) -> int:
+    x = (seed & _MASK64) ^ 0x9E3779B97F4A7C15
+    for part in parts:
+        x ^= part & _MASK64
+        x = (x * 0xBF58476D1CE4E5B9 + 0x94D049BB133111EB) & _MASK64
+    x ^= x >> 30
+    x = (x * 0xBF58476D1CE4E5B9) & _MASK64
+    x ^= x >> 27
+    x = (x * 0x94D049BB133111EB) & _MASK64
+    x ^= x >> 31
+    return x & _MASK64
+
+
+def bootstrap_median_se(samples: list[float], resamples: int = 200) -> float:
+    if len(samples) < 2:
+        return 0.0
+    rng = random.Random(0)
+    n = len(samples)
+    medians = []
+    for _ in range(resamples):
+        resample = [samples[rng.randrange(n)] for _ in range(n)]
+        medians.append(sorted(resample)[n // 2])
+    return stdev(medians)
 
 
 def run_monte_carlo(
     defaults: dict, scenarios_config: list[dict], simulations: int, seed: int
-) -> list[dict]:
-    rng = random.Random(seed)
+) -> tuple[list[dict], list[list[dict]]]:
     results = [[] for _ in range(1 + len(RENTER_START_RENTS) + len(scenarios_config))]
 
-    for _ in range(simulations):
-        market = make_market_paths(defaults, rng)
-        trial_defaults = make_trial_args(defaults, market, rng, include_renter_risk=True)
+    for sim in range(simulations):
+        market = make_market_paths(defaults, random.Random(derive_seed(seed, sim, 0)))
+        trial_defaults = make_trial_args(
+            defaults, market, random.Random(derive_seed(seed, sim, 1)), include_renter_risk=True
+        )
         trial_results = [
             get_stay_home_scenario(trial_defaults),
             *get_base_renter_scenarios(trial_defaults),
         ]
-        for sc_config in scenarios_config:
-            trial_scenario = make_trial_args(sc_config, market, rng)
+        for index, sc_config in enumerate(scenarios_config):
+            trial_scenario = make_trial_args(
+                sc_config, market, random.Random(derive_seed(seed, sim, 2, index))
+            )
             trial_results.append(
                 calculate_buyer_net_worth(trial_scenario, term_years=trial_scenario["mortgage_term"])
             )
@@ -543,7 +689,10 @@ def run_monte_carlo(
         for index, result in enumerate(trial_results):
             results[index].append(result)
 
-    return [median_scenario(scenario_results) for scenario_results in results]
+    return (
+        [aggregate_scenario(scenario_results) for scenario_results in results],
+        results,
+    )
 
 
 def print_decision_table(scenarios: list[dict], projection_years: int):
@@ -569,7 +718,7 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         if s["total_net_worth"] < 0:
             pct_baseline = "UNDERWATER"
         elif baseline_nw != 0:
-            pct_baseline = f"{(s['total_net_worth'] - baseline_nw) / s['total_net_worth'] * 100:+.1f}%"
+            pct_baseline = f"{(s['total_net_worth'] - baseline_nw) / baseline_nw * 100:+.1f}%"
         else:
             pct_baseline = "0.0%"
 
@@ -584,6 +733,73 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         table.append(row)
 
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
+
+
+def print_risk_summary_table(results: list[list[dict]]) -> None:
+    def summarize(scenario_results: list[dict]) -> tuple:
+        name = scenario_results[0]["scenario"]
+        nw = sorted(r["total_net_worth"] for r in scenario_results)
+        n = len(nw)
+        nw_median = nw[n // 2]
+        beat_home = (
+            sum(
+                1
+                for r, home in zip(scenario_results, results[0])
+                if r["total_net_worth"] > home["total_net_worth"]
+            )
+            / n
+            * 100
+        )
+        underwater = sum(1 for value in nw if value < 0) / n * 100
+        return (
+            name,
+            beat_home,
+            underwater,
+            nw[int(0.25 * (n - 1))],
+            nw_median,
+            nw[int(0.75 * (n - 1))],
+        )
+
+    rows = [summarize(results[0])] + sorted(
+        (summarize(scenario_results) for scenario_results in results[1:]),
+        key=lambda row: row[4],
+        reverse=True,
+    )
+    headers = ["Scenario", "P(Beat Home)", "Underwater", "NW P25", "NW Median", "NW P75"]
+    table = [
+        [
+            name,
+            f"{beat_home:.1f}%",
+            f"{underwater:.1f}%",
+            f"${p25:,.0f}",
+            f"${p50:,.0f}",
+            f"${p75:,.0f}",
+        ]
+        for name, beat_home, underwater, p25, p50, p75 in rows
+    ]
+    print("Risk Summary (across all trials):")
+    print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
+
+
+def print_convergence_note(results: list[list[dict]]) -> None:
+    worst = None
+    for scenario_results in results:
+        nw = sorted(r["total_net_worth"] for r in scenario_results)
+        n = len(nw)
+        nw_median = nw[n // 2]
+        se = bootstrap_median_se(nw)
+        relative = se / abs(nw_median) if nw_median != 0 else 0.0
+        if worst is None or relative > worst[2]:
+            worst = (scenario_results[0]["scenario"], se, relative)
+    if worst is None:
+        return
+    name, se, relative = worst
+    print(
+        f"Convergence: widest bootstrap SE of median net worth is {name} at "
+        f"\u00b1${se:,.0f} ({relative * 100:.1f}% of |median|)."
+    )
+    if relative > 0.05:
+        print("  Consider increasing --simulations for a tighter estimate.")
 
 
 def parse_float_with_commas(s: str) -> float:
@@ -628,8 +844,10 @@ def main():
             if key not in sc:
                 sc[key] = defaults[key]
 
-    all_scenarios = run_monte_carlo(defaults, scenarios_config, simulations, seed)
+    all_scenarios, raw_results = run_monte_carlo(defaults, scenarios_config, simulations, seed)
     print_decision_table(all_scenarios, defaults["projection_years"])
+    print_risk_summary_table(raw_results)
+    print_convergence_note(raw_results)
 
 
 if __name__ == "__main__":
