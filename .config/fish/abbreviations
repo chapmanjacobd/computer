@@ -311,7 +311,6 @@ abbr -a -- userd systemctl --user
 abbr -a -- unardel lb unardel -v
 abbr -a -- ps.unit systemctl whoami
 abbr -a -- stat.web http HEAD
-abbr -a -- wrap 'whitespace | fold -s -w 100'
 abbr -a -- laptop2880 screen.virtual.2880
 abbr -a -- gdalcalcnodata0 raster.nodata0
 abbr -a -- buffer_one_line lines.buffer1
@@ -961,3 +960,4 @@ abbr -a -- git.ssh git.remote.ssh
 abbr -a -- icat viu -h 30
 abbr -a -- ogrinfo ogrinfo -ro -so -al
 abbr -a -- editcb cb.edit
+abbr -a -- wrap 'chars.singlespace | fold -s -w 100'
