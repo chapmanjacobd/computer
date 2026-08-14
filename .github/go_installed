@@ -6,7 +6,6 @@ github.com/chapmanjacobd/pathprompt/cmd/pathprompt@latest
 github.com/chapmanjacobd/shrink/cmd/shrink@latest
 github.com/chapmanjacobd/splitcopy@latest
 github.com/chapmanjacobd/sqlite-typecaster/cmd/sqlite-typecaster@latest
-github.com/charmbracelet/glow@latest
 github.com/charmbracelet/gum@latest
 github.com/daixiang0/gci@latest
 github.com/dundee/gdu/v5/cmd/gdu@latest
