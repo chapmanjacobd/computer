@@ -961,3 +961,4 @@ abbr -a -- icat viu -h 30
 abbr -a -- ogrinfo ogrinfo -ro -so -al
 abbr -a -- editcb cb.edit
 abbr -a -- wrap 'chars.singlespace | fold -s -w 100'
+abbr -a -- zellij zellij attach -c phone
