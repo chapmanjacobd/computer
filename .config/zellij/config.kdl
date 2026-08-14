@@ -3,6 +3,15 @@
 //
 
 keybinds clear-defaults=true {
+    tmux {
+        bind "Ctrl t" { Write 20; SwitchToMode "Normal"; }
+        bind "t" "c" { NewTab { cwd ""; }; SwitchToMode "Normal"; }
+        bind "Enter" { NewPane "Down" { cwd ""; }; TogglePaneEmbedOrFloating; SwitchToMode "Normal"; }
+        bind "-" { NewPane "Right" { cwd ""; }; SwitchToMode "Normal"; }
+        bind "l" { NextSwapLayout; SwitchToMode "Normal"; }
+        bind "f" { MovePane; SwitchToMode "Normal"; }
+        bind "Right" { ToggleFloatingPanes; SwitchToMode "Normal"; }
+    }
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }
     }
@@ -90,6 +99,10 @@ keybinds clear-defaults=true {
         bind "tab" { MovePane; }
     }
     scroll {
+        bind "Ctrl Home" { ScrollToTop; }
+        bind "Ctrl End" { ScrollToBottom; }
+        bind "Ctrl Up" { PageScrollUp; }
+        bind "Ctrl Down" { PageScrollDown; }
         bind "Alt left" { MoveFocusOrTab "left"; SwitchToMode "locked"; }
         bind "Alt down" { MoveFocus "down"; SwitchToMode "locked"; }
         bind "Alt up" { MoveFocus "up"; SwitchToMode "locked"; }
@@ -179,6 +192,9 @@ keybinds clear-defaults=true {
     shared_except "locked" "renametab" "renamepane" {
         bind "Ctrl g" { SwitchToMode "locked"; }
         bind "Ctrl q" { Quit; }
+    }
+    shared_except "tmux" "locked" {
+        bind "Ctrl t" { SwitchToMode "Tmux"; }
     }
     shared_except "locked" "entersearch" {
         bind "enter" { SwitchToMode "locked"; }
@@ -271,7 +287,7 @@ web_client {
 //   - true
 //   - false (Default)
 // 
-// simplified_ui true
+simplified_ui true
  
 // Enable OSC8 hyperlink output
 // Options:
@@ -283,7 +299,23 @@ web_client {
 // Choose the theme that is specified in the themes section.
 // Default: default
 // 
-// theme "dracula"
+theme "custom"
+
+themes {
+    custom {
+        fg "#444444"
+        bg "#000000"
+        black "#444444"
+        red "#ff5555"
+        green "#50fa7b"
+        yellow "#f1fa8c"
+        blue "#bd93f9"
+        magenta "#ff79c6"
+        cyan "#8be9fd"
+        white "#e2e2e2"
+        orange "#ffb86c"
+    }
+}
  
 // Theme to use when the host terminal reports a dark color palette.
 // Requires `theme_light` to also be set; otherwise `theme` is used.
@@ -303,7 +335,9 @@ default_mode "locked"
 // Choose the path to the default shell that zellij will use for opening new panes
 // Default: $SHELL
 // 
-// default_shell "fish"
+default_shell "fish"
+default_command "systemd-run"
+default_command_args "--user" "--quiet" "--scope" "--same-dir" "--property=OOMPolicy=continue" "fish"
  
 // Choose the path to override cwd that zellij will use for opening new panes
 // 
@@ -331,7 +365,7 @@ default_mode "locked"
 //   - true (default)
 //   - false
 // 
-// mouse_mode false
+mouse_mode true
  
 // Toggle having pane frames around the panes
 // Options:
@@ -346,7 +380,7 @@ default_mode "locked"
 // (Requires restart)
 // Default: false
 // 
-// mirror_session true
+mirror_session true
  
 // Choose what to do when zellij receives SIGTERM, SIGINT, SIGQUIT or SIGHUP
 // eg. when terminal window with an active zellij session is closed
@@ -364,7 +398,7 @@ default_mode "locked"
 // Valid values: positive integers
 // Default value: 10000
 // 
-// scroll_buffer_size 10000
+scroll_buffer_size 50000
  
 // Provide a command to execute when copying text. The text will be piped to
 // the stdin of the program to perform the copy. This can be used with
@@ -376,7 +410,7 @@ default_mode "locked"
 // copy_command "wl-copy"                    // wayland
 // copy_command "pbcopy"                     // osx
 // 
-// copy_command "pbcopy"
+copy_command "xsel -ib"
  
 // Choose the destination for copied text
 // Allows using the primary selection buffer (on x11/wayland) instead of the system clipboard.
@@ -390,7 +424,7 @@ default_mode "locked"
 // Enable automatic copying (and clearing) of selection when releasing mouse
 // Default: true
 // 
-// copy_on_select true
+copy_on_select true
  
 // Path to the default editor to use to edit pane scrollbuffer
 // Default: $EDITOR or $VISUAL
