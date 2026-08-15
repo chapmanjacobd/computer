@@ -7,7 +7,7 @@ from statistics import stdev
 
 from tabulate import tabulate
 
-RENTER_START_RENTS = (1300, 1500, 1700, 1900, 2100, 2300)
+RENTER_START_RENTS = (1100, 1300, 1500, 1700, 1900)
 
 try:
     import tomllib
@@ -662,6 +662,23 @@ def make_trial_args(
     return trial
 
 
+def filter_expensive_scenarios(
+    defaults: dict, scenarios_config: list[dict]
+) -> tuple[list[dict], list[dict], float]:
+    renter_bar = get_base_renter_scenarios(defaults)[-1]["total_net_worth"]
+    kept = []
+    skipped = []
+    for sc in scenarios_config:
+        estimate = calculate_buyer_net_worth(sc, term_years=sc["mortgage_term"])["total_net_worth"]
+        if estimate < renter_bar:
+            skipped.append(
+                {"address": sc.get("_address", ""), "price": sc["price"], "est_nw": estimate}
+            )
+        else:
+            kept.append(sc)
+    return kept, skipped, renter_bar
+
+
 def aggregate_scenario(results: list[dict]) -> dict:
     n = len(results)
     row = dict(results[0])
@@ -700,8 +717,18 @@ def bootstrap_median_se(samples: list[float], resamples: int = 200) -> float:
 
 
 def run_monte_carlo(
-    defaults: dict, scenarios_config: list[dict], simulations: int, seed: int
-) -> tuple[list[dict], list[list[dict]]]:
+    defaults: dict,
+    scenarios_config: list[dict],
+    simulations: int,
+    seed: int,
+    skip_expensive: bool = True,
+) -> tuple[list[dict], list[list[dict]], dict]:
+    skipped = []
+    renter_bar = None
+    if skip_expensive:
+        scenarios_config, skipped, renter_bar = filter_expensive_scenarios(
+            defaults, scenarios_config
+        )
     results = [[] for _ in range(1 + len(RENTER_START_RENTS) + len(scenarios_config))]
 
     for sim in range(simulations):
@@ -727,6 +754,7 @@ def run_monte_carlo(
     return (
         [aggregate_scenario(scenario_results) for scenario_results in results],
         results,
+        {"renter_bar": renter_bar, "skipped": skipped},
     )
 
 
@@ -837,6 +865,20 @@ def print_convergence_note(results: list[list[dict]]) -> None:
         print("  Consider increasing --simulations for a tighter estimate.")
 
 
+def print_skipped_note(skip_info: dict) -> None:
+    skipped = skip_info["skipped"]
+    if not skipped:
+        return
+    renter_bar = skip_info["renter_bar"]
+    print(
+        f"Skipped {len(skipped)} scenario(s) whose deterministic net worth falls below the "
+        f"worst-case renter (${RENTER_START_RENTS[-1]:,}/mo) baseline of ${renter_bar:,.0f}:"
+    )
+    for item in skipped:
+        print(f"  - {item['address']} (${item['price']:,.0f}) est net worth ${item['est_nw']:,.0f}")
+    print()
+
+
 def parse_float_with_commas(s: str) -> float:
     return float(str(s).replace(',', ''))
 
@@ -859,6 +901,12 @@ def main():
         type=int,
         help="Random seed for reproducible Monte Carlo trials (default: 42)",
     )
+    parser.add_argument(
+        "--no-skip",
+        action="store_true",
+        help="Run Monte Carlo simulations for every scenario, even ones whose deterministic "
+        "net worth can't beat the worst-case renter baseline",
+    )
 
     args = parser.parse_args()
 
@@ -879,10 +927,13 @@ def main():
             if key not in sc:
                 sc[key] = defaults[key]
 
-    all_scenarios, raw_results = run_monte_carlo(defaults, scenarios_config, simulations, seed)
+    all_scenarios, raw_results, skip_info = run_monte_carlo(
+        defaults, scenarios_config, simulations, seed, skip_expensive=not args.no_skip
+    )
     print_decision_table(all_scenarios, defaults["projection_years"])
     print_risk_summary_table(raw_results)
     print_convergence_note(raw_results)
+    print_skipped_note(skip_info)
 
 
 if __name__ == "__main__":

@@ -589,11 +589,32 @@ def test_run_monte_carlo_reproducible():
     scenarios = [
         {**make_args(projection_years=3, price=275000, _address="Unit A")},
     ]
-    a1, raw1 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
-    a2, raw2 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
+    a1, raw1, skip1 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
+    a2, raw2, skip2 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
     assert [r["total_net_worth"] for r in a1] == [r["total_net_worth"] for r in a2]
+    assert skip1 == skip2
     assert len(raw1) == 1 + len(condo.RENTER_START_RENTS) + len(scenarios)
     assert all(len(rows) == 20 for rows in raw1)
+
+
+def test_filter_expensive_scenarios_skips_dominated():
+    defaults = zero_volatility_args(projection_years=3, forced_move_probability=0.0)
+    cheap = {**make_args(projection_years=3, price=150000, _address="Cheap")}
+    expensive = {**make_args(projection_years=3, price=900000, _address="Mansion")}
+    kept, skipped, bar = condo.filter_expensive_scenarios(defaults, [cheap, expensive])
+    assert kept == [cheap]
+    assert [s["address"] for s in skipped] == ["Mansion"]
+    assert skipped[0]["price"] == 900000
+    assert skipped[0]["est_nw"] < bar
+
+
+def test_run_monte_carlo_skips_expensive_scenarios():
+    defaults = zero_volatility_args(projection_years=3, forced_move_probability=0.0)
+    expensive = {**make_args(projection_years=3, price=900000, _address="Mansion")}
+    all_scenarios, raw, skip = condo.run_monte_carlo(defaults, [expensive], 10, seed=42)
+    assert len(all_scenarios) == 1 + len(condo.RENTER_START_RENTS)
+    assert len(raw) == 1 + len(condo.RENTER_START_RENTS)
+    assert skip["skipped"][0]["address"] == "Mansion"
 
 
 def test_risk_summary_percentiles():
