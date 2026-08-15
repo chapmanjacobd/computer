@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 import argparse
 import math
+import os
 import random
 import sys
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from statistics import stdev
 
 from tabulate import tabulate
@@ -716,12 +719,38 @@ def bootstrap_median_se(samples: list[float], resamples: int = 200) -> float:
     return stdev(medians)
 
 
+def _bootstrap_se_from_nw(nw_sorted: list[float]) -> float:
+    return bootstrap_median_se(nw_sorted)
+
+
+def _run_one_simulation(
+    sim: int, defaults: dict, scenarios_config: list[dict], seed: int
+) -> list[dict]:
+    market = make_market_paths(defaults, random.Random(derive_seed(seed, sim, 0)))
+    trial_defaults = make_trial_args(
+        defaults, market, random.Random(derive_seed(seed, sim, 1)), include_renter_risk=True
+    )
+    trial_results = [
+        get_stay_home_scenario(trial_defaults),
+        *get_base_renter_scenarios(trial_defaults),
+    ]
+    for index, sc_config in enumerate(scenarios_config):
+        trial_scenario = make_trial_args(
+            sc_config, market, random.Random(derive_seed(seed, sim, 2, index))
+        )
+        trial_results.append(
+            calculate_buyer_net_worth(trial_scenario, term_years=trial_scenario["mortgage_term"])
+        )
+    return trial_results
+
+
 def run_monte_carlo(
     defaults: dict,
     scenarios_config: list[dict],
     simulations: int,
     seed: int,
     skip_expensive: bool = True,
+    workers: int | None = None,
 ) -> tuple[list[dict], list[list[dict]], dict]:
     skipped = []
     renter_bar = None
@@ -729,32 +758,28 @@ def run_monte_carlo(
         scenarios_config, skipped, renter_bar = filter_expensive_scenarios(
             defaults, scenarios_config
         )
+
+    n_workers = min(workers if workers and workers > 0 else (os.cpu_count() or 1), simulations)
+    task = partial(_run_one_simulation, defaults=defaults, scenarios_config=scenarios_config, seed=seed)
+    chunksize = max(1, simulations // (n_workers * 4))
     results = [[] for _ in range(1 + len(RENTER_START_RENTS) + len(scenarios_config))]
-
-    for sim in range(simulations):
-        market = make_market_paths(defaults, random.Random(derive_seed(seed, sim, 0)))
-        trial_defaults = make_trial_args(
-            defaults, market, random.Random(derive_seed(seed, sim, 1)), include_renter_risk=True
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+        per_sim = executor.map(task, range(simulations), chunksize=chunksize)
+        for trial_results in per_sim:
+            for index, result in enumerate(trial_results):
+                results[index].append(result)
+        bootstrap_se = list(
+            executor.map(
+                _bootstrap_se_from_nw,
+                (sorted(r["total_net_worth"] for r in scenario_results) for scenario_results in results),
+                chunksize=1,
+            )
         )
-        trial_results = [
-            get_stay_home_scenario(trial_defaults),
-            *get_base_renter_scenarios(trial_defaults),
-        ]
-        for index, sc_config in enumerate(scenarios_config):
-            trial_scenario = make_trial_args(
-                sc_config, market, random.Random(derive_seed(seed, sim, 2, index))
-            )
-            trial_results.append(
-                calculate_buyer_net_worth(trial_scenario, term_years=trial_scenario["mortgage_term"])
-            )
-
-        for index, result in enumerate(trial_results):
-            results[index].append(result)
 
     return (
         [aggregate_scenario(scenario_results) for scenario_results in results],
         results,
-        {"renter_bar": renter_bar, "skipped": skipped},
+        {"renter_bar": renter_bar, "skipped": skipped, "bootstrap_se": bootstrap_se},
     )
 
 
@@ -844,13 +869,13 @@ def print_risk_summary_table(results: list[list[dict]]) -> None:
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
 
 
-def print_convergence_note(results: list[list[dict]]) -> None:
+def print_convergence_note(results: list[list[dict]], bootstrap_se: list[float] | None = None) -> None:
     worst = None
-    for scenario_results in results:
+    for index, scenario_results in enumerate(results):
         nw = sorted(r["total_net_worth"] for r in scenario_results)
         n = len(nw)
         nw_median = nw[n // 2]
-        se = bootstrap_median_se(nw)
+        se = bootstrap_se[index] if bootstrap_se else bootstrap_median_se(nw)
         relative = se / abs(nw_median) if nw_median != 0 else 0.0
         if worst is None or relative > worst[2]:
             worst = (scenario_results[0]["scenario"], se, relative)
@@ -902,6 +927,11 @@ def main():
         help="Random seed for reproducible Monte Carlo trials (default: 42)",
     )
     parser.add_argument(
+        "--workers",
+        type=int,
+        help="Number of parallel worker processes (default: CPU count)",
+    )
+    parser.add_argument(
         "--no-skip",
         action="store_true",
         help="Run Monte Carlo simulations for every scenario, even ones whose deterministic "
@@ -928,11 +958,12 @@ def main():
                 sc[key] = defaults[key]
 
     all_scenarios, raw_results, skip_info = run_monte_carlo(
-        defaults, scenarios_config, simulations, seed, skip_expensive=not args.no_skip
+        defaults, scenarios_config, simulations, seed, skip_expensive=not args.no_skip,
+        workers=args.workers,
     )
     print_decision_table(all_scenarios, defaults["projection_years"])
     print_risk_summary_table(raw_results)
-    print_convergence_note(raw_results)
+    print_convergence_note(raw_results, skip_info.get("bootstrap_se"))
     print_skipped_note(skip_info)
 
 
