@@ -325,7 +325,7 @@ def test_buyer_reports_dti_and_lowest_total_capital():
     ]
 
     assert res["debt_to_income"] == pytest.approx(res["initial_outlay"] * 12 / args["annual_income"])
-    assert res["max_drawdown"] == pytest.approx(min(capital_balances))
+    assert res["max_drawdown"] == pytest.approx(min(capital_balances) - args["total_capital"])
 
 
 @pytest.mark.parametrize(
@@ -351,7 +351,7 @@ def test_max_drawdown_always_uses_real_capital(stock_return, inflation_rate):
         * condo.growth_factor(args, "stock_return", 1)
         / condo.growth_factor(args, "inflation_rate", 1)
     )
-    expected = min(10000, ending_real_capital)
+    expected = min(10000, ending_real_capital) - args["total_capital"]
     assert result["max_drawdown"] == pytest.approx(expected)
 
 

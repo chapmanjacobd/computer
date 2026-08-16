@@ -64,6 +64,11 @@ def real_capital_value(args: dict, capital: float, month: int) -> float:
     return capital / monthly_growth_factor(args, "inflation_rate", month)
 
 
+def signed_currency(value: float) -> str:
+    sign = "+" if value >= 0 else "-"
+    return f"{sign}${abs(value):,.0f}"
+
+
 def renter_move_cost(args: dict, year: int) -> float:
     move_costs = args.get("_mc_move_costs")
     if move_costs is not None:
@@ -245,7 +250,7 @@ def get_stay_home_scenario(args: dict) -> dict:
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "debt_to_income": debt_to_income_ratio(args, tax_m),
-        "max_drawdown": lowest_total_capital,
+        "max_drawdown": lowest_total_capital - args["total_capital"],
         "final_stocks": stocks_after_tax,
         "final_home_val": 0.0,
         "total_net_worth": stocks_after_tax / inflation_factor,
@@ -503,7 +508,7 @@ def calculate_buyer_net_worth(
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "debt_to_income": debt_to_income_ratio(args, min_outlay_y1),
-        "max_drawdown": lowest_total_capital,
+        "max_drawdown": lowest_total_capital - args["total_capital"],
         "final_stocks": buyer_stocks_after_tax,
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
@@ -607,7 +612,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 "end_year_outlay": end_year_outlay,
                 "total_costs": total_costs,
                 "debt_to_income": debt_to_income_ratio(args, initial_outlay),
-                "max_drawdown": lowest_total_capital,
+                "max_drawdown": lowest_total_capital - args["total_capital"],
                 "final_stocks": renter_stocks_after_tax,
                 "final_home_val": 0.0,
                 "total_net_worth": renter_stocks_after_tax / growth_factor(args, "inflation_rate", projection_years),
@@ -1139,7 +1144,7 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
             f"{s['debt_to_income']:.1%}",
-            f"${s['max_drawdown']:,.0f}",
+            signed_currency(s["max_drawdown"]),
         ]
         table.append(row)
 
