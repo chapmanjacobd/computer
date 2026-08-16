@@ -875,26 +875,27 @@ def test_expand_mortgage_variants_labels_each_option():
     assert variants[1]["_chosen_term"] == 30
     assert variants[1]["_chosen_rate"] == 0.06
     assert variants[0]["_address"] == "Unit A"
-    assert variants[0]["_variant"] == "15-yr"
-    assert variants[1]["_variant"] == "30-yr"
+    assert [v["_variant"] for v in variants] == [
+        "15-yr",
+        "30-yr",
+    ]
     assert variants[0]["_est_nw"] > 0.0
     assert variants[0]["_y1_dti"] > 0.0
 
 
-def test_expand_mortgage_variants_adds_invest_when_rate_above_stock_return():
+def test_expand_mortgage_variants_adds_invest():
     sc = make_args(
         _address="Unit A",
         stock_return=0.05,
         mortgage_options=[{"term": 15, "rate": 0.06}, {"term": 30, "rate": 0.04}],
     )
     variants = condo.expand_mortgage_variants(sc)
-    assert len(variants) == 3
-    assert [(v["_variant"], v["_address"]) for v in variants] == [
-        ("15-yr", "Unit A"),
-        ("15-yr +invest", "Unit A"),
-        ("30-yr", "Unit A"),
+    assert [v["_variant"] for v in variants] == [
+        "15-yr",
+        "15-yr +invest",
+        "30-yr",
     ]
-    assert [v["_invest_surplus"] for v in variants] == [False, True, False]
+    assert [v["_strategy"] for v in variants] == [None, "invest", None]
 
 
 def test_invest_surplus_pays_off_at_term_without_extra():
@@ -913,6 +914,61 @@ def test_pay_extra_pays_off_faster_than_invest():
     assert pay_extra["mortgage_duration"] < invest["mortgage_duration"]
 
 
+def test_prepay_amount_for_year():
+    sched = ((3, 1500.0), (4, 1000.0), (None, 500.0))
+    assert condo.prepay_amount_for_year(sched, 0) == 1500.0
+    assert condo.prepay_amount_for_year(sched, 2) == 1500.0
+    assert condo.prepay_amount_for_year(sched, 3) == 1000.0
+    assert condo.prepay_amount_for_year(sched, 6) == 1000.0
+    assert condo.prepay_amount_for_year(sched, 7) == 500.0
+    assert condo.prepay_amount_for_year(sched, 20) == 500.0
+
+
+def test_prepay_schedule_draws_capital_and_pays_off_faster():
+    args = make_args(mortgage_rate=0.08, stock_return=0.07, projection_years=30, total_capital=180000)
+    schedule = ((3, 1500.0), (4, 1000.0), (None, 500.0))
+    invest = condo.calculate_buyer_net_worth(args, term_years=30, invest_surplus=True)
+    prepay = condo.calculate_buyer_net_worth(
+        args, term_years=30, invest_surplus=True, prepay_schedule=schedule
+    )
+    assert prepay["prepay"] is True
+    assert invest["prepay"] is False
+    assert prepay["extra_payment"] == pytest.approx(1500.0)
+    assert prepay["mortgage_duration"] < invest["mortgage_duration"]
+    assert prepay["max_drawdown"] < invest["max_drawdown"]
+
+
+def test_risk_adjusted_score():
+    results = [
+        {"total_net_worth": 100.0, "max_drawdown": -10.0},
+        {"total_net_worth": 90.0, "max_drawdown": -5.0},
+        {"total_net_worth": 110.0, "max_drawdown": -20.0},
+        None,
+    ]
+    assert condo.risk_adjusted_score(results, 1.0) == pytest.approx(100.0 - 1.0 * 10.0)
+    assert condo.risk_adjusted_score(results, 0.5) == pytest.approx(100.0 - 0.5 * 10.0)
+    assert condo.risk_adjusted_score([], 1.0) == -math.inf
+    assert condo.risk_adjusted_score([None, None], 1.0) == -math.inf
+
+
+def test_optimize_prepay_level_prefers_max_when_no_penalty():
+    sc = make_args(
+        _address="Unit A",
+        stock_return=0.05,
+        projection_years=3,
+        annual_income=100000,
+        mortgage_options=[{"term": 15, "rate": 0.06}],
+    )
+    variants = [v for v in condo.expand_mortgage_variants(sc) if v.get("_strategy") is None]
+    defaults = zero_volatility_args(
+        projection_years=3, forced_move_probability=0.0, stock_return=0.05
+    )
+    level = condo.optimize_prepay_level(
+        defaults, variants, simulations=4, seed=42, lam=0.0, max_level=600.0, step=300.0
+    )
+    assert level == 600.0
+
+
 def test_mortgage_duration_label_format():
     assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 12.42}) == " (30-yr @2.42x)"
     assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 30.0}) == " (30-yr)"
@@ -920,6 +976,9 @@ def test_mortgage_duration_label_format():
     assert condo.mortgage_duration_label(
         {"mortgage_term": 30, "mortgage_duration": 30.0, "invest_surplus": True}
     ) == " (30-yr +invest)"
+    assert condo.mortgage_duration_label(
+        {"mortgage_term": 30, "mortgage_duration": 12.42, "prepay": True, "invest_surplus": True}
+    ) == " (30-yr @2.42x +prepay)"
     assert condo.mortgage_duration_label(
         {"mortgage_term": 20, "mortgage_duration": 20.0, "invest_surplus": False}
     ) == " (20-yr)"

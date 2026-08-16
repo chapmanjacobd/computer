@@ -149,6 +149,17 @@ def months_to_payoff(balance: float, r: float, payment: float) -> float:
     return math.ceil(math.log(payment / (payment - balance * r)) / math.log(1 + r))
 
 
+def prepay_amount_for_year(schedule: tuple, year: int) -> float:
+    offset = year
+    for years, amount in schedule:
+        if years is None:
+            return amount
+        if offset < years:
+            return amount
+        offset -= years
+    return 0.0
+
+
 def _terminal_annual_rate(args: dict, name: str) -> float:
     paths = args.get("_mc_paths")
     if paths and name in paths:
@@ -171,6 +182,8 @@ def _mortgage_payoff_month(
     end_maint: float,
     end_budget: float,
     invest_surplus: bool = False,
+    prepay_schedule: tuple | None = None,
+    remaining_capital: float = 0.0,
 ) -> int | None:
     if balance <= 0:
         return elapsed_months
@@ -198,6 +211,16 @@ def _mortgage_payoff_month(
         )
         payment = min(current_pmt_min + extra, balance + interest)
         balance = max(0.0, balance - (payment - interest))
+
+        if prepay_schedule is not None and balance > 0 and remaining_capital > 0:
+            prepay = min(
+                prepay_amount_for_year(prepay_schedule, (month - 1) // 12),
+                remaining_capital,
+                balance,
+            )
+            remaining_capital -= prepay
+            balance = max(0.0, balance - prepay)
+
         if balance < 1e-6:
             return month
 
@@ -282,6 +305,8 @@ def calculate_buyer_net_worth(
     record_schedule: bool = False,
     horizon_years: int | None = None,
     invest_surplus: bool = False,
+    prepay_schedule: tuple | None = None,
+    prepay_optimal: bool = False,
 ) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
@@ -405,6 +430,21 @@ def calculate_buyer_net_worth(
 
         total_costs += buyer_outlay / monthly_growth_factor(args, "stock_return", m)
         buyer_stocks += net_cash_flow
+
+        prepay = 0.0
+        if prepay_schedule is not None and loan_balance > 0 and buyer_stocks > 0:
+            prepay = min(
+                prepay_amount_for_year(prepay_schedule, yr),
+                buyer_stocks,
+                loan_balance,
+            )
+            buyer_stocks -= prepay
+            loan_balance = max(0.0, loan_balance - prepay)
+            if loan_balance < 1e-6:
+                loan_balance = 0.0
+                if payoff_month is None:
+                    payoff_month = m
+
         lowest_total_capital = min(lowest_total_capital, real_capital_value(args, buyer_stocks, m))
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
@@ -414,7 +454,7 @@ def calculate_buyer_net_worth(
 
         if m == 1:
             min_outlay_y1 = mandatory
-            extra_payment_y1 = max(0.0, payment - pmt_curr_min)
+            extra_payment_y1 = max(0.0, payment - pmt_curr_min) + prepay
 
         if record_schedule:
             schedule.append(
@@ -424,6 +464,7 @@ def calculate_buyer_net_worth(
                     "interest": interest_curr,
                     "principal": principal,
                     "excess": max(0.0, payment - pmt_curr_min),
+                    "prepay": prepay,
                     "balance": loan_balance,
                     "pay_extra": pay_extra,
                     "refinanced": refinanced,
@@ -499,6 +540,8 @@ def calculate_buyer_net_worth(
             end_maint,
             args["monthly_budget"] * inflation_factor,
             invest_surplus=invest_surplus,
+            prepay_schedule=prepay_schedule,
+            remaining_capital=buyer_stocks if prepay_schedule is not None else 0.0,
         )
 
     address = args.get("_address", "")
@@ -514,6 +557,8 @@ def calculate_buyer_net_worth(
         "mortgage_duration": payoff_month / 12 if payoff_month is not None else float("inf"),
         "mortgage_term": term_years,
         "invest_surplus": invest_surplus,
+        "prepay": prepay_schedule is not None,
+        "prepay_optimal": prepay_optimal,
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "debt_to_income": debt_to_income_ratio(args, min_outlay_y1),
@@ -568,18 +613,19 @@ def expand_mortgage_variants(sc: dict) -> list[dict]:
     address = sc.get("_address", "")
     variants = []
     for term_years, rate, res in evaluate_mortgage_options(sc)[0]:
-        options = [(False, res)]
+        options = [(None, res)]
         if rate > sc.get("stock_return", 0.0):
             invest_res = calculate_buyer_net_worth(
                 sc, term_years=term_years, mortgage_rate=rate, invest_surplus=True
             )
-            options.append((True, invest_res))
-        for invest, variant_res in options:
+            options.append(("invest", invest_res))
+        for strategy, variant_res in options:
             variant = sc.copy()
             variant["_chosen_term"] = term_years
             variant["_chosen_rate"] = rate
-            variant["_invest_surplus"] = invest
-            variant["_variant"] = f"{term_years}-yr +invest" if invest else f"{term_years}-yr"
+            variant["_strategy"] = strategy
+            variant["_prepay_schedule"] = None
+            variant["_variant"] = f"{term_years}-yr" + (f" +{strategy}" if strategy else "")
             if address:
                 variant["_address"] = address
             variant["_est_nw"] = variant_res["total_net_worth"]
@@ -1107,22 +1153,24 @@ def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], 
         *get_base_renter_scenarios(trial_defaults),
     ]
     for index, sc_config in enumerate(scenarios_config):
-        trial_scenario = make_trial_args(sc_config, market, random.Random(derive_seed(seed, sim, 2, index)))
-        term_years = trial_scenario["_chosen_term"]
-        mortgage_rate = trial_scenario["_chosen_rate"]
-        max_dti = trial_scenario.get("max_debt_to_income", 0.43)
+        term_years = sc_config["_chosen_term"]
+        mortgage_rate = sc_config["_chosen_rate"]
+        max_dti = sc_config.get("max_debt_to_income", 0.43)
         if (
-            debt_to_income_ratio(trial_scenario, buyer_initial_outlay(trial_scenario, term_years, mortgage_rate))
+            debt_to_income_ratio(sc_config, buyer_initial_outlay(sc_config, term_years, mortgage_rate))
             > max_dti
         ):
             trial_results.append(None)
             continue
+        trial_scenario = make_trial_args(sc_config, market, random.Random(derive_seed(seed, sim, 2, index)))
         trial_results.append(
             calculate_buyer_net_worth(
                 trial_scenario,
                 term_years=term_years,
                 mortgage_rate=mortgage_rate,
-                invest_surplus=trial_scenario.get("_invest_surplus", False),
+                invest_surplus=trial_scenario.get("_strategy") is not None,
+                prepay_schedule=trial_scenario.get("_prepay_schedule"),
+                prepay_optimal=(trial_scenario.get("_strategy") == "opt"),
             )
         )
     return trial_results
@@ -1189,9 +1237,53 @@ def mortgage_duration_label(s: dict) -> str:
     label = f"{term}-yr"
     if math.isfinite(duration) and duration > 0 and round(term / duration, 2) != 1.0:
         label += f" @{term / duration:.2f}x"
-    if s.get("invest_surplus"):
+    if s.get("prepay_optimal"):
+        label += " +prepay*"
+    elif s.get("prepay"):
+        label += " +prepay"
+    elif s.get("invest_surplus"):
         label += " +invest"
     return f" ({label})"
+
+
+def risk_adjusted_score(results: list[dict | None], lam: float) -> float:
+    valid = [r for r in results if r is not None]
+    if not valid:
+        return -math.inf
+    nw = sorted(r["total_net_worth"] for r in valid)
+    dd = sorted(r["max_drawdown"] for r in valid)
+    n = len(nw)
+    return nw[n // 2] - lam * abs(dd[n // 2])
+
+
+def optimize_prepay_level(
+    defaults: dict,
+    variants: list[dict],
+    simulations: int,
+    seed: int,
+    lam: float,
+    workers: int | None = None,
+    max_level: float = 3000.0,
+    step: float = 250.0,
+) -> float:
+    renter_offset = 1 + len(RENTER_START_RENTS)
+    best_level = 0.0
+    best_score = -math.inf
+    levels = int(max_level / step) + 1
+    for i in range(levels):
+        level = i * step
+        configs = [
+            dict(v, _strategy="prepay", _prepay_schedule=((None, level),))
+            for v in variants
+        ]
+        _, raw, _ = run_monte_carlo(
+            defaults, configs, simulations, seed, skip_expensive=False, workers=workers
+        )
+        score = sum(risk_adjusted_score(raw[j], lam) for j in range(renter_offset, len(raw)))
+        if score > best_score:
+            best_score = score
+            best_level = level
+    return best_level
 
 
 def print_decision_table(scenarios: list[dict], projection_years: int):
@@ -1363,6 +1455,23 @@ def main():
         help="Run Monte Carlo simulations for every scenario, even ones whose deterministic "
         "net worth can't beat the worst-case renter baseline",
     )
+    parser.add_argument(
+        "--optimize-prepay",
+        action="store_true",
+        help="Search for the level extra-payment that maximizes median net worth minus "
+        "lambda * max drawdown, and add it as a '+prepay*' scenario",
+    )
+    parser.add_argument(
+        "--risk-aversion",
+        type=float,
+        default=1.0,
+        help="Lambda penalty on max drawdown for --optimize-prepay (default: 1.0)",
+    )
+    parser.add_argument(
+        "--opt-simulations",
+        type=int,
+        help="Monte Carlo trials used while searching for the optimal prepay (default: 500)",
+    )
 
     args = parser.parse_args()
 
@@ -1374,6 +1483,36 @@ def main():
     seed = args.seed if args.seed is not None else defaults["monte_carlo_seed"]
     if simulations < 1:
         parser.error("--simulations must be at least 1")
+
+    if args.optimize_prepay:
+        base_variants = [sc for sc in scenarios_config if sc.get("_strategy") is None]
+        if base_variants:
+            opt_simulations = args.opt_simulations if args.opt_simulations is not None else 500
+            opt_level = optimize_prepay_level(
+                defaults,
+                base_variants,
+                max(1, opt_simulations),
+                seed,
+                args.risk_aversion,
+                workers=args.workers,
+            )
+            for variant in base_variants:
+                optimal = variant.copy()
+                optimal["_strategy"] = "opt"
+                optimal["_prepay_schedule"] = ((None, opt_level),)
+                optimal["_variant"] = f"{optimal['_chosen_term']}-yr +opt"
+                optimal["_est_nw"] = calculate_buyer_net_worth(
+                    optimal,
+                    term_years=optimal["_chosen_term"],
+                    mortgage_rate=optimal["_chosen_rate"],
+                    invest_surplus=True,
+                    prepay_schedule=optimal["_prepay_schedule"],
+                )["total_net_worth"]
+                scenarios_config.append(optimal)
+            print(
+                f"Optimal level prepay (lambda={args.risk_aversion:g}): "
+                f"${opt_level:,.0f}/mo extra\n"
+            )
 
     all_scenarios, raw_results, skip_info = run_monte_carlo(
         defaults,
