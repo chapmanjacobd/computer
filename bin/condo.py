@@ -1256,7 +1256,7 @@ def risk_adjusted_score(results: list[dict | None], lam: float) -> float:
     return nw[n // 2] - lam * abs(dd[n // 2])
 
 
-def optimize_prepay_level(
+def optimize_prepay_levels(
     defaults: dict,
     variants: list[dict],
     simulations: int,
@@ -1265,10 +1265,10 @@ def optimize_prepay_level(
     workers: int | None = None,
     max_level: float = 3000.0,
     step: float = 250.0,
-) -> float:
+) -> list[float]:
     renter_offset = 1 + len(RENTER_START_RENTS)
-    best_level = 0.0
-    best_score = -math.inf
+    best_levels = [0.0] * len(variants)
+    best_scores = [-math.inf] * len(variants)
     levels = int(max_level / step) + 1
     for i in range(levels):
         level = i * step
@@ -1279,11 +1279,37 @@ def optimize_prepay_level(
         _, raw, _ = run_monte_carlo(
             defaults, configs, simulations, seed, skip_expensive=False, workers=workers
         )
-        score = sum(risk_adjusted_score(raw[j], lam) for j in range(renter_offset, len(raw)))
-        if score > best_score:
-            best_score = score
-            best_level = level
-    return best_level
+        for index, scenario_results in enumerate(raw[renter_offset:]):
+            score = risk_adjusted_score(scenario_results, lam)
+            if score > best_scores[index]:
+                best_scores[index] = score
+                best_levels[index] = level
+    return best_levels
+
+
+def optimize_prepay_level(
+    defaults: dict,
+    variants: list[dict],
+    simulations: int,
+    seed: int,
+    lam: float,
+    workers: int | None = None,
+    max_level: float = 3000.0,
+    step: float = 250.0,
+) -> float:
+    """Optimize a single variant while retaining the original helper API."""
+    if len(variants) != 1:
+        raise ValueError("optimize_prepay_level expects exactly one variant")
+    return optimize_prepay_levels(
+        defaults,
+        variants,
+        simulations,
+        seed,
+        lam,
+        workers=workers,
+        max_level=max_level,
+        step=step,
+    )[0]
 
 
 def print_decision_table(scenarios: list[dict], projection_years: int):
@@ -1488,7 +1514,7 @@ def main():
         base_variants = [sc for sc in scenarios_config if sc.get("_strategy") is None]
         if base_variants:
             opt_simulations = args.opt_simulations if args.opt_simulations is not None else 500
-            opt_level = optimize_prepay_level(
+            opt_levels = optimize_prepay_levels(
                 defaults,
                 base_variants,
                 max(1, opt_simulations),
@@ -1496,23 +1522,26 @@ def main():
                 args.risk_aversion,
                 workers=args.workers,
             )
-            for variant in base_variants:
+            for variant, opt_level in zip(base_variants, opt_levels):
                 optimal = variant.copy()
                 optimal["_strategy"] = "opt"
                 optimal["_prepay_schedule"] = ((None, opt_level),)
                 optimal["_variant"] = f"{optimal['_chosen_term']}-yr +opt"
-                optimal["_est_nw"] = calculate_buyer_net_worth(
+                optimal_result = calculate_buyer_net_worth(
                     optimal,
                     term_years=optimal["_chosen_term"],
                     mortgage_rate=optimal["_chosen_rate"],
                     invest_surplus=True,
                     prepay_schedule=optimal["_prepay_schedule"],
-                )["total_net_worth"]
+                )
+                optimal["_est_nw"] = optimal_result["total_net_worth"]
                 scenarios_config.append(optimal)
-            print(
-                f"Optimal level prepay (lambda={args.risk_aversion:g}): "
-                f"${opt_level:,.0f}/mo extra\n"
-            )
+                print(
+                    f"Optimal level prepay for {optimal_result['scenario']} "
+                    f"({optimal['_variant']}, lambda={args.risk_aversion:g}): "
+                    f"${opt_level:,.0f}/mo extra"
+                )
+            print()
 
     all_scenarios, raw_results, skip_info = run_monte_carlo(
         defaults,

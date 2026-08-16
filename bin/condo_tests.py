@@ -963,10 +963,47 @@ def test_optimize_prepay_level_prefers_max_when_no_penalty():
     defaults = zero_volatility_args(
         projection_years=3, forced_move_probability=0.0, stock_return=0.05
     )
-    level = condo.optimize_prepay_level(
+    level = condo.optimize_prepay_levels(
         defaults, variants, simulations=4, seed=42, lam=0.0, max_level=600.0, step=300.0
-    )
+    )[0]
     assert level == 600.0
+
+
+def test_optimize_prepay_levels_selects_each_variant_independently(monkeypatch):
+    variants = [{"target_level": 0.0}, {"target_level": 600.0}]
+    seen_levels = []
+    renter_offset = 1 + len(condo.RENTER_START_RENTS)
+
+    def fake_run_monte_carlo(defaults, configs, simulations, seed, skip_expensive, workers):
+        seen_levels.append(configs[0]["_prepay_schedule"][0][1])
+        raw = [[] for _ in range(renter_offset)]
+        raw.extend(
+            [
+                [
+                    {
+                        "total_net_worth": -abs(config["_prepay_schedule"][0][1] - config["target_level"]),
+                        "max_drawdown": 0.0,
+                    }
+                ]
+                for config in configs
+            ]
+        )
+        return [], raw, {}
+
+    monkeypatch.setattr(condo, "run_monte_carlo", fake_run_monte_carlo)
+
+    levels = condo.optimize_prepay_levels(
+        {},
+        variants,
+        simulations=1,
+        seed=42,
+        lam=0.0,
+        max_level=600.0,
+        step=300.0,
+    )
+
+    assert levels == [0.0, 600.0]
+    assert seen_levels == [0.0, 300.0, 600.0]
 
 
 def test_mortgage_duration_label_format():
