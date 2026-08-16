@@ -11,6 +11,7 @@ from statistics import stdev
 from tabulate import tabulate
 
 RENTER_START_RENTS = (1100, 1300, 1500, 1700, 1900, 2100)
+RENTER_PRUNING_FACTOR = 0.8
 
 try:
     import tomllib
@@ -851,7 +852,8 @@ def make_trial_args(args: dict, market: dict, rng: random.Random, include_renter
 
 
 def filter_expensive_scenarios(defaults: dict, scenarios_config: list[dict]) -> tuple[list[dict], list[dict], float]:
-    renter_bar = get_base_renter_scenarios(defaults)[-1]["total_net_worth"]
+    renter_baseline = get_base_renter_scenarios(defaults)[-1]["total_net_worth"]
+    renter_bar = renter_baseline * RENTER_PRUNING_FACTOR
     kept = []
     skipped = []
     for sc in scenarios_config:
@@ -1072,7 +1074,8 @@ def print_skipped_note(skip_info: dict) -> None:
     renter_bar = skip_info["renter_bar"]
     print(
         f"Skipped {len(skipped)} scenario(s) whose deterministic net worth falls below the "
-        f"worst-case renter (${RENTER_START_RENTS[-1]:,}/mo) baseline of ${renter_bar:,.0f}:"
+        f"{RENTER_PRUNING_FACTOR:.0%} of the worst-case renter "
+        f"(${RENTER_START_RENTS[-1]:,}/mo) baseline: ${renter_bar:,.0f}:"
     )
     for item in skipped:
         print(f"  - {item['address']} (${item['price']:,.0f}) est net worth ${item['est_nw']:,.0f}")

@@ -692,6 +692,9 @@ def test_filter_expensive_scenarios_skips_dominated():
     assert [s["address"] for s in skipped] == ["Mansion"]
     assert skipped[0]["price"] == 900000
     assert skipped[0]["est_nw"] < bar
+    assert bar == pytest.approx(
+        condo.get_base_renter_scenarios(defaults)[-1]["total_net_worth"] * condo.RENTER_PRUNING_FACTOR
+    )
 
 
 def test_run_monte_carlo_skips_expensive_scenarios():
