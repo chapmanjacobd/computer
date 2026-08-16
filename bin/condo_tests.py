@@ -924,6 +924,19 @@ def test_prepay_amount_for_year():
     assert condo.prepay_amount_for_year(sched, 20) == 500.0
 
 
+def test_prepay_crossover_years_reflect_extra_principal():
+    principal_without_extra = condo.prepay_crossover_years(220000, 0.06, 30, 0.0, "principal")
+    principal_with_extra = condo.prepay_crossover_years(220000, 0.06, 30, 1000.0, "principal")
+    cumulative_without_extra = condo.prepay_crossover_years(220000, 0.06, 30, 0.0, "cumulative")
+    cumulative_with_extra = condo.prepay_crossover_years(220000, 0.06, 30, 250.0, "cumulative")
+
+    assert principal_with_extra < principal_without_extra
+    assert cumulative_without_extra == 30
+    assert cumulative_with_extra < cumulative_without_extra
+    with pytest.raises(ValueError):
+        condo.prepay_crossover_years(220000, 0.06, 30, 250.0, "unknown")
+
+
 def test_prepay_schedule_draws_capital_and_pays_off_faster():
     args = make_args(mortgage_rate=0.08, stock_return=0.07, projection_years=30, total_capital=180000)
     schedule = ((3, 1500.0), (4, 1000.0), (None, 500.0))
@@ -1006,6 +1019,67 @@ def test_optimize_prepay_levels_selects_each_variant_independently(monkeypatch):
     assert seen_levels == [0.0, 300.0, 600.0]
 
 
+def test_optimize_crossover_prepay_levels_returns_level_and_years(monkeypatch):
+    variant = {
+        "price": 275000,
+        "down_payment_pct": 0.20,
+        "_chosen_rate": 0.06,
+        "_chosen_term": 30,
+        "target_early_level": 600.0,
+        "target_late_level": 300.0,
+    }
+    seen = []
+    renter_offset = 1 + len(condo.RENTER_START_RENTS)
+
+    def fake_run_monte_carlo(defaults, configs, simulations, seed, skip_expensive, workers):
+        seen.append(configs[0]["_prepay_schedule"])
+        raw = [[] for _ in range(renter_offset)]
+        raw.append(
+            [
+                {
+                    "total_net_worth": -abs(
+                        configs[0]["_prepay_schedule"][0][1] - configs[0]["target_early_level"]
+                    )
+                    - abs(
+                        configs[0]["_prepay_schedule"][1][1]
+                        - configs[0]["target_late_level"]
+                    ),
+                    "max_drawdown": 0.0,
+                }
+            ]
+        )
+        return [], raw, {}
+
+    monkeypatch.setattr(condo, "run_monte_carlo", fake_run_monte_carlo)
+
+    result = condo.optimize_crossover_prepay_levels(
+        {},
+        [variant],
+        simulations=1,
+        seed=42,
+        lam=0.0,
+        crossover="cumulative",
+        max_level=600.0,
+        step=300.0,
+    )
+
+    assert result == [
+        (
+            600.0,
+            300.0,
+            condo.prepay_crossover_years(275000 * 0.8, 0.06, 30, 600.0, "cumulative"),
+        )
+    ]
+    assert [
+        (schedule[0][1], schedule[1][1])
+        for schedule in seen
+    ] == [
+        (early, late)
+        for early in (0.0, 300.0, 600.0)
+        for late in (0.0, 300.0, 600.0)
+    ]
+
+
 def test_mortgage_duration_label_format():
     assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 12.42}) == " (30-yr @2.42x)"
     assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 30.0}) == " (30-yr)"
@@ -1016,6 +1090,24 @@ def test_mortgage_duration_label_format():
     assert condo.mortgage_duration_label(
         {"mortgage_term": 30, "mortgage_duration": 12.42, "prepay": True, "invest_surplus": True}
     ) == " (30-yr @2.42x +prepay)"
+    assert condo.mortgage_duration_label(
+        {
+            "mortgage_term": 30,
+            "mortgage_duration": 12.42,
+            "prepay": True,
+            "prepay_optimal": True,
+            "prepay_crossover": "principal",
+        }
+    ) == " (30-yr @2.42x +prepay-principal*)"
+    assert condo.mortgage_duration_label(
+        {
+            "mortgage_term": 30,
+            "mortgage_duration": 12.42,
+            "prepay": True,
+            "prepay_optimal": True,
+            "prepay_crossover": "cumulative",
+        }
+    ) == " (30-yr @2.42x +prepay-cumulative*)"
     assert condo.mortgage_duration_label(
         {"mortgage_term": 20, "mortgage_duration": 20.0, "invest_surplus": False}
     ) == " (20-yr)"

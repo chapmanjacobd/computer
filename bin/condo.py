@@ -10,7 +10,7 @@ from statistics import stdev
 
 from tabulate import tabulate
 
-RENTER_START_RENTS = (900, 1100, 1300, 1500, 1700)
+RENTER_START_RENTS = (700, 900, 1100, 1300, 1500, 1700)
 RENTER_PRUNING_FACTOR = 0.8
 
 try:
@@ -158,6 +158,51 @@ def prepay_amount_for_year(schedule: tuple, year: int) -> float:
             return amount
         offset -= years
     return 0.0
+
+
+def prepay_crossover_years(
+    loan_amt: float,
+    annual_rate: float,
+    term_years: int,
+    extra_payment: float,
+    crossover: str,
+) -> int:
+    """Return the whole years to prepay before the selected crossover."""
+    if crossover not in {"principal", "cumulative"}:
+        raise ValueError(f"Unknown prepayment crossover: {crossover}")
+    if loan_amt <= 0 or term_years <= 0:
+        return 0
+
+    monthly_rate = annual_rate / 12
+    term_months = term_years * 12
+    scheduled_payment = amortized_payment(loan_amt, monthly_rate, term_months)
+    balance = loan_amt
+    cumulative_principal = 0.0
+    cumulative_interest = 0.0
+    extra_payment = max(0.0, extra_payment)
+
+    for month in range(1, term_months + 1):
+        interest = balance * monthly_rate
+        scheduled_principal = min(
+            balance,
+            max(0.0, scheduled_payment - interest),
+        )
+        extra = min(extra_payment, max(0.0, balance - scheduled_principal))
+        principal = scheduled_principal + extra
+
+        if crossover == "principal" and scheduled_principal > interest:
+            return math.ceil(month / 12)
+
+        cumulative_interest += interest
+        cumulative_principal += principal
+        if crossover == "cumulative" and cumulative_principal > cumulative_interest:
+            return math.ceil(month / 12)
+
+        balance = max(0.0, balance - principal)
+        if balance <= 1e-6:
+            return math.ceil(month / 12)
+
+    return term_years
 
 
 def _terminal_annual_rate(args: dict, name: str) -> float:
@@ -567,6 +612,8 @@ def calculate_buyer_net_worth(
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
     }
+    if args.get("_prepay_crossover") is not None:
+        result["prepay_crossover"] = args["_prepay_crossover"]
     if record_schedule:
         result["_schedule"] = schedule
         result["_term_years"] = term_years
@@ -1237,7 +1284,11 @@ def mortgage_duration_label(s: dict) -> str:
     label = f"{term}-yr"
     if math.isfinite(duration) and duration > 0 and round(term / duration, 2) != 1.0:
         label += f" @{term / duration:.2f}x"
-    if s.get("prepay_optimal"):
+    if s.get("prepay_crossover") == "principal":
+        label += " +prepay-principal*"
+    elif s.get("prepay_crossover") == "cumulative":
+        label += " +prepay-cumulative*"
+    elif s.get("prepay_optimal"):
         label += " +prepay*"
     elif s.get("prepay"):
         label += " +prepay"
@@ -1285,6 +1336,66 @@ def optimize_prepay_levels(
                 best_scores[index] = score
                 best_levels[index] = level
     return best_levels
+
+
+def optimize_crossover_prepay_levels(
+    defaults: dict,
+    variants: list[dict],
+    simulations: int,
+    seed: int,
+    lam: float,
+    crossover: str,
+    workers: int | None = None,
+    max_level: float = 3000.0,
+    step: float = 250.0,
+) -> list[tuple[float, float, int]]:
+    if crossover not in {"principal", "cumulative"}:
+        raise ValueError(f"Unknown prepayment crossover: {crossover}")
+
+    renter_offset = 1 + len(RENTER_START_RENTS)
+    best_early_levels = [0.0] * len(variants)
+    best_late_levels = [0.0] * len(variants)
+    best_years = [0] * len(variants)
+    best_scores = [-math.inf] * len(variants)
+    levels = int(max_level / step) + 1
+
+    for early_index in range(levels):
+        early_level = early_index * step
+        crossover_years = []
+        for variant in variants:
+            years = prepay_crossover_years(
+                variant["price"] * (1 - variant["down_payment_pct"]),
+                variant["_chosen_rate"],
+                variant["_chosen_term"],
+                early_level,
+                crossover,
+            )
+            crossover_years.append(years)
+
+        for late_index in range(levels):
+            late_level = late_index * step
+            configs = [
+                dict(
+                    variant,
+                    _strategy="prepay",
+                    _prepay_crossover=crossover,
+                    _prepay_schedule=((crossover_years[index], early_level), (None, late_level)),
+                )
+                for index, variant in enumerate(variants)
+            ]
+
+            _, raw, _ = run_monte_carlo(
+                defaults, configs, simulations, seed, skip_expensive=False, workers=workers
+            )
+            for index, scenario_results in enumerate(raw[renter_offset:]):
+                score = risk_adjusted_score(scenario_results, lam)
+                if score > best_scores[index]:
+                    best_scores[index] = score
+                    best_early_levels[index] = early_level
+                    best_late_levels[index] = late_level
+                    best_years[index] = crossover_years[index]
+
+    return list(zip(best_early_levels, best_late_levels, best_years))
 
 
 def optimize_prepay_level(
@@ -1484,8 +1595,8 @@ def main():
     parser.add_argument(
         "--optimize-prepay",
         action="store_true",
-        help="Search for the level extra-payment that maximizes median net worth minus "
-        "lambda * max drawdown, and add it as a '+prepay*' scenario",
+        help="Search for constant and two-phase crossover-bounded extra-payment levels "
+        "that maximize median net worth minus lambda * max drawdown",
     )
     parser.add_argument(
         "--risk-aversion",
@@ -1543,6 +1654,50 @@ def main():
                     f"({optimal['_variant']}, lambda={args.risk_aversion:g}): "
                     f"${opt_level:,.0f}/mo extra"
                 )
+
+            for crossover in ("principal", "cumulative"):
+                crossover_results = optimize_crossover_prepay_levels(
+                    defaults,
+                    base_variants,
+                    max(1, opt_simulations),
+                    seed,
+                    args.risk_aversion,
+                    crossover,
+                    workers=args.workers,
+                )
+                for variant, (early_level, late_level, crossover_years) in zip(
+                    base_variants, crossover_results
+                ):
+                    if early_level <= 0.0 and late_level <= 0.0:
+                        continue
+
+                    optimal = variant.copy()
+                    optimal["_strategy"] = "opt"
+                    optimal["_prepay_crossover"] = crossover
+                    optimal["_prepay_schedule"] = (
+                        (crossover_years, early_level),
+                        (None, late_level),
+                    )
+                    optimal["_variant"] = (
+                        f"{optimal['_chosen_term']}-yr +prepay-{crossover}"
+                    )
+                    optimal_result = calculate_buyer_net_worth(
+                        optimal,
+                        term_years=optimal["_chosen_term"],
+                        mortgage_rate=optimal["_chosen_rate"],
+                        invest_surplus=True,
+                        prepay_schedule=optimal["_prepay_schedule"],
+                        prepay_optimal=True,
+                    )
+                    optimal["_est_nw"] = optimal_result["total_net_worth"]
+                    scenarios_config.append(optimal)
+                    print(
+                        f"Optimal {crossover} crossover prepay for "
+                        f"{optimal_result['scenario']} ({optimal['_variant']}, "
+                        f"lambda={args.risk_aversion:g}): "
+                        f"${early_level:,.0f}/mo for the first {crossover_years} years, "
+                        f"then ${late_level:,.0f}/mo"
+                    )
             print()
 
     all_scenarios, raw_results, skip_info = run_monte_carlo(
