@@ -317,12 +317,42 @@ def test_buyer_extra_payment_shortens_mortgage_duration():
 def test_buyer_reports_dti_and_lowest_total_capital():
     args = make_args(annual_income=100000, projection_years=2)
     res = condo.calculate_buyer_net_worth(args, term_years=15, record_schedule=True)
-    capital_balances = [args["total_capital"] - args["price"] * args["down_payment_pct"]] + [
-        entry["stocks"] for entry in res["_schedule"]
+    capital_balances = [
+        (args["total_capital"] - args["price"] * args["down_payment_pct"])
+    ] + [
+        entry["stocks"] / condo.monthly_growth_factor(args, "inflation_rate", entry["month"])
+        for entry in res["_schedule"]
     ]
 
     assert res["debt_to_income"] == pytest.approx(res["initial_outlay"] * 12 / args["annual_income"])
     assert res["max_drawdown"] == pytest.approx(min(capital_balances))
+
+
+@pytest.mark.parametrize(
+    ("stock_return", "inflation_rate"),
+    [(0.02, 0.03), (0.07, 0.03)],
+)
+def test_max_drawdown_always_uses_real_capital(stock_return, inflation_rate):
+    args = make_args(
+        projection_years=1,
+        total_capital=10000,
+        monthly_budget=1100,
+        stock_return=stock_return,
+        inflation_rate=inflation_rate,
+        renters_insurance_annual=0,
+        forced_move_probability=0.0,
+        moving_cost=0,
+        moving_rent_premium=0.0,
+    )
+    result = condo.get_base_renter_scenarios(args)[0]
+
+    ending_real_capital = (
+        10000
+        * condo.growth_factor(args, "stock_return", 1)
+        / condo.growth_factor(args, "inflation_rate", 1)
+    )
+    expected = min(10000, ending_real_capital)
+    assert result["max_drawdown"] == pytest.approx(expected)
 
 
 def test_stay_home_minimal_case():

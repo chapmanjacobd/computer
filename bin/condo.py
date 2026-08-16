@@ -60,6 +60,10 @@ def monthly_stock_return(args: dict, name: str, year: int) -> float:
     return (1 + annual_rate(args, name, year)) ** (1.0 / 12) - 1
 
 
+def real_capital_value(args: dict, capital: float, month: int) -> float:
+    return capital / monthly_growth_factor(args, "inflation_rate", month)
+
+
 def renter_move_cost(args: dict, year: int) -> float:
     move_costs = args.get("_mc_move_costs")
     if move_costs is not None:
@@ -211,7 +215,7 @@ def get_stay_home_scenario(args: dict) -> dict:
     stocks = args["total_capital"]
     cost_basis = stocks
     total_costs = 0.0
-    lowest_total_capital = stocks
+    lowest_total_capital = real_capital_value(args, stocks, 0)
 
     tax_m = args.get("annual_taxes", args.get("_stay_home_tax_annual", 600.0)) / 12
 
@@ -226,7 +230,7 @@ def get_stay_home_scenario(args: dict) -> dict:
         total_costs += tax_curr / monthly_growth_factor(args, "stock_return", m)
         net_cash_flow = monthly_budget - tax_curr
         stocks += net_cash_flow
-        lowest_total_capital = min(lowest_total_capital, stocks)
+        lowest_total_capital = min(lowest_total_capital, real_capital_value(args, stocks, m))
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
@@ -286,7 +290,7 @@ def calculate_buyer_net_worth(
 
     cost_basis = buyer_stocks
     total_costs = dp_amt
-    lowest_total_capital = buyer_stocks
+    lowest_total_capital = real_capital_value(args, buyer_stocks, 0)
     loan_balance = loan_amt
 
     current_rate = mortgage_rate
@@ -384,7 +388,7 @@ def calculate_buyer_net_worth(
 
         total_costs += buyer_outlay / monthly_growth_factor(args, "stock_return", m)
         buyer_stocks += net_cash_flow
-        lowest_total_capital = min(lowest_total_capital, buyer_stocks)
+        lowest_total_capital = min(lowest_total_capital, real_capital_value(args, buyer_stocks, m))
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
@@ -551,7 +555,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         renter_stocks = args["total_capital"]
         cost_basis = renter_stocks
         total_costs = 0.0
-        lowest_total_capital = renter_stocks
+        lowest_total_capital = real_capital_value(args, renter_stocks, 0)
 
         for m in range(1, projection_months + 1):
             yr = (m - 1) // 12
@@ -566,7 +570,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             total_costs += renter_outlay / monthly_growth_factor(args, "stock_return", m)
             net_cash_flow = monthly_budget - renter_outlay
             renter_stocks += net_cash_flow
-            lowest_total_capital = min(lowest_total_capital, renter_stocks)
+            lowest_total_capital = min(lowest_total_capital, real_capital_value(args, renter_stocks, m))
             if net_cash_flow > 0:
                 cost_basis += net_cash_flow
 
