@@ -1223,7 +1223,7 @@ def print_skipped_note(skip_info: dict) -> None:
         return
     renter_bar = skip_info["renter_bar"]
     print(
-        f"Skipped {len(skipped)} scenario(s) whose deterministic net worth falls below the "
+        f"Filtered {len(skipped)} scenario(s) whose deterministic net worth falls below the "
         f"{RENTER_PRUNING_FACTOR:.0%} of the worst-case renter "
         f"(${RENTER_START_RENTS[-1]:,}/mo) baseline: ${renter_bar:,.0f}:"
     )
@@ -1236,7 +1236,10 @@ def print_dti_skip_note(skip_info: dict) -> None:
     dti_skipped = skip_info.get("dti_skipped")
     if not dti_skipped:
         return
-    print("Skipped Monte Carlo trials where the year-one Debt-to-Income ratio exceeded the cap:")
+    print(
+        f"Filtered {len(dti_skipped)} scenario(s); skipped Monte Carlo trials where the "
+        "year-one Debt-to-Income ratio exceeded the cap:"
+    )
     for item in dti_skipped:
         print(f"  - {item['address']} (${item['price']:,.0f}): skipped {item['skipped']} trial(s)")
     print()

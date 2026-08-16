@@ -787,6 +787,22 @@ def test_run_monte_carlo_skips_expensive_scenarios():
     assert skip["skipped"][0]["address"] == "Mansion"
 
 
+def test_print_skipped_note_labels_filtered_scenarios():
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_skipped_note(
+            {
+                "skipped": [{"address": "Mansion", "price": 900000, "est_nw": 0}],
+                "renter_bar": 100,
+            }
+        )
+
+    assert "Filtered 1 scenario(s)" in buf.getvalue()
+
+
 def test_record_schedule_extra_fields():
     res = condo.calculate_buyer_net_worth(
         make_args(projection_years=2), term_years=15, record_schedule=True
@@ -849,3 +865,22 @@ def test_convergence_note_only_warns_for_large_relative_error():
     out = buf.getvalue()
     assert "Warning:" in out
     assert "Consider increasing --simulations" in out
+
+
+def test_dti_skip_note_reports_skipped_scenario_count():
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_dti_skip_note(
+            {
+                "dti_skipped": [
+                    {"address": "Unit A", "price": 250000, "skipped": 2},
+                    {"address": "Unit B", "price": 300000, "skipped": 1},
+                ]
+            }
+        )
+
+    out = buf.getvalue()
+    assert "Filtered 2 scenario(s); skipped Monte Carlo trials" in out
