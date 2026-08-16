@@ -314,6 +314,17 @@ def test_buyer_extra_payment_shortens_mortgage_duration():
     assert res["mortgage_duration"] < 15.0
 
 
+def test_buyer_reports_dti_and_lowest_total_capital():
+    args = make_args(annual_income=100000, projection_years=2)
+    res = condo.calculate_buyer_net_worth(args, term_years=15, record_schedule=True)
+    capital_balances = [args["total_capital"]] + [
+        entry["stocks"] + entry["home_value"] - entry["balance"] for entry in res["_schedule"]
+    ]
+
+    assert res["debt_to_income"] == pytest.approx(res["initial_outlay"] * 12 / args["annual_income"])
+    assert res["max_drawdown"] == pytest.approx(min(capital_balances))
+
+
 def test_stay_home_minimal_case():
     args = make_args(
         projection_years=1,

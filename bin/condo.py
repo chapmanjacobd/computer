@@ -82,6 +82,15 @@ def monthly_tax_savings(args: dict, interest_m: float, prop_tax_m: float) -> flo
     return fed_savings + state_savings
 
 
+def debt_to_income_ratio(args: dict, monthly_outlay: float) -> float:
+    annual_income = args.get("annual_income")
+    if annual_income is None:
+        annual_income = args.get("monthly_budget", 0.0) * 12
+    if annual_income <= 0:
+        return float("inf") if monthly_outlay > 0 else 0.0
+    return monthly_outlay * 12 / annual_income
+
+
 def monthly_pmi(args: dict, loan_amt: float, balance: float, home_value: float) -> float:
     if args["down_payment_pct"] >= 0.20 or balance <= 0:
         return 0.0
@@ -202,6 +211,7 @@ def get_stay_home_scenario(args: dict) -> dict:
     stocks = args["total_capital"]
     cost_basis = stocks
     total_costs = 0.0
+    lowest_total_capital = stocks
 
     tax_m = args.get("annual_taxes", args.get("_stay_home_tax_annual", 600.0)) / 12
 
@@ -216,6 +226,7 @@ def get_stay_home_scenario(args: dict) -> dict:
         total_costs += tax_curr / monthly_growth_factor(args, "stock_return", m)
         net_cash_flow = monthly_budget - tax_curr
         stocks += net_cash_flow
+        lowest_total_capital = min(lowest_total_capital, stocks)
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
@@ -236,6 +247,8 @@ def get_stay_home_scenario(args: dict) -> dict:
         "mortgage_duration": 0.0,
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
+        "debt_to_income": debt_to_income_ratio(args, tax_m),
+        "max_drawdown": lowest_total_capital,
         "final_stocks": stocks_after_tax,
         "final_home_val": 0.0,
         "total_net_worth": stocks_after_tax / inflation_factor,
@@ -273,6 +286,7 @@ def calculate_buyer_net_worth(
 
     cost_basis = buyer_stocks
     total_costs = dp_amt
+    lowest_total_capital = args["total_capital"]
     loan_balance = loan_amt
 
     current_rate = mortgage_rate
@@ -370,6 +384,8 @@ def calculate_buyer_net_worth(
 
         total_costs += buyer_outlay / monthly_growth_factor(args, "stock_return", m)
         buyer_stocks += net_cash_flow
+        total_capital = buyer_stocks + args["price"] * appr_factor - loan_balance
+        lowest_total_capital = min(lowest_total_capital, total_capital)
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
@@ -477,6 +493,8 @@ def calculate_buyer_net_worth(
         "mortgage_duration": payoff_month / 12 if payoff_month is not None else float("inf"),
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
+        "debt_to_income": debt_to_income_ratio(args, min_outlay_y1),
+        "max_drawdown": lowest_total_capital,
         "final_stocks": buyer_stocks_after_tax,
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
@@ -534,6 +552,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
         renter_stocks = args["total_capital"]
         cost_basis = renter_stocks
         total_costs = 0.0
+        lowest_total_capital = renter_stocks
 
         for m in range(1, projection_months + 1):
             yr = (m - 1) // 12
@@ -548,6 +567,7 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             total_costs += renter_outlay / monthly_growth_factor(args, "stock_return", m)
             net_cash_flow = monthly_budget - renter_outlay
             renter_stocks += net_cash_flow
+            lowest_total_capital = min(lowest_total_capital, renter_stocks)
             if net_cash_flow > 0:
                 cost_basis += net_cash_flow
 
@@ -577,6 +597,8 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 "mortgage_duration": 0.0,
                 "end_year_outlay": end_year_outlay,
                 "total_costs": total_costs,
+                "debt_to_income": debt_to_income_ratio(args, initial_outlay),
+                "max_drawdown": lowest_total_capital,
                 "final_stocks": renter_stocks_after_tax,
                 "final_home_val": 0.0,
                 "total_net_worth": renter_stocks_after_tax / growth_factor(args, "inflation_rate", projection_years),
@@ -1056,8 +1078,6 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
 
     all_sorted = stay_home + others
 
-    baseline_nw = stay_home[0]["total_net_worth"] if stay_home else 0.0
-
     headers = [
         "Scenario",
         "Min Outlay",
@@ -1066,18 +1086,12 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         f"Yr {projection_years + 1} Outlay",
         "NPV Total Costs",
         "NPV Net Worth",
-        "Percent Baseline",
+        "Debt to Income",
+        "Max Drawdown",
     ]
     table = []
 
     for s in all_sorted:
-        if s["total_net_worth"] < 0:
-            pct_baseline = "UNDERWATER"
-        elif baseline_nw != 0:
-            pct_baseline = f"{(s['total_net_worth'] - baseline_nw) / baseline_nw * 100:+.1f}%"
-        else:
-            pct_baseline = "0.0%"
-
         row = [
             s["scenario"],
             f"${s['initial_outlay']:,.0f}",
@@ -1092,7 +1106,8 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
             f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
-            pct_baseline,
+            f"{s['debt_to_income']:.1%}",
+            f"${s['max_drawdown']:,.0f}",
         ]
         table.append(row)
 
