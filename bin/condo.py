@@ -1523,6 +1523,8 @@ def main():
                 workers=args.workers,
             )
             for variant, opt_level in zip(base_variants, opt_levels):
+                if opt_level <= 0.0:
+                    continue
                 optimal = variant.copy()
                 optimal["_strategy"] = "opt"
                 optimal["_prepay_schedule"] = ((None, opt_level),)
