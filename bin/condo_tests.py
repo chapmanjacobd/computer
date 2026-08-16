@@ -273,6 +273,45 @@ def test_buyer_minimal_case():
     assert res["final_stocks"] == pytest.approx(-12 * pmt)
     assert res["final_home_val"] == pytest.approx(100000 - bal)
     assert res["total_net_worth"] == pytest.approx(100000 - bal - 12 * pmt)
+    assert res["initial_outlay"] == pytest.approx(pmt)
+    assert res["extra_payment"] == pytest.approx(0.0)
+    assert res["mortgage_duration"] == pytest.approx(15.0)
+
+
+def test_buyer_extra_payment_shortens_mortgage_duration():
+    res = condo.calculate_buyer_net_worth(
+        make_args(
+            projection_years=1,
+            price=100000,
+            total_capital=20000,
+            monthly_budget=1000,
+            mortgage_rate=0.06,
+            mortgage_term=15,
+            stock_return=0.0,
+            inflation_rate=0.0,
+            appreciation_rate=0.0,
+            rent_growth_rate=0.0,
+            hoa_growth_rate=0.0,
+            selling_cost_pct=0.0,
+            maintenance_pct=0.0,
+            state_tax=0.0,
+            state_std_deduction=0,
+            fed_tax_rate=0.0,
+            home_gain_exclusion=0,
+            effective_tax_rate=0.0,
+            annual_taxes=0,
+            monthly_assessment=0,
+            condo_insurance_annual=0,
+            house_insurance_annual=0,
+            cap_gains_0pct=0,
+            taxable_income=0,
+        ),
+        term_years=15,
+    )
+    pmt = condo.amortized_payment(80000, 0.06 / 12, 180)
+    assert res["initial_outlay"] == pytest.approx(pmt)
+    assert res["extra_payment"] == pytest.approx(1000 - pmt)
+    assert res["mortgage_duration"] < 15.0
 
 
 def test_stay_home_minimal_case():
@@ -718,6 +757,9 @@ def test_record_schedule_extra_fields():
     assert res["_stock_tax"] >= 0.0
     assert res["_home_gain"] >= 0.0
     assert res["_net_home"] >= 0.0
+    assert res["initial_outlay"] > 0.0
+    assert res["extra_payment"] >= 0.0
+    assert res["mortgage_duration"] > 0.0
 
 
 def test_horizon_years_extends_schedule():

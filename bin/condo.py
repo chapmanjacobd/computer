@@ -131,6 +131,63 @@ def months_to_payoff(balance: float, r: float, payment: float) -> float:
     return math.ceil(math.log(payment / (payment - balance * r)) / math.log(1 + r))
 
 
+def _terminal_annual_rate(args: dict, name: str) -> float:
+    paths = args.get("_mc_paths")
+    if paths and name in paths:
+        return paths[name][-1]
+    return args[name]
+
+
+def _mortgage_payoff_month(
+    args: dict,
+    balance: float,
+    current_rate: float,
+    current_r: float,
+    current_pmt_min: float,
+    elapsed_months: int,
+    projection_years: int,
+    term_months: int,
+    end_tax: float,
+    end_hoa: float,
+    end_ins: float,
+    end_maint: float,
+    end_budget: float,
+) -> int | None:
+    if balance <= 0:
+        return elapsed_months
+
+    appreciation_rate = _terminal_annual_rate(args, "appreciation_rate")
+    inflation_rate = _terminal_annual_rate(args, "inflation_rate")
+    hoa_growth_rate = _terminal_annual_rate(args, "hoa_growth_rate")
+    max_months = max(term_months, elapsed_months) + 1200
+    terminal_year = max(0, projection_years - 1)
+
+    for month in range(elapsed_months + 1, max_months + 1):
+        years_after_projection = (month - 1) // 12 - terminal_year
+        tax = end_tax * (1 + appreciation_rate) ** years_after_projection
+        hoa = end_hoa * (1 + hoa_growth_rate) ** years_after_projection
+        insurance = end_ins * (1 + inflation_rate) ** years_after_projection
+        maintenance = end_maint * (1 + appreciation_rate) ** years_after_projection
+        budget = end_budget * (1 + inflation_rate) ** years_after_projection
+
+        interest = balance * current_r
+        mandatory = (
+            current_pmt_min
+            + tax
+            + hoa
+            + insurance
+            + maintenance
+            - monthly_tax_savings(args, interest, tax)
+        )
+        extra = max(0.0, budget - mandatory) if current_rate > args["stock_return"] else 0.0
+        payment = min(current_pmt_min + extra, balance + interest)
+        balance = max(0.0, balance - (payment - interest))
+        if balance < 1e-6:
+            return month
+
+    return None
+
+
 def mortgage_rate_offer(args: dict, option_rate: float, year: int) -> float:
     path = args.get("_mc_mortgage_rate_path")
     if path is None:
@@ -175,6 +232,8 @@ def get_stay_home_scenario(args: dict) -> dict:
     return {
         "scenario": "Stay Home",
         "initial_outlay": tax_m,
+        "extra_payment": 0.0,
+        "mortgage_duration": 0.0,
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "final_stocks": stocks_after_tax,
@@ -222,7 +281,9 @@ def calculate_buyer_net_worth(
 
     pay_extra = False
     refinanced = False
-    base_outlay_y1 = 0.0
+    min_outlay_y1 = 0.0
+    extra_payment_y1 = 0.0
+    payoff_month = None
     schedule = [] if record_schedule else None
 
     for m in range(1, projection_months + 1):
@@ -291,6 +352,8 @@ def calculate_buyer_net_worth(
             loan_balance = max(0.0, loan_balance - principal)
             if loan_balance < 1e-6:
                 loan_balance = 0.0
+                if payoff_month is None:
+                    payoff_month = m
 
         buyer_outlay = (
             payment
@@ -314,7 +377,8 @@ def calculate_buyer_net_worth(
             buyer_stocks, cost_basis = harvest_gains(args, buyer_stocks, cost_basis)
 
         if m == 1:
-            base_outlay_y1 = buyer_outlay
+            min_outlay_y1 = mandatory
+            extra_payment_y1 = max(0.0, payment - pmt_curr_min)
 
         if record_schedule:
             schedule.append(
@@ -383,6 +447,23 @@ def calculate_buyer_net_worth(
         end_pmt + end_tax + end_hoa + end_ins + end_maint + end_pmi - monthly_tax_savings(args, end_interest, end_tax)
     )
 
+    if payoff_month is None:
+        payoff_month = _mortgage_payoff_month(
+            args,
+            loan_balance,
+            current_rate,
+            current_r,
+            current_pmt_min,
+            projection_months,
+            projection_years,
+            term_months,
+            end_tax,
+            end_hoa,
+            end_ins,
+            end_maint,
+            args["monthly_budget"] * inflation_factor,
+        )
+
     address = args.get("_address", "")
     if address:
         label = address
@@ -391,7 +472,9 @@ def calculate_buyer_net_worth(
 
     result = {
         "scenario": label,
-        "initial_outlay": base_outlay_y1,
+        "initial_outlay": min_outlay_y1,
+        "extra_payment": extra_payment_y1,
+        "mortgage_duration": payoff_month / 12 if payoff_month is not None else float("inf"),
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "final_stocks": buyer_stocks_after_tax,
@@ -490,6 +573,8 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             {
                 "scenario": scenario_name,
                 "initial_outlay": initial_outlay,
+                "extra_payment": 0.0,
+                "mortgage_duration": 0.0,
                 "end_year_outlay": end_year_outlay,
                 "total_costs": total_costs,
                 "final_stocks": renter_stocks_after_tax,
@@ -975,7 +1060,9 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
 
     headers = [
         "Scenario",
-        "Init Outlay",
+        "Min Outlay",
+        "Extra Payment",
+        "Mortgage Duration",
         f"Yr {projection_years + 1} Outlay",
         "NPV Total Costs",
         "NPV Net Worth",
@@ -994,6 +1081,14 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         row = [
             s["scenario"],
             f"${s['initial_outlay']:,.0f}",
+            f"${s['extra_payment']:,.0f}" if s["mortgage_duration"] else "-",
+            (
+                f"{s['mortgage_duration']:.1f} yr"
+                if s["mortgage_duration"] > 0 and math.isfinite(s["mortgage_duration"])
+                else "N/A"
+                if not math.isfinite(s["mortgage_duration"])
+                else "-"
+            ),
             f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
