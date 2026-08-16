@@ -336,7 +336,7 @@ def test_max_drawdown_always_uses_real_capital(stock_return, inflation_rate):
     args = make_args(
         projection_years=1,
         total_capital=10000,
-        monthly_budget=1100,
+        monthly_budget=condo.RENTER_START_RENTS[0],
         stock_return=stock_return,
         inflation_rate=inflation_rate,
         renters_insurance_annual=0,
@@ -928,7 +928,7 @@ def test_print_unaffordable_note():
             ]
         )
     out = buf.getvalue()
-    assert "Excluded 2 mortgage option(s)" in out
+    assert "Filtered 2 mortgage option(s)" in out
     assert "no affordable financing option" in out
 
 
