@@ -74,8 +74,9 @@ def renter_rent_factor(args: dict, year: int) -> float:
 
 
 def monthly_tax_savings(args: dict, interest_m: float, prop_tax_m: float) -> float:
+    std = args.get("standard_deduction", 0.0)
     fed_ded = interest_m + min(prop_tax_m, args["salt_cap"] / 12)
-    fed_savings = args["fed_tax_rate"] * max(0.0, fed_ded - args["fed_std_deduction"] / 12)
+    fed_savings = args["fed_tax_rate"] * max(0.0, fed_ded - std / 12)
     state_savings = args["state_tax"] * max(0.0, interest_m + prop_tax_m - args["state_std_deduction"] / 12)
     return fed_savings + state_savings
 
@@ -88,16 +89,53 @@ def monthly_pmi(args: dict, loan_amt: float, balance: float, home_value: float) 
     return 0.0
 
 
-def stock_gains_tax(args: dict, stock_gain: float, projection_years: int) -> float:
+def stock_gains_tax(args: dict, stock_gain: float) -> float:
     annual_room = max(0.0, args["cap_gains_0pct"] - args["taxable_income"])
-    taxable_gain = max(0.0, stock_gain - annual_room * projection_years)
+    taxable_gain = max(0.0, stock_gain - annual_room)
     return taxable_gain * args["cap_gains_tax"] + stock_gain * args["state_tax"]
+
+
+def harvest_gains(args: dict, stocks: float, cost_basis: float) -> tuple[float, float]:
+    annual_room = max(0.0, args["cap_gains_0pct"] - args["taxable_income"])
+    unrealized_gain = max(0.0, stocks - cost_basis)
+    realized = min(unrealized_gain, annual_room)
+    if realized <= 0.0:
+        return stocks, cost_basis
+    stocks -= realized * args["state_tax"]
+    cost_basis += realized
+    return stocks, cost_basis
 
 
 def annual_insurance(args: dict) -> float:
     if args["monthly_assessment"] > 0:
         return args["condo_insurance_annual"]
     return args["house_insurance_annual"]
+
+
+def amortized_payment(loan_amt: float, r: float, months: int) -> float:
+    if months <= 0:
+        return 0.0
+    if r == 0:
+        return loan_amt / months
+    return loan_amt * (r * (1 + r) ** months) / ((1 + r) ** months - 1)
+
+
+def months_to_payoff(balance: float, r: float, payment: float) -> float:
+    if balance <= 0 or payment <= 0:
+        return 0.0
+    if r == 0:
+        return math.ceil(balance / payment)
+    if payment <= balance * r:
+        return float("inf")
+    return math.ceil(math.log(payment / (payment - balance * r)) / math.log(1 + r))
+
+
+def mortgage_rate_offer(args: dict, option_rate: float, year: int) -> float:
+    path = args.get("_mc_mortgage_rate_path")
+    if path is None:
+        return option_rate
+    anchor = args.get("_mc_mortgage_anchor", args["mortgage_rate"])
+    return path[year] + (option_rate - anchor)
 
 
 def get_stay_home_scenario(args: dict) -> dict:
@@ -117,14 +155,17 @@ def get_stay_home_scenario(args: dict) -> dict:
         tax_curr = tax_m * inflation_factor
         monthly_budget = args["monthly_budget"] * inflation_factor
 
-        total_costs += tax_curr / monthly_growth_factor(args, "inflation_rate", m)
+        total_costs += tax_curr / monthly_growth_factor(args, "stock_return", m)
         net_cash_flow = monthly_budget - tax_curr
         stocks += net_cash_flow
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
+        if m % 12 == 0 and m < projection_months:
+            stocks, cost_basis = harvest_gains(args, stocks, cost_basis)
+
     stock_gain = max(0, stocks - cost_basis)
-    stock_tax = stock_gains_tax(args, stock_gain, projection_years)
+    stock_tax = stock_gains_tax(args, stock_gain)
     stocks_after_tax = stocks - stock_tax
 
     inflation_factor = growth_factor(args, "inflation_rate", projection_years)
@@ -141,9 +182,18 @@ def get_stay_home_scenario(args: dict) -> dict:
     }
 
 
-def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: float | None = None) -> dict:
+def calculate_buyer_net_worth(
+    args: dict,
+    term_years: int = 15,
+    mortgage_rate: float | None = None,
+    record_schedule: bool = False,
+    horizon_years: int | None = None,
+) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
+    if horizon_years is not None:
+        projection_years = horizon_years
+        projection_months = horizon_years * 12
     if mortgage_rate is None:
         mortgage_rate = args["mortgage_rate"]
     r = mortgage_rate / 12
@@ -152,17 +202,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     loan_amt = args["price"] - dp_amt
 
     term_months = term_years * 12
-    if r == 0:
-        pmt = loan_amt / term_months
-    else:
-        pmt = loan_amt * (r * (1 + r) ** term_months) / ((1 + r) ** term_months - 1)
-
-    schedule = []
-    bal = loan_amt
-    for _ in range(term_months):
-        interest = bal * r
-        schedule.append(interest)
-        bal -= pmt - interest
+    pmt_min = amortized_payment(loan_amt, r, term_months)
 
     buyer_stocks = args["total_capital"] - dp_amt
     annual_taxes = args.get("annual_taxes", args["price"] * args["effective_tax_rate"])
@@ -172,16 +212,20 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
     cost_basis = buyer_stocks
-    base_outlay_y1 = (
-        pmt + tax_m + hoa_m + insurance_m + maint_m
-        + monthly_pmi(args, loan_amt, loan_amt, args["price"])
-        - monthly_tax_savings(args, schedule[0], tax_m)
-    )
     total_costs = dp_amt
-
     loan_balance = loan_amt
 
+    current_rate = mortgage_rate
+    current_r = r
+    current_pmt_min = pmt_min
+
+    pay_extra = False
+    refinanced = False
+    base_outlay_y1 = 0.0
+    schedule = [] if record_schedule else None
+
     for m in range(1, projection_months + 1):
+        refinanced = False
         yr = (m - 1) // 12
         buyer_stocks *= 1 + monthly_stock_return(args, "stock_return", yr)
 
@@ -192,14 +236,18 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         hoa_curr = hoa_m * hoa_growth_factor
         insurance_curr = insurance_m * infl_factor
         maint_curr = maint_m * appr_factor
-        pmt_curr = pmt if m <= term_months else 0.0
-        interest_curr = schedule[m - 1] if m <= term_months else 0.0
-        pmi_curr = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appr_factor)
-        if m <= term_months:
-            loan_balance -= pmt - interest_curr
 
-        buyer_outlay = (
-            pmt_curr
+        if loan_balance > 0:
+            interest_curr = loan_balance * current_r
+            pmt_curr_min = current_pmt_min
+        else:
+            interest_curr = 0.0
+            pmt_curr_min = 0.0
+
+        pmi_curr = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appr_factor)
+
+        mandatory = (
+            pmt_curr_min
             + tax_curr
             + hoa_curr
             + insurance_curr
@@ -208,15 +256,85 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
             - monthly_tax_savings(args, interest_curr, tax_curr)
         )
         monthly_budget = args["monthly_budget"] * infl_factor
+        surplus = monthly_budget - mandatory
 
-        total_costs += buyer_outlay / monthly_growth_factor(args, "inflation_rate", m)
+        if (m - 1) % 6 == 0:
+            pay_extra = current_rate > args["stock_return"]
+
+        if loan_balance > 0 and m > 1 and m % 12 == 1:
+            offer = mortgage_rate_offer(args, mortgage_rate, yr)
+            if offer < current_rate:
+                remaining_months = max(1, term_months - (m - 1))
+                proj_excess = max(surplus, 0.0) if pay_extra else 0.0
+                payoff_horizon = months_to_payoff(loan_balance, current_r, current_pmt_min + proj_excess)
+                if payoff_horizon != float("inf"):
+                    remaining_months = min(remaining_months, int(payoff_horizon))
+                new_pmt = amortized_payment(loan_balance, offer / 12, remaining_months)
+                if (current_pmt_min - new_pmt) * remaining_months > args["refinance_cost"]:
+                    current_rate = offer
+                    current_r = offer / 12
+                    current_pmt_min = new_pmt
+                    refinanced = True
+
+        if loan_balance > 0:
+            desired_excess = surplus if pay_extra else 0.0
+            desired_excess = max(0.0, min(desired_excess, loan_balance))
+            payment = pmt_curr_min + desired_excess
+            payment = min(payment, loan_balance + interest_curr)
+        else:
+            desired_excess = 0.0
+            payment = 0.0
+
+        principal = (payment - interest_curr) if loan_balance > 0 else 0.0
+        if loan_balance > 0:
+            loan_balance = max(0.0, loan_balance - principal)
+            if loan_balance < 1e-6:
+                loan_balance = 0.0
+
+        buyer_outlay = (
+            payment
+            + tax_curr
+            + hoa_curr
+            + insurance_curr
+            + maint_curr
+            + pmi_curr
+            - monthly_tax_savings(args, interest_curr, tax_curr)
+        )
+        if refinanced:
+            buyer_outlay += args["refinance_cost"]
         net_cash_flow = monthly_budget - buyer_outlay
+
+        total_costs += buyer_outlay / monthly_growth_factor(args, "stock_return", m)
         buyer_stocks += net_cash_flow
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
+        if m % 12 == 0 and m < projection_months:
+            buyer_stocks, cost_basis = harvest_gains(args, buyer_stocks, cost_basis)
+
+        if m == 1:
+            base_outlay_y1 = buyer_outlay
+
+        if record_schedule:
+            schedule.append(
+                {
+                    "month": m,
+                    "payment": payment,
+                    "interest": interest_curr,
+                    "principal": principal,
+                    "excess": max(0.0, payment - pmt_curr_min),
+                    "balance": loan_balance,
+                    "pay_extra": pay_extra,
+                    "refinanced": refinanced,
+                    "outlay": buyer_outlay,
+                    "stocks": buyer_stocks,
+                    "home_value": args["price"] * appr_factor,
+                    "pmi": pmi_curr,
+                }
+            )
+
     stock_gain = max(0, buyer_stocks - cost_basis)
-    stock_tax = stock_gains_tax(args, stock_gain, projection_years)
+    stock_tax = stock_gains_tax(args, stock_gain)
     buyer_stocks_after_tax = buyer_stocks - stock_tax
 
     appreciation_factor = growth_factor(args, "appreciation_rate", projection_years)
@@ -227,32 +345,42 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     home_gain = nominal_home_val - selling_costs - args["price"]
     taxable_home_gain = max(0, home_gain - args["home_gain_exclusion"])
     home_tax = taxable_home_gain * args["cap_gains_tax"] + home_gain * args["state_tax"]
-    if projection_months < term_months:
-        if r == 0:
-            remaining_loan = loan_amt - pmt * projection_months
-        else:
-            remaining_loan = loan_amt * (1 + r) ** projection_months - pmt * (
-                ((1 + r) ** projection_months - 1) / r
-            )
-    else:
-        remaining_loan = 0.0
+    remaining_loan = loan_balance
     net_home = nominal_home_val - selling_costs - home_tax - remaining_loan
 
     final_home_val = net_home / inflation_factor
     final_net_worth = (buyer_stocks_after_tax / inflation_factor) + final_home_val
 
     hoa_factor = growth_factor(args, "hoa_growth_rate", projection_years)
-    end_interest = schedule[projection_months] if projection_months < term_months else 0.0
     end_tax = tax_m * appreciation_factor
-    end_pmi = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appreciation_factor)
+    end_hoa = hoa_m * hoa_factor
+    end_ins = insurance_m * inflation_factor
+    end_maint = maint_m * appreciation_factor
+    if loan_balance > 0:
+        end_interest = loan_balance * current_r
+        end_pmt_min = current_pmt_min
+        end_pmi = monthly_pmi(args, loan_amt, loan_balance, args["price"] * appreciation_factor)
+        end_mandatory = (
+            end_pmt_min
+            + end_tax
+            + end_hoa
+            + end_ins
+            + end_maint
+            + end_pmi
+            - monthly_tax_savings(args, end_interest, end_tax)
+        )
+        end_surplus = args["monthly_budget"] * inflation_factor - end_mandatory
+        end_pay = current_rate > args["stock_return"]
+        end_excess = end_surplus if end_pay else 0.0
+        end_excess = max(0.0, min(end_excess, loan_balance))
+        end_pmt = min(end_pmt_min + end_excess, loan_balance + end_interest)
+    else:
+        end_interest = 0.0
+        end_pmt = 0.0
+        end_pmi = 0.0
     end_year_outlay = (
-        (pmt if term_months > projection_months else 0.0)
-        + end_tax
-        + hoa_m * hoa_factor
-        + insurance_m * inflation_factor
-        + maint_m * appreciation_factor
-        + end_pmi
-    ) - monthly_tax_savings(args, end_interest, end_tax)
+        end_pmt + end_tax + end_hoa + end_ins + end_maint + end_pmi - monthly_tax_savings(args, end_interest, end_tax)
+    )
 
     address = args.get("_address", "")
     if address:
@@ -260,7 +388,7 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
     else:
         label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${annual_taxes:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
 
-    return {
+    result = {
         "scenario": label,
         "initial_outlay": base_outlay_y1,
         "end_year_outlay": end_year_outlay,
@@ -269,6 +397,46 @@ def calculate_buyer_net_worth(args: dict, term_years: int = 15, mortgage_rate: f
         "final_home_val": final_home_val,
         "total_net_worth": final_net_worth,
     }
+    if record_schedule:
+        result["_schedule"] = schedule
+        result["_term_years"] = term_years
+        result["_rate"] = mortgage_rate
+        result["_stocks_pre_tax"] = buyer_stocks
+        result["_cost_basis"] = cost_basis
+        result["_stock_gain"] = stock_gain
+        result["_stock_tax"] = stock_tax
+        result["_home_gain"] = home_gain
+        result["_home_tax"] = home_tax
+        result["_home_gross"] = nominal_home_val - selling_costs
+        result["_net_home"] = net_home
+    return result
+
+
+def evaluate_mortgage_options(sc: dict) -> tuple[list[tuple], tuple]:
+    options = sc.get("mortgage_options")
+    if not options:
+        options = [(sc.get("mortgage_term", 15), sc.get("mortgage_rate", 0.061))]
+    results = []
+    for option in options:
+        if isinstance(option, dict):
+            term_years = int(option["term"])
+            rate = float(option["rate"])
+        else:
+            term_years = int(option[0])
+            rate = float(option[1])
+        res = calculate_buyer_net_worth(sc, term_years=term_years, mortgage_rate=rate)
+        results.append((term_years, rate, res))
+    best = max(results, key=lambda item: item[2]["total_net_worth"])
+    return results, best
+
+
+def choose_mortgage_for_scenario(sc: dict) -> tuple:
+    _, best = evaluate_mortgage_options(sc)
+    term_years, rate, res = best
+    sc["_chosen_term"] = term_years
+    sc["_chosen_rate"] = rate
+    sc["_est_nw"] = res["total_net_worth"]
+    return best
 
 
 def get_base_renter_scenarios(args: dict) -> list[dict]:
@@ -287,31 +455,26 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
             yr = (m - 1) // 12
             renter_stocks *= 1 + monthly_stock_return(args, "stock_return", yr)
 
-            rent_curr = (
-                start_rent
-                * growth_factor(args, "rent_growth_rate", yr)
-                * renter_rent_factor(args, yr)
-            )
+            rent_curr = start_rent * growth_factor(args, "rent_growth_rate", yr) * renter_rent_factor(args, yr)
             insurance_curr = renters_insurance_m * growth_factor(args, "inflation_rate", yr)
             moving_cost = renter_move_cost(args, yr) if m % 12 == 1 else 0.0
             renter_outlay = rent_curr + insurance_curr + moving_cost
             monthly_budget = args["monthly_budget"] * growth_factor(args, "inflation_rate", yr)
 
-            total_costs += renter_outlay / monthly_growth_factor(args, "inflation_rate", m)
+            total_costs += renter_outlay / monthly_growth_factor(args, "stock_return", m)
             net_cash_flow = monthly_budget - renter_outlay
             renter_stocks += net_cash_flow
             if net_cash_flow > 0:
                 cost_basis += net_cash_flow
 
+            if m % 12 == 0 and m < projection_months:
+                renter_stocks, cost_basis = harvest_gains(args, renter_stocks, cost_basis)
+
         stock_gain = max(0, renter_stocks - cost_basis)
-        stock_tax = stock_gains_tax(args, stock_gain, projection_years)
+        stock_tax = stock_gains_tax(args, stock_gain)
         renter_stocks_after_tax = renter_stocks - stock_tax
 
-        initial_outlay = (
-            start_rent * renter_rent_factor(args, 0)
-            + renters_insurance_m
-            + renter_move_cost(args, 0)
-        )
+        initial_outlay = start_rent * renter_rent_factor(args, 0) + renters_insurance_m + renter_move_cost(args, 0)
         end_year_outlay = (
             start_rent
             * growth_factor(args, "rent_growth_rate", projection_years)
@@ -330,12 +493,31 @@ def get_base_renter_scenarios(args: dict) -> list[dict]:
                 "total_costs": total_costs,
                 "final_stocks": renter_stocks_after_tax,
                 "final_home_val": 0.0,
-                "total_net_worth": renter_stocks_after_tax
-                / growth_factor(args, "inflation_rate", projection_years),
+                "total_net_worth": renter_stocks_after_tax / growth_factor(args, "inflation_rate", projection_years),
             }
         )
 
     return renter_results
+
+
+def _resolve_mortgage(args: dict) -> None:
+    options = args.get("mortgage_options")
+    if options:
+        normalized = []
+        for opt in options:
+            if isinstance(opt, dict):
+                normalized.append({"term": int(opt["term"]), "rate": float(opt["rate"])})
+            else:
+                normalized.append({"term": int(opt[0]), "rate": float(opt[1])})
+        args["mortgage_options"] = normalized
+    else:
+        args["mortgage_options"] = [
+            {
+                "term": int(args.get("mortgage_term", 15)),
+                "rate": float(args.get("mortgage_rate", 0.061)),
+            }
+        ]
+    args["mortgage_rate"] = args["mortgage_options"][0]["rate"]
 
 
 def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
@@ -344,10 +526,11 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
 
     defaults = {
         "total_capital": 130000,
+        "annual_income": 77000,
+        "debt_to_income": 0.43,
         "monthly_budget": 2100,
         "projection_years": 30,
-        "mortgage_rate": 0.061,
-        "mortgage_term": 15,
+        "mortgage_options": None,
         "down_payment_pct": 0.20,
         "stock_return": 0.07,
         "inflation_rate": 0.03,
@@ -358,8 +541,8 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "maintenance_pct": 0.01,
         "state_tax": 0.0495,
         "hoa_growth_rate": 0.0672,
-        "fed_std_deduction": 30000,
-        "state_std_deduction": 5200,
+        "standard_deduction": 31500,
+        "state_std_deduction": 10400,
         "fed_tax_rate": 0.22,
         "salt_cap": 10000,
         "home_gain_exclusion": 500000,
@@ -374,6 +557,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "moving_cost": 2500,
         "moving_rent_premium": 0.08,
         "moving_cost_volatility": 0.25,
+        "refinance_cost": 5000,
         "stock_volatility": 0.18,
         "appreciation_volatility": 0.10,
         "inflation_volatility": 0.015,
@@ -401,6 +585,11 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
     for key in defaults:
         if key in data:
             defaults[key] = data[key]
+    if "monthly_budget" not in data:
+        defaults["monthly_budget"] = defaults["annual_income"] / 12 * defaults["debt_to_income"]
+    if "taxable_income" not in data:
+        defaults["taxable_income"] = max(0.0, defaults["annual_income"] - defaults["standard_deduction"])
+    _resolve_mortgage(defaults)
 
     scenarios = []
     if "scenario" in data:
@@ -410,6 +599,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
             if "annual_taxes" not in params:
                 merged["annual_taxes"] = merged["price"] * merged["effective_tax_rate"]
             merged["_address"] = address
+            _resolve_mortgage(merged)
             scenarios.append(merged)
 
     return defaults, scenarios
@@ -538,9 +728,7 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
         0.12,
     )
 
-    expected_rate = args["mortgage_rate"] + args["mortgage_inflation_beta"] * (
-        inflation[0] - inflation_mean
-    )
+    expected_rate = args["mortgage_rate"] + args["mortgage_inflation_beta"] * (inflation[0] - inflation_mean)
     mortgage_rate = bounded_normal(
         rng,
         expected_rate + macro_beta * args["mortgage_rate_volatility"] * macro[0],
@@ -549,6 +737,19 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
         0.10,
     )
     rate_surprise = mortgage_rate - expected_rate
+
+    mortgage_rate_path = [mortgage_rate]
+    for i in range(1, years):
+        mean = args["mortgage_rate"] + args["mortgage_inflation_beta"] * (inflation[i] - inflation_mean)
+        mean += macro_beta * args["mortgage_rate_volatility"] * macro[i]
+        value = bounded_normal(
+            rng,
+            0.7 * mortgage_rate_path[-1] + 0.3 * mean,
+            args["mortgage_rate_volatility"],
+            0.03,
+            0.10,
+        )
+        mortgage_rate_path.append(value)
 
     appreciation_mean = [
         args["appreciation_rate"]
@@ -568,10 +769,7 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
     )
     rent_growth = ar_log_returns(
         rng,
-        [
-            args["rent_growth_rate"] + args["rent_growth_inflation_beta"] * (infl - inflation_mean)
-            for infl in inflation
-        ],
+        [args["rent_growth_rate"] + args["rent_growth_inflation_beta"] * (infl - inflation_mean) for infl in inflation],
         args["rent_growth_volatility"],
         args["rent_growth_ar_coeffs"],
         -0.05,
@@ -581,10 +779,7 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
     )
     hoa_growth = ar_log_returns(
         rng,
-        [
-            args["hoa_growth_rate"] + args["hoa_growth_inflation_beta"] * (infl - inflation_mean)
-            for infl in inflation
-        ],
+        [args["hoa_growth_rate"] + args["hoa_growth_inflation_beta"] * (infl - inflation_mean) for infl in inflation],
         args["hoa_growth_volatility"],
         args["hoa_growth_ar_coeffs"],
         -0.05,
@@ -594,10 +789,7 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
     )
     stock = ar_log_returns(
         rng,
-        [
-            args["stock_return"] + args["stock_inflation_beta"] * (infl - inflation_mean)
-            for infl in inflation
-        ],
+        [args["stock_return"] + args["stock_inflation_beta"] * (infl - inflation_mean) for infl in inflation],
         args["stock_volatility"],
         args["stock_ar_coeffs"],
         -0.80,
@@ -612,16 +804,13 @@ def make_market_paths(args: dict, rng: random.Random) -> dict:
         "rent_growth_rate": rent_growth,
         "hoa_growth_rate": hoa_growth,
         "mortgage_rate": mortgage_rate,
+        "mortgage_rate_path": mortgage_rate_path,
     }
 
 
-def make_trial_args(
-    args: dict, market: dict, rng: random.Random, include_renter_risk: bool = False
-) -> dict:
+def make_trial_args(args: dict, market: dict, rng: random.Random, include_renter_risk: bool = False) -> dict:
     trial = args.copy()
-    trial["_mc_paths"] = {
-        key: values for key, values in market.items() if key != "mortgage_rate"
-    }
+    trial["_mc_paths"] = {key: values for key, values in market.items() if key != "mortgage_rate"}
     monthly_factors = {}
     monthly_returns = {}
     for name, rates in trial["_mc_paths"].items():
@@ -636,18 +825,16 @@ def make_trial_args(
         monthly_returns[name] = year_returns
     trial["_mc_monthly_factors"] = monthly_factors
     trial["_mc_monthly_returns"] = monthly_returns
+    trial["_mc_mortgage_anchor"] = args["mortgage_rate"]
     trial["mortgage_rate"] = market["mortgage_rate"]
+    trial["_mc_mortgage_rate_path"] = market["mortgage_rate_path"]
     trial["maintenance_pct"] = args["maintenance_pct"] * lognormal_factor(
         rng, args["maintenance_volatility"], 0.50, 3.00
     )
     if "annual_taxes" in args:
-        trial["annual_taxes"] = args["annual_taxes"] * lognormal_factor(
-            rng, args["tax_volatility"], 0.80, 1.25
-        )
+        trial["annual_taxes"] = args["annual_taxes"] * lognormal_factor(rng, args["tax_volatility"], 0.80, 1.25)
     else:
-        trial["_stay_home_tax_annual"] = 600.0 * lognormal_factor(
-            rng, args["tax_volatility"], 0.80, 1.25
-        )
+        trial["_stay_home_tax_annual"] = 600.0 * lognormal_factor(rng, args["tax_volatility"], 0.80, 1.25)
     if include_renter_risk:
         rent_factor = 1.0
         trial["_mc_move_costs"] = []
@@ -655,9 +842,7 @@ def make_trial_args(
         for _ in range(args["projection_years"] + 1):
             if rng.random() < args["forced_move_probability"]:
                 rent_factor *= 1 + args["moving_rent_premium"]
-                move_cost = args["moving_cost"] * lognormal_factor(
-                    rng, args["moving_cost_volatility"], 0.70, 1.50
-                )
+                move_cost = args["moving_cost"] * lognormal_factor(rng, args["moving_cost_volatility"], 0.70, 1.50)
             else:
                 move_cost = 0.0
             trial["_mc_move_costs"].append(move_cost)
@@ -665,18 +850,14 @@ def make_trial_args(
     return trial
 
 
-def filter_expensive_scenarios(
-    defaults: dict, scenarios_config: list[dict]
-) -> tuple[list[dict], list[dict], float]:
+def filter_expensive_scenarios(defaults: dict, scenarios_config: list[dict]) -> tuple[list[dict], list[dict], float]:
     renter_bar = get_base_renter_scenarios(defaults)[-1]["total_net_worth"]
     kept = []
     skipped = []
     for sc in scenarios_config:
-        estimate = calculate_buyer_net_worth(sc, term_years=sc["mortgage_term"])["total_net_worth"]
+        estimate = sc["_est_nw"]
         if estimate < renter_bar:
-            skipped.append(
-                {"address": sc.get("_address", ""), "price": sc["price"], "est_nw": estimate}
-            )
+            skipped.append({"address": sc.get("_address", ""), "price": sc["price"], "est_nw": estimate})
         else:
             kept.append(sc)
     return kept, skipped, renter_bar
@@ -723,9 +904,7 @@ def _bootstrap_se_from_nw(nw_sorted: list[float]) -> float:
     return bootstrap_median_se(nw_sorted)
 
 
-def _run_one_simulation(
-    sim: int, defaults: dict, scenarios_config: list[dict], seed: int
-) -> list[dict]:
+def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], seed: int) -> list[dict]:
     market = make_market_paths(defaults, random.Random(derive_seed(seed, sim, 0)))
     trial_defaults = make_trial_args(
         defaults, market, random.Random(derive_seed(seed, sim, 1)), include_renter_risk=True
@@ -735,11 +914,13 @@ def _run_one_simulation(
         *get_base_renter_scenarios(trial_defaults),
     ]
     for index, sc_config in enumerate(scenarios_config):
-        trial_scenario = make_trial_args(
-            sc_config, market, random.Random(derive_seed(seed, sim, 2, index))
-        )
+        trial_scenario = make_trial_args(sc_config, market, random.Random(derive_seed(seed, sim, 2, index)))
         trial_results.append(
-            calculate_buyer_net_worth(trial_scenario, term_years=trial_scenario["mortgage_term"])
+            calculate_buyer_net_worth(
+                trial_scenario,
+                term_years=trial_scenario["_chosen_term"],
+                mortgage_rate=trial_scenario["_chosen_rate"],
+            )
         )
     return trial_results
 
@@ -755,9 +936,7 @@ def run_monte_carlo(
     skipped = []
     renter_bar = None
     if skip_expensive:
-        scenarios_config, skipped, renter_bar = filter_expensive_scenarios(
-            defaults, scenarios_config
-        )
+        scenarios_config, skipped, renter_bar = filter_expensive_scenarios(defaults, scenarios_config)
 
     n_workers = min(workers if workers and workers > 0 else (os.cpu_count() or 1), simulations)
     task = partial(_run_one_simulation, defaults=defaults, scenarios_config=scenarios_config, seed=seed)
@@ -830,11 +1009,7 @@ def print_risk_summary_table(results: list[list[dict]]) -> None:
         n = len(nw)
         nw_median = nw[n // 2]
         beat_home = (
-            sum(
-                1
-                for r, home in zip(scenario_results, results[0])
-                if r["total_net_worth"] > home["total_net_worth"]
-            )
+            sum(1 for r, home in zip(scenario_results, results[0]) if r["total_net_worth"] > home["total_net_worth"])
             / n
             * 100
         )
@@ -913,10 +1088,6 @@ def main():
 
     parser.add_argument("config", help="Path to TOML configuration file with scenarios")
     parser.add_argument(
-        "--total-capital", type=parse_float_with_commas, help="Override total liquid cash available upfront"
-    )
-    parser.add_argument("--monthly-budget", type=parse_float_with_commas, help="Override baseline monthly cash outlays")
-    parser.add_argument(
         "--simulations",
         type=int,
         help="Number of Monte Carlo trials (default: 5000)",
@@ -942,23 +1113,20 @@ def main():
 
     defaults, scenarios_config = load_toml_config(args.config)
 
-    if args.total_capital is not None:
-        defaults["total_capital"] = args.total_capital
-    if args.monthly_budget is not None:
-        defaults["monthly_budget"] = args.monthly_budget
+    for sc in scenarios_config:
+        choose_mortgage_for_scenario(sc)
 
     simulations = args.simulations if args.simulations is not None else defaults["monte_carlo_simulations"]
     seed = args.seed if args.seed is not None else defaults["monte_carlo_seed"]
     if simulations < 1:
         parser.error("--simulations must be at least 1")
 
-    for sc in scenarios_config:
-        for key in ("total_capital", "monthly_budget"):
-            if key not in sc:
-                sc[key] = defaults[key]
-
     all_scenarios, raw_results, skip_info = run_monte_carlo(
-        defaults, scenarios_config, simulations, seed, skip_expensive=not args.no_skip,
+        defaults,
+        scenarios_config,
+        simulations,
+        seed,
+        skip_expensive=not args.no_skip,
         workers=args.workers,
     )
     print_decision_table(all_scenarios, defaults["projection_years"])

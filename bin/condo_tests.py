@@ -30,8 +30,8 @@ def make_args(**overrides):
         "selling_cost_pct": 0.05,
         "maintenance_pct": 0.003,
         "state_tax": 0.0495,
-        "fed_std_deduction": 30000,
-        "state_std_deduction": 5200,
+        "standard_deduction": 31500,
+        "state_std_deduction": 10400,
         "fed_tax_rate": 0.22,
         "salt_cap": 10000,
         "home_gain_exclusion": 500000,
@@ -96,22 +96,35 @@ def test_monthly_tax_savings_no_deduction():
     assert condo.monthly_tax_savings(args, 0, 0) == 0.0
 
 
+def test_monthly_tax_savings_below_standard_deduction_fed_side_zero():
+    args = make_args(standard_deduction=31500)
+    interest_m, prop_tax_m = 1000.0, 400.0
+    fed_ded = interest_m + min(prop_tax_m, args["salt_cap"] / 12)
+    assert fed_ded - args["standard_deduction"] / 12 <= 0
+    state_savings = args["state_tax"] * max(
+        0.0, interest_m + prop_tax_m - args["state_std_deduction"] / 12
+    )
+    assert condo.monthly_tax_savings(args, interest_m, prop_tax_m) == pytest.approx(state_savings)
+
+
 def test_monthly_tax_savings_salt_cap():
-    args = make_args()
+    args = make_args(standard_deduction=0)
     interest_m, prop_tax_m = 1000.0, 5000.0
     fed_ded = interest_m + args["salt_cap"] / 12
     state_ded = interest_m + prop_tax_m - args["state_std_deduction"] / 12
     expected = (
-        args["fed_tax_rate"] * max(0.0, fed_ded - args["fed_std_deduction"] / 12)
+        args["fed_tax_rate"] * max(0.0, fed_ded - args["standard_deduction"] / 12)
         + args["state_tax"] * max(0.0, state_ded)
     )
     assert condo.monthly_tax_savings(args, interest_m, prop_tax_m) == pytest.approx(expected)
 
 
 def test_monthly_tax_savings_over_standard_deduction():
-    args = make_args()
+    args = make_args(standard_deduction=15750)
     got = condo.monthly_tax_savings(args, 4000, 5000)
-    expected = 0.22 * (4000 + 10000 / 12 - 30000 / 12) + 0.0495 * (4000 + 5000 - 5200 / 12)
+    expected = 0.22 * (4000 + 10000 / 12 - 15750 / 12) + 0.0495 * (
+        4000 + 5000 - args["state_std_deduction"] / 12
+    )
     assert got == pytest.approx(expected)
 
 
@@ -137,17 +150,56 @@ def test_monthly_pmi_zero_balance_or_zero_value():
     assert condo.monthly_pmi(args, 200000, 190000, 0) == 0.0
 
 
-def test_stock_gains_tax_uses_annual_zero_room():
+def test_stock_gains_tax_uses_single_year_zero_room():
     args = make_args(cap_gains_0pct=100, taxable_income=60)
     gain = 1000.0
-    taxable = max(0.0, gain - (100 - 60) * 1)
+    room = 100 - 60
+    taxable = max(0.0, gain - room)
     expected = taxable * args["cap_gains_tax"] + gain * args["state_tax"]
-    assert condo.stock_gains_tax(args, gain, 1) == pytest.approx(expected)
+    assert condo.stock_gains_tax(args, gain) == pytest.approx(expected)
 
 
 def test_stock_gains_tax_within_zero_bracket():
     args = make_args(cap_gains_0pct=100, taxable_income=60)
-    assert condo.stock_gains_tax(args, 40, 1) == pytest.approx(40 * args["state_tax"])
+    assert condo.stock_gains_tax(args, 40) == pytest.approx(40 * args["state_tax"])
+
+
+def test_harvest_gains_realizes_up_to_room():
+    args = make_args(cap_gains_0pct=100, taxable_income=60)
+    stocks, basis = 150.0, 100.0
+    stocks, basis = condo.harvest_gains(args, stocks, basis)
+    assert basis == pytest.approx(140.0)
+    assert stocks == pytest.approx(150 - 40 * args["state_tax"])
+
+
+def test_harvest_gains_within_room_realizes_all():
+    args = make_args(cap_gains_0pct=100, taxable_income=60)
+    stocks, basis = 130.0, 100.0
+    stocks, basis = condo.harvest_gains(args, stocks, basis)
+    assert basis == pytest.approx(130.0)
+    assert stocks == pytest.approx(130 - 30 * args["state_tax"])
+
+
+def test_harvest_gains_no_gain_noop():
+    args = make_args(cap_gains_0pct=100, taxable_income=60)
+    assert condo.harvest_gains(args, 100.0, 100.0) == (100.0, 100.0)
+
+
+def test_stay_home_harvests_eliminate_federal_tax_with_large_room():
+    args = make_args(
+        projection_years=2,
+        total_capital=10000,
+        monthly_budget=0,
+        stock_return=0.10,
+        inflation_rate=0.0,
+        cap_gains_tax=0.5,
+        state_tax=0.0,
+        annual_taxes=0,
+        cap_gains_0pct=1000000,
+        taxable_income=0,
+    )
+    res = condo.get_stay_home_scenario(args)
+    assert res["final_stocks"] == pytest.approx(10000 * 1.1**2)
 
 
 def test_annual_insurance_condo_vs_house():
@@ -204,7 +256,6 @@ def test_buyer_minimal_case():
             selling_cost_pct=0.0,
             maintenance_pct=0.0,
             state_tax=0.0,
-            fed_std_deduction=0,
             state_std_deduction=0,
             fed_tax_rate=0.0,
             home_gain_exclusion=0,
@@ -260,10 +311,10 @@ def test_renter_minimal_case():
             taxable_income=0,
         )
     )[0]
-    assert res["total_costs"] == pytest.approx(12 * 1300)
-    assert res["initial_outlay"] == pytest.approx(1300.0)
-    assert res["end_year_outlay"] == pytest.approx(1300.0)
-    assert res["total_net_worth"] == pytest.approx(-12 * 1300)
+    assert res["total_costs"] == pytest.approx(12 * condo.RENTER_START_RENTS[0])
+    assert res["initial_outlay"] == pytest.approx(condo.RENTER_START_RENTS[0])
+    assert res["end_year_outlay"] == pytest.approx(condo.RENTER_START_RENTS[0])
+    assert res["total_net_worth"] == pytest.approx(-12 * condo.RENTER_START_RENTS[0])
 
 
 def test_growth_factor_matches_annual_compounding():
@@ -358,6 +409,7 @@ def test_make_market_paths_shape_and_bounds():
         "rent_growth_rate",
         "hoa_growth_rate",
         "mortgage_rate",
+        "mortgage_rate_path",
     }
     for name in (
         "stock_return",
@@ -490,18 +542,49 @@ def test_parse_float_with_commas():
     assert condo.parse_float_with_commas("130000") == 130000.0
 
 
-def test_load_toml_config():
-    defaults, scenarios = condo.load_toml_config("condos.toml")
-    assert defaults["total_capital"] == 130000
-    assert defaults["projection_years"] == 10
-    assert defaults["monthly_budget"] == 2162
-    assert defaults["mortgage_rate"] == 0.059
-    assert len(scenarios) == 14
+def test_load_toml_config(tmp_path):
+    cfg = tmp_path / "test.toml"
+    cfg.write_text(
+        """
+        total_capital = 200000
+        annual_income = 100000
+        standard_deduction = 31500
+        mortgage_options = [
+          { term = 15, rate = 0.05 },
+          { term = 30, rate = 0.06 },
+        ]
+        [scenario."Test Home"]
+        price = 400000
+        effective_tax_rate = 0.02
+        monthly_budget = 3000
+        """
+    )
+    defaults, scenarios = condo.load_toml_config(str(cfg))
+    assert defaults["total_capital"] == 200000
+    assert defaults["monthly_budget"] == pytest.approx(100000 / 12 * 0.43)
+    assert defaults["taxable_income"] == pytest.approx(100000 - 31500)
+    assert defaults["mortgage_options"][0]["rate"] == 0.05
+    assert defaults["mortgage_rate"] == pytest.approx(0.05)
+    assert len(scenarios) == 1
     first = scenarios[0]
-    assert first["_address"] == "2322 S Canal St Unit 309"
-    assert first["price"] == 275000
-    assert first["annual_taxes"] == pytest.approx(275000 * 0.019)
-    assert first["total_capital"] == 130000
+    assert first["_address"] == "Test Home"
+    assert first["price"] == 400000
+    assert first["annual_taxes"] == pytest.approx(400000 * 0.02)
+    assert first["monthly_budget"] == 3000
+    assert first["total_capital"] == 200000
+
+
+def test_load_toml_config_monthly_budget_override_wins():
+    import tempfile
+
+    with tempfile.NamedTemporaryFile("w", suffix=".toml", delete=False) as f:
+        f.write("monthly_budget = 2000\n[scenario]\n")
+    try:
+        defaults, scenarios = condo.load_toml_config(f.name)
+        assert defaults["monthly_budget"] == 2000
+        assert defaults["annual_income"] == 77000
+    finally:
+        os.unlink(f.name)
 
 
 def test_bounded_normal_deterministic_and_clamped():
@@ -536,7 +619,6 @@ def test_zero_mortgage_rate_principal_only():
             selling_cost_pct=0.0,
             maintenance_pct=0.0,
             state_tax=0.0,
-            fed_std_deduction=0,
             state_std_deduction=0,
             fed_tax_rate=0.0,
             home_gain_exclusion=0,
@@ -589,6 +671,8 @@ def test_run_monte_carlo_reproducible():
     scenarios = [
         {**make_args(projection_years=3, price=275000, _address="Unit A")},
     ]
+    for sc in scenarios:
+        condo.choose_mortgage_for_scenario(sc)
     a1, raw1, skip1 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
     a2, raw2, skip2 = condo.run_monte_carlo(defaults, scenarios, 20, seed=42)
     assert [r["total_net_worth"] for r in a1] == [r["total_net_worth"] for r in a2]
@@ -601,6 +685,8 @@ def test_filter_expensive_scenarios_skips_dominated():
     defaults = zero_volatility_args(projection_years=3, forced_move_probability=0.0)
     cheap = {**make_args(projection_years=3, price=150000, _address="Cheap")}
     expensive = {**make_args(projection_years=3, price=900000, _address="Mansion")}
+    for sc in (cheap, expensive):
+        condo.choose_mortgage_for_scenario(sc)
     kept, skipped, bar = condo.filter_expensive_scenarios(defaults, [cheap, expensive])
     assert kept == [cheap]
     assert [s["address"] for s in skipped] == ["Mansion"]
@@ -611,10 +697,34 @@ def test_filter_expensive_scenarios_skips_dominated():
 def test_run_monte_carlo_skips_expensive_scenarios():
     defaults = zero_volatility_args(projection_years=3, forced_move_probability=0.0)
     expensive = {**make_args(projection_years=3, price=900000, _address="Mansion")}
+    condo.choose_mortgage_for_scenario(expensive)
     all_scenarios, raw, skip = condo.run_monte_carlo(defaults, [expensive], 10, seed=42)
     assert len(all_scenarios) == 1 + len(condo.RENTER_START_RENTS)
     assert len(raw) == 1 + len(condo.RENTER_START_RENTS)
     assert skip["skipped"][0]["address"] == "Mansion"
+
+
+def test_record_schedule_extra_fields():
+    res = condo.calculate_buyer_net_worth(
+        make_args(projection_years=2), term_years=15, record_schedule=True
+    )
+    entry = res["_schedule"][0]
+    for key in ("outlay", "stocks", "home_value", "pmi"):
+        assert key in entry
+    assert res["_stock_gain"] >= 0.0
+    assert res["_stock_tax"] >= 0.0
+    assert res["_home_gain"] >= 0.0
+    assert res["_net_home"] >= 0.0
+
+
+def test_horizon_years_extends_schedule():
+    args = make_args(projection_years=2)
+    long = condo.calculate_buyer_net_worth(
+        args, term_years=15, record_schedule=True, horizon_years=10
+    )
+    assert len(long["_schedule"]) == 120
+    short = condo.calculate_buyer_net_worth(args, term_years=15, record_schedule=True)
+    assert len(short["_schedule"]) == 24
 
 
 def test_risk_summary_percentiles():
