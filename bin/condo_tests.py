@@ -874,11 +874,103 @@ def test_expand_mortgage_variants_labels_each_option():
     assert variants[0]["_chosen_rate"] == 0.05
     assert variants[1]["_chosen_term"] == 30
     assert variants[1]["_chosen_rate"] == 0.06
-    assert "Unit A" in variants[0]["_address"]
-    assert "15-yr" in variants[0]["_address"]
-    assert "30-yr" in variants[1]["_address"]
+    assert variants[0]["_address"] == "Unit A"
+    assert variants[0]["_variant"] == "15-yr"
+    assert variants[1]["_variant"] == "30-yr"
     assert variants[0]["_est_nw"] > 0.0
     assert variants[0]["_y1_dti"] > 0.0
+
+
+def test_expand_mortgage_variants_adds_invest_when_rate_above_stock_return():
+    sc = make_args(
+        _address="Unit A",
+        stock_return=0.05,
+        mortgage_options=[{"term": 15, "rate": 0.06}, {"term": 30, "rate": 0.04}],
+    )
+    variants = condo.expand_mortgage_variants(sc)
+    assert len(variants) == 3
+    assert [(v["_variant"], v["_address"]) for v in variants] == [
+        ("15-yr", "Unit A"),
+        ("15-yr +invest", "Unit A"),
+        ("30-yr", "Unit A"),
+    ]
+    assert [v["_invest_surplus"] for v in variants] == [False, True, False]
+
+
+def test_invest_surplus_pays_off_at_term_without_extra():
+    args = make_args(mortgage_rate=0.08, stock_return=0.07, projection_years=30)
+    invest = condo.calculate_buyer_net_worth(args, term_years=30, invest_surplus=True)
+    assert invest["extra_payment"] == 0.0
+    assert invest["mortgage_term"] == 30
+    assert invest["mortgage_duration"] == pytest.approx(30.0, abs=0.5)
+
+
+def test_pay_extra_pays_off_faster_than_invest():
+    args = make_args(mortgage_rate=0.08, stock_return=0.07, monthly_budget=4000, projection_years=30)
+    pay_extra = condo.calculate_buyer_net_worth(args, term_years=30)
+    invest = condo.calculate_buyer_net_worth(args, term_years=30, invest_surplus=True)
+    assert pay_extra["extra_payment"] > 0.0
+    assert pay_extra["mortgage_duration"] < invest["mortgage_duration"]
+
+
+def test_mortgage_duration_label_format():
+    assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 12.42}) == " (30-yr @2.42x)"
+    assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 30.0}) == " (30-yr)"
+    assert condo.mortgage_duration_label({"mortgage_term": 30, "mortgage_duration": 29.9999}) == " (30-yr)"
+    assert condo.mortgage_duration_label(
+        {"mortgage_term": 30, "mortgage_duration": 30.0, "invest_surplus": True}
+    ) == " (30-yr +invest)"
+    assert condo.mortgage_duration_label(
+        {"mortgage_term": 20, "mortgage_duration": 20.0, "invest_surplus": False}
+    ) == " (20-yr)"
+    assert condo.mortgage_duration_label({"mortgage_duration": 5.0}) == ""
+    assert condo.mortgage_duration_label({}) == ""
+
+
+def test_print_decision_table_moves_duration_into_scenario_label():
+    import io
+    from contextlib import redirect_stdout
+
+    scenarios = [
+        {
+            "scenario": "Stay Home",
+            "initial_outlay": 50.0,
+            "extra_payment": 0.0,
+            "mortgage_duration": 0.0,
+            "end_year_outlay": 168.0,
+            "total_costs": 16595.0,
+            "total_net_worth": 2455021.0,
+        },
+        {
+            "scenario": "1631 S Michigan Unit 502",
+            "initial_outlay": 2349.0,
+            "extra_payment": 0.0,
+            "mortgage_duration": 30.0,
+            "mortgage_term": 30,
+            "invest_surplus": True,
+            "end_year_outlay": 7204.0,
+            "total_costs": 863840.0,
+            "total_net_worth": 1038755.0,
+        },
+        {
+            "scenario": "212 E Cullerton St APT 607",
+            "initial_outlay": 2395.0,
+            "extra_payment": 364.0,
+            "mortgage_duration": 14.93,
+            "mortgage_term": 30,
+            "invest_surplus": False,
+            "end_year_outlay": 7010.0,
+            "total_costs": 868342.0,
+            "total_net_worth": 1033359.0,
+        },
+    ]
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_decision_table(scenarios, 30)
+    out = buf.getvalue()
+    assert "1631 S Michigan Unit 502 (30-yr +invest)" in out
+    assert "212 E Cullerton St APT 607 (30-yr @2.01x)" in out
+    assert "Stay Home" in out
 
 
 def test_select_affordable_variants_drops_unaffordable_options():
@@ -894,7 +986,7 @@ def test_select_affordable_variants_drops_unaffordable_options():
     assert len(kept) == 1
     assert kept[0]["_chosen_term"] == 30
     assert len(dropped) == 1
-    assert dropped[0]["variant"] == "15-yr @ 5.000%"
+    assert dropped[0]["variant"] == "15-yr"
     assert dropped[0]["dti"] > 0.43
     assert not dropped[0].get("all_unaffordable")
 
@@ -913,23 +1005,6 @@ def test_select_affordable_variants_marks_fully_unaffordable():
     assert dropped[-1]["all_unaffordable"] is True
     assert dropped[-1]["address"] == "Unit A"
     assert dropped[-1]["dti"] > 0.43
-
-
-def test_print_unaffordable_note():
-    import io
-    from contextlib import redirect_stdout
-
-    buf = io.StringIO()
-    with redirect_stdout(buf):
-        condo.print_unaffordable_note(
-            [
-                {"address": "Unit A · 15-yr @ 5.000%", "price": 100000, "variant": "15-yr @ 5.000%", "dti": 0.45},
-                {"address": "Unit B", "price": 300000, "variant": None, "dti": 0.5, "all_unaffordable": True},
-            ]
-        )
-    out = buf.getvalue()
-    assert "Filtered 2 mortgage option(s)" in out
-    assert "no affordable financing option" in out
 
 
 def test_convergence_note_only_warns_for_large_relative_error():

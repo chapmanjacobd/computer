@@ -170,6 +170,7 @@ def _mortgage_payoff_month(
     end_ins: float,
     end_maint: float,
     end_budget: float,
+    invest_surplus: bool = False,
 ) -> int | None:
     if balance <= 0:
         return elapsed_months
@@ -190,7 +191,11 @@ def _mortgage_payoff_month(
 
         interest = balance * current_r
         mandatory = current_pmt_min + tax + hoa + insurance + maintenance - monthly_tax_savings(args, interest, tax)
-        extra = max(0.0, budget - mandatory) if current_rate > args["stock_return"] else 0.0
+        extra = (
+            max(0.0, budget - mandatory)
+            if not invest_surplus and current_rate > args["stock_return"]
+            else 0.0
+        )
         payment = min(current_pmt_min + extra, balance + interest)
         balance = max(0.0, balance - (payment - interest))
         if balance < 1e-6:
@@ -276,6 +281,7 @@ def calculate_buyer_net_worth(
     mortgage_rate: float | None = None,
     record_schedule: bool = False,
     horizon_years: int | None = None,
+    invest_surplus: bool = False,
 ) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
@@ -350,7 +356,7 @@ def calculate_buyer_net_worth(
         surplus = monthly_budget - mandatory
 
         if (m - 1) % 6 == 0:
-            pay_extra = current_rate > args["stock_return"]
+            pay_extra = not invest_surplus and current_rate > args["stock_return"]
 
         if loan_balance > 0 and m > 1 and m % 12 == 1:
             offer = mortgage_rate_offer(args, mortgage_rate, yr)
@@ -465,7 +471,7 @@ def calculate_buyer_net_worth(
             - monthly_tax_savings(args, end_interest, end_tax)
         )
         end_surplus = args["monthly_budget"] * inflation_factor - end_mandatory
-        end_pay = current_rate > args["stock_return"]
+        end_pay = not invest_surplus and current_rate > args["stock_return"]
         end_excess = end_surplus if end_pay else 0.0
         end_excess = max(0.0, min(end_excess, loan_balance))
         end_pmt = min(end_pmt_min + end_excess, loan_balance + end_interest)
@@ -492,19 +498,22 @@ def calculate_buyer_net_worth(
             end_ins,
             end_maint,
             args["monthly_budget"] * inflation_factor,
+            invest_surplus=invest_surplus,
         )
 
     address = args.get("_address", "")
     if address:
         label = address
     else:
-        label = f"Condo {term_years}-yr (${args['price']:,.0f} | Tax: ${annual_taxes:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
+        label = f"Condo (${args['price']:,.0f} | Tax: ${annual_taxes:,.0f} | HOA: ${args['monthly_assessment']:.0f})"
 
     result = {
         "scenario": label,
         "initial_outlay": min_outlay_y1,
         "extra_payment": extra_payment_y1,
         "mortgage_duration": payoff_month / 12 if payoff_month is not None else float("inf"),
+        "mortgage_term": term_years,
+        "invest_surplus": invest_surplus,
         "end_year_outlay": end_year_outlay,
         "total_costs": total_costs,
         "debt_to_income": debt_to_income_ratio(args, min_outlay_y1),
@@ -559,15 +568,23 @@ def expand_mortgage_variants(sc: dict) -> list[dict]:
     address = sc.get("_address", "")
     variants = []
     for term_years, rate, res in evaluate_mortgage_options(sc)[0]:
-        variant = sc.copy()
-        variant["_chosen_term"] = term_years
-        variant["_chosen_rate"] = rate
-        variant["_variant"] = f"{term_years}-yr @ {rate:.3%}"
-        if address:
-            variant["_address"] = f"{address} · {variant['_variant']}"
-        variant["_est_nw"] = res["total_net_worth"]
-        variant["_y1_dti"] = res["debt_to_income"]
-        variants.append(variant)
+        options = [(False, res)]
+        if rate > sc.get("stock_return", 0.0):
+            invest_res = calculate_buyer_net_worth(
+                sc, term_years=term_years, mortgage_rate=rate, invest_surplus=True
+            )
+            options.append((True, invest_res))
+        for invest, variant_res in options:
+            variant = sc.copy()
+            variant["_chosen_term"] = term_years
+            variant["_chosen_rate"] = rate
+            variant["_invest_surplus"] = invest
+            variant["_variant"] = f"{term_years}-yr +invest" if invest else f"{term_years}-yr"
+            if address:
+                variant["_address"] = address
+            variant["_est_nw"] = variant_res["total_net_worth"]
+            variant["_y1_dti"] = variant_res["debt_to_income"]
+            variants.append(variant)
     return variants
 
 
@@ -1101,7 +1118,12 @@ def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], 
             trial_results.append(None)
             continue
         trial_results.append(
-            calculate_buyer_net_worth(trial_scenario, term_years=term_years, mortgage_rate=mortgage_rate)
+            calculate_buyer_net_worth(
+                trial_scenario,
+                term_years=term_years,
+                mortgage_rate=mortgage_rate,
+                invest_surplus=trial_scenario.get("_invest_surplus", False),
+            )
         )
     return trial_results
 
@@ -1159,6 +1181,19 @@ def run_monte_carlo(
     )
 
 
+def mortgage_duration_label(s: dict) -> str:
+    term = s.get("mortgage_term", 0)
+    if term <= 0:
+        return ""
+    duration = s.get("mortgage_duration", 0.0)
+    label = f"{term}-yr"
+    if math.isfinite(duration) and duration > 0 and round(term / duration, 2) != 1.0:
+        label += f" @{term / duration:.2f}x"
+    if s.get("invest_surplus"):
+        label += " +invest"
+    return f" ({label})"
+
+
 def print_decision_table(scenarios: list[dict], projection_years: int):
     stay_home = [s for s in scenarios if s["scenario"] == "Stay Home"]
     others = [s for s in scenarios if s["scenario"] != "Stay Home"]
@@ -1170,7 +1205,6 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         "Scenario",
         "Min Outlay",
         "Extra Payment",
-        "Mortgage Duration",
         f"Yr {projection_years + 1} Outlay",
         "NPV Total Costs",
         "NPV Net Worth",
@@ -1179,14 +1213,9 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
 
     for s in all_sorted:
         row = [
-            s["scenario"],
+            s["scenario"] + mortgage_duration_label(s),
             f"${s['initial_outlay']:,.0f}",
             f"${s['extra_payment']:,.0f}" if s["mortgage_duration"] else "-",
-            (
-                f"{s['mortgage_duration']:.1f} yr"
-                if s["mortgage_duration"] > 0 and math.isfinite(s["mortgage_duration"])
-                else "N/A" if not math.isfinite(s["mortgage_duration"]) else "-"
-            ),
             f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
@@ -1201,7 +1230,7 @@ def print_risk_summary_table(results: list[list[dict | None]]) -> None:
         valid = [(i, r) for i, r in enumerate(scenario_results) if r is not None]
         if not valid:
             return None
-        name = valid[0][1]["scenario"]
+        name = valid[0][1]["scenario"] + mortgage_duration_label(valid[0][1])
         nw = sorted(r["total_net_worth"] for _, r in valid)
         n = len(nw)
         nw_median = nw[n // 2]
@@ -1305,30 +1334,6 @@ def print_dti_skip_note(skip_info: dict) -> None:
     print()
 
 
-def print_unaffordable_note(unaffordable: list[dict]) -> None:
-    if not unaffordable:
-        return
-    fully_dropped = [item for item in unaffordable if item.get("all_unaffordable")]
-    print(
-        f"Filtered {len(unaffordable)} mortgage option(s) before simulation because the "
-        "deterministic year-one Debt-to-Income ratio exceeded the cap:"
-    )
-    for item in unaffordable:
-        if item.get("all_unaffordable"):
-            print(
-                f"  - {item['address']} (${item['price']:,.0f}): no affordable financing option "
-                f"(best DTI {item['dti']:.1%})"
-            )
-        else:
-            print(f"  - {item['address']} (${item['price']:,.0f}): {item['variant']} DTI {item['dti']:.1%}")
-    if fully_dropped:
-        print(
-            f"  {len(fully_dropped)} scenario(s) have no affordable financing option and were "
-            "removed from the comparison."
-        )
-    print()
-
-
 def parse_float_with_commas(s: str) -> float:
     return float(str(s).replace(',', ''))
 
@@ -1363,7 +1368,7 @@ def main():
 
     defaults, scenarios_config = load_toml_config(args.config)
 
-    scenarios_config, unaffordable = select_affordable_variants(scenarios_config)
+    scenarios_config, _ = select_affordable_variants(scenarios_config)
 
     simulations = args.simulations if args.simulations is not None else defaults["monte_carlo_simulations"]
     seed = args.seed if args.seed is not None else defaults["monte_carlo_seed"]
@@ -1382,7 +1387,6 @@ def main():
     print_risk_summary_table(raw_results)
     print_convergence_note(raw_results, skip_info.get("bootstrap_se"))
     print_skipped_note(skip_info)
-    print_unaffordable_note(unaffordable)
     print_dti_skip_note(skip_info)
 
 
