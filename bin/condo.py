@@ -10,7 +10,7 @@ from statistics import stdev
 
 from tabulate import tabulate
 
-RENTER_START_RENTS = (1100, 1300, 1500, 1700, 1900)
+RENTER_START_RENTS = (1100, 1300, 1500, 1700, 1900, 2100)
 
 try:
     import tomllib
