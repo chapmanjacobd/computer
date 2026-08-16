@@ -184,14 +184,7 @@ def _mortgage_payoff_month(
         budget = end_budget * (1 + inflation_rate) ** years_after_projection
 
         interest = balance * current_r
-        mandatory = (
-            current_pmt_min
-            + tax
-            + hoa
-            + insurance
-            + maintenance
-            - monthly_tax_savings(args, interest, tax)
-        )
+        mandatory = current_pmt_min + tax + hoa + insurance + maintenance - monthly_tax_savings(args, interest, tax)
         extra = max(0.0, budget - mandatory) if current_rate > args["stock_return"] else 0.0
         payment = min(current_pmt_min + extra, balance + interest)
         balance = max(0.0, balance - (payment - interest))
@@ -257,6 +250,19 @@ def get_stay_home_scenario(args: dict) -> dict:
         "final_home_val": 0.0,
         "total_net_worth": stocks_after_tax / inflation_factor,
     }
+
+
+def buyer_initial_outlay(args: dict, term_years: int, mortgage_rate: float) -> float:
+    r = mortgage_rate / 12
+    loan_amt = args["price"] * (1 - args["down_payment_pct"])
+    pmt_min = amortized_payment(loan_amt, r, term_years * 12)
+    annual_taxes = args.get("annual_taxes", args["price"] * args["effective_tax_rate"])
+    tax_m = annual_taxes / 12
+    hoa_m = args["monthly_assessment"]
+    insurance_m = annual_insurance(args) / 12
+    maint_m = (args["price"] * args["maintenance_pct"]) / 12
+    pmi_curr = monthly_pmi(args, loan_amt, loan_amt, args["price"])
+    return pmt_min + tax_m + hoa_m + insurance_m + maint_m + pmi_curr - monthly_tax_savings(args, loan_amt * r, tax_m)
 
 
 def calculate_buyer_net_worth(
@@ -691,6 +697,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "stock_ar_coeffs": [],
         "monte_carlo_simulations": 1000,
         "monte_carlo_seed": 42,
+        "max_debt_to_income": 0.43,
     }
 
     for key in defaults:
@@ -975,12 +982,15 @@ def filter_expensive_scenarios(defaults: dict, scenarios_config: list[dict]) -> 
     return kept, skipped, renter_bar
 
 
-def aggregate_scenario(results: list[dict]) -> dict:
-    n = len(results)
-    row = dict(results[0])
-    for key in results[0]:
+def aggregate_scenario(results: list[dict | None]) -> dict | None:
+    valid = [r for r in results if r is not None]
+    if not valid:
+        return None
+    n = len(valid)
+    row = dict(valid[0])
+    for key in valid[0]:
         if key != "scenario":
-            row[key] = sorted(r[key] for r in results)[n // 2]
+            row[key] = sorted(r[key] for r in valid)[n // 2]
     return row
 
 
@@ -1016,23 +1026,28 @@ def _bootstrap_se_from_nw(nw_sorted: list[float]) -> float:
     return bootstrap_median_se(nw_sorted)
 
 
-def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], seed: int) -> list[dict]:
+def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], seed: int) -> list[dict | None]:
     market = make_market_paths(defaults, random.Random(derive_seed(seed, sim, 0)))
     trial_defaults = make_trial_args(
         defaults, market, random.Random(derive_seed(seed, sim, 1)), include_renter_risk=True
     )
-    trial_results = [
+    trial_results: list[dict | None] = [
         get_stay_home_scenario(trial_defaults),
         *get_base_renter_scenarios(trial_defaults),
     ]
     for index, sc_config in enumerate(scenarios_config):
         trial_scenario = make_trial_args(sc_config, market, random.Random(derive_seed(seed, sim, 2, index)))
+        term_years = trial_scenario["_chosen_term"]
+        mortgage_rate = trial_scenario["_chosen_rate"]
+        max_dti = trial_scenario.get("max_debt_to_income", 0.43)
+        if (
+            debt_to_income_ratio(trial_scenario, buyer_initial_outlay(trial_scenario, term_years, mortgage_rate))
+            > max_dti
+        ):
+            trial_results.append(None)
+            continue
         trial_results.append(
-            calculate_buyer_net_worth(
-                trial_scenario,
-                term_years=trial_scenario["_chosen_term"],
-                mortgage_rate=trial_scenario["_chosen_rate"],
-            )
+            calculate_buyer_net_worth(trial_scenario, term_years=term_years, mortgage_rate=mortgage_rate)
         )
     return trial_results
 
@@ -1054,23 +1069,39 @@ def run_monte_carlo(
     task = partial(_run_one_simulation, defaults=defaults, scenarios_config=scenarios_config, seed=seed)
     chunksize = max(1, simulations // (n_workers * 4))
     results = [[] for _ in range(1 + len(RENTER_START_RENTS) + len(scenarios_config))]
+    skip_counts = [0] * len(scenarios_config)
+    renter_offset = 1 + len(RENTER_START_RENTS)
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         per_sim = executor.map(task, range(simulations), chunksize=chunksize)
         for trial_results in per_sim:
             for index, result in enumerate(trial_results):
                 results[index].append(result)
+                if result is None and index >= renter_offset:
+                    skip_counts[index - renter_offset] += 1
         bootstrap_se = list(
             executor.map(
                 _bootstrap_se_from_nw,
-                (sorted(r["total_net_worth"] for r in scenario_results) for scenario_results in results),
+                (
+                    sorted(r["total_net_worth"] for r in scenario_results if r is not None)
+                    for scenario_results in results
+                ),
                 chunksize=1,
             )
         )
 
     return (
-        [aggregate_scenario(scenario_results) for scenario_results in results],
+        [s for s in (aggregate_scenario(scenario_results) for scenario_results in results) if s is not None],
         results,
-        {"renter_bar": renter_bar, "skipped": skipped, "bootstrap_se": bootstrap_se},
+        {
+            "renter_bar": renter_bar,
+            "skipped": skipped,
+            "bootstrap_se": bootstrap_se,
+            "dti_skipped": [
+                {"address": sc.get("_address", ""), "price": sc["price"], "skipped": count}
+                for sc, count in zip(scenarios_config, skip_counts)
+                if count
+            ],
+        },
     )
 
 
@@ -1102,9 +1133,7 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
             (
                 f"{s['mortgage_duration']:.1f} yr"
                 if s["mortgage_duration"] > 0 and math.isfinite(s["mortgage_duration"])
-                else "N/A"
-                if not math.isfinite(s["mortgage_duration"])
-                else "-"
+                else "N/A" if not math.isfinite(s["mortgage_duration"]) else "-"
             ),
             f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
@@ -1117,17 +1146,16 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
 
 
-def print_risk_summary_table(results: list[list[dict]]) -> None:
-    def summarize(scenario_results: list[dict]) -> tuple:
-        name = scenario_results[0]["scenario"]
-        nw = sorted(r["total_net_worth"] for r in scenario_results)
+def print_risk_summary_table(results: list[list[dict | None]]) -> None:
+    def summarize(scenario_results: list[dict | None]) -> tuple | None:
+        valid = [(i, r) for i, r in enumerate(scenario_results) if r is not None]
+        if not valid:
+            return None
+        name = valid[0][1]["scenario"]
+        nw = sorted(r["total_net_worth"] for _, r in valid)
         n = len(nw)
         nw_median = nw[n // 2]
-        beat_home = (
-            sum(1 for r, home in zip(scenario_results, results[0]) if r["total_net_worth"] > home["total_net_worth"])
-            / n
-            * 100
-        )
+        beat_home = sum(1 for i, r in valid if r["total_net_worth"] > results[0][i]["total_net_worth"]) / n * 100
         underwater = sum(1 for value in nw if value < 0) / n * 100
         return (
             name,
@@ -1139,7 +1167,7 @@ def print_risk_summary_table(results: list[list[dict]]) -> None:
         )
 
     rows = [summarize(results[0])] + sorted(
-        (summarize(scenario_results) for scenario_results in results[1:]),
+        (row for row in (summarize(scenario_results) for scenario_results in results[1:]) if row is not None),
         key=lambda row: row[4],
         reverse=True,
     )
@@ -1159,9 +1187,12 @@ def print_risk_summary_table(results: list[list[dict]]) -> None:
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
 
 
-def print_convergence_note(results: list[list[dict]], bootstrap_se: list[float] | None = None) -> None:
+def print_convergence_note(results: list[list[dict | None]], bootstrap_se: list[float] | None = None) -> None:
     worst = None
     for index, scenario_results in enumerate(results):
+        scenario_results = [r for r in scenario_results if r is not None]
+        if not scenario_results:
+            continue
         nw = sorted(r["total_net_worth"] for r in scenario_results)
         n = len(nw)
         nw_median = nw[n // 2]
@@ -1193,6 +1224,16 @@ def print_skipped_note(skip_info: dict) -> None:
     )
     for item in skipped:
         print(f"  - {item['address']} (${item['price']:,.0f}) est net worth ${item['est_nw']:,.0f}")
+    print()
+
+
+def print_dti_skip_note(skip_info: dict) -> None:
+    dti_skipped = skip_info.get("dti_skipped")
+    if not dti_skipped:
+        return
+    print("Skipped Monte Carlo trials where the year-one Debt-to-Income ratio exceeded the cap:")
+    for item in dti_skipped:
+        print(f"  - {item['address']} (${item['price']:,.0f}): skipped {item['skipped']} trial(s)")
     print()
 
 
@@ -1250,6 +1291,7 @@ def main():
     print_risk_summary_table(raw_results)
     print_convergence_note(raw_results, skip_info.get("bootstrap_se"))
     print_skipped_note(skip_info)
+    print_dti_skip_note(skip_info)
 
 
 if __name__ == "__main__":
