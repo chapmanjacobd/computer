@@ -317,8 +317,8 @@ def test_buyer_extra_payment_shortens_mortgage_duration():
 def test_buyer_reports_dti_and_lowest_total_capital():
     args = make_args(annual_income=100000, projection_years=2)
     res = condo.calculate_buyer_net_worth(args, term_years=15, record_schedule=True)
-    capital_balances = [args["total_capital"]] + [
-        entry["stocks"] + entry["home_value"] - entry["balance"] for entry in res["_schedule"]
+    capital_balances = [args["total_capital"] - args["price"] * args["down_payment_pct"]] + [
+        entry["stocks"] for entry in res["_schedule"]
     ]
 
     assert res["debt_to_income"] == pytest.approx(res["initial_outlay"] * 12 / args["annual_income"])
@@ -801,3 +801,21 @@ def test_risk_summary_percentiles():
     out = buf.getvalue()
     assert "P(Beat Home)" in out
     assert "50.0%" in out
+
+
+def test_convergence_note_only_warns_for_large_relative_error():
+    results = [[{"scenario": "Home", "total_net_worth": 100.0}]]
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_convergence_note(results, bootstrap_se=[5.0])
+    assert buf.getvalue() == ""
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_convergence_note(results, bootstrap_se=[6.0])
+    out = buf.getvalue()
+    assert "Warning:" in out
+    assert "Consider increasing --simulations" in out

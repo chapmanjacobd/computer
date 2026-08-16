@@ -286,7 +286,7 @@ def calculate_buyer_net_worth(
 
     cost_basis = buyer_stocks
     total_costs = dp_amt
-    lowest_total_capital = args["total_capital"]
+    lowest_total_capital = buyer_stocks
     loan_balance = loan_amt
 
     current_rate = mortgage_rate
@@ -384,8 +384,7 @@ def calculate_buyer_net_worth(
 
         total_costs += buyer_outlay / monthly_growth_factor(args, "stock_return", m)
         buyer_stocks += net_cash_flow
-        total_capital = buyer_stocks + args["price"] * appr_factor - loan_balance
-        lowest_total_capital = min(lowest_total_capital, total_capital)
+        lowest_total_capital = min(lowest_total_capital, buyer_stocks)
         if net_cash_flow > 0:
             cost_basis += net_cash_flow
 
@@ -1169,12 +1168,13 @@ def print_convergence_note(results: list[list[dict]], bootstrap_se: list[float] 
     if worst is None:
         return
     name, se, relative = worst
+    if relative <= 0.05:
+        return
     print(
-        f"Convergence: widest bootstrap SE of median net worth is {name} at "
+        f"Warning: median net worth convergence is weakest for {name}: "
         f"\u00b1${se:,.0f} ({relative * 100:.1f}% of |median|)."
     )
-    if relative > 0.05:
-        print("  Consider increasing --simulations for a tighter estimate.")
+    print("  Consider increasing --simulations for a tighter estimate.")
 
 
 def print_skipped_note(skip_info: dict) -> None:
