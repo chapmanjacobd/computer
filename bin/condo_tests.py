@@ -832,10 +832,22 @@ def test_horizon_years_extends_schedule():
 def test_risk_summary_percentiles():
     results = [
         [
-            {"scenario": "Home", "total_net_worth": float(i)} for i in range(20)
+            {
+                "scenario": "Home",
+                "total_net_worth": float(i),
+                "debt_to_income": 0.3,
+                "max_drawdown": -float(i),
+            }
+            for i in range(20)
         ],
         [
-            {"scenario": "Buyer", "total_net_worth": float(19 - i)} for i in range(20)
+            {
+                "scenario": "Buyer",
+                "total_net_worth": float(19 - i),
+                "debt_to_income": 0.4,
+                "max_drawdown": -float(19 - i),
+            }
+            for i in range(20)
         ],
     ]
     import io
@@ -847,6 +859,77 @@ def test_risk_summary_percentiles():
     out = buf.getvalue()
     assert "P(Beat Home)" in out
     assert "50.0%" in out
+    assert "Debt to Income" in out
+    assert "Max Drawdown" in out
+
+
+def test_expand_mortgage_variants_labels_each_option():
+    sc = make_args(
+        _address="Unit A",
+        mortgage_options=[{"term": 15, "rate": 0.05}, {"term": 30, "rate": 0.06}],
+    )
+    variants = condo.expand_mortgage_variants(sc)
+    assert len(variants) == 2
+    assert variants[0]["_chosen_term"] == 15
+    assert variants[0]["_chosen_rate"] == 0.05
+    assert variants[1]["_chosen_term"] == 30
+    assert variants[1]["_chosen_rate"] == 0.06
+    assert "Unit A" in variants[0]["_address"]
+    assert "15-yr" in variants[0]["_address"]
+    assert "30-yr" in variants[1]["_address"]
+    assert variants[0]["_est_nw"] > 0.0
+    assert variants[0]["_y1_dti"] > 0.0
+
+
+def test_select_affordable_variants_drops_unaffordable_options():
+    sc = make_args(
+        _address="Unit A",
+        price=100000,
+        total_capital=20000,
+        monthly_budget=3000,
+        mortgage_options=[{"term": 15, "rate": 0.05}, {"term": 30, "rate": 0.06}],
+        max_debt_to_income=0.43,
+    )
+    kept, dropped = condo.select_affordable_variants([sc])
+    assert len(kept) == 1
+    assert kept[0]["_chosen_term"] == 30
+    assert len(dropped) == 1
+    assert dropped[0]["variant"] == "15-yr @ 5.000%"
+    assert dropped[0]["dti"] > 0.43
+    assert not dropped[0].get("all_unaffordable")
+
+
+def test_select_affordable_variants_marks_fully_unaffordable():
+    sc = make_args(
+        _address="Unit A",
+        price=400000,
+        total_capital=80000,
+        monthly_budget=2000,
+        mortgage_options=[{"term": 15, "rate": 0.05}, {"term": 30, "rate": 0.06}],
+        max_debt_to_income=0.43,
+    )
+    kept, dropped = condo.select_affordable_variants([sc])
+    assert kept == []
+    assert dropped[-1]["all_unaffordable"] is True
+    assert dropped[-1]["address"] == "Unit A"
+    assert dropped[-1]["dti"] > 0.43
+
+
+def test_print_unaffordable_note():
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        condo.print_unaffordable_note(
+            [
+                {"address": "Unit A · 15-yr @ 5.000%", "price": 100000, "variant": "15-yr @ 5.000%", "dti": 0.45},
+                {"address": "Unit B", "price": 300000, "variant": None, "dti": 0.5, "all_unaffordable": True},
+            ]
+        )
+    out = buf.getvalue()
+    assert "Excluded 2 mortgage option(s)" in out
+    assert "no affordable financing option" in out
 
 
 def test_convergence_note_only_warns_for_large_relative_error():

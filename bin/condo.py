@@ -555,6 +555,55 @@ def choose_mortgage_for_scenario(sc: dict) -> tuple:
     return best
 
 
+def expand_mortgage_variants(sc: dict) -> list[dict]:
+    address = sc.get("_address", "")
+    variants = []
+    for term_years, rate, res in evaluate_mortgage_options(sc)[0]:
+        variant = sc.copy()
+        variant["_chosen_term"] = term_years
+        variant["_chosen_rate"] = rate
+        variant["_variant"] = f"{term_years}-yr @ {rate:.3%}"
+        if address:
+            variant["_address"] = f"{address} · {variant['_variant']}"
+        variant["_est_nw"] = res["total_net_worth"]
+        variant["_y1_dti"] = res["debt_to_income"]
+        variants.append(variant)
+    return variants
+
+
+def select_affordable_variants(scenarios_config: list[dict]) -> tuple[list[dict], list[dict]]:
+    kept = []
+    dropped = []
+    for sc in scenarios_config:
+        variants = expand_mortgage_variants(sc)
+        affordable = []
+        for variant in variants:
+            max_dti = variant.get("max_debt_to_income", 0.43)
+            if variant["_y1_dti"] > max_dti:
+                dropped.append(
+                    {
+                        "address": variant["_address"],
+                        "price": variant["price"],
+                        "variant": variant["_variant"],
+                        "dti": variant["_y1_dti"],
+                    }
+                )
+            else:
+                affordable.append(variant)
+        if not affordable:
+            dropped.append(
+                {
+                    "address": sc.get("_address", ""),
+                    "price": sc["price"],
+                    "variant": None,
+                    "dti": max((v["_y1_dti"] for v in variants), default=0.0),
+                    "all_unaffordable": True,
+                }
+            )
+        kept.extend(affordable)
+    return kept, dropped
+
+
 def get_base_renter_scenarios(args: dict) -> list[dict]:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
@@ -1125,8 +1174,6 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
         f"Yr {projection_years + 1} Outlay",
         "NPV Total Costs",
         "NPV Net Worth",
-        "Debt to Income",
-        "Max Drawdown",
     ]
     table = []
 
@@ -1143,8 +1190,6 @@ def print_decision_table(scenarios: list[dict], projection_years: int):
             f"${s['end_year_outlay']:,.0f}",
             f"${s['total_costs']:,.0f}",
             f"${s['total_net_worth']:,.0f}",
-            f"{s['debt_to_income']:.1%}",
-            signed_currency(s["max_drawdown"]),
         ]
         table.append(row)
 
@@ -1162,6 +1207,8 @@ def print_risk_summary_table(results: list[list[dict | None]]) -> None:
         nw_median = nw[n // 2]
         beat_home = sum(1 for i, r in valid if r["total_net_worth"] > results[0][i]["total_net_worth"]) / n * 100
         underwater = sum(1 for value in nw if value < 0) / n * 100
+        dti = sorted(r["debt_to_income"] for _, r in valid)[n // 2]
+        drawdown = sorted(r["max_drawdown"] for _, r in valid)[n // 2]
         return (
             name,
             beat_home,
@@ -1169,6 +1216,8 @@ def print_risk_summary_table(results: list[list[dict | None]]) -> None:
             nw[int(0.25 * (n - 1))],
             nw_median,
             nw[int(0.75 * (n - 1))],
+            dti,
+            drawdown,
         )
 
     rows = [summarize(results[0])] + sorted(
@@ -1176,7 +1225,16 @@ def print_risk_summary_table(results: list[list[dict | None]]) -> None:
         key=lambda row: row[4],
         reverse=True,
     )
-    headers = ["Scenario", "P(Beat Home)", "Underwater", "NW P25", "NW Median", "NW P75"]
+    headers = [
+        "Scenario",
+        "P(Beat Home)",
+        "Underwater",
+        "NW P25",
+        "NW Median",
+        "NW P75",
+        "Debt to Income",
+        "Max Drawdown",
+    ]
     table = [
         [
             name,
@@ -1185,8 +1243,10 @@ def print_risk_summary_table(results: list[list[dict | None]]) -> None:
             f"${p25:,.0f}",
             f"${p50:,.0f}",
             f"${p75:,.0f}",
+            f"{dti:.1%}",
+            signed_currency(drawdown),
         ]
-        for name, beat_home, underwater, p25, p50, p75 in rows
+        for name, beat_home, underwater, p25, p50, p75, dti, drawdown in rows
     ]
     print("Risk Summary (across all trials):")
     print(tabulate(table, headers=headers, tablefmt="simple") + "\n")
@@ -1245,6 +1305,30 @@ def print_dti_skip_note(skip_info: dict) -> None:
     print()
 
 
+def print_unaffordable_note(unaffordable: list[dict]) -> None:
+    if not unaffordable:
+        return
+    fully_dropped = [item for item in unaffordable if item.get("all_unaffordable")]
+    print(
+        f"Filtered {len(unaffordable)} mortgage option(s) before simulation because the "
+        "deterministic year-one Debt-to-Income ratio exceeded the cap:"
+    )
+    for item in unaffordable:
+        if item.get("all_unaffordable"):
+            print(
+                f"  - {item['address']} (${item['price']:,.0f}): no affordable financing option "
+                f"(best DTI {item['dti']:.1%})"
+            )
+        else:
+            print(f"  - {item['address']} (${item['price']:,.0f}): {item['variant']} DTI {item['dti']:.1%}")
+    if fully_dropped:
+        print(
+            f"  {len(fully_dropped)} scenario(s) have no affordable financing option and were "
+            "removed from the comparison."
+        )
+    print()
+
+
 def parse_float_with_commas(s: str) -> float:
     return float(str(s).replace(',', ''))
 
@@ -1279,8 +1363,7 @@ def main():
 
     defaults, scenarios_config = load_toml_config(args.config)
 
-    for sc in scenarios_config:
-        choose_mortgage_for_scenario(sc)
+    scenarios_config, unaffordable = select_affordable_variants(scenarios_config)
 
     simulations = args.simulations if args.simulations is not None else defaults["monte_carlo_simulations"]
     seed = args.seed if args.seed is not None else defaults["monte_carlo_seed"]
@@ -1299,6 +1382,7 @@ def main():
     print_risk_summary_table(raw_results)
     print_convergence_note(raw_results, skip_info.get("bootstrap_se"))
     print_skipped_note(skip_info)
+    print_unaffordable_note(unaffordable)
     print_dti_skip_note(skip_info)
 
 
