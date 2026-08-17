@@ -5,9 +5,8 @@ import math
 import os
 import random
 
-import pytest
-
 import condo
+import pytest
 
 os.chdir(os.path.dirname(__file__))
 

@@ -249,11 +249,7 @@ def _mortgage_payoff_month(
 
         interest = balance * current_r
         mandatory = current_pmt_min + tax + hoa + insurance + maintenance - monthly_tax_savings(args, interest, tax)
-        extra = (
-            max(0.0, budget - mandatory)
-            if not invest_surplus and current_rate > args["stock_return"]
-            else 0.0
-        )
+        extra = max(0.0, budget - mandatory) if not invest_surplus and current_rate > args["stock_return"] else 0.0
         payment = min(current_pmt_min + extra, balance + interest)
         balance = max(0.0, balance - (payment - interest))
 
@@ -618,9 +614,7 @@ def calculate_buyer_net_worth(
         "scenario": label,
         "initial_outlay": min_outlay_y1,
         "extra_payment": extra_payment_y1,
-        "mortgage_duration": (
-            0.0 if cash else (payoff_month / 12 if payoff_month is not None else float("inf"))
-        ),
+        "mortgage_duration": (0.0 if cash else (payoff_month / 12 if payoff_month is not None else float("inf"))),
         "mortgage_term": term_years,
         "cash": cash,
         "invest_surplus": invest_surplus,
@@ -684,9 +678,7 @@ def expand_mortgage_variants(sc: dict) -> list[dict]:
     for term_years, rate, res in evaluate_mortgage_options(sc)[0]:
         options = [(None, res)]
         if rate > sc.get("stock_return", 0.0):
-            invest_res = calculate_buyer_net_worth(
-                sc, term_years=term_years, mortgage_rate=rate, invest_surplus=True
-            )
+            invest_res = calculate_buyer_net_worth(sc, term_years=term_years, mortgage_rate=rate, invest_surplus=True)
             options.append(("invest", invest_res))
         for strategy, variant_res in options:
             variant = sc.copy()
@@ -850,7 +842,11 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "debt_to_income": 0.43,
         "monthly_budget": 2100,
         "projection_years": 30,
-        "mortgage_options": None,
+        "mortgage_options": [
+            {"term": 15, "rate": 0.06128},
+            {"term": 20, "rate": 0.0639},
+            {"term": 30, "rate": 0.06579},
+        ],
         "down_payment_pct": 0.20,
         "cash_purchase_min_ratio": 1.0,
         "closing_recording_transfer": 2600,
@@ -858,15 +854,15 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "closing_prorated_tax_insurance": 0,
         "closing_appraisal_inspection": 1000,
         "closing_title_insurance": 1500,
-        "stock_return": 0.07,
+        "stock_return": 0.0675,
         "inflation_rate": 0.03,
-        "appreciation_rate": 0.03,
-        "rent_growth_rate": 0.055,
+        "appreciation_rate": 0.035,
+        "rent_growth_rate": 0.04,
         "cap_gains_tax": 0.15,
-        "selling_cost_pct": 0.06,
-        "maintenance_pct": 0.01,
+        "selling_cost_pct": 0.05,
+        "maintenance_pct": 0.003,
         "state_tax": 0.0495,
-        "hoa_growth_rate": 0.0672,
+        "hoa_growth_rate": 0.06,
         "standard_deduction": 31500,
         "state_std_deduction": 10400,
         "fed_tax_rate": 0.22,
@@ -879,9 +875,9 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "condo_insurance_annual": 600,
         "house_insurance_annual": 1800,
         "renters_insurance_annual": 240,
-        "forced_move_probability": 0.12,
-        "moving_cost": 2500,
-        "moving_rent_premium": 0.08,
+        "forced_move_probability": 0.08,
+        "moving_cost": 2000,
+        "moving_rent_premium": 0.04,
         "moving_cost_volatility": 0.25,
         "refinance_cost": 5000,
         "stock_volatility": 0.18,
@@ -904,9 +900,9 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "rent_growth_ar_coeffs": [0.60],
         "hoa_growth_ar_coeffs": [0.60],
         "stock_ar_coeffs": [],
-        "monte_carlo_simulations": 1000,
+        "monte_carlo_simulations": 7800,
         "monte_carlo_seed": 42,
-        "max_debt_to_income": 0.43,
+        "max_debt_to_income": 0.40,
     }
 
     for key in defaults:
@@ -1251,8 +1247,7 @@ def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], 
         max_dti = sc_config.get("max_debt_to_income", 0.43)
         if (
             not cash
-            and debt_to_income_ratio(sc_config, buyer_initial_outlay(sc_config, term_years, mortgage_rate))
-            > max_dti
+            and debt_to_income_ratio(sc_config, buyer_initial_outlay(sc_config, term_years, mortgage_rate)) > max_dti
         ):
             trial_results.append(None)
             continue
@@ -1373,13 +1368,8 @@ def optimize_prepay_levels(
     levels = int(max_level / step) + 1
     for i in range(levels):
         level = i * step
-        configs = [
-            dict(v, _strategy="prepay", _prepay_schedule=((None, level),))
-            for v in variants
-        ]
-        _, raw, _ = run_monte_carlo(
-            defaults, configs, simulations, seed, skip_expensive=False, workers=workers
-        )
+        configs = [dict(v, _strategy="prepay", _prepay_schedule=((None, level),)) for v in variants]
+        _, raw, _ = run_monte_carlo(defaults, configs, simulations, seed, skip_expensive=False, workers=workers)
         for index, scenario_results in enumerate(raw[renter_offset:]):
             score = risk_adjusted_score(scenario_results, lam)
             if score > best_scores[index]:
@@ -1434,9 +1424,7 @@ def optimize_crossover_prepay_levels(
                 for index, variant in enumerate(variants)
             ]
 
-            _, raw, _ = run_monte_carlo(
-                defaults, configs, simulations, seed, skip_expensive=False, workers=workers
-            )
+            _, raw, _ = run_monte_carlo(defaults, configs, simulations, seed, skip_expensive=False, workers=workers)
             for index, scenario_results in enumerate(raw[renter_offset:]):
                 score = risk_adjusted_score(scenario_results, lam)
                 if score > best_scores[index]:
@@ -1715,9 +1703,7 @@ def main():
                     crossover,
                     workers=args.workers,
                 )
-                for variant, (early_level, late_level, crossover_years) in zip(
-                    base_variants, crossover_results
-                ):
+                for variant, (early_level, late_level, crossover_years) in zip(base_variants, crossover_results):
                     if early_level <= 0.0 and late_level <= 0.0:
                         continue
 
@@ -1728,9 +1714,7 @@ def main():
                         (crossover_years, early_level),
                         (None, late_level),
                     )
-                    optimal["_variant"] = (
-                        f"{optimal['_chosen_term']}-yr +prepay-{crossover}"
-                    )
+                    optimal["_variant"] = f"{optimal['_chosen_term']}-yr +prepay-{crossover}"
                     optimal_result = calculate_buyer_net_worth(
                         optimal,
                         term_years=optimal["_chosen_term"],
