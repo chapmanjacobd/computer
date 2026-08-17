@@ -352,17 +352,24 @@ def calculate_buyer_net_worth(
     invest_surplus: bool = False,
     prepay_schedule: tuple | None = None,
     prepay_optimal: bool = False,
+    cash: bool = False,
 ) -> dict:
     projection_years = args["projection_years"]
     projection_months = projection_years * 12
     if horizon_years is not None:
         projection_years = horizon_years
         projection_months = horizon_years * 12
+    if cash:
+        mortgage_rate = 0.0
+        term_years = 0
     if mortgage_rate is None:
         mortgage_rate = args["mortgage_rate"]
     r = mortgage_rate / 12
 
-    dp_amt = args["price"] * args["down_payment_pct"]
+    if cash:
+        dp_amt = args["price"]
+    else:
+        dp_amt = args["price"] * args["down_payment_pct"]
     loan_amt = args["price"] - dp_amt
 
     term_months = term_years * 12
@@ -569,7 +576,7 @@ def calculate_buyer_net_worth(
         end_pmt + end_tax + end_hoa + end_ins + end_maint + end_pmi - monthly_tax_savings(args, end_interest, end_tax)
     )
 
-    if payoff_month is None:
+    if payoff_month is None and loan_amt > 0:
         payoff_month = _mortgage_payoff_month(
             args,
             loan_balance,
@@ -599,8 +606,11 @@ def calculate_buyer_net_worth(
         "scenario": label,
         "initial_outlay": min_outlay_y1,
         "extra_payment": extra_payment_y1,
-        "mortgage_duration": payoff_month / 12 if payoff_month is not None else float("inf"),
+        "mortgage_duration": (
+            0.0 if cash else (payoff_month / 12 if payoff_month is not None else float("inf"))
+        ),
         "mortgage_term": term_years,
+        "cash": cash,
         "invest_surplus": invest_surplus,
         "prepay": prepay_schedule is not None,
         "prepay_optimal": prepay_optimal,
@@ -678,6 +688,23 @@ def expand_mortgage_variants(sc: dict) -> list[dict]:
             variant["_est_nw"] = variant_res["total_net_worth"]
             variant["_y1_dti"] = variant_res["debt_to_income"]
             variants.append(variant)
+
+    cash_ratio = sc.get("cash_purchase_min_ratio", 1.0)
+    if sc.get("total_capital", 0.0) >= sc["price"] * cash_ratio:
+        cash_res = calculate_buyer_net_worth(sc, cash=True)
+        cash_variant = sc.copy()
+        cash_variant["down_payment_pct"] = 1.0
+        cash_variant["_chosen_term"] = 0
+        cash_variant["_chosen_rate"] = 0.0
+        cash_variant["_strategy"] = "cash"
+        cash_variant["_prepay_schedule"] = None
+        cash_variant["_variant"] = "cash"
+        if address:
+            cash_variant["_address"] = address
+        cash_variant["_est_nw"] = cash_res["total_net_worth"]
+        cash_variant["_y1_dti"] = cash_res["debt_to_income"]
+        variants.append(cash_variant)
+
     return variants
 
 
@@ -813,6 +840,7 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "projection_years": 30,
         "mortgage_options": None,
         "down_payment_pct": 0.20,
+        "cash_purchase_min_ratio": 1.0,
         "stock_return": 0.07,
         "inflation_rate": 0.03,
         "appreciation_rate": 0.03,
@@ -1202,9 +1230,11 @@ def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], 
     for index, sc_config in enumerate(scenarios_config):
         term_years = sc_config["_chosen_term"]
         mortgage_rate = sc_config["_chosen_rate"]
+        cash = sc_config.get("_strategy") == "cash"
         max_dti = sc_config.get("max_debt_to_income", 0.43)
         if (
-            debt_to_income_ratio(sc_config, buyer_initial_outlay(sc_config, term_years, mortgage_rate))
+            not cash
+            and debt_to_income_ratio(sc_config, buyer_initial_outlay(sc_config, term_years, mortgage_rate))
             > max_dti
         ):
             trial_results.append(None)
@@ -1218,6 +1248,7 @@ def _run_one_simulation(sim: int, defaults: dict, scenarios_config: list[dict], 
                 invest_surplus=trial_scenario.get("_strategy") is not None,
                 prepay_schedule=trial_scenario.get("_prepay_schedule"),
                 prepay_optimal=(trial_scenario.get("_strategy") == "opt"),
+                cash=cash,
             )
         )
     return trial_results
@@ -1277,6 +1308,8 @@ def run_monte_carlo(
 
 
 def mortgage_duration_label(s: dict) -> str:
+    if s.get("cash"):
+        return " (cash)"
     term = s.get("mortgage_term", 0)
     if term <= 0:
         return ""
