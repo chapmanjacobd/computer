@@ -330,6 +330,16 @@ def get_stay_home_scenario(args: dict) -> dict:
     }
 
 
+def purchase_closing_costs(args: dict) -> float:
+    return (
+        args.get("closing_recording_transfer", 0.0)
+        + args.get("closing_attorney", 0.0)
+        + args.get("closing_prorated_tax_insurance", 0.0)
+        + args.get("closing_appraisal_inspection", 0.0)
+        + args.get("closing_title_insurance", 0.0)
+    )
+
+
 def buyer_initial_outlay(args: dict, term_years: int, mortgage_rate: float) -> float:
     r = mortgage_rate / 12
     loan_amt = args["price"] * (1 - args["down_payment_pct"])
@@ -372,10 +382,12 @@ def calculate_buyer_net_worth(
         dp_amt = args["price"] * args["down_payment_pct"]
     loan_amt = args["price"] - dp_amt
 
+    closing_costs = purchase_closing_costs(args)
+
     term_months = term_years * 12
     pmt_min = amortized_payment(loan_amt, r, term_months)
 
-    buyer_stocks = args["total_capital"] - dp_amt
+    buyer_stocks = args["total_capital"] - dp_amt - closing_costs
     annual_taxes = args.get("annual_taxes", args["price"] * args["effective_tax_rate"])
     tax_m = annual_taxes / 12
     hoa_m = args["monthly_assessment"]
@@ -383,7 +395,7 @@ def calculate_buyer_net_worth(
     maint_m = (args["price"] * args["maintenance_pct"]) / 12
 
     cost_basis = buyer_stocks
-    total_costs = dp_amt
+    total_costs = dp_amt + closing_costs
     lowest_total_capital = real_capital_value(args, buyer_stocks, 0)
     loan_balance = loan_amt
 
@@ -690,7 +702,7 @@ def expand_mortgage_variants(sc: dict) -> list[dict]:
             variants.append(variant)
 
     cash_ratio = sc.get("cash_purchase_min_ratio", 1.0)
-    if sc.get("total_capital", 0.0) >= sc["price"] * cash_ratio:
+    if sc.get("total_capital", 0.0) >= sc["price"] * cash_ratio + purchase_closing_costs(sc):
         cash_res = calculate_buyer_net_worth(sc, cash=True)
         cash_variant = sc.copy()
         cash_variant["down_payment_pct"] = 1.0
@@ -841,6 +853,11 @@ def load_toml_config(filepath: str) -> tuple[dict, list[dict]]:
         "mortgage_options": None,
         "down_payment_pct": 0.20,
         "cash_purchase_min_ratio": 1.0,
+        "closing_recording_transfer": 2600,
+        "closing_attorney": 1500,
+        "closing_prorated_tax_insurance": 0,
+        "closing_appraisal_inspection": 1000,
+        "closing_title_insurance": 1500,
         "stock_return": 0.07,
         "inflation_rate": 0.03,
         "appreciation_rate": 0.03,
