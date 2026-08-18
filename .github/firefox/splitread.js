@@ -92,6 +92,24 @@ function readingTrackerBookmarklet() {
       });
 
       if (paras.length >= 3) {
+        function makeHeading(sectionNumber) {
+          var heading = document.createElement('h2');
+          var secId = 'rt-section-' + sectionNumber;
+          while (document.getElementById(secId)) secId += 'x';
+          heading.id = secId;
+          heading.style.cssText = 'margin:2.4em 0 1em!important;padding-top:1em!important;border-top:1px solid rgba(120,120,120,.35)!important;font:600 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#8a8a8a!important;background:none!important;';
+          var anchor = document.createElement('a');
+          anchor.href = '#' + secId;
+          anchor.textContent = 'Section ' + sectionNumber;
+          anchor.style.cssText = 'display:block!important;color:inherit!important;text-decoration:none!important;';
+          heading.appendChild(anchor);
+          return heading;
+        }
+
+        var firstHeading = makeHeading(1);
+        paras[0].parentNode.insertBefore(firstHeading, paras[0]);
+        insertedHeadings.push(firstHeading);
+
         var cum = [], running = 0;
         for (var i = 0; i < paras.length; i++) { running += wc(paras[i].textContent); cum.push(running); }
         var total = running;
@@ -99,7 +117,7 @@ function readingTrackerBookmarklet() {
         var targets = [];
         for (var t = TARGET_WORDS; t < total - 300; t += TARGET_WORDS) targets.push(t);
 
-        var n = 2; // content before the first heading is implicitly "Section 1"
+        var n = 2;
         var lastIdx = -1;
         for (var ti = 0; ti < targets.length; ti++) {
           var target = targets[ti];
@@ -112,12 +130,7 @@ function readingTrackerBookmarklet() {
           var distBefore = target - startOfIdx;
           var distAfter = cum[idx] - target;
 
-          var heading = document.createElement('h2');
-          var secId = 'rt-section-' + n;
-          while (document.getElementById(secId)) secId += 'x';
-          heading.id = secId;
-          heading.textContent = 'Section ' + n;
-          heading.style.cssText = 'margin:2.4em 0 1em!important;padding-top:1em!important;border-top:1px solid rgba(120,120,120,.35)!important;font:600 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#8a8a8a!important;background:none!important;';
+          var heading = makeHeading(n);
 
           if (Math.min(distBefore, distAfter) <= NEAR_BOUNDARY) {
             // near an existing paragraph break — use it, no text is touched
