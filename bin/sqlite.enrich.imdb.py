@@ -1,0 +1,598 @@
+#!/usr/bin/env python3
+"""Enrich a media sqlite database with offline IMDb metadata.
+
+Downloads title.basics, title.akas, and title.ratings once (cached in
+$XDG_CACHE_HOME/imdb), builds a local lookup index, then fills empty
+`genre`/`title` columns and adds `imdb_rating`, `imdb_votes`, and `year`
+columns for matching rows.
+
+No online API is called per path/filename; everything is matched locally
+against the cached datasets.
+
+Examples:
+
+    sqlite.enrich.imdb.py video.db
+    sqlite.enrich.imdb.py video.db --dry-run
+    sqlite.enrich.imdb.py video.db --refresh --rebuild-index
+"""
+
+import argparse
+import csv
+import gzip
+import os
+import re
+import sqlite3
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+CACHE_SUBDIR = "imdb"
+BASE_URL = "https://datasets.imdbws.com/"
+FILES = {
+    "basics": "title.basics.tsv.gz",
+    "akas": "title.akas.tsv.gz",
+    "ratings": "title.ratings.tsv.gz",
+}
+INDEX_DB = "imdb_index.db"
+STAMP_FILE = "imdb_index.stamp"
+ENRICH_COLS = ("genre", "title", "imdb_rating", "imdb_votes", "year")
+
+EXTRA_CODEC_EXTS = {".av1", ".h264", ".x264", ".x265", ".265", ".264", ".vp9", ".hevc"}
+RELEASE_TAGS = (
+    r"720p|1080p|2160p|4k|8k|x264|x265|h264|h265|av1|hevc|vp9|"
+    r"web.?dl|webrip|bluray|blu-ray|brrip|brip|hdtv|dvdrip|dvd|remux|"
+    r"yify|oldtoons?|nf|netflix|disney\+|amzn|amazon|hulu|atvp|apple.?tv|"
+    r"multisub|multilingual|dubbed|proper|repack|imax|extended|unrated|"
+    r"directors?\.?cut"
+)
+EPISODE_RE = re.compile(r"(?i)(?:^|[^a-z0-9])(s\d{1,2}(?:e\d{1,4})?)(?=[^a-z0-9]|$)")
+YEAR_RE = re.compile(r"\b(18|19|20)\d{2}\b")
+NONALNUM_RE = re.compile(r"[^a-z0-9]+")
+ARTICLE_RE = re.compile(r"^(the|a|an)\s+")
+
+
+def log(msg):
+    print(msg, file=sys.stderr)
+
+
+def norm(s):
+    """Lowercase, keep only alphanumerics, collapse whitespace."""
+    if not s:
+        return ""
+    return NONALNUM_RE.sub(" ", s.lower()).strip()
+
+
+def norm_short(s):
+    """Return normalized form with leading articles removed, for fallback matching."""
+    return norm(ARTICLE_RE.sub("", norm(s)))
+
+
+def cache_dir():
+    base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
+    return os.path.join(base, CACHE_SUBDIR)
+
+
+def human(n):
+    for unit in ("B", "KiB", "MiB", "GiB"):
+        if n < 1024 or unit == "GiB":
+            return f"{n:.1f} {unit}" if unit != "B" else f"{n:.0f} B"
+        n /= 1024.0
+    return f"{n:.1f} GiB"
+
+
+def download(url, dest):
+    """Download with HTTP Range resume support. Returns True if freshly downloaded."""
+    if os.path.exists(dest):
+        return False
+    tmp = dest + ".part"
+    offset = os.path.getsize(tmp) if os.path.exists(tmp) else 0
+    req = urllib.request.Request(url)
+    if offset:
+        req.add_header("Range", f"bytes={offset}-")
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        if resp.status == 200 and offset:
+            offset = 0  # server ignored our Range; restart
+            with open(tmp, "wb"):
+                pass
+        total = offset + int(resp.headers.get("Content-Length") or 0)
+        log(f"Downloading {Path(url).name} ({human(total)})...")
+        with open(tmp, "ab") as f:
+            done = offset
+            while True:
+                chunk = resp.read(1024 * 256)
+                if not chunk:
+                    break
+                f.write(chunk)
+                done += len(chunk)
+                print(f"\r  {Path(url).name}: {human(done)} / {human(total)}", end="", file=sys.stderr)
+            print(file=sys.stderr)
+    os.replace(tmp, dest)
+    return True
+
+
+def get_files(args):
+    ensure_cache_dir()
+    d = cache_dir()
+    paths = {}
+    for key, fname in FILES.items():
+        dest = os.path.join(d, fname)
+        if os.path.exists(dest) and args.refresh:
+            os.remove(dest)
+        if args.max_age and os.path.exists(dest) and (time.time() - os.path.getmtime(dest)) > args.max_age * 86400:
+            os.remove(dest)
+        if not os.path.exists(dest):
+            download(BASE_URL + fname, dest)
+        paths[key] = dest
+    return paths
+
+
+def ensure_cache_dir():
+    os.makedirs(cache_dir(), exist_ok=True)
+
+
+def to_int(x):
+    try:
+        return int(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def parse_tsv(path, cols):
+    """Stream rows from a gzipped TSV, skipping the header. Yields dicts keyed by column name."""
+    csv.field_size_limit(sys.maxsize)
+    with gzip.open(path, "rt", encoding="utf-8", errors="replace", newline="") as f:
+        reader = csv.reader(f, delimiter="\t")
+        header = next(reader, None)
+        if header is None:
+            return
+        colpos = {cols[c]: i for i, c in enumerate(header) if c in cols}
+        for row in reader:
+            if not row:
+                continue
+            d = {}
+            for name, i in colpos.items():
+                if i < len(row):
+                    d[name] = None if row[i] == r"\N" else row[i]
+            yield d
+
+
+def build_index(paths, args):
+    db_path = os.path.join(cache_dir(), INDEX_DB)
+    stamp_path = os.path.join(cache_dir(), STAMP_FILE)
+
+    def stamp_matches():
+        try:
+            with open(stamp_path) as f:
+                saved = f.read().strip().split()
+            for p in paths.values():
+                mtime = str(int(os.path.getmtime(p))) + ":" + str(os.path.getsize(p))
+                if mtime not in saved:
+                    return False
+            return True
+        except Exception:
+            return False
+
+    if args.rebuild_index or not os.path.exists(db_path) or not stamp_matches():
+        log("Building local IMDb index...")
+        for p in (db_path, db_path + "-journal", db_path + "-wal"):
+            if os.path.exists(p):
+                os.remove(p)
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA journal_mode=OFF")
+        conn.execute("PRAGMA synchronous=OFF")
+        conn.execute("PRAGMA temp_store=MEMORY")
+        conn.execute("PRAGMA cache_size=-524288")  # 512 MiB page cache
+        conn.execute(
+            """
+            CREATE TABLE titles (
+                tconst TEXT PRIMARY KEY,
+                title_type TEXT,
+                primary_title TEXT,
+                original_title TEXT,
+                norm_title TEXT,
+                norm_original TEXT,
+                start_year INTEGER,
+                runtime_minutes INTEGER,
+                genres TEXT,
+                rating REAL,
+                votes INTEGER
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE akas (
+                tconst TEXT,
+                norm_title TEXT
+            )
+            """
+        )
+
+        # ratings first so titles get rating/votes at insert time
+        ratings = {}
+        for r in parse_tsv(
+            paths["ratings"], {"tconst": "tconst", "averageRating": "rating", "numVotes": "votes"}
+        ):
+            try:
+                ratings[r.get("tconst")] = (float(r.get("rating")), int(r.get("votes")))
+            except (TypeError, ValueError):
+                pass
+
+        batch = []
+        n = 0
+        for r in parse_tsv(
+            paths["basics"],
+            {
+                "tconst": "tconst",
+                "titleType": "title_type",
+                "primaryTitle": "primary_title",
+                "originalTitle": "original_title",
+                "startYear": "start_year",
+                "runtimeMinutes": "runtime_minutes",
+                "genres": "genres",
+            },
+        ):
+            rating, votes = ratings.get(r.get("tconst"), (None, None))
+            batch.append(
+                (
+                    r.get("tconst"),
+                    r.get("title_type"),
+                    r.get("primary_title"),
+                    r.get("original_title"),
+                    norm(r.get("primary_title")),
+                    norm(r.get("original_title")),
+                    to_int(r.get("start_year")),
+                    to_int(r.get("runtime_minutes")),
+                    r.get("genres"),
+                    rating,
+                    votes,
+                )
+            )
+            n += 1
+            if len(batch) >= 500000:
+                conn.executemany("INSERT INTO titles VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch)
+                batch = []
+                print(f"\r  titles: {n:,}", end="", file=sys.stderr)
+        if batch:
+            conn.executemany("INSERT INTO titles VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch)
+        print(f"\r  titles: {n:,}", file=sys.stderr)
+
+        batch = []
+        n = 0
+        for r in parse_tsv(
+            paths["akas"],
+            {"titleId": "tconst", "title": "title", "region": "region", "isOriginalTitle": "is_original"},
+        ):
+            if not r.get("title"):
+                continue
+            batch.append((r.get("tconst"), norm(r.get("title"))))
+            n += 1
+            if len(batch) >= 500000:
+                conn.executemany("INSERT INTO akas VALUES (?,?)", batch)
+                batch = []
+                print(f"\r  akas: {n:,}", end="", file=sys.stderr)
+        if batch:
+            conn.executemany("INSERT INTO akas VALUES (?,?)", batch)
+        print(f"\r  akas: {n:,}", file=sys.stderr)
+
+        log("Creating indexes...")
+        conn.execute("CREATE INDEX idx_titles_norm ON titles (norm_title)")
+        conn.execute("CREATE INDEX idx_titles_original ON titles (norm_original)")
+        conn.execute("CREATE INDEX idx_akas_norm ON akas (norm_title)")
+        conn.commit()
+        conn.close()
+        with open(stamp_path, "w") as f:
+            f.write(" ".join(f"{int(os.path.getmtime(p))}:{os.path.getsize(p)}" for p in paths.values()))
+        log("Index built.")
+    else:
+        log("Using cached index.")
+    return db_path
+
+
+def clean_title_str(s):
+    """Remove brackets, release tags, and collapse separators from a title-ish string."""
+    s = re.sub(r"\[[^\]]*\]", " ", s)
+    s = re.sub(r"\([^)]*\)", " ", s)
+    s = s.replace("_", " ").replace(".", " ").replace("-", " ").replace("(", " ").replace(")", " ")
+    s = re.sub(r"(?i)\b(" + RELEASE_TAGS + r")\b", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def extract_title(s):
+    """Pull a matchable title from a messy string: take the first separator-delimited
+    segment and truncate at the first year."""
+    s = (s or "").replace("_", " ")
+    s = re.split(r"\s+[-–—|]\s+|\s+[-–—|]|\s+\|\s+", s, maxsplit=1)[0]
+    m = YEAR_RE.search(s)
+    if m:
+        s = s[: m.start()]
+    return clean_title_str(s)
+
+
+def parse_filename(path):
+    """Extract (title, year, is_episode, series_name) heuristically from a filename."""
+    stem = Path(path).stem
+    while True:
+        suf = Path(stem).suffix.lower()
+        if suf in EXTRA_CODEC_EXTS:
+            stem = stem[: -len(suf)]
+        else:
+            break
+
+    parts = EPISODE_RE.split(stem)
+    is_episode = len(parts) >= 3
+    if is_episode:
+        series_part = parts[0]
+        ep_part = " ".join(parts[2:])
+    else:
+        series_part = None
+        ep_part = stem
+
+    year = None
+    pm = YEAR_RE.search(Path(path).parent.name.replace("_", " "))
+    if pm:
+        year = int(pm.group(0))
+    m = YEAR_RE.search(ep_part.replace("_", " "))
+    if m:
+        year = int(m.group(0))
+
+    title = extract_title(ep_part)
+    series = None
+    if is_episode and series_part:
+        sm = YEAR_RE.search(series_part.replace("_", " "))
+        if year is None and sm:
+            year = int(sm.group(0))
+        series = extract_title(series_part)
+
+    return title, year, is_episode, series
+
+
+def score_title(row, norm_title, year, is_episode):
+    s = 0.0
+    if row["norm_title"] == norm_title:
+        s += 100
+    elif row["norm_original"] == norm_title:
+        s += 60
+    tt = row["title_type"] or ""
+    if is_episode:
+        if tt in ("tvEpisode", "tvSeries", "tvMiniSeries"):
+            s += 15
+        elif tt == "movie":
+            s -= 5
+    else:
+        if tt in ("movie", "tvMovie", "video", "short"):
+            s += 10
+        if tt in ("tvSeries", "tvMiniSeries"):
+            s -= 20
+    if year and row["start_year"]:
+        diff = abs(row["start_year"] - year)
+        if diff == 0:
+            s += 50
+        elif diff <= 1:
+            s += 25
+        elif diff <= 3:
+            s += 5
+        else:
+            s -= 20
+    s += min(row["votes"] or 0, 100000) / 100000.0 * 5
+    return s
+
+
+def find_best(cur, norm_title, year, is_episode=False):
+    if not norm_title or len(norm_title) < 3:
+        return None
+    best = None
+    for row in cur.execute(
+        "SELECT * FROM titles WHERE norm_title = ? OR norm_original = ?",
+        (norm_title, norm_title),
+    ):
+        r = dict(row)
+        sc = score_title(r, norm_title, year, is_episode)
+        if best is None or sc > best[1]:
+            best = (r, sc)
+    for row in cur.execute(
+        "SELECT t.* FROM akas a JOIN titles t ON t.tconst = a.tconst WHERE a.norm_title = ?",
+        (norm_title,),
+    ):
+        r = dict(row)
+        sc = score_title(r, norm_title, year, is_episode) + 20
+        if best is None or sc > best[1]:
+            best = (r, sc)
+    return best[0] if best else None
+
+
+def find_series(cur, norm_title, year):
+    if not norm_title or len(norm_title) < 3:
+        return None
+    best = None
+    for row in cur.execute(
+        "SELECT * FROM titles WHERE (norm_title = ? OR norm_original = ?) AND title_type IN "
+        "('tvSeries','tvMiniSeries','tvMovie')",
+        (norm_title, norm_title),
+    ):
+        r = dict(row)
+        sc = 0.0
+        if year and r["start_year"]:
+            diff = abs(r["start_year"] - year)
+            sc += 50 if diff == 0 else (25 if diff <= 2 else 5)
+        sc += min(r["votes"] or 0, 100000) / 100000.0 * 5
+        if best is None or sc > best[1]:
+            best = (r, sc)
+    return best[0] if best else None
+
+
+def is_empty(v, kind):
+    if v is None:
+        return True
+    if kind == "int":
+        return v == 0
+    return str(v).strip() == ""
+
+
+def enrich(args):
+    paths = get_files(args)
+    index_db = build_index(paths, args)
+
+    if not os.path.exists(args.db):
+        log(f"Error: database not found: {args.db}")
+        sys.exit(1)
+
+    conn = sqlite3.connect(args.db)
+    conn.row_factory = sqlite3.Row
+
+    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if args.table not in tables:
+        log(f"Error: no '{args.table}' table in {args.db}")
+        sys.exit(1)
+
+    cols = {r["name"] for r in conn.execute(f"PRAGMA table_info({args.table})")}
+    has_path = "path" in cols
+    if not has_path and "webpath" not in cols:
+        log(f"Error: '{args.table}' has neither a path nor webpath column")
+        sys.exit(1)
+    has_id = "id" in cols
+
+    new_cols = {
+        "genre": "TEXT",
+        "title": "TEXT",
+        "imdb_rating": "REAL",
+        "imdb_votes": "INTEGER",
+        "year": "INTEGER",
+    }
+    for c, ddl in new_cols.items():
+        if c not in cols:
+            log(f"Adding column: {args.table}.{c} {ddl}")
+            conn.execute(f"ALTER TABLE {args.table} ADD COLUMN {c} {ddl}")
+
+    idcol = "id" if has_id else "rowid"
+    pathcol = "path" if has_path else "webpath"
+
+    select_sql = (
+        f"SELECT {idcol} AS rid, {pathcol} AS path, title, genre, imdb_rating, imdb_votes, year"
+        f" FROM {args.table}"
+    )
+
+    rows = []
+    for row in conn.execute(select_sql):
+        d = dict(row)
+        if all(
+            not is_empty(d.get(c), "int" if c in ("year", "imdb_votes") else "text")
+            for c in ENRICH_COLS
+        ):
+            continue
+        rows.append(d)
+    if not rows:
+        log("No rows need enrichment.")
+        return
+
+    idx = sqlite3.connect(index_db)
+    idx.row_factory = sqlite3.Row
+    icur = idx.cursor()
+
+    stats = dict.fromkeys(("genre", "title", "imdb_rating", "imdb_votes", "year"), 0)
+    matched = 0
+    unmatched = 0
+    updates = []
+
+    total = len(rows)
+    for i, row in enumerate(rows, 1):
+        existing = dict(row)
+        path = existing.get("path") or ""
+        media_title = existing.get("title")
+
+        title_str, year, is_episode, series_str = parse_filename(path)
+        if not (title_str and len(title_str) >= 3):
+            title_str = extract_title(media_title)
+
+        m = None
+        series = None
+        if is_episode and series_str:
+            series = find_series(icur, norm(series_str), year)
+            if norm(series_str) != norm(title_str) and len(title_str) >= 3:
+                m = find_best(icur, norm(title_str), year, is_episode=True)
+        else:
+            m = find_best(icur, norm(title_str), year, is_episode=False)
+            if m is None:
+                m = find_best(icur, norm_short(title_str), year, is_episode=False)
+
+        if m is None and not (is_episode and series):
+            unmatched += 1
+            if args.verbose:
+                log(f"  no match: {title_str!r} ({year}) {path}")
+            continue
+        matched += 1
+
+        info = m or series
+        new = {}
+        g = (m["genres"] if m else None) or (series["genres"] if series else None)
+        if g:
+            new["genre"] = g
+        if m and m["primary_title"]:
+            new["title"] = m["primary_title"]
+        if info["rating"] is not None:
+            new["imdb_rating"] = info["rating"]
+        if info["votes"] is not None:
+            new["imdb_votes"] = info["votes"]
+        if info["start_year"]:
+            new["year"] = info["start_year"]
+        if not new:
+            continue
+
+        keep = {}
+        for c, v in new.items():
+            if not args.force:
+                curval = existing.get(c)
+                kind = "int" if c in ("year", "imdb_votes") else "text"
+                if not is_empty(curval, kind):
+                    continue
+            if v is not None:
+                keep[c] = v
+        if keep:
+            updates.append((keep, existing["rid"]))
+            for c in keep:
+                stats[c] += 1
+
+        if i % 500 == 0:
+            print(f"\r  matched {matched:,} / {i:,}", end="", file=sys.stderr)
+    print(f"\r  matched {matched:,} / {total:,} (unmatched {unmatched:,})", file=sys.stderr)
+
+    if args.dry_run:
+        log("Dry run; no changes written.")
+        for c, n in stats.items():
+            log(f"  would set {c}: {n:,}")
+        return
+
+    conn.execute("BEGIN")
+    for keep, rid in updates:
+        sets = ", ".join(f"{c}=?" for c in keep)
+        params = [*keep.values(), rid]
+        conn.execute(f"UPDATE {args.table} SET {sets} WHERE {idcol}=?", params)
+    conn.commit()
+
+    log("Done. Summary:")
+    for c, n in stats.items():
+        log(f"  {c}: {n:,} rows updated")
+    log(f"  total rows enriched: {matched:,}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__.strip().splitlines()[0],
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("db", help="Path to the sqlite database to enrich (must contain a media table).")
+    parser.add_argument("--table", default="media", help="Table to enrich (default: media).")
+    parser.add_argument("--force", action="store_true", help="Overwrite existing values instead of only filling empties.")
+    parser.add_argument("--refresh", action="store_true", help="Re-download the IMDb dataset files.")
+    parser.add_argument("--rebuild-index", action="store_true", help="Rebuild the local lookup index from cached files.")
+    parser.add_argument("--max-age", type=int, default=0, help="Auto re-download datasets older than N days (0=never).")
+    parser.add_argument("--dry-run", action="store_true", help="Report what would change without writing.")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show unmatched rows.")
+    args = parser.parse_args()
+    enrich(args)
+
+
+if __name__ == "__main__":
+    main()
