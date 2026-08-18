@@ -509,7 +509,6 @@ abbr -a -- sleepy_perf ps.waiting
 abbr -a -- githistory paths.git.log
 abbr -a -- git-changelog git.changelog
 abbr -a -- avg_size files.size.avg
-abbr -a -- avg lines.numbers.avg
 abbr -a -- logeach log.each
 abbr -a -- eachpc servers.ssh.each
 abbr -a -- speak text.to.speach
@@ -608,7 +607,6 @@ abbr -a -- to_insta video.to.instagram
 abbr -a -- screendim xcalib.dim
 abbr -a -- random-file file.random
 abbr -a -- skipthrough mpv.seek.random
-abbr -a -- sum lines.sum
 abbr -a -- par eval.par
 abbr -a -- gdl dl.images
 abbr -a -- gls paths.git.ls
@@ -895,7 +893,7 @@ abbr -a -- wgetfilename wget.force.suffix
 abbr -a -- suffix lines.suffix
 abbr -a -- fileSuffix path.withsuffix
 abbr -a -- repeatdelay repeat.delay
-abbr -a -- sqlite-group-by sqlite.group.by
+abbr -a -- sqlite.groupby sqlite.groupby
 abbr -a -- pdfsmall_grey pdf.shrink.grey
 abbr -a -- priv-daily priv.daily
 abbr -a -- repeatslowly repeat.slowly
@@ -962,3 +960,6 @@ abbr -a -- ogrinfo ogrinfo -ro -so -al
 abbr -a -- editcb cb.edit
 abbr -a -- wrap 'chars.singlespace | fold -s -w 100'
 abbr -a -- zellij zellij attach -c phone
+abbr -a -- avg 'stats --avg'
+abbr -a -- sum 'stats --sum'
+abbr -a -- sqlite-group-by sqlite.groupby

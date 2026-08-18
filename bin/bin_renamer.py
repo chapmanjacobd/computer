@@ -95,8 +95,9 @@ def process_files(args):
                 break
 
             if r.get('original_name') == filename:
-                command = f"mv {bin_dir}/{filename} {bin_dir}/{r.get('new_name')}"
-                mv_commands.append(command)
+                new_name = r.get('new_name')
+                commands = [f"mv {bin_dir}/{filename} {bin_dir}/{new_name}", f"findandreplace {filename} {new_name}", f"abbrsave {filename} {new_name}"]
+                mv_commands.extend(commands)
                 is_already_known = True
                 break
             elif r.get('new_name') == filename:
@@ -131,12 +132,8 @@ def process_files(args):
             save_rename_entry(filename, "", "skip", args)
             print("[SKIP] No new name entered. Logged as skip.")
         else:
-            command = f"mv {bin_dir}/{filename} {bin_dir}/{new_name}"
-            mv_commands.append(command)
-            command = f"findandreplace {filename} {new_name}"
-            mv_commands.append(command)
-            command = f"abbrsave {filename} {new_name}"
-            mv_commands.append(command)
+            commands = [f"mv {bin_dir}/{filename} {bin_dir}/{new_name}", f"findandreplace {filename} {new_name}", f"abbrsave {filename} {new_name}"]
+            mv_commands.extend(commands)
             save_rename_entry(filename, new_name, "rename", args)
 
     if mv_commands:

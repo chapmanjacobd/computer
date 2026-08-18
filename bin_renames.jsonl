@@ -207,35 +207,30 @@
 {"type": "rename", "original_name": "syncthing_send.py", "new_name": "syncthing.send.py"}
 {"type": "rename", "original_name": "syncthing_status.sh", "new_name": "syncthing.status.sh"}
 {"type": "skip", "original_name": "syscount.bt"}
-{"type": "rename", "original_name": "tablescrape.py", "new_name": "tables.scrape.py"}
-{"type": "rename", "original_name": "tailscale-connected.sh", "new_name": "tailscale.connected.sh"}
+{"type": "rename", "original_name": "tailscale-connected.sh", "new_name": "tailscale.status"}
 {"type": "skip", "original_name": "text.clean"}
-{"type": "rename", "original_name": "text_border.py", "new_name": "text.border.py"}
-{"type": "rename", "original_name": "text_files_similarity.py", "new_name": "text.files.similarity.py"}
-{"type": "rename", "original_name": "throttledisk", "new_name": "disk.throttle"}
+{"type": "rename", "original_name": "text_files_similarity.py", "new_name": "files.text.similar"}
+{"type": "rename", "original_name": "throttledisk", "new_name": "throttle.disk"}
 {"type": "skip", "original_name": "timecalc"}
 {"type": "skip", "original_name": "timecalc_tests.py"}
-{"type": "rename", "original_name": "tinytext.py", "new_name": "text.tiny.py"}
-{"type": "rename", "original_name": "title_case.py", "new_name": "title.case.py"}
 {"type": "skip", "original_name": "tmux.waitgroup"}
-{"type": "rename", "original_name": "to_pkl.py", "new_name": "to.pkl.py"}
-{"type": "rename", "original_name": "toggle-monitor.sh", "new_name": "monitor.toggle.sh"}
-{"type": "rename", "original_name": "tokenize_bert.py", "new_name": "tokenize.bert.py"}
-{"type": "rename", "original_name": "torrent_dedupe_2.py", "new_name": "torrent.dedupe.py"}
-{"type": "rename", "original_name": "torrent_dedupe_by_quality.py", "new_name": "torrent.dedupe.by.quality.py"}
-{"type": "rename", "original_name": "torrent_dedupe_date.py", "new_name": "torrent.dedupe.date.py"}
-{"type": "rename", "original_name": "torrent_dupes.py", "new_name": "torrent.dupes.py"}
-{"type": "rename", "original_name": "torrent_exts.py", "new_name": "torrent.exts.py"}
-{"type": "rename", "original_name": "torrent_files.py", "new_name": "torrent.files.py"}
-{"type": "rename", "original_name": "torrent_files2.py", "new_name": "torrent.files2.py"}
-{"type": "rename", "original_name": "torrent_files_add.py", "new_name": "torrent.files.add.py"}
-{"type": "rename", "original_name": "torrent_promote.py", "new_name": "torrent.promote.py"}
-{"type": "rename", "original_name": "torrent_remove_trackers.py", "new_name": "torrent.remove.trackers.py"}
-{"type": "rename", "original_name": "torrent_rename_trackers.py", "new_name": "torrent.rename.trackers.py"}
-{"type": "rename", "original_name": "torrent_similar.py", "new_name": "torrent.similar.py"}
-{"type": "rename", "original_name": "torrent_sort.py", "new_name": "torrent.sort.py"}
+{"type": "rename", "original_name": "toggle-monitor.sh", "new_name": "monitor.toggle"}
+{"type": "rename", "original_name": "tokenize_bert.py", "new_name": "tokenize.bert"}
+{"type": "rename", "original_name": "torrent_dedupe_2.py", "new_name": "torrent.dedupe2"}
+{"type": "rename", "original_name": "torrent_dedupe_by_quality.py", "new_name": "torrent.dedupe.by.quality"}
+{"type": "rename", "original_name": "torrent_dedupe_date.py", "new_name": "torrent.dedupe.date"}
+{"type": "rename", "original_name": "torrent_dupes.py", "new_name": "torrent.dupes"}
+{"type": "rename", "original_name": "torrent_exts.py", "new_name": "torrent.exts"}
+{"type": "rename", "original_name": "torrent_files.py", "new_name": "torrent.files"}
+{"type": "rename", "original_name": "torrent_files2.py", "new_name": "torrent.files2"}
+{"type": "rename", "original_name": "torrent_files_add.py", "new_name": "torrent.files.add"}
+{"type": "rename", "original_name": "torrent_promote.py", "new_name": "torrent.promote"}
+{"type": "rename", "original_name": "torrent_remove_trackers.py", "new_name": "torrent.trackers.remove"}
+{"type": "rename", "original_name": "torrent_rename_trackers.py", "new_name": "torrent.trackers.rename"}
+{"type": "rename", "original_name": "torrent_similar.py", "new_name": "torrent.similar"}
+{"type": "rename", "original_name": "torrent_sort.py", "new_name": "torrent.sort"}
 {"type": "rename", "original_name": "trU", "new_name": "tr.unicode"}
-{"type": "rename", "original_name": "trace_aio", "new_name": "trace.aio"}
+{"type": "rename", "original_name": "trace_aio", "new_name": "trace.asyncio"}
 {"type": "rename", "original_name": "trace_chattrs.bt", "new_name": "trace.chattrs.bt"}
 {"type": "rename", "original_name": "trace_execs.bt", "new_name": "trace.execs.bt"}
 {"type": "rename", "original_name": "trace_execs_unique.bt", "new_name": "trace.execs.unique.bt"}
@@ -251,53 +246,159 @@
 {"type": "rename", "original_name": "trace_unlinks_size.bt", "new_name": "trace.unlinks.size.bt"}
 {"type": "rename", "original_name": "trace_writes.bt", "new_name": "trace.writes.bt"}
 {"type": "rename", "original_name": "trace_xattrs.bt", "new_name": "trace.xattrs.bt"}
-{"type": "rename", "original_name": "trackballscroll.sh", "new_name": "trackball.scroll.sh"}
-{"type": "rename", "original_name": "trans-cached.sh", "new_name": "trans.cached.sh"}
+{"type": "rename", "original_name": "trackballscroll.sh", "new_name": "scroll.sh"}
+{"type": "rename", "original_name": "trans-cached.sh", "new_name": "translate.cached.sh"}
 {"type": "skip", "original_name": "translate.py"}
 {"type": "skip", "original_name": "translate.sh"}
-{"type": "rename", "original_name": "trash_bg.sh", "new_name": "trash.bg.sh"}
-{"type": "rename", "original_name": "trim_bytes.py", "new_name": "trim.bytes.py"}
-{"type": "rename", "original_name": "trim_right", "new_name": "text.trim.right"}
+{"type": "rename", "original_name": "trash_bg.sh", "new_name": "trash.background"}
+{"type": "rename", "original_name": "trim_bytes.py", "new_name": "trim.bytes"}
+{"type": "rename", "original_name": "trim_right", "new_name": "trim.trailing.space"}
 {"type": "skip", "original_name": "tsort"}
 {"type": "skip", "original_name": "tsort.c"}
-{"type": "rename", "original_name": "tunedev.sh", "new_name": "dev.tune.sh"}
 {"type": "skip", "original_name": "typer.py"}
 {"type": "skip", "original_name": "umpv"}
-{"type": "rename", "original_name": "un_colemak_dh.py", "new_name": "keyboard.colemak.dh.py"}
+{"type": "rename", "original_name": "un_colemak_dh.py", "new_name": "un.colemak_dh.py"}
 {"type": "rename", "original_name": "unar_heshui.py", "new_name": "unar.heshui.py"}
-{"type": "rename", "original_name": "unarchive.py", "new_name": "un.archive.py"}
 {"type": "skip", "original_name": "unflac"}
 {"type": "skip", "original_name": "unhtml"}
 {"type": "skip", "original_name": "unhtml.c"}
 {"type": "skip", "original_name": "unique"}
-{"type": "rename", "original_name": "uniqueb", "new_name": "unique.unsorted"}
+{"type": "rename", "original_name": "uniqueb", "new_name": "unique.py"}
 {"type": "rename", "original_name": "unwrap.pl", "new_name": "text.unwrap.pl"}
-{"type": "rename", "original_name": "url_files_web_titles.py", "new_name": "url.files.web.titles.py"}
-{"type": "rename", "original_name": "url_tool.py", "new_name": "url.tool.py"}
-{"type": "rename", "original_name": "urls.py", "new_name": "urls.extract.py"}
+{"type": "rename", "original_name": "url_files_web_titles.py", "new_name": "files.urls.fill.web.titles"}
+{"type": "rename", "original_name": "url_tool.py", "new_name": "url.tool"}
+{"type": "rename", "original_name": "urls.py", "new_name": "chars.url"}
 {"type": "rename", "original_name": "usb-reset.sh", "new_name": "usb.reset.sh"}
-{"type": "rename", "original_name": "utf8_tool.py", "new_name": "utf8.tool.py"}
-{"type": "rename", "original_name": "utf8_tool2", "new_name": "utf8.visible"}
+{"type": "rename", "original_name": "utf8_tool.py", "new_name": "utf8.tool"}
+{"type": "rename", "original_name": "utf8_tool2", "new_name": "utf8.tool2"}
 {"type": "skip", "original_name": "utils.py"}
-{"type": "rename", "original_name": "value-barplot.sh", "new_name": "value.barplot.sh"}
-{"type": "rename", "original_name": "wait_uptime.py", "new_name": "wait.uptime.py"}
 {"type": "skip", "original_name": "watch.py"}
-{"type": "rename", "original_name": "wayback_dl.py", "new_name": "wayback.dl.py"}
-{"type": "rename", "original_name": "wg-container", "new_name": "wg.container"}
+{"type": "rename", "original_name": "wayback_dl.py", "new_name": "dl.wayback"}
+{"type": "skip", "original_name": "wg-container", "new_name": "wg.container"}
 {"type": "skip", "original_name": "wheel.py"}
 {"type": "skip", "original_name": "wifi"}
-{"type": "rename", "original_name": "wifi-login.sh", "new_name": "wifi.login.sh"}
-{"type": "rename", "original_name": "wiki_title.py", "new_name": "wiki.title.py"}
-{"type": "rename", "original_name": "wip_message.py", "new_name": "git.wip.message.py"}
-{"type": "rename", "original_name": "wipefs_undo.py", "new_name": "wipefs.undo.py"}
-{"type": "rename", "original_name": "with_backoff.sh", "new_name": "with.backoff.sh"}
-{"type": "rename", "original_name": "wkt2geojson.py", "new_name": "wkt.to.geojson.py"}
-{"type": "rename", "original_name": "wordfreq_sort.py", "new_name": "wordfreq.sort.py"}
+{"type": "rename", "original_name": "wifi-login.sh", "new_name": "wifi.login"}
+{"type": "rename", "original_name": "wip_message.py", "new_name": "git.wip.message"}
+{"type": "rename", "original_name": "wipefs_undo.py", "new_name": "wipefs.undo"}
+{"type": "rename", "original_name": "with_backoff.sh", "new_name": "with.backoff"}
+{"type": "rename", "original_name": "wkt2geojson.py", "new_name": "wkt.to.geojson"}
+{"type": "rename", "original_name": "wordfreq_sort.py", "new_name": "wordfreq.sort"}
 {"type": "skip", "original_name": "xcalib"}
-{"type": "rename", "original_name": "xcaliber.sh", "new_name": "xcalib.theme.sh"}
-{"type": "rename", "original_name": "xdelta3_patch_gen.py", "new_name": "xdelta3.patch.gen.py"}
+{"type": "rename", "original_name": "xdelta3_patch_gen.py", "new_name": "xdelta3.patch.create"}
 {"type": "skip", "original_name": "xidel"}
-{"type": "rename", "original_name": "xmodmap-on-input-change.sh", "new_name": "xmodmap.on.input.change.sh"}
-{"type": "rename", "original_name": "yaml2py.py", "new_name": "yaml.to.py"}
-{"type": "rename", "original_name": "yml2json.py", "new_name": "yml.to.json"}
+{"type": "rename", "original_name": "xmodmap-on-input-change.sh", "new_name": "xmodmap.on.change"}
+{"type": "rename", "original_name": "yaml2py.py", "new_name": "yaml.to.python"}
+{"type": "rename", "original_name": "yml2json.py", "new_name": "yaml.to.json"}
 {"type": "rename", "original_name": "yt_channel_playlist.pl", "new_name": "yt.channel.playlist.pl"}
+{"type": "skip", "original_name": "aria2c.stream"}
+{"type": "rename", "original_name": "atlas_obscura_map.py", "new_name": "json.to.sqlite.atlasobscura.py"}
+{"type": "skip", "original_name": "avg"}
+{"type": "skip", "original_name": "blockdevices.py"}
+{"type": "rename", "original_name": "bpftrace_human_size.awk", "new_name": "bpftrace.humansize.awk"}
+{"type": "skip", "original_name": "cbi"}
+{"type": "rename", "original_name": "cockney", "new_name": "text.to.cockney"}
+{"type": "rename", "original_name": "combine-ssh", "new_name": "ssh.combine"}
+{"type": "rename", "original_name": "combine.audio", "new_name": "audio.combine"}
+{"type": "rename", "original_name": "context_cat.fish", "new_name": "context.cat.fish"}
+{"type": "skip", "original_name": "copymaplink.sh"}
+{"type": "rename", "original_name": "corrupt.py", "new_name": "corrupt.a.file"}
+{"type": "skip", "original_name": "cptree.py"}
+{"type": "rename", "original_name": "csv2json.test.sh", "new_name": "csv.to.json.test.sh"}
+{"type": "rename", "original_name": "enospc-retry", "new_name": "enospc.retry"}
+{"type": "rename", "original_name": "ensure_newline.awk", "new_name": "file.eof.newline.awk"}
+{"type": "rename", "original_name": "etasync", "new_name": "sync.eta"}
+{"type": "rename", "original_name": "famon", "new_name": "pid.filehandles"}
+{"type": "rename", "original_name": "ffchk", "new_name": "ffmpeg.check"}
+{"type": "rename", "original_name": "ffmpeg.keyframes.sort.py", "new_name": "ffmpeg.keyframes.sort"}
+{"type": "rename", "original_name": "files.similar.py", "new_name": "files.similar"}
+{"type": "skip", "original_name": "filet"}
+{"type": "rename", "original_name": "find_word_breaks.py", "new_name": "text.decode.word.breaks"}
+{"type": "rename", "original_name": "fish_functions_rename.py", "new_name": "fish.functions.rename.py"}
+{"type": "skip", "original_name": "folders.merge.common.py"}
+{"type": "skip", "original_name": "folders.merge.py"}
+{"type": "skip", "original_name": "folders.merge.test.py"}
+{"type": "skip", "original_name": "folders.mv.merge.common.py"}
+{"type": "skip", "original_name": "fsgoal.py"}
+{"type": "rename", "original_name": "gcs_intersects.py", "new_name": "googlecloud.storage.st.intersects"}
+{"type": "rename", "original_name": "gen_deploy_key.sh", "new_name": "ssh.gen.deploykey"}
+{"type": "rename", "original_name": "gh_grabber.py", "new_name": "search.github.repos"}
+{"type": "skip", "original_name": "ginh.sh"}
+{"type": "rename", "original_name": "gist_dl_user", "new_name": "dl.gist.user"}
+{"type": "rename", "original_name": "git-quick-stats", "new_name": "git.quick.stats"}
+{"type": "skip", "original_name": "googleassist.py"}
+{"type": "rename", "original_name": "gron", "new_name": "grep.json"}
+{"type": "rename", "original_name": "group_lines.test.sh", "new_name": "lines.group.test.sh"}
+{"type": "rename", "original_name": "gutenberg_download.sh", "new_name": "dl.gutenberg"}
+{"type": "rename", "original_name": "gzipsize", "new_name": "size.gzip"}
+{"type": "skip", "original_name": "javguru.py"}
+{"type": "skip", "original_name": "javtiful.py"}
+{"type": "rename", "original_name": "json2csv.test.py", "new_name": "json.to.csv.test.py"}
+{"type": "rename", "original_name": "json_h_table.py", "new_name": "json.to.table"}
+{"type": "skip", "original_name": "liblist.sh"}
+{"type": "rename", "original_name": "lowcharts_size_hist.py", "new_name": "lowcharts.hist.size"}
+{"type": "rename", "original_name": "lsix", "new_name": "ls.sixel"}
+{"type": "rename", "original_name": "lsofgraph", "new_name": "lsof.graph"}
+{"type": "rename", "original_name": "magic-trace", "new_name": "magic.trace"}
+{"type": "rename", "original_name": "mam_dupes.py", "new_name": "mam.dupes"}
+{"type": "rename", "original_name": "mam_slots.py", "new_name": "mam.slots"}
+{"type": "rename", "original_name": "media.by.word.py", "new_name": "sqlite.groupby.words"}
+{"type": "rename", "original_name": "media_diff.sh", "new_name": "media.diff"}
+{"type": "rename", "original_name": "miso", "new_name": "datarescue.miso"}
+{"type": "rename", "original_name": "misomap", "new_name": "datarescue.misomap"}
+{"type": "rename", "original_name": "mktestdirtree_many_exts.py", "new_name": "mktree.test.exts"}
+{"type": "rename", "original_name": "mons.sh", "new_name": "monitors"}
+{"type": "skip", "original_name": "mpvctl"}
+{"type": "rename", "original_name": "order_of_operations.test.sh", "new_name": "order.of.operations.test.sh"}
+{"type": "skip", "original_name": "polyfit"}
+{"type": "skip", "original_name": "postgresqlite"}
+{"type": "rename", "original_name": "preserve_titles.awk", "new_name": "files.urls.preserve.titles.awk"}
+{"type": "rename", "original_name": "pretty_num.py", "new_name": "lines.numbers.locale"}
+{"type": "skip", "original_name": "printsignal"}
+{"type": "rename", "original_name": "pvrun", "new_name": "pv.run"}
+{"type": "rename", "original_name": "pyliteral-to-json.test.py", "new_name": "pyliteral.to.json.test.py"}
+{"type": "rename", "original_name": "pymodule_path.py", "new_name": "pymodule.path.py"}
+{"type": "rename", "original_name": "qbt_file_sizes.py", "new_name": "qbt.file.sizes"}
+{"type": "rename", "original_name": "qbt_hashes.py", "new_name": "qbt.hashes"}
+{"type": "rename", "original_name": "random_files.py", "new_name": "files.random"}
+{"type": "rename", "original_name": "re_parent.py", "new_name": "re.parent.py"}
+{"type": "rename", "original_name": "recipe_scale.nbt", "new_name": "recipe.scale.nbt"}
+{"type": "rename", "original_name": "removeprefix.py", "new_name": "trim.prefix"}
+{"type": "rename", "original_name": "removesuffix.py", "new_name": "trim.suffix"}
+{"type": "skip", "original_name": "rename.py"}
+{"type": "rename", "original_name": "resume_cp.sh", "new_name": "cp.resume"}
+{"type": "rename", "original_name": "rm_corrupt.py", "new_name": "files.corrupted.rm"}
+{"type": "rename", "original_name": "rocky.py", "new_name": "dl.arcgis.rocky"}
+{"type": "rename", "original_name": "russian", "new_name": "text.to.russian"}
+{"type": "rename", "original_name": "search.file.match.percent.py", "new_name": "files.search.regex.py"}
+{"type": "rename", "original_name": "settle_cp.py", "new_name": "cp.settled.py"}
+{"type": "rename", "original_name": "similar_grep.py", "new_name": "files.search.similar.py"}
+{"type": "rename", "original_name": "similar_group2.py", "new_name": "files.diff.similar.py"}
+{"type": "rename", "original_name": "similar_groupby.py", "new_name": "files.diff.similar.groupby"}
+{"type": "rename", "original_name": "sleepy_perf.py", "new_name": "sleepstudy"}
+{"type": "rename", "original_name": "sort.grep", "new_name": "grep.similar"}
+{"type": "rename", "original_name": "spotify_playlists.py", "new_name": "spotify.playlist.tracks"}
+{"type": "rename", "original_name": "sqldiff", "new_name": "sqlite.diff"}
+{"type": "rename", "original_name": "sqlite.enrich.imdb.py", "new_name": "sqlite.fill.imdb"}
+{"type": "rename", "original_name": "sqlite_strip_enclosing_quotes.py", "new_name": "sqlite.update.strip.enclosing.quotes"}
+{"type": "skip", "original_name": "stats"}
+{"type": "rename", "original_name": "str_rgb.py", "new_name": "str.rgb.py"}
+{"type": "rename", "original_name": "strace_paths.py", "new_name": "strace.paths"}
+{"type": "rename", "original_name": "subdomains.py", "new_name": "domain.to.subdomains"}
+{"type": "rename", "original_name": "tablescrape.py", "new_name": "html.to.csv"}
+{"type": "rename", "original_name": "tailsleep", "new_name": "tail.wait"}
+{"type": "rename", "original_name": "text_border.py", "new_name": "text.border"}
+{"type": "rename", "original_name": "tinytext.py", "new_name": "text.to.superscript"}
+{"type": "rename", "original_name": "title_case.py", "new_name": "text.to.titlecase"}
+{"type": "rename", "original_name": "to_pkl.py", "new_name": "data.to.pkl.py"}
+{"type": "rename", "original_name": "tunedev.sh", "new_name": "blockdevices.tune.sh"}
+{"type": "skip", "original_name": "u2c.py"}
+{"type": "skip", "original_name": "unarchive.py"}
+{"type": "rename", "original_name": "unbork.py", "new_name": "files.un.mojibake"}
+{"type": "rename", "original_name": "validate_cloud_optimized_geotiff.py", "new_name": "cog.validate"}
+{"type": "rename", "original_name": "value-barplot.sh", "new_name": "value.barplot.sh"}
+{"type": "rename", "original_name": "vmdm", "new_name": "mount.vm"}
+{"type": "rename", "original_name": "wait-for-it.sh", "new_name": "wait.for.it.sh"}
+{"type": "rename", "original_name": "wait_uptime.py", "new_name": "uptime.wait"}
+{"type": "rename", "original_name": "wiki2text", "new_name": "wiki.xml.to.text"}
+{"type": "rename", "original_name": "wiki_title.py", "new_name": "wikipedia.title"}
+{"type": "skip", "original_name": "xcaliber.sh"}

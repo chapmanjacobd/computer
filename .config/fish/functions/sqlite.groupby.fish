@@ -1,5 +1,5 @@
 # Defined interactively
-function sqlite.group.by --argument db table column where
+function sqlite.groupby --argument db table column where
     if test -z "$where"
         set where "1=1"
     end

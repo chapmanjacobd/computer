@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse, json
 
 from library.mediadb import db_media, db_playlists

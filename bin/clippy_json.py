@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 import subprocess
 from collections import defaultdict

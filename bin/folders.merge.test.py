@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from pathlib import Path
 
 from library.__main__ import library as lb

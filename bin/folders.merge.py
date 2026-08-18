@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse, json, os
 from pathlib import Path
 
