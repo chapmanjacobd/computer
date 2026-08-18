@@ -5,3 +5,5 @@
 {"type": "skip", "original_name": "applications"}
 {"type": "rename", "original_name": "argo.yaml2py.py", "new_name": "argo.yaml.to.py"}
 {"type": "rename", "original_name": "argo_status.py", "new_name": "argo.status"}
+{"type": "skip", "original_name": ".gitignore"}
+{"type": "skip", "original_name": "C"}
