@@ -13,6 +13,6 @@ function morganize.all
     end
 
     for f in ~/j/lists/people.*list
-        unique "$f" | sort_by_last_name.py | sponge "$f"
+        unique "$f" | lines.sort.by.lastname | sponge "$f"
     end
 end

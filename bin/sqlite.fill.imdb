@@ -11,9 +11,9 @@ against the cached datasets.
 
 Examples:
 
-    sqlite.enrich.imdb.py video.db
-    sqlite.enrich.imdb.py video.db --dry-run
-    sqlite.enrich.imdb.py video.db --refresh --rebuild-index
+    sqlite.fill.imdb video.db
+    sqlite.fill.imdb video.db --dry-run
+    sqlite.fill.imdb video.db --refresh --rebuild-index
 """
 
 import argparse

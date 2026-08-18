@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# vmdm - mount a virtual-machine disk image (virtualbox, qemu, ...)
+# mount.vm - mount a virtual-machine disk image (virtualbox, qemu, ...)
 # ed <irc.rizon.net>, MIT-licensed, https://github.com/9001/usr-local-bin
 
 maxparts=8

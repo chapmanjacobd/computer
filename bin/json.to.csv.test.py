@@ -12,7 +12,7 @@ os.chdir(os.path.dirname(__file__))
 
 def run(args, input):
     return subprocess.check_output(
-        ["./json2csv", *args],
+        ["./json.to.csv", *args],
         input=input, encoding="utf8"
     )
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# https://gitlab.com/hydrargyrum/attic/-/blob/master/tailsleep/tailsleep
+# https://gitlab.com/hydrargyrum/attic/-/blob/master/tail.wait/tail.wait
 # SPDX-License-Identifier: WTFPL
 
 import sys

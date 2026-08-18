@@ -12,7 +12,7 @@ from library.utils.log_utils import log
 import glob
 
 '''
-accept mergerfs paths: stickysync_local historyfile /mnt/d/from /mnt/d/to
+accept mergerfs paths: stickysync historyfile /mnt/d/from /mnt/d/to
 if a conflict exists in the destination, remove the file: rm /mnt/d/to
 make all destination directories
 find the disk location of the existing file and cp reflink on the same filesystem to the dup path: /mnt/d1/from /mnt/d1/to
@@ -44,7 +44,7 @@ def as_dest(source_folder, destination_folder, path) -> Path:
     return destination_folder / path.relative_to(source_folder)
 
 
-def stickysync_local(historyfile, from_dir, to_dir):
+def stickysync(historyfile, from_dir, to_dir):
     history = set()
     if Path(historyfile).is_file():
         with open(historyfile, 'r') as hf:
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     args.from_dir = Path(args.from_dir).resolve()
     args.to_dir = Path(args.to_dir).resolve()
 
-    stickysync_local(args.historyfile, args.from_dir, args.to_dir)
+    stickysync(args.historyfile, args.from_dir, args.to_dir)

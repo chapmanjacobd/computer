@@ -2,7 +2,7 @@
 # coding: utf-8
 from __future__ import unicode_literals, print_function
 
-"""famon.py: monitor access to small files from a process
+"""pid.filehandles.py: monitor access to small files from a process
      (shows time spent for each file + estimate read/write speed)
      (runs better in pypy36)"""
 __version__   = "1.0"

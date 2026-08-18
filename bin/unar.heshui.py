@@ -13,7 +13,7 @@ from library.folders.rel_mv import rel_move
 from library.utils import objects, arggroups
 from library.utils.log_utils import log
 
-# fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar_heshui.py --unlink {}
+# fd . -eRAR ASMR-part2/ | parallel --joblog /home/xk/.jobs/joblog_2024-01-17T140222.log --resume-failed -j8 unar.heshui.py --unlink {}
 
 TEMP_BASE_DIR = Path('~/.tmp').expanduser()
 TEMP_BASE_DIR.mkdir(exist_ok=True)

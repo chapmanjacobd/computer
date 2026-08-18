@@ -1,4 +1,4 @@
-// cat ~/bin/copyq_clean.js | copyq eval -
+// cat ~/bin/copyq.clean.js | copyq eval -
 
 var numItems = size();
 var thresholdBytes = 1024 * 80;

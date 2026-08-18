@@ -12,5 +12,5 @@ function music.mv.random
     ) ~/sync/audio/weekly/
 
     lb christen --run ~/sync/audio/
-    files_casefold.py ~/sync/audio/ --run
+    files.casefold ~/sync/audio/ --run
 end

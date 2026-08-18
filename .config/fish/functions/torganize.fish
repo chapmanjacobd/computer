@@ -1,6 +1,6 @@
 # Defined interactively
 function torganize
-    parallel server.ssh {} qbt_prioritize.py ::: $servers
+    parallel server.ssh {} qbt.prioritize ::: $servers
 
     if test (count ~/Downloads/\[(seq 0 9)*.torrent) -gt 0
         lb mv (fd --max-depth=1 '\[[0-9].*\.torrent' --changed-before 5mins ~/Downloads/) /net/backup/.local/data/rtorrent/watch/new/

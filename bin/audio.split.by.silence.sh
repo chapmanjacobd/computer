@@ -8,7 +8,7 @@ true ${MIN_FRAGMENT_DURATION:="20"};
 export MIN_FRAGMENT_DURATION
 
 if [ -z "$OUT" ]; then
-    echo "Usage: split_by_silence.sh input_media.mp4 output_template_%03d.mkv"
+    echo "Usage: audio.split.by.silence.sh input_media.mp4 output_template_%03d.mkv"
     echo "Depends on FFmpeg, Bash, Awk, Perl 5. Not tested on Mac or Windows."
     echo ""
     echo "Environment variables (with their current values):"

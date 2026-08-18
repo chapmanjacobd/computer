@@ -10,8 +10,8 @@ function btrfs.snapshot.delete.check -a mnt
     set tmp_diff (mktemp /tmp/btrfs_diffXXXXX)
     sudo btrfs send --no-data -p $mnt/.snapshots/one $mnt/.snapshots/two >$tmp_diff
 
-    #~/bin/btrfs-snapshots-diff-summary.py --by_path -t -f $tmp_diff
-    ~/bin/btrfs-snapshots-diff-summary.py -f $tmp_diff --stats
+    #~/bin/btrfs.snapshots.diff.summary.py --by_path -t -f $tmp_diff
+    ~/bin/btrfs.snapshots.diff.summary.py -f $tmp_diff --stats
     echo sudo ~/.cargo/bin/btsdu -p $mnt/.snapshots/two $mnt/.snapshots/one
 
     if gum confirm --default=no 'Swap snapshots?'

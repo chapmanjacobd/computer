@@ -4,7 +4,7 @@ function findandreplace -a find -a replace
         set -l files $argv[3..-1]
         sd --string-mode "$find" "$replace" $files
     else
-        set -l files (rg -i -. --files-with-matches --fixed-strings "$find" | tee /dev/tty)
+        set -l files (command rg -i -. --files-with-matches --fixed-strings "$find" | tee /dev/tty)
 
         if test (count $files) -gt 0; and confirm
             sd --string-mode "$find" "$replace" $files

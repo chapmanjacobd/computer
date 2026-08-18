@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Henning Hasemann
 # https://leetless.de/posts/terminal-plotting-with-matplotlib-and-kitty/
-# plot_contour.py 'sin(x*y) + cos(x) + sin(y)'
+# plot.contour.py 'sin(x*y) + cos(x) + sin(y)'
 
 import argparse
 import subprocess

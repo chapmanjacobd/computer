@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# ~/bin/sleepy_run.py --trigger "429 Too Many Requests" yes 429 Too Many Requests
+# ~/bin/sleepy --trigger "429 Too Many Requests" yes 429 Too Many Requests
 
 import random
 import signal

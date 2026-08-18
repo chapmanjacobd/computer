@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# https://github.com/psyb0t/utils/blob/master/convert-video-to-transparent-gif.sh
+# https://github.com/psyb0t/utils/blob/master/video.to.transparent.gif.sh
 
 # Check if the required arguments were provided
 if [ -z "$1" ] || [ -z "$2" ]; then

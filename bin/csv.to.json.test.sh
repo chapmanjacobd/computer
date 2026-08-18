@@ -4,12 +4,12 @@
 
 cd "$(dirname "$0")"
 
-got=$(mktemp csv2json.XXXXXX)
+got=$(mktemp csv.to.json.XXXXXX)
 trap 'rm "$got"' EXIT
 
 
 init () {
-	./csv2json "$@" | python3 -m json.tool > "$got"
+	./csv.to.json "$@" | python3 -m json.tool > "$got"
 }
 
 check () {

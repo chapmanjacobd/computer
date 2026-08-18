@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-foldergoal.py - Manage whole folders between backing and staging directories based on constraints.
+folder.goal - Manage whole folders between backing and staging directories based on constraints.
 """
 
 import argparse

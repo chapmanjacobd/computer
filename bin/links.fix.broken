@@ -26,12 +26,12 @@ parser = ArgumentParser(
 	- exists/subdir/bar
 
 	Then, executing this:
-	  fix-broken-links-by-name links/ exists/
+	  links.fix.broken links/ exists/
 
 	will symlink links/broken -> exists/subdir/foo
 
 	However if there was a "exists/foo" in addition of "exists/subdir/foo",
-	fix-broken-links-by-name would not have been able to fix "broken"
+	links.fix.broken would not have been able to fix "broken"
 	because "foo" would be ambiguous.
 	""")
 )

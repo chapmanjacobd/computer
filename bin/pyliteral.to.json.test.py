@@ -17,7 +17,7 @@ os.chdir(os.path.dirname(__file__))
 
 def run(input):
 	return json.loads(subprocess.check_output(
-		["./pyliteral-to-json"],
+		["./pyliteral.to.json"],
 		encoding="utf8",
 		input=input
 	))

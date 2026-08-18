@@ -7,9 +7,9 @@ pkill xbindkeys && xbindkeys
 sleep 3
 pkill ibus
 xinput set-prop 9 310 1
-~/bin/trackballscroll.sh &
+~/bin/scroll.sh &
 xmodmap -e "clear Lock" > /dev/null
 
 sudo setkeycodes 6e 97  # remap Copilot key to RCtrl
 
-# b mons.sh -a
+# b monitors -a

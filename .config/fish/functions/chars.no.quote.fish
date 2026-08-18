@@ -1,4 +1,4 @@
 # Defined interactively
 function chars.no.quote
-    trU /\"\'«»‘’‚‛“”„‟‹›「」『』〝〞〟﹁﹂﹃﹄＂＇｢｣\(\)[]\{\}:,`?&!. ' '
+    tr.unicode /\"\'«»‘’‚‛“”„‟‹›「」『』〝〞〟﹁﹂﹃﹄＂＇｢｣\(\)[]\{\}:,`?&!. ' '
 end

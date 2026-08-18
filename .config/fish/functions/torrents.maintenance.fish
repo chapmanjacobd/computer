@@ -1,15 +1,15 @@
 function torrents.maintenance
     set hosts (servers.ssh.connectable $servers | grep -v pakon | sed "s|\$|:8888|")
 
-    ~/bin/qbt_hashes.py -v 127.0.0.1:8080 $hosts
-    ~/bin/qbt_file_sizes.py -v 127.0.0.1:8080 $hosts
+    ~/bin/qbt.hashes -v 127.0.0.1:8080 $hosts
+    ~/bin/qbt.file.sizes -v 127.0.0.1:8080 $hosts
 
     torrents.refresh
 
     # tag items
     for s in 127.0.0.1:8080 $hosts
-        qbt_torrents_exfoliate.py --host $s
-        qbt_torrents_trumped.py --host $s
+        qbt.torrents.exfoliate --host $s
+        qbt.torrents.trumped --host $s
     end
     # remove tagged items
     for s in (servers.ssh.connectable $servers)

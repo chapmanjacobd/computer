@@ -5,10 +5,10 @@
 Usage:
 
 Print a CSV of file.json:
-    json2csv < file.json
+    json.to.csv < file.json
 
 Same, but put 'id' and 'name' as first columns:
-    json2csv id name < file.json
+    json.to.csv id name < file.json
 """
 
 import argparse

@@ -10,9 +10,9 @@ function weekly
     #mrvideo
     porn.mv.random
     #mrrelax
-    foldergoal.py -S=+281G -S=-282G --yes /mnt/d4/library/video/ ~/sync/video/
+    folder.goal -S=+281G -S=-282G --yes /mnt/d4/library/video/ ~/sync/video/
     lb christen --run ~/sync/
-    files_casefold.py ~/sync/ --run
+    files.casefold ~/sync/ --run
 
     morganize.all
 

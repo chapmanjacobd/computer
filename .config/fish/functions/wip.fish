@@ -18,9 +18,9 @@ function wip
     git --no-pager diff --stat HEAD
     echo
     git status
-    wip_message.py --staged
+    git.wip.message --staged
     if set -q _flag_yes; or gum confirm --default=no
-        git commit -m "$(wip_message.py --staged)"
+        git commit -m "$(git.wip.message --staged)"
         git pull
         git push
     end

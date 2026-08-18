@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fsgoal.py - Manage files between backing and staging directories based on constraints.
+files.goal - Manage files between backing and staging directories based on constraints.
 """
 
 import argparse

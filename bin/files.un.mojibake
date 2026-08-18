@@ -2,7 +2,7 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
 
-"""unbork.py: Filename fixer"""
+"""files.un.mojibake: Filename fixer"""
 __version__ = "1.2"
 __author__ = "ed <irc.rizon.net>"
 __license__ = "MIT"
@@ -230,8 +230,8 @@ else:
     eprint(
         """
 \x1b[0;33mUsage:\x1b[0m
-   unbork.py url
-   unbork.py ENCODING via ENCODING
+   files.un.mojibake url
+   files.un.mojibake ENCODING via ENCODING
    unbork.by find 'BROKEN' 'GOOD'
 
 \x1b[0;33mExample 1:\x1b[0m
@@ -252,7 +252,7 @@ else:
    Find a correction method from BROKEN to GOOD
 
    \x1b[33m{0}\033[0;1m find 'УпРlЙ╣Кy' '同人音楽'\x1b[0m
-      .../unbork.py \x1b[1;31mcp932\x1b[0m via \x1b[1;32mcp866\x1b[0m ...
+      .../files.un.mojibake \x1b[1;31mcp932\x1b[0m via \x1b[1;32mcp866\x1b[0m ...
       Detection complete, found 4 possible fixes
 """.format(
             sys.argv[0],

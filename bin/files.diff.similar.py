@@ -59,8 +59,8 @@ def main():
     for canonical_line, group_list in groups.items():
         min_lineno = min(item['lineno'] for item in group_list)
 
-        group_lines = [(f'L{item['lineno']} ' if item['source'] == 'left' else f'R{item['lineno'] } ') + item['original_line'] for item in group_list]
-        combined_lines = "\n".join(group_lines)
+        lines.group = [(f'L{item['lineno']} ' if item['source'] == 'left' else f'R{item['lineno'] } ') + item['original_line'] for item in group_list]
+        combined_lines = "\n".join(lines.group)
 
         table_data.append([min_lineno, combined_lines])
 

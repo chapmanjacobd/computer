@@ -9,7 +9,7 @@ function daily
     mkdir ~/sync/video/keep/
 
     lb christen --run ~/sync/
-    files_casefold.py ~/sync/ --run
+    files.casefold ~/sync/ --run
 
     catt volume 0 && catt volume 40
     servers.ssh pip install --upgrade --pre yt-dlp[default,curl-cffi] yt-dlp-ejs
@@ -32,13 +32,13 @@ function daily
     git add .
     file.urls.titles.preserve
     git add .
-    url_files_web_titles.py (files.urls)
+    files.urls.fill.web.titles (files.urls)
     morganize.all
 
     library download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
 
     lb hnadd --oldest ~/lb/hackernews/hn.db
 
-    files_casefold.py ~/sync/ --run
+    files.casefold ~/sync/ --run
     priv.daily
 end

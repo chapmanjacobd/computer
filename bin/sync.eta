@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# etasync - shows ETA until all pending writes have flushed to disk
+# sync.eta - shows ETA until all pending writes have flushed to disk
 # ed <irc.rizon.net>, MIT-licensed, https://github.com/9001/usr-local-bin
 
 maxage=100

@@ -9,7 +9,7 @@ trap 'rm "$got"' EXIT
 
 
 init () {
-	group_lines "$@" > "$got"
+	lines.group "$@" > "$got"
 }
 
 check () {
