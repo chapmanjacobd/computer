@@ -133,6 +133,8 @@ def process_files(args):
         else:
             command = f"mv {bin_dir}/{filename} {bin_dir}/{new_name}"
             mv_commands.append(command)
+            command = f"findandreplace {filename} {new_name}"
+            mv_commands.append(command)
             command = f"abbrsave {filename} {new_name}"
             mv_commands.append(command)
             save_rename_entry(filename, new_name, "rename", args)

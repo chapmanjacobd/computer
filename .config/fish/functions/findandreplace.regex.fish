@@ -6,7 +6,7 @@ function findandreplace.regex --argument-names find replace
     else
         set -l files (rg -i -. --files-with-matches "$find" | tee /dev/tty)
 
-        if confirm
+        if test (count $files) -gt 0; and confirm
             sd "$find" "$replace" $files
         end
     end

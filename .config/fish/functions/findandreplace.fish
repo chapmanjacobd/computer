@@ -6,7 +6,7 @@ function findandreplace -a find -a replace
     else
         set -l files (rg -i -. --files-with-matches --fixed-strings "$find" | tee /dev/tty)
 
-        if confirm
+        if test (count $files) -gt 0; and confirm
             sd --string-mode "$find" "$replace" $files
         end
     end
