@@ -290,3 +290,4 @@ tsconfig.json linguist-language=JSON-with-Comments
 Vagrantfile text eol=lf
 WORKSPACE merge=mergiraf
 yarn.lock  text -diff
+grep.json  binary
