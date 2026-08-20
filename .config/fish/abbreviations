@@ -103,8 +103,6 @@ abbr -a -- er file.eval.random
 abbr -a -- refreshLibrary lb.refresh
 abbr -a -- abspath lsd
 abbr -a -- mv-ln mvln
-abbr -a -- gds 'git diff --staged; git diff --staged --stat; git status --untracked-files'
-abbr -a -- gd 'git diff; git diff --stat'
 abbr -a -- mod_up clear_mod_keys.sh
 abbr -a -- tmpdir tmp
 abbr -a -- ytda 'lb dladd ~/lb/dl/audio.db (cb)'
