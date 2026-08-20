@@ -12,15 +12,22 @@ function wip
 
     git reset
     git add .
-    git --no-pager diff HEAD
-    git --no-pager diff HEAD | grep TODO
+
+    set -l tree_oid (git write-tree)
+    set -l parent_oid (git rev-parse HEAD)
+    set -l msg (git.wip.message --staged)
+
+    git --no-pager diff $parent_oid $tree_oid
+    git --no-pager diff $parent_oid $tree_oid | grep -i TODO
     echo
-    git --no-pager diff --stat HEAD
+    git --no-pager diff --stat $parent_oid $tree_oid
     echo
     git status
-    git.wip.message --staged
+    echo $msg
+
     if set -q _flag_yes; or gum confirm --default=no
-        git commit -m "$(git.wip.message --staged)"
+        set -l commit_oid (git commit-tree $tree_oid -p $parent_oid -m "$msg")
+        git update-ref HEAD $commit_oid $parent_oid
         git pull
         git push
     end
