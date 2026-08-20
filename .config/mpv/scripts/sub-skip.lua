@@ -173,6 +173,42 @@ function start_long_sub_skip()
     end
 end
 
+-- watch a subtitle that may outlast max_subtitle_duration: it is shown normally
+-- first, and only if it is still on screen after that long do we skip the rest
+local long_sub_timer = nil
+local long_sub_check_start = nil
+local long_skip_sub_start = nil
+
+function cancel_long_sub_check()
+    if long_sub_timer then
+        long_sub_timer:kill()
+        long_sub_timer = nil
+    end
+    long_sub_check_start = nil
+end
+
+function do_long_sub_skip()
+    if skipping or sped_up then return end
+    local sub_start = mp.get_property_number("sub-start")
+    if sub_start == nil or sub_start ~= long_sub_check_start then return end
+    long_skip_sub_start = sub_start
+    start_long_sub_skip()
+end
+
+function schedule_long_sub_check(sub_start)
+    local time_pos = mp.get_property_number("time-pos")
+    if time_pos == nil then return end
+    local delay = cfg.max_subtitle_duration - (time_pos - sub_start)
+    if delay <= 0 then
+        do_long_sub_skip()
+    else
+        long_sub_timer = mp.add_timeout(delay, function()
+            long_sub_timer = nil
+            do_long_sub_skip()
+        end)
+    end
+end
+
 function handle_sub_change(_, sub_end)
     if sub_end and (skipping or sped_up) then
         -- print('handle_sub_change end_skip')
@@ -193,12 +229,19 @@ function handle_sub_change(_, sub_end)
         start_skip()
     end
 
-    -- skip subtitles that stay on screen too long (bad/merged captions)
-    if sub_end and not skipping and not sped_up then
+    -- arm (or cancel) a check to skip subtitles shown longer than max_subtitle_duration
+    if sub_end then
         local sub_start = mp.get_property_number("sub-start")
-        if sub_start and (sub_end - sub_start) > cfg.max_subtitle_duration then
-            start_long_sub_skip()
+        if sub_start and sub_start ~= long_skip_sub_start and sub_start ~= long_sub_check_start then
+            -- new subtitle: reset any pending check and re-arm it if it's long
+            cancel_long_sub_check()
+            long_sub_check_start = sub_start
+            if (sub_end - sub_start) > cfg.max_subtitle_duration then
+                schedule_long_sub_check(sub_start)
+            end
         end
+    else
+        cancel_long_sub_check()
     end
 end
 
