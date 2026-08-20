@@ -1250,3 +1250,4 @@ abbr -a -- mam_dupes.py mam.dupes
 abbr -a -- mam_slots.py mam.slots
 abbr -a -- mam_update.py mam.playlists.update
 abbr -a -- git.log git log --oneline --decorate --all --graph --stat
+abbr -a -- gl git log --oneline --decorate --all --graph --stat
