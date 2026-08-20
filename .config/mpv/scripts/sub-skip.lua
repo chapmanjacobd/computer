@@ -3,9 +3,10 @@ local cfg = {
     default_state = true,
     seek_mode_default = false,
     min_skip_interval = 3,
+    minimum_skip = 6,
     lead_start = 2,
     lead_end = 3,
-    max_nonskip_interval = 4,
+    max_subtitle_duration = 4,
     speed_skip_speed = 2.74,
     speed_skip_speed_delta = 0.1,
     min_skip_interval_delta = 0.25
@@ -108,7 +109,6 @@ end
 
 local initial_speed = mp.get_property_number("speed")
 local initial_video_sync = mp.get_property("video-sync")
-local start_idle = nil
 function handle_tick(_, time_pos)
     -- time_pos might be nil after the file changes
     if time_pos == nil then return end
@@ -134,17 +134,6 @@ function handle_tick(_, time_pos)
     elseif sped_up and time_pos > next_sub_start - cfg.lead_start then
         -- print('handle_tick end_skip')
         end_skip()
-    elseif not sped_up and not seek_skip then
-        if (start_idle == nil) or (start_idle > time_pos) then
-            start_idle = time_pos
-        end
-        elapsed_idle = time_pos - start_idle
-        -- print('elapsed_idle', elapsed_idle)
-        if cfg.max_nonskip_interval < elapsed_idle then
-            -- subtitle hasn't changed for n seconds so we speed up
-            -- print('idle skip')
-            last_sub_end = time_pos
-        end
     end
 end
 
@@ -159,18 +148,32 @@ end
 function end_skip()
     skipping = false
     sped_up = false
+    mp.unobserve_property(handle_tick)
     mp.set_property_number("speed", initial_speed)
     mp.set_property("video-sync", "audio")
     mp.set_property("video-sync", initial_video_sync)
     last_sub_end, next_sub_start = nil, nil
-    start_idle = nil
+end
+
+function start_long_sub_skip()
+    -- skip through a subtitle that has stayed on screen too long
+    -- (e.g. merged/badly timed captions), up to the next line
+    if skipping then return end
+    if seek_skip then
+        start_seek_skip()
+    else
+        local time_pos = mp.get_property_number("time-pos")
+        if time_pos == nil then return end
+        initial_speed = mp.get_property_number("speed")
+        initial_video_sync = mp.get_property("video-sync")
+        mp.set_property("video-sync", "desync")
+        mp.set_property_number("speed", cfg.speed_skip_speed)
+        sped_up = true
+        start_skip()
+    end
 end
 
 function handle_sub_change(_, sub_end)
-    if sub_end then
-        start_idle = nil
-    end
-
     if sub_end and (skipping or sped_up) then
         -- print('handle_sub_change end_skip')
         end_skip()
@@ -181,13 +184,21 @@ function handle_sub_change(_, sub_end)
         -- print('handle_sub_change', sub_end, last_sub_end, time_pos, next_delay)
         last_sub_end = time_pos
         if next_delay ~= nil then
-            if next_delay < cfg.min_skip_interval then
+            if next_delay < math.max(cfg.min_skip_interval, cfg.minimum_skip) then
                 return
             else
                 next_sub_start = time_pos + next_delay
             end
         end
         start_skip()
+    end
+
+    -- skip subtitles that stay on screen too long (bad/merged captions)
+    if sub_end and not skipping and not sped_up then
+        local sub_start = mp.get_property_number("sub-start")
+        if sub_start and (sub_end - sub_start) > cfg.max_subtitle_duration then
+            start_long_sub_skip()
+        end
     end
 end
 

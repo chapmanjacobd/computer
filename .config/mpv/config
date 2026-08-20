@@ -17,6 +17,9 @@ audio-display=no
 deband=no
 tscale=oversample
 
+cache=yes
+demuxer-readahead-secs=120
+
 input-ipc-server=~/.config/mpv/socket
 
 ytdl-format=bestvideo[height<=576][fps<=?31][vcodec!=?vp9]+bestaudio/best[height<=576]/best
