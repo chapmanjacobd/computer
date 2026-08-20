@@ -946,6 +946,87 @@ function __fish_git_filters
         tree:\t"omits all blobs and trees"
 end
 
+# Fzf-based interactive completions.
+# Each of these runs fzf on the command line (when triggered by tab) and
+# replaces the current token with the selected item(s). They emit no
+# candidates themselves; the side effect on the commandline is what matters.
+function __fish_git_fzf_commits
+    __fish_git rev-parse --is-inside-work-tree >/dev/null 2>&1; or return
+    set -l token (commandline -ct)
+    set -l commit_hashes (__fish_git log --color=always --format='%C(auto)%h %s %C(green)(%cr)%C(reset)' -n 100 | \
+        fzf --ansi --reverse --height=40% --multi --query="$token" --preview='git show --color=always {1}' | \
+        string match -ra '^[0-9a-f]+')
+
+    if test -n "$commit_hashes"
+        commandline --current-token --replace (string join ' ' $commit_hashes)
+    end
+    commandline -f repaint
+end
+
+function __fish_git_fzf_branches
+    __fish_git rev-parse --is-inside-work-tree >/dev/null 2>&1; or return
+    set -l token (commandline -ct)
+    set -l branches (__fish_git branch --all --color=always --format='%(refname:short)' | \
+        fzf --ansi --reverse --height=40% --multi --query="$token" --preview='git log --color=always --oneline -20 {1}' | \
+        string trim)
+
+    if test -n "$branches"
+        commandline --current-token --replace (string join ' ' $branches)
+    end
+    commandline -f repaint
+end
+
+function __fish_git_fzf_stashes
+    __fish_git rev-parse --is-inside-work-tree >/dev/null 2>&1; or return
+    set -l token (commandline -ct)
+    set -l stashes (__fish_git stash list --format='%gd %gs' | \
+        fzf --ansi --reverse --height=40% --multi --query="$token" --preview='git stash show --color=always -p {1}' | \
+        string match -ra '^[^ ]+')
+
+    if test -n "$stashes"
+        commandline --current-token --replace (string join ' ' $stashes)
+    end
+    commandline -f repaint
+end
+
+function __fish_git_fzf_ranges
+    __fish_git rev-parse --is-inside-work-tree >/dev/null 2>&1; or return
+    set -l token (commandline -ct)
+    set -l picked (__fish_git log --color=always --format='%C(auto)%h %s %C(green)(%cr)%C(reset)' -n 100 | \
+        fzf --ansi --reverse --height=40% --multi --query="$token" --preview='git show --color=always {1}' | \
+        string match -ra '^[0-9a-f]+')
+
+    if test -z "$picked"
+        return 1
+    end
+    # A single pick is a plain rev; two or more picks become an A..B range.
+    if test (count $picked) -ge 2
+        set picked "$picked[1]..$picked[-1]"
+    end
+    commandline --current-token --replace (string join ' ' $picked)
+    commandline -f repaint
+end
+
+# True if the current token contains a revision range operator (".." or "...").
+# In that case __fish_git_ranges completes the range non-interactively.
+function __fish_git_has_range
+    commandline -ct | string match -q -- '*..*'
+end
+
+# Only trigger the fzf pickers for positional arguments, or when completing an
+# option's value (i.e. an '=' is immediately to the left of the cursor).
+# Otherwise option/flag completion (e.g. `git show -<TAB>`) would wrongly open fzf.
+# We also skip range operators (e.g. `git diff master...<TAB>`), which are
+# completed non-interactively by __fish_git_ranges, and `rev:path` syntax
+# (e.g. `git show master:path<TAB>`), which __fish_git_complete_rev_files handles.
+function __fish_git_should_use_fzf
+    set -l token (commandline -ct)
+    not string match -q -- '-*' $token
+    and not string match -q -- '*..*' $token
+    and not string match -q -- '*:*' $token
+    or string match -q -- '*=' $token
+end
+
 # general options
 complete git -f -l help -s h -d 'Display manual of a Git command'
 complete git -f -n __fish_git_needs_command -l version -s v -d 'display git version'
@@ -1141,7 +1222,7 @@ complete -f -c git -n "__fish_git_using_command remote" -n "__fish_seen_subcomma
 ### show
 complete -f -c git -n __fish_git_needs_command -a show -d 'Show the last commit of a branch'
 complete -f -c git -n '__fish_git_using_command show' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_complete_stashes)'
-__fish_git_add_revision_completion -n '__fish_git_using_command show'
+complete -f -c git -n '__fish_git_using_command show' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
 complete -f -c git -n __fish_git_needs_rev_files -n 'not contains -- -- (commandline -xpc)' -xa '(__fish_git_complete_rev_files)'
 complete -F -c git -n '__fish_git_using_command show' -n 'contains -- -- (commandline -xpc)'
 complete -f -c git -n '__fish_git_using_command show' -l format -d 'Pretty-print the contents of the commit logs in a given format' -a '(__fish_git_show_opt format)'
@@ -1242,11 +1323,7 @@ complete -c git -n '__fish_git_using_command am' -l show-current-patch -a 'diff 
 ### checkout
 complete -F -c git -n '__fish_git_using_command checkout' -n 'contains -- -- (commandline -xpc)'
 complete -f -c git -n __fish_git_needs_command -a checkout -d 'Checkout and switch to a branch'
-begin
-    set -lx __fish_git_recent_commits_arg --all
-    set -lx __fish_git_unqualified_unique_remote_branches true
-    __fish_git_add_revision_completion -n '__fish_git_using_command checkout'
-end
+complete -f -c git -n '__fish_git_using_command checkout' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_branches)'
 
 # In the presence of changed files, `git checkout ...` assumes highest likelihood is intent to restore so this comes last (aka shown first).
 complete -f -c git -n '__fish_git_using_command checkout' -ka '(__fish_git_files modified deleted modified-staged-deleted)'
@@ -1362,8 +1439,8 @@ complete -f -c git -n '__fish_git_using_command bisect' -n '__fish_seen_subcomma
 ### branch
 complete -f -c git -n __fish_git_needs_command -a branch -d 'List, create, or delete branches'
 complete -f -c git -n '__fish_git_using_command branch' -ka '(__fish_git_branches)'
-complete -f -c git -n '__fish_git_using_command branch' -s d -l delete -d 'Delete branch' -xa '(__fish_git_local_branches)'
-complete -f -c git -n '__fish_git_using_command branch' -s D -d 'Force deletion of branch' -xa '(__fish_git_local_branches)'
+complete -f -c git -n '__fish_git_using_command branch' -n __fish_git_should_use_fzf -s d -l delete -d 'Delete branch' -xa '(__fish_git_fzf_branches)'
+complete -f -c git -n '__fish_git_using_command branch' -n __fish_git_should_use_fzf -s D -d 'Force deletion of branch' -xa '(__fish_git_fzf_branches)'
 complete -f -c git -n '__fish_git_using_command branch' -s f -l force -d 'Reset branch even if it already exists'
 complete -f -c git -n '__fish_git_using_command branch' -s m -l move -d 'Rename branch'
 complete -f -c git -n '__fish_git_using_command branch' -s M -d 'Force rename branch'
@@ -1395,7 +1472,8 @@ complete -f -c git -n "__fish_git_using_command bundle" -n "__fish_seen_subcomma
 complete -x -c git -n "__fish_git_using_command bundle" -n "__fish_seen_subcommand_from create" -l version -d 'Specify bundle format version'
 # FIXME: <file> should be suggested first and <git-rev-list args> second (also, '--all' is only valid in rev-list)
 complete -c git -n '__fish_git_using_command bundle' -n "__fish_seen_subcommand_from create" -ka '--all\t"All refs"'
-complete -c git -n '__fish_git_using_command bundle' -n "__fish_seen_subcommand_from create" -ka '(__fish_git_ranges)'
+complete -c git -n '__fish_git_using_command bundle' -n "__fish_seen_subcommand_from create" -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_ranges)'
+complete -c git -n '__fish_git_using_command bundle' -n "__fish_seen_subcommand_from create" -n __fish_git_has_range -ka '(__fish_git_ranges)'
 
 ### cherry
 complete -f -c git -n __fish_git_needs_command -a cherry -d 'Find commits yet to be applied to upstream'
@@ -1404,9 +1482,8 @@ complete -f -c git -n '__fish_git_using_command cherry' -ka '(__fish_git_refs)' 
 
 ### cherry-pick
 complete -f -c git -n __fish_git_needs_command -a cherry-pick -d 'Reapply a commit on another branch'
-complete -f -c git -n '__fish_git_using_command cherry-pick' -ka '(__fish_git_ranges)'
-# TODO: Filter further
-complete -f -c git -n '__fish_git_using_command cherry-pick' -n __fish_git_possible_commithash -ka '(__fish_git_commits)'
+complete -f -c git -n '__fish_git_using_command cherry-pick' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
+complete -f -c git -n '__fish_git_using_command cherry-pick' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -f -c git -n '__fish_git_using_command cherry-pick' -s e -l edit -d 'Edit the commit message prior to committing'
 complete -f -c git -n '__fish_git_using_command cherry-pick' -s x -d 'Append info in generated commit on the origin of the cherry-picked change'
 complete -f -c git -n '__fish_git_using_command cherry-pick' -s n -l no-commit -d 'Apply changes without making any commit'
@@ -1481,7 +1558,7 @@ complete -x -c git -n '__fish_git_using_command commit' -s m -l message -d 'Use 
 complete -f -c git -n '__fish_git_using_command commit' -l no-edit -d 'Use the selected commit message without launching an editor'
 complete -f -c git -n '__fish_git_using_command commit' -l no-gpg-sign -d 'Do not sign commit'
 complete -f -c git -n '__fish_git_using_command commit' -s n -l no-verify -d 'Do not run pre-commit and commit-msg hooks'
-complete -f -c git -n '__fish_git_using_command commit' -n 'string match -rq -- "^(--fixup\b|--squash\b|-C|-c|--reuse-message\b|--reedit-message\b)" (commandline -xpc)[-1]' -ka '(__fish_git_recent_commits)'
+complete -f -c git -n '__fish_git_using_command commit' -n 'string match -rq -- "^(--fixup\b|--squash\b|-C|-c|--reuse-message\b|--reedit-message\b)" (commandline -xpc)[-1]' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
 complete -f -c git -n '__fish_git_using_command commit' -l allow-empty -d 'Create a commit with no changes'
 complete -f -c git -n '__fish_git_using_command commit' -l allow-empty-message -d 'Create a commit with no commit message'
 complete -f -c git -n '__fish_git_using_command commit' -s s -l signoff -d 'Append Signed-off-by trailer to commit message'
@@ -1560,12 +1637,9 @@ complete -f -c git -n '__fish_git_using_command describe' -l first-parent -d 'Fo
 
 ### diff
 complete -c git -n __fish_git_needs_command -a diff -d 'Show changes between commits and working tree'
-complete -c git -n '__fish_git_using_command diff' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command diff' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_complete_stashes)'
-begin
-    set -lx __fish_git_recent_commits_arg --all
-    __fish_git_add_revision_completion -n '__fish_git_using_command diff'
-end
+complete -c git -n '__fish_git_using_command diff' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_ranges)'
+complete -c git -n '__fish_git_using_command diff' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command diff' -l cached -d 'Show diff of changes in the index'
 complete -c git -n '__fish_git_using_command diff' -l staged -d 'Show diff of changes in the index'
 complete -c git -n '__fish_git_using_command diff' -l no-index -d 'Compare two paths on the filesystem'
@@ -1594,7 +1668,8 @@ end
 
 ### difftool
 complete -c git -n __fish_git_needs_command -a difftool -d 'Open diffs in a visual tool'
-complete -c git -n '__fish_git_using_command difftool' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_ranges)'
+complete -c git -n '__fish_git_using_command difftool' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_ranges)'
+complete -c git -n '__fish_git_using_command difftool' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command difftool' -l cached -d 'Visually show diff of changes in the index'
 complete -f -c git -n '__fish_git_using_command difftool' -a '(
     set -l kinds modified
@@ -1714,7 +1789,8 @@ complete -f -c git -n '__fish_git_using_command interpret-trailers' -l no-divide
 ### shortlog
 complete -c git -n __fish_git_needs_command -a shortlog -d 'Show commit shortlog'
 complete -c git -n '__fish_git_using_command shortlog' -a '(__fish_git ls-files)'
-complete -c git -n '__fish_git_using_command shortlog' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_ranges)'
+complete -c git -n '__fish_git_using_command shortlog' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_ranges)'
+complete -c git -n '__fish_git_using_command shortlog' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command shortlog' -s n -l numbered -d 'Sort output by number of commits per group'
 complete -c git -n '__fish_git_using_command shortlog' -l no-numbered -d 'Sort output alphabetically by author'
 complete -c git -n '__fish_git_using_command shortlog' -s s -l summary -d 'Only show commit counts per group'
@@ -1730,7 +1806,8 @@ complete -c git -n '__fish_git_using_command shortlog' -s w -d 'Linewrap entries
 ### log
 complete -c git -n __fish_git_needs_command -a log -d 'Show commit logs'
 complete -c git -n '__fish_git_using_command log' -a '(__fish_git ls-files)'
-complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_ranges)'
+complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
+complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command log' -l follow -d 'Continue listing file history beyond renames'
 complete -c git -n '__fish_git_using_command log' -l no-decorate -d 'Don\'t print ref names'
 complete -f -c git -n '__fish_git_using_command log' -l decorate -a 'short\tHide\ prefixes full\tShow\ full\ ref\ names auto\tHide\ prefixes\ if\ printed\ to\ terminal no\tDon\\\'t\ display\ ref' -d 'Print out ref names'
@@ -1951,7 +2028,7 @@ complete -f -c git -n '__fish_git_using_command maintenance' -l schedule -d 'Run
 
 ### merge
 complete -f -c git -n __fish_git_needs_command -a merge -d 'Join multiple development histories'
-__fish_git_add_revision_completion -n '__fish_git_using_command merge'
+complete -f -c git -n '__fish_git_using_command merge' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_branches)'
 complete -f -c git -n '__fish_git_using_command merge' -l commit -d "Autocommit the merge"
 complete -f -c git -n '__fish_git_using_command merge' -l no-commit -d "Don't autocommit the merge"
 complete -f -c git -n '__fish_git_using_command merge' -s e -l edit -d 'Edit auto-generated merge message'
@@ -2109,7 +2186,8 @@ complete -f -c git -n '__fish_git_using_command pull' -s 6 -l ipv6 -d 'Use IPv6 
 
 ### range-diff
 complete -f -c git -n __fish_git_needs_command -a range-diff -d 'Compare two commit ranges'
-complete -f -c git -n '__fish_git_using_command range-diff' -ka '(__fish_git_ranges)'
+complete -f -c git -n '__fish_git_using_command range-diff' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_ranges)'
+complete -f -c git -n '__fish_git_using_command range-diff' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -f -c git -n '__fish_git_using_command range-diff' -l creation-factor -d 'Percentage by which creation is weighted'
 complete -f -c git -n '__fish_git_using_command range-diff' -l no-dual-color -d 'Use simple diff colors'
 
@@ -2160,7 +2238,7 @@ complete -x -c git -n '__fish_git_using_command push' -l exec -d 'Same as --rece
 
 ### rebase
 complete -f -c git -n __fish_git_needs_command -a rebase -d 'Reapply commit sequence on a new base'
-__fish_git_add_revision_completion -n '__fish_git_using_command rebase'
+complete -f -c git -n '__fish_git_using_command rebase' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_branches)'
 complete -f -c git -n '__fish_git_using_command rebase' -n __fish_git_is_rebasing -l continue -d 'Restart the rebasing process'
 complete -f -c git -n '__fish_git_using_command rebase' -n __fish_git_is_rebasing -l abort -d 'Abort the rebase operation'
 complete -f -c git -n '__fish_git_using_command rebase' -n __fish_git_is_rebasing -l edit-todo -d 'Edit the todo list'
@@ -2186,7 +2264,7 @@ complete -f -c git -n '__fish_git_using_command rebase' -l no-autosquash -d 'No 
 complete -f -c git -n '__fish_git_using_command rebase' -l autostash -d 'Before starting rebase, stash local changes, and apply stash when done'
 complete -f -c git -n '__fish_git_using_command rebase' -l no-autostash -d 'Do not stash local changes before starting rebase'
 complete -f -c git -n '__fish_git_using_command rebase' -l no-ff -d 'No fast-forward'
-__fish_git_add_revision_completion -n '__fish_git_using_command rebase' -l onto -d 'Rebase current branch onto given upstream or newbase' -r
+complete -f -c git -n '__fish_git_using_command rebase' -n __fish_git_should_use_fzf -l onto -d 'Rebase current branch onto given upstream or newbase' -r -ka '(__fish_git_fzf_branches)'
 complete -f -c git -n '__fish_git_using_command rebase' -l update-refs -d 'Update any branches that point to commits being rebased'
 complete -f -c git -n '__fish_git_using_command rebase' -l no-update-refs -d 'Don\'t update any branches that point to commits being rebased'
 # This actually takes script for $SHELL, but completing that is... complicated.
@@ -2205,7 +2283,7 @@ complete -c git -n __fish_git_needs_command -a reset -d 'Reset current HEAD to t
 complete -f -c git -n '__fish_git_using_command reset' -l hard -d 'Reset the index and the working tree'
 complete -f -c git -n '__fish_git_using_command reset' -l soft -d 'Reset head without touching the index or the working tree'
 complete -f -c git -n '__fish_git_using_command reset' -l mixed -d 'The default: reset the index but not the working tree'
-__fish_git_add_revision_completion -n '__fish_git_using_command reset'
+complete -f -c git -n '__fish_git_using_command reset' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
 # reset can either undo changes to versioned modified files,
 # or remove files from the staging area.
 # Deleted files seem to need a "--" separator.
@@ -2238,8 +2316,7 @@ complete -f -c git -n '__fish_git_using_command restore' -n '__fish_git_contains
 complete -F -c git -n '__fish_git_using_command restore' -n '__fish_git_contains_opt -s s source'
 # switch options
 complete -f -c git -n __fish_git_needs_command -a switch -d 'Switch to a branch'
-complete -f -c git -n '__fish_git_using_command switch' -ka '(__fish_git_unique_remote_branches)' -d 'Unique Remote Branch'
-complete -f -c git -n '__fish_git_using_command switch' -ka '(__fish_git_branches)'
+complete -f -c git -n '__fish_git_using_command switch' -n 'not __fish_git_contains_opt -s d detach' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_branches)'
 complete -f -c git -n '__fish_git_using_command switch' -s c -l create -d 'Create a new branch'
 complete -f -c git -n '__fish_git_using_command switch' -s C -l force-create -d 'Force create a new branch'
 begin
@@ -2277,7 +2354,7 @@ complete -c git -n '__fish_git_using_command rev-parse' -l is-inside-work-tree -
 
 ### revert
 complete -f -c git -n __fish_git_needs_command -a revert -d 'Revert an existing commit'
-complete -f -c git -n '__fish_git_using_command revert' -ka '(__fish_git_commits)'
+complete -f -c git -n '__fish_git_using_command revert' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
 complete -f -c git -n '__fish_git_using_command revert' -l continue -d 'Continue the operation in progress'
 complete -f -c git -n '__fish_git_using_command revert' -l abort -d 'Cancel the operation'
 complete -f -c git -n '__fish_git_using_command revert' -l skip -d 'Skip the current commit and continue with the rest of the sequence'
@@ -2412,10 +2489,7 @@ complete -f -c git -n "__fish_git_using_command worktree" -n "not __fish_seen_su
 complete -f -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add move remove' -s f -l force -d 'Override safeguards'
 
 complete -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add'
-begin
-    set -lx __fish_git_unqualified_unique_remote_branches true
-    __fish_git_add_revision_completion -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add'
-end
+complete -f -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_branches)'
 complete -x -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add' -s b -d 'Create a new branch'
 complete -x -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add' -s B -d 'Create a new branch even if it already exists'
 complete -f -c git -n '__fish_git_using_command worktree' -n '__fish_seen_subcommand_from add' -l detach -d 'Detach HEAD in the new working tree'
@@ -2460,7 +2534,7 @@ complete -f -c git -n '__fish_git_using_command stash' -n __fish_git_stash_is_pu
 complete -f -c git -n '__fish_git_using_command stash' -n __fish_git_stash_is_push -s S -l staged -d 'Stash only staged changes'
 complete -f -c git -n '__fish_git_using_command stash' -n __fish_git_stash_is_push -s u -l include-untracked -d 'Stash untracked files'
 
-complete -f -c git -n '__fish_git_using_command stash' -n '__fish_git_stash_using_command apply branch drop pop show' -ka '(__fish_git_complete_stashes)'
+complete -f -c git -n '__fish_git_using_command stash' -n '__fish_git_stash_using_command apply branch drop pop show' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_stashes)'
 
 ### config
 complete -f -c git -n __fish_git_needs_command -a config -d 'Set and read git configuration variables'
@@ -2498,7 +2572,7 @@ complete -f -c git -n '__fish_git_using_command config' -a '(__fish_git_config_k
 
 ### format-patch
 complete -f -c git -n __fish_git_needs_command -a format-patch -d 'Generate patch series to send upstream'
-__fish_git_add_revision_completion -n '__fish_git_using_command format-patch'
+complete -f -c git -n '__fish_git_using_command format-patch' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
 complete -c git -n '__fish_git_using_command format-patch' -s o -l output-directory -xa '(__fish_complete_directories)'
 complete -f -c git -n '__fish_git_using_command format-patch' -s p -l no-stat -d "Generate plain patches without diffstat"
 complete -f -c git -n '__fish_git_using_command format-patch' -s s -l no-patch -d "Suppress diff output"
