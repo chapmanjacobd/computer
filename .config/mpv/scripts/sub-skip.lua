@@ -156,19 +156,28 @@ function end_skip()
 end
 
 function start_long_sub_skip()
-    -- skip through a subtitle that has stayed on screen too long
-    -- (e.g. merged/badly timed captions), up to the next line
+    -- skip the remainder of a subtitle that has stayed on screen longer
+    -- than max_subtitle_duration, up to the next line
     if skipping then return end
+    local time_pos = mp.get_property_number("time-pos")
+    if time_pos == nil then return end
+    -- only bother skipping if the next line is far enough away to be worth it;
+    -- otherwise let the subtitle play out normally
+    local next_delay = calc_next_delay()
+    local min_gap = math.max(cfg.min_skip_interval, cfg.minimum_skip)
+    if next_delay == nil or next_delay < min_gap then return end
     if seek_skip then
-        start_seek_skip()
+        -- seek straight to the next line; deliberately no lead_start pull-back,
+        -- since we are already mid-subtitle (pulling back would repeat content)
+        mp.set_property_number("time-pos", time_pos + next_delay)
+        end_skip()
     else
-        local time_pos = mp.get_property_number("time-pos")
-        if time_pos == nil then return end
         initial_speed = mp.get_property_number("speed")
         initial_video_sync = mp.get_property("video-sync")
         mp.set_property("video-sync", "desync")
         mp.set_property_number("speed", cfg.speed_skip_speed)
         sped_up = true
+        next_sub_start = time_pos + next_delay
         start_skip()
     end
 end
@@ -298,6 +307,10 @@ mp.add_key_binding("Ctrl+v", "toggle", toggle_script)
 function switch_mode()
     seek_skip = not seek_skip
     mp.osd_message("Seek skip " .. (seek_skip and "enabled" or "disabled"))
+    if seek_skip and mp.get_property_number("sub-end") == nil then
+        -- not currently showing a subtitle: jump straight to the next one
+        start_seek_skip()
+    end
 end
 
 mp.add_key_binding("Ctrl+V", "switch-mode", switch_mode)
