@@ -41,7 +41,7 @@ end
 
 source ~/.config/fish/functions/ls.fish
 
-fzf_configure_bindings --directory=\cf --git_status=\cs --processes=\cp --history=ctrl-r
+fzf_configure_bindings --directory=\cf --git_status=\cs --git_log=\cg --processes=\cp --history=ctrl-r
 bind alt-r history-pager
 bind --mode insert alt-r history-pager
 
