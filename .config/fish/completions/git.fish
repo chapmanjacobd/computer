@@ -1806,7 +1806,7 @@ complete -c git -n '__fish_git_using_command shortlog' -s w -d 'Linewrap entries
 ### log
 complete -c git -n __fish_git_needs_command -a log -d 'Show commit logs'
 complete -c git -n '__fish_git_using_command log' -a '(__fish_git ls-files)'
-complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_should_use_fzf -ka '(__fish_git_fzf_commits)'
+complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -ka '(__fish_git_branches)'
 complete -c git -n '__fish_git_using_command log' -n 'not contains -- -- (commandline -xpc)' -n __fish_git_has_range -ka '(__fish_git_ranges)'
 complete -c git -n '__fish_git_using_command log' -l follow -d 'Continue listing file history beyond renames'
 complete -c git -n '__fish_git_using_command log' -l no-decorate -d 'Don\'t print ref names'
