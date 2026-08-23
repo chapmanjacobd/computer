@@ -62,7 +62,7 @@ url-prefix("file://") {
     }
 
     * {
-        color: #000;
+        color: #000 !important;
         text-shadow: 0 0 3px #000 !important;
         box-shadow: none !important;
         background-color: unset !important;
