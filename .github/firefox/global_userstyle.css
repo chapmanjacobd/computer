@@ -62,7 +62,7 @@ url-prefix("file://") {
     }
 
     * {
-        color: #999 !important;
+        color: #000;
         text-shadow: 0 0 3px #000 !important;
         box-shadow: none !important;
         background-color: unset !important;
@@ -75,19 +75,14 @@ url-prefix("file://") {
         scroll-padding-top: 0px !important;
     }
 
-
     *,
     ::before,
     ::after {
-        color: #101011 !important;
+        color: #000;
         border-color: #474137 !important;
         outline-color: #474137 !important;
         text-shadow: none !important;
         box-shadow: none !important;
-    }
-
-    html * {
-        color: inherit !important;
     }
 
     a img {
