@@ -1,1 +1,1 @@
-/home/xk/github/xk/curati/
+github/xk/mc
