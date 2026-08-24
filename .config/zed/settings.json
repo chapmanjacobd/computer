@@ -6,6 +6,23 @@
     // ══════════════════════════════════════════════════════════════════════════════
 
     // ── Typography ────────────────────────────────────────────────────────────────
+    "project_panel": {
+        "dock": "left"
+    },
+    "outline_panel": {
+        "dock": "left"
+    },
+    "collaboration_panel": {
+        "dock": "left"
+    },
+    "agent": {
+        "dock": "right",
+        "favorite_models": [],
+        "model_parameters": []
+    },
+    "git_panel": {
+        "dock": "left"
+    },
     "always_treat_brackets_as_autoclosed": true,
     "use_smartcase_search": true,
     "buffer_font_family": "DejaVu Sans Mono",
