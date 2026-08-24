@@ -2,6 +2,6 @@
 function stignore --description 'Add path(s) to .gitignore'
     for arg in $argv
         set rel (realpath --relative-to=. $arg)
-        echo /$rel >> .stignore
+        echo /$rel >>.stignore
     end
 end
