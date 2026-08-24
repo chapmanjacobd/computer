@@ -173,6 +173,7 @@
         "**/*.egg-info",
         "**/build",
     ],
+    "scan_symlinks": "always",
 
     // ── Language-Specific Settings ────────────────────────────────────────────────
     "languages": {
@@ -300,8 +301,8 @@
     },
     "agent_servers": {
         "github-copilot-cli": {
-            "type": "registry"
-        }
+            "type": "registry",
+        },
     },
     "base_keymap": "VSCode",
     "status_bar": {
