@@ -248,7 +248,6 @@ abbr -a -- display set -gx DISPLAY :0
 abbr -a -- large.folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
 abbr -a -- ps.size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
 abbr -a -- unshallow git fetch --unshallow
-abbr -a -- df 'df -x tmpfs -x efivarfs -x devtmpfs -x overlay -x squashfs -Th | sort -k6,6g -k5,5hr'
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
 abbr -a -- lsattr lsattr -l -d
 abbr -a -- qemu quickemu --display none --vm
@@ -1251,3 +1250,4 @@ abbr -a -- mam_slots.py mam.slots
 abbr -a -- mam_update.py mam.playlists.update
 abbr -a -- git.log git log --oneline --decorate --all --graph --stat
 abbr -a -- gl git log --oneline --decorate --all --graph --stat
+abbr -a -- df "df -Th | grep -vE '(tmpfs|devtmpfs|efivarfs|overlay|squashfs|fuse)' | sort -k6,6g -k5,5hr"
