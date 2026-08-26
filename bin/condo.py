@@ -1327,8 +1327,10 @@ def mortgage_duration_label(s: dict) -> str:
         return ""
     duration = s.get("mortgage_duration", 0.0)
     label = f"{term}-yr"
-    if math.isfinite(duration) and duration > 0 and round(term / duration, 2) != 1.0:
+
+    if math.isfinite(duration) and duration > 0 and abs(term / duration - 1.0) > 0.01:
         label += f" @{term / duration:.2f}x"
+
     if s.get("prepay_crossover") == "principal":
         label += " +prepay-principal*"
     elif s.get("prepay_crossover") == "cumulative":
@@ -1339,6 +1341,7 @@ def mortgage_duration_label(s: dict) -> str:
         label += " +prepay"
     elif s.get("invest_surplus"):
         label += " +invest"
+
     return f" ({label})"
 
 
