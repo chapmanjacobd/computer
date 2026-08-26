@@ -21,6 +21,7 @@ def make_args(**overrides):
             "stock_volatility": 0.0,
             "inflation_rate": 0.0,
             "inflation_volatility": 0.0,
+            "discount_rate": 0.0,
             "brokerage_dividend_yield": 0.0,
             "state_tax_rate": 0.0,
             "ltcg_0pct_limit": 1000000.0,
@@ -176,6 +177,42 @@ def test_early_withdrawal_penalty_excludes_roth_basis():
     )
     assert result["early_withdrawal_penalty"] == pytest.approx(50.0)
     assert result["final_value"] == pytest.approx(1450.0)
+
+
+def test_npv_is_discounted_net_plan_value():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=1000.0,
+        starting_brokerage_basis=1000.0,
+        discount_rate=0.10,
+    )
+    result = savings.simulate_strategy(
+        args,
+        tuple(savings.ACCOUNT_NAMES),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["final_value"] == pytest.approx(1000.0)
+    assert result["npv"] == pytest.approx(-1000.0 + 1000.0 / 1.10)
+
+
+def test_npv_includes_present_value_of_contributions():
+    args = make_args(
+        annual_savings=1200.0,
+        starting_brokerage=0.0,
+        discount_rate=0.12,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("brokerage", "roth_ira", "solo_401k", "roth_401k", "emergency_fund", "hsa"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    monthly_contribution = 100.0
+    expected = 1200.0 / 1.12 - sum(
+        monthly_contribution / 1.12 ** (month / 12.0) for month in range(12)
+    )
+    assert result["npv"] == pytest.approx(expected)
 
 
 def test_roth_contributions_are_added_to_penalty_basis():

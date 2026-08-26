@@ -7,8 +7,8 @@ after-tax cash budget may be supplied directly as ``annual_savings`` for
 backward compatibility, or derived from income, expenses, and current taxes.
 Age-based schedule tables can replace the scalar income and expense values.
 Traditional solo 401(k) contributions are grossed up for their current-year
-tax deduction, while terminal values are reported after estimated withdrawal
-taxes.
+tax deduction, while plan values are reported as after-tax net present value
+(NPV).
 
 This is an educational planning model, not tax advice.  Tax brackets,
 contribution limits, and account rules are configurable in TOML. Employer
@@ -75,8 +75,11 @@ MODEL_NOTES = (
     "Traditional solo 401k contributions receive a current tax deduction; "
     "brokerage gains use the configured stacked LTCG brackets. Limits and "
     "brackets are inflation-indexed; RMDs are reinvested after tax by "
-    "default, and early withdrawal penalties use the configured terminal "
-    "age and rate."
+    "default, early withdrawal penalties use the configured terminal age and "
+    "rate. Displayed NPV discounts after-tax terminal proceeds and cash "
+    "withdrawals, then subtracts starting assets and employee contribution "
+    "cash costs using the configured annual discount rate; when omitted, "
+    "discount_rate defaults to inflation_rate."
 )
 
 FEDERAL_BRACKETS_MFJ = [
@@ -409,6 +412,20 @@ def _inflation_factor(args: dict, year: int) -> float:
     return (1.0 + rate) ** max(0, int(year))
 
 
+def _discount_rate(args: dict) -> float:
+    configured = args.get("discount_rate")
+    rate = float(
+        args.get("inflation_rate", 0.0) if configured is None else configured
+    )
+    if rate <= -1.0:
+        raise ValueError("discount rate must be greater than -100%")
+    return rate
+
+
+def _discount_factor(args: dict, years: float) -> float:
+    return (1.0 + _discount_rate(args)) ** max(0.0, float(years))
+
+
 def _schedule_entries(args: dict, name: str) -> list[dict]:
     entries = args.get(name, [])
     if entries is None:
@@ -666,6 +683,22 @@ def _annual_savings(args: dict, year: int) -> float:
         args, inflation_factor=_inflation_factor(args, year), annual_income=income
     )
     return max(0.0, income - expenses - taxes)
+
+
+def _annual_contribution_cash_cost(
+    args: dict, contributions: dict[str, float], year: int, annual_income: float
+) -> float:
+    """Return the cash outflow for one year's employee contributions."""
+    inflation_factor = _inflation_factor(args, year)
+    cash_cost = sum(
+        contributions[name] for name in ACCOUNT_NAMES if name != "solo_401k"
+    )
+    return cash_cost + pretax_cash_cost(
+        args,
+        contributions["solo_401k"],
+        inflation_factor=inflation_factor,
+        annual_income=annual_income,
+    )
 
 
 def _new_annual_usage(args: dict, year: int) -> dict[str, float]:
@@ -1181,7 +1214,7 @@ def _simulate_plan(
     inflation_rates: list[float] | None = None,
     rng: random.Random | None = None,
 ) -> dict:
-    """Simulate one allocation plan and return nominal and real terminal values."""
+    """Simulate one allocation plan and return nominal terminal value and NPV."""
     years = int(args["projection_years"])
     if stock_returns is None or inflation_rates is None:
         if rng is None:
@@ -1191,6 +1224,7 @@ def _simulate_plan(
     inflation_rates = _monthly_path(inflation_rates, years, "inflation")
 
     balances, basis = _starting_balances(args)
+    initial_investment = sum(balances.values())
     annual_contributions = []
     annual_employer_contributions = []
     annual_rmds = []
@@ -1207,7 +1241,8 @@ def _simulate_plan(
     warnings = []
     retirement_shortfall = 0.0
     retirement_months = 0
-    real_history = []
+    npv_history = []
+    npv_cash_flow = -initial_investment
     inflation_factor = 1.0
     rmd_total = 0.0
     rmd_tax_total = 0.0
@@ -1241,6 +1276,9 @@ def _simulate_plan(
             contributions["_employer_contribution"] = 0.0
         income_for_year = _annual_income(args, year)
         expenses_for_year = _annual_expenses(args, year)
+        annual_cash_contribution = _annual_contribution_cash_cost(
+            args, contributions, year, income_for_year
+        )
         annual_income.append(income_for_year)
         annual_expenses.append(expenses_for_year)
         annual_contributions.append(
@@ -1265,6 +1303,10 @@ def _simulate_plan(
             contributions["_employer_contribution"] / 12.0
         )
         for month in range(year * 12, (year + 1) * 12):
+            monthly_cash_contribution = annual_cash_contribution / 12.0
+            npv_cash_flow -= monthly_cash_contribution / _discount_factor(
+                args, month / 12.0
+            )
             stock_return = stock_returns[month]
             inflation_rate = inflation_rates[month]
             month_tax = 0.0
@@ -1330,6 +1372,7 @@ def _simulate_plan(
                 if raised < need:
                     year_shortfall += need - raised
                     retirement_shortfall += need - raised
+                npv_cash_flow += raised / _discount_factor(args, (month + 1) / 12.0)
             else:
                 monthly_income_history.append(income_for_year / 12.0)
             monthly_contributions_history.append(
@@ -1357,12 +1400,13 @@ def _simulate_plan(
                 )
             inflation_factor *= max(0.01, 1.0 + inflation_rate)
             gross_value = sum(balances.values())
-            real_value = gross_value / inflation_factor
-            real_history.append(real_value)
+            portfolio_value = gross_value / _discount_factor(args, (month + 1) / 12.0)
+            npv_value = npv_cash_flow + portfolio_value
+            npv_history.append(npv_value)
             min_emergency = min(min_emergency, balances["emergency_fund"])
-            peak = max(peak, real_value)
+            peak = max(peak, portfolio_value)
             if peak > 0.0:
-                max_drawdown = max(max_drawdown, (peak - real_value) / peak)
+                max_drawdown = max(max_drawdown, (peak - portfolio_value) / peak)
 
         age = _annual_age(args, year)
         harvesting_enabled = bool(
@@ -1439,6 +1483,8 @@ def _simulate_plan(
             rmd_total += rmd
             rmd_tax_total += rmd_tax
             year_taxes += rmd_tax
+            if not args.get("rmd_reinvest_after_tax", True):
+                npv_cash_flow += net_rmd / _discount_factor(args, year + 1.0)
             year_distributions["solo_401k"] = (
                 year_distributions.get("solo_401k", 0.0) + rmd
             )
@@ -1453,11 +1499,14 @@ def _simulate_plan(
                     ),
                 }
             )
-            real_value = sum(balances.values()) / inflation_factor
-            real_history[-1] = real_value
-            peak = max(peak, real_value)
+            portfolio_value = sum(balances.values()) / _discount_factor(
+                args, year + 1.0
+            )
+            npv_value = npv_cash_flow + portfolio_value
+            npv_history[-1] = npv_value
+            peak = max(peak, portfolio_value)
             if peak > 0.0:
-                max_drawdown = max(max_drawdown, (peak - real_value) / peak)
+                max_drawdown = max(max_drawdown, (peak - portfolio_value) / peak)
         if harvest_tax > 0.0 or conversion_tax > 0.0 or rmd_tax_total > 0.0:
             monthly_taxes_history[-1] += (
                 harvest_tax + conversion_tax + (rmd_tax if rmd > 0.0 else 0.0)
@@ -1502,12 +1551,17 @@ def _simulate_plan(
     terminal["total_tax_cost"] = (
         terminal["terminal_cost"] + rmd_tax_total + conversion_tax_total
     )
-    terminal["history"] = real_history
+    terminal["history"] = npv_history
+    terminal["npv_history"] = npv_history
     terminal["max_drawdown"] = max_drawdown
     terminal["min_emergency"] = (
-        min_emergency if real_history else balances["emergency_fund"]
+        min_emergency if npv_history else balances["emergency_fund"]
     )
-    terminal["real_value"] = terminal["final_value"] / inflation_factor
+    terminal["npv"] = npv_cash_flow + terminal["final_value"] / _discount_factor(
+        args, years
+    )
+    if npv_history:
+        npv_history[-1] = terminal["npv"]
     return terminal
 
 
@@ -1518,7 +1572,7 @@ def simulate_strategy(
     inflation_rates: list[float] | None = None,
     rng: random.Random | None = None,
 ) -> dict:
-    """Simulate one priority order and return nominal and real terminal values."""
+    """Simulate one priority order and return nominal terminal value and NPV."""
     _validate_account_order(order)
     return _simulate_plan(
         args,
@@ -1573,7 +1627,7 @@ def _run_trial(payload: tuple[dict, int, list[tuple[str, ...]]]) -> list[float]:
             order,
             stock_returns=stock,
             inflation_rates=inflation,
-        )["real_value"]
+        )["npv"]
         for order in orders
     ]
 
@@ -1649,7 +1703,7 @@ def run_monte_carlo(
 
 def _compact_result(result: dict) -> dict[str, float]:
     return {
-        "real_value": result["real_value"],
+        "npv": result["npv"],
         "final_value": result["final_value"],
         "terminal_tax": result["terminal_tax"],
         "early_withdrawal_penalty": result["early_withdrawal_penalty"],
@@ -1686,7 +1740,7 @@ def _run_allocation_trial(
 
 def _objective_value(result: dict[str, float], objective: str) -> float:
     if objective in {"median", "mean", "p10", "p25"}:
-        return result["real_value"]
+        return result["npv"]
     if objective == "min_tax":
         return -result["total_tax_cost"]
     if objective == "emergency":
@@ -1715,7 +1769,7 @@ def _summarize_allocations(
 
     for index, allocation in enumerate(allocations):
         results = [trial[index] for trial in trials]
-        values = [result["real_value"] for result in results]
+        values = [result["npv"] for result in results]
         taxes = [result["terminal_tax"] for result in results]
         penalties = [result["early_withdrawal_penalty"] for result in results]
         terminal_costs = [result["terminal_cost"] for result in results]
@@ -1969,9 +2023,9 @@ def print_allocation_results(
             headers=[
                 "Rank",
                 "Annual allocation",
-                "Median real",
-                "P10 real",
-                "P75 real",
+                "Median NPV",
+                "P10 NPV",
+                "P75 NPV",
                 "Avg terminal tax",
                 "Avg early penalty",
                 "Avg RMD tax",
@@ -2002,6 +2056,7 @@ def load_toml_config(filepath: str) -> dict:
         "state_capital_gains_tax_rate": None,
         "projection_years": 30,
         "savings_growth_rate": 0.0,
+        "discount_rate": None,
         "emergency_fund_target": 30000.0,
         "emergency_fund_return": 0.03,
         "roth_ira_limit": 7000.0,
@@ -2084,6 +2139,7 @@ def load_toml_config(filepath: str) -> dict:
         if basis_key not in defaults:
             defaults[basis_key] = defaults.get(f"starting_{account}", 0.0)
     defaults["early_withdrawal_penalty_rate"] = _early_withdrawal_penalty_rate(defaults)
+    _discount_rate(defaults)
     status = str(defaults.get("filing_status", "mfj")).lower()
     if status not in {"mfj", "single", "s", "mfs", "married_filing_separately"}:
         raise ValueError("filing_status must be mfj, single, or mfs")
@@ -2182,11 +2238,18 @@ def print_results(summaries: list[dict], top: int) -> None:
         ]
         for index, summary in enumerate(summaries[:top])
     ]
-    print("After-tax real terminal value by priority order:")
+    print("After-tax NPV by priority order:")
     print(
         tabulate(
             rows,
-            headers=["Rank", "Priority order", "Median", "P25", "P75", "P(best)"],
+            headers=[
+                "Rank",
+                "Priority order",
+                "Median NPV",
+                "P25 NPV",
+                "P75 NPV",
+                "P(best)",
+            ],
             tablefmt="simple",
         )
     )
@@ -2210,7 +2273,7 @@ def main() -> None:
         "--objective",
         choices=ALLOCATION_OBJECTIVES,
         default="median",
-        help="Optimization objective (default: median real terminal value)",
+        help="Optimization objective (default: median NPV)",
     )
     parser.add_argument(
         "--workers",
