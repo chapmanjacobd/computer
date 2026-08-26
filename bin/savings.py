@@ -11,7 +11,7 @@ withdrawal taxes.
 
 This is an educational planning model, not tax advice.  Tax brackets,
 contribution limits, and account rules are configurable in TOML. Employer
-matches, RMDs, and early-withdrawal penalties are not modeled.
+matches, RMDs, and early-withdrawal exceptions are not modeled.
 """
 
 import argparse
@@ -431,18 +431,45 @@ def make_market_paths(args: dict, rng: random.Random) -> tuple[list[float], list
     return stock, inflation
 
 
-def _starting_balances(args: dict) -> tuple[dict[str, float], float]:
+def _starting_balances(args: dict) -> tuple[dict[str, float], dict[str, float]]:
     balances = {
         account: float(args.get(f"starting_{account}", 0.0)) for account in ACCOUNT_NAMES
     }
-    basis = float(args.get("starting_brokerage_basis", balances["brokerage"]))
+    basis = {
+        "brokerage": float(args.get("starting_brokerage_basis", balances["brokerage"])),
+        "roth_ira": float(
+            args.get("starting_roth_ira_basis", balances["roth_ira"])
+        ),
+        "roth_401k": float(
+            args.get("starting_roth_401k_basis", balances["roth_401k"])
+        ),
+    }
     return balances, basis
 
 
-def _terminal_after_tax_value(args: dict, balances: dict[str, float], basis: float) -> dict:
+def _terminal_withdrawal_age(args: dict, years: int) -> float:
+    configured = args.get("terminal_withdrawal_age")
+    if configured is not None:
+        return float(configured)
+    return float(_starting_age(args) + years)
+
+
+def _early_withdrawal_penalty_rate(args: dict) -> float:
+    rate = float(args.get("early_withdrawal_penalty_rate", 0.10))
+    if not 0.0 <= rate <= 1.0:
+        raise ValueError("early withdrawal penalty rate must be between 0% and 100%")
+    return rate
+
+
+def _terminal_after_tax_value(
+    args: dict,
+    balances: dict[str, float],
+    basis: dict[str, float],
+    years: int,
+) -> dict:
     retirement_income = float(args.get("retirement_taxable_income", 0.0))
     brackets = federal_brackets(args)
-    brokerage_gain = max(0.0, balances["brokerage"] - basis)
+    brokerage_gain = max(0.0, balances["brokerage"] - basis["brokerage"])
     brokerage_tax = long_term_capital_gains_tax(args, brokerage_gain, retirement_income)
     brokerage = max(0.0, balances["brokerage"] - brokerage_tax)
 
@@ -451,11 +478,33 @@ def _terminal_after_tax_value(args: dict, balances: dict[str, float], basis: flo
         - ordinary_income_tax(retirement_income, brackets)
         + balances["solo_401k"] * float(args.get("state_tax_rate", 0.0))
     )
-    solo = max(0.0, balances["solo_401k"] - solo_tax)
+    terminal_age = _terminal_withdrawal_age(args, years)
+    penalty_age = float(args.get("early_withdrawal_penalty_age", 59.5))
+    penalty_rate = _early_withdrawal_penalty_rate(args)
+    penalty_applies = terminal_age < penalty_age
+    early_penalties = {
+        "solo_401k": penalty_rate * balances["solo_401k"] if penalty_applies else 0.0,
+        "roth_ira": (
+            penalty_rate
+            * max(0.0, balances["roth_ira"] - basis["roth_ira"])
+            if penalty_applies
+            else 0.0
+        ),
+        "roth_401k": (
+            penalty_rate
+            * max(0.0, balances["roth_401k"] - basis["roth_401k"])
+            if penalty_applies
+            else 0.0
+        ),
+    }
+    early_withdrawal_penalty = sum(early_penalties.values())
+    solo = max(0.0, balances["solo_401k"] - solo_tax - early_penalties["solo_401k"])
+    roth_ira = max(0.0, balances["roth_ira"] - early_penalties["roth_ira"])
+    roth_401k = max(0.0, balances["roth_401k"] - early_penalties["roth_401k"])
     after_tax = (
         balances["emergency_fund"]
-        + balances["roth_ira"]
-        + balances["roth_401k"]
+        + roth_ira
+        + roth_401k
         + brokerage
         + solo
     )
@@ -463,7 +512,13 @@ def _terminal_after_tax_value(args: dict, balances: dict[str, float], basis: flo
         "final_value": after_tax,
         "final_brokerage": brokerage,
         "final_solo_401k": solo,
+        "final_roth_ira": roth_ira,
+        "final_roth_401k": roth_401k,
         "terminal_tax": brokerage_tax + solo_tax,
+        "early_withdrawal_penalty": early_withdrawal_penalty,
+        "early_withdrawal_penalties": early_penalties,
+        "terminal_cost": brokerage_tax + solo_tax + early_withdrawal_penalty,
+        "terminal_withdrawal_age": terminal_age,
     }
 
 
@@ -553,11 +608,13 @@ def _simulate_plan(
                     balances[account] = max(
                         0.0, before_return * (1.0 + stock_return) - dividend_tax
                     )
-                    basis += contribution + max(0.0, dividend - dividend_tax)
+                    basis[account] += contribution + max(0.0, dividend - dividend_tax)
                 else:
                     balances[account] = max(
                         0.0, before_return * (1.0 + stock_return)
                     )
+                    if account in {"roth_ira", "roth_401k"}:
+                        basis[account] += contribution
             inflation_factor *= max(0.01, 1.0 + inflation_rate)
             gross_value = sum(balances.values())
             real_value = gross_value / inflation_factor
@@ -567,7 +624,7 @@ def _simulate_plan(
             if peak > 0.0:
                 max_drawdown = max(max_drawdown, (peak - real_value) / peak)
 
-    terminal = _terminal_after_tax_value(args, balances, basis)
+    terminal = _terminal_after_tax_value(args, balances, basis, years)
     terminal["strategy"] = label
     terminal["balances"] = balances
     terminal["basis"] = basis
@@ -710,6 +767,8 @@ def _compact_result(result: dict) -> dict[str, float]:
         "real_value": result["real_value"],
         "final_value": result["final_value"],
         "terminal_tax": result["terminal_tax"],
+        "early_withdrawal_penalty": result["early_withdrawal_penalty"],
+        "terminal_cost": result["terminal_cost"],
         "min_emergency": result["min_emergency"],
         "max_drawdown": result["max_drawdown"],
     }
@@ -737,7 +796,7 @@ def _objective_value(result: dict[str, float], objective: str) -> float:
     if objective in {"median", "mean", "p10", "p25"}:
         return result["real_value"]
     if objective == "min_tax":
-        return -result["terminal_tax"]
+        return -result["terminal_cost"]
     if objective == "emergency":
         return result["min_emergency"]
     if objective == "drawdown":
@@ -763,6 +822,8 @@ def _summarize_allocations(
         results = [trial[index] for trial in trials]
         values = [result["real_value"] for result in results]
         taxes = [result["terminal_tax"] for result in results]
+        penalties = [result["early_withdrawal_penalty"] for result in results]
+        terminal_costs = [result["terminal_cost"] for result in results]
         emergencies = [result["min_emergency"] for result in results]
         drawdowns = [result["max_drawdown"] for result in results]
         objective_values = [
@@ -775,7 +836,7 @@ def _summarize_allocations(
         elif objective == "p25":
             score = _percentile(objective_values, 0.25)
         elif objective == "min_tax":
-            score = -mean(taxes)
+            score = -mean(terminal_costs)
         elif objective == "emergency":
             score = mean(emergencies)
         elif objective == "drawdown":
@@ -792,6 +853,8 @@ def _summarize_allocations(
                 "p75": _percentile(values, 0.75),
                 "mean": mean(values),
                 "terminal_tax": mean(taxes),
+                "early_withdrawal_penalty": mean(penalties),
+                "terminal_cost": mean(terminal_costs),
                 "min_emergency": mean(emergencies),
                 "max_drawdown": mean(drawdowns),
                 "objective": objective,
@@ -980,6 +1043,7 @@ def print_allocation_results(
             _currency(summary["p10"]),
             _currency(summary["p75"]),
             _currency(summary["terminal_tax"]),
+            _currency(summary["early_withdrawal_penalty"]),
             f"{summary['max_drawdown']:.1%}",
         ]
         for index, summary in enumerate(summaries[:top])
@@ -995,6 +1059,7 @@ def print_allocation_results(
                 "P10 real",
                 "P75 real",
                 "Avg terminal tax",
+                "Avg early penalty",
                 "Avg drawdown",
             ],
             tablefmt="simple",
@@ -1004,7 +1069,8 @@ def print_allocation_results(
     print(f"\nRecommended annual allocation: {_allocation_with_dollars(args, best['allocation'])}")
     print(
         "Traditional solo 401k contributions receive a current tax deduction; "
-        "brokerage gains use the configured stacked LTCG brackets."
+        "brokerage gains use the configured stacked LTCG brackets. Early "
+        "withdrawal penalties use the configured terminal age and rate."
     )
 
 
@@ -1049,6 +1115,9 @@ def load_toml_config(filepath: str) -> dict:
         "ltcg_15pct_rate": 0.15,
         "ltcg_20pct_rate": 0.20,
         "retirement_taxable_income": 0.0,
+        "early_withdrawal_penalty_rate": 0.10,
+        "early_withdrawal_penalty_age": 59.5,
+        "terminal_withdrawal_age": None,
         "monte_carlo_simulations": 1000,
         "monte_carlo_seed": 42,
         "optimization_simulations": 50,
@@ -1067,6 +1136,18 @@ def load_toml_config(filepath: str) -> dict:
         defaults["federal_brackets"] = _normalize_brackets(defaults["federal_brackets"])
     if "starting_brokerage_basis" not in defaults:
         defaults["starting_brokerage_basis"] = defaults.get("starting_brokerage", 0.0)
+    for account in ("roth_ira", "roth_401k"):
+        basis_key = f"starting_{account}_basis"
+        if basis_key not in defaults:
+            defaults[basis_key] = defaults.get(f"starting_{account}", 0.0)
+    defaults["early_withdrawal_penalty_rate"] = _early_withdrawal_penalty_rate(defaults)
+    defaults["early_withdrawal_penalty_age"] = float(
+        defaults["early_withdrawal_penalty_age"]
+    )
+    if defaults["terminal_withdrawal_age"] is not None:
+        defaults["terminal_withdrawal_age"] = float(
+            defaults["terminal_withdrawal_age"]
+        )
     return defaults
 
 
@@ -1102,7 +1183,8 @@ def print_results(summaries: list[dict], top: int) -> None:
     )
     print(
         "Traditional solo 401k contributions receive a current tax deduction; "
-        "brokerage gains use the configured stacked LTCG brackets."
+        "brokerage gains use the configured stacked LTCG brackets. Early "
+        "withdrawal penalties use the configured terminal age and rate."
     )
 
 

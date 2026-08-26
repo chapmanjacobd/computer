@@ -94,6 +94,82 @@ def test_roth_beats_taxable_when_capital_gains_are_taxed():
     assert roth["final_value"] > brokerage["final_value"]
 
 
+def test_early_withdrawal_penalty_applies_to_traditional_balance():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=0.0,
+        starting_solo_401k=1000.0,
+        starting_age=30,
+        federal_brackets=[[1000000.0, 0.0]],
+        early_withdrawal_penalty_rate=0.10,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("solo_401k", "roth_ira", "roth_401k", "emergency_fund", "brokerage"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["early_withdrawal_penalty"] == pytest.approx(100.0)
+    assert result["final_value"] == pytest.approx(900.0)
+
+
+def test_early_withdrawal_penalty_excludes_roth_basis():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=0.0,
+        starting_roth_ira=1500.0,
+        starting_roth_ira_basis=1000.0,
+        starting_age=30,
+        early_withdrawal_penalty_rate=0.10,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("roth_ira", "solo_401k", "roth_401k", "emergency_fund", "brokerage"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["early_withdrawal_penalty"] == pytest.approx(50.0)
+    assert result["final_value"] == pytest.approx(1450.0)
+
+
+def test_roth_contributions_are_added_to_penalty_basis():
+    args = make_args(
+        annual_savings=1000.0,
+        starting_brokerage=0.0,
+        starting_age=30,
+        early_withdrawal_penalty_rate=0.10,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("roth_ira", "solo_401k", "roth_401k", "emergency_fund", "brokerage"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["early_withdrawal_penalty"] == pytest.approx(0.0)
+    assert result["final_value"] == pytest.approx(1000.0)
+
+
+def test_no_early_withdrawal_penalty_at_penalty_free_age():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=0.0,
+        starting_solo_401k=1000.0,
+        starting_age=59,
+        projection_years=1,
+        federal_brackets=[[1000000.0, 0.0]],
+        early_withdrawal_penalty_rate=0.10,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("solo_401k", "roth_ira", "roth_401k", "emergency_fund", "brokerage"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["terminal_withdrawal_age"] == pytest.approx(60.0)
+    assert result["early_withdrawal_penalty"] == pytest.approx(0.0)
+    assert result["final_value"] == pytest.approx(1000.0)
+
+
 def test_monte_carlo_is_reproducible():
     args = make_args(projection_years=2, annual_savings=5000.0)
     first, raw_first = savings.run_monte_carlo(args, simulations=3, seed=7)
@@ -108,8 +184,10 @@ def test_loads_all_starting_balances(tmp_path):
         """
         starting_emergency_fund = 1000
         starting_roth_ira = 2000
+        starting_roth_ira_basis = 1500
         starting_solo_401k = 3000
         starting_roth_401k = 4000
+        starting_roth_401k_basis = 3500
         starting_brokerage = 5000
         starting_brokerage_basis = 4500
         """
@@ -117,8 +195,10 @@ def test_loads_all_starting_balances(tmp_path):
     args = savings.load_toml_config(str(config))
     assert args["starting_emergency_fund"] == 1000
     assert args["starting_roth_ira"] == 2000
+    assert args["starting_roth_ira_basis"] == 1500
     assert args["starting_solo_401k"] == 3000
     assert args["starting_roth_401k"] == 4000
+    assert args["starting_roth_401k_basis"] == 3500
     assert args["starting_brokerage"] == 5000
     assert args["starting_brokerage_basis"] == 4500
 
