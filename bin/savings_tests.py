@@ -243,3 +243,53 @@ def test_optimizer_returns_a_dollar_split():
     assert set(allocation) == set(savings.ACCOUNT_NAMES)
     assert sum(allocation.values()) == pytest.approx(1.0)
     assert summary["allocation"] == allocation
+
+
+def test_limits_and_brackets_are_inflation_indexed_by_projection_year():
+    args = make_args(
+        annual_savings=10000.0,
+        inflation_rate=0.10,
+        projection_years=2,
+        employee_401k_limit=0.0,
+        solo_401k_limit=0.0,
+        roth_401k_limit=0.0,
+    )
+    balances = {account: 0.0 for account in savings.ACCOUNT_NAMES}
+    allocated = savings.allocate_savings(
+        args,
+        ("roth_ira", "emergency_fund", "solo_401k", "roth_401k", "brokerage"),
+        balances,
+        year=1,
+    )
+    assert allocated["roth_ira"] == pytest.approx(7700.0)
+    assert allocated["brokerage"] == pytest.approx(2300.0)
+    assert savings.federal_brackets(args, 1.10)[0][0] == pytest.approx(
+        args["federal_brackets_mfj"][0][0] * 1.10
+    )
+
+
+def test_rmd_is_taxed_and_reinvested_after_tax():
+    args = make_args(
+        annual_savings=0.0,
+        starting_age=73,
+        starting_solo_401k=26500.0,
+        starting_brokerage=0.0,
+        starting_brokerage_basis=0.0,
+        federal_brackets=[[1000000.0, 0.20]],
+        standard_deduction=0.0,
+        state_standard_deduction=0.0,
+        rmd_reinvest_after_tax=True,
+    )
+    result = savings.simulate_strategy(
+        args,
+        ("solo_401k", "roth_ira", "roth_401k", "emergency_fund", "brokerage"),
+        stock_returns=[0.0],
+        inflation_rates=[0.0],
+    )
+    assert result["rmd_total"] == pytest.approx(1000.0)
+    assert result["rmd_tax"] == pytest.approx(200.0)
+    assert result["rmd_reinvested"] == pytest.approx(800.0)
+    assert result["total_tax_cost"] == pytest.approx(5300.0)
+    assert result["balances"]["solo_401k"] == pytest.approx(25500.0)
+    assert result["balances"]["brokerage"] == pytest.approx(800.0)
+    assert result["final_value"] == pytest.approx(21200.0)

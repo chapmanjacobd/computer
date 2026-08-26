@@ -11,7 +11,9 @@ withdrawal taxes.
 
 This is an educational planning model, not tax advice.  Tax brackets,
 contribution limits, and account rules are configurable in TOML. Employer
-matches, RMDs, and early-withdrawal exceptions are not modeled.
+matches and early-withdrawal exceptions are not modeled. Required minimum
+distributions are modeled from the configured RMD age and reinvested in the
+brokerage account after estimated taxes by default.
 """
 
 import argparse
@@ -75,6 +77,60 @@ FEDERAL_BRACKETS_SINGLE = [
     (384350, 0.35),
 ]
 
+UNIFORM_LIFETIME = {
+    70: 30.0,
+    71: 28.9,
+    72: 27.4,
+    73: 26.5,
+    74: 25.5,
+    75: 24.6,
+    76: 23.7,
+    77: 22.9,
+    78: 22.0,
+    79: 21.1,
+    80: 20.2,
+    81: 19.4,
+    82: 18.5,
+    83: 17.7,
+    84: 16.8,
+    85: 16.0,
+    86: 15.2,
+    87: 14.4,
+    88: 13.7,
+    89: 12.9,
+    90: 12.2,
+    91: 11.5,
+    92: 10.8,
+    93: 10.1,
+    94: 9.5,
+    95: 8.9,
+    96: 8.4,
+    97: 7.8,
+    98: 7.3,
+    99: 6.8,
+    100: 6.4,
+    101: 6.0,
+    102: 5.6,
+    103: 5.2,
+    104: 4.9,
+    105: 4.6,
+    106: 4.3,
+    107: 4.1,
+    108: 3.9,
+    109: 3.7,
+    110: 3.5,
+    111: 3.4,
+    112: 3.3,
+    113: 3.1,
+    114: 3.0,
+    115: 2.9,
+    116: 2.8,
+    117: 2.7,
+    118: 2.5,
+    119: 2.3,
+    120: 2.0,
+}
+
 
 def _normalize_brackets(value) -> list[tuple[float, float]]:
     brackets = []
@@ -118,52 +174,78 @@ def marginal_ordinary_rate(taxable_income: float, brackets: list[tuple[float, fl
     return brackets[-1][1]
 
 
-def _status_value(args: dict, name: str, status: str) -> float:
+def _status_value(
+    args: dict, name: str, status: str, inflation_factor: float = 1.0
+) -> float:
     if name in args:
-        return float(args[name])
-    return float(args[f"{name}_{status}"])
+        return float(args[name]) * inflation_factor
+    return float(args[f"{name}_{status}"]) * inflation_factor
 
 
-def federal_brackets(args: dict) -> list[tuple[float, float]]:
+def federal_brackets(
+    args: dict, inflation_factor: float = 1.0
+) -> list[tuple[float, float]]:
     configured = args.get("federal_brackets")
     if configured is not None:
-        return _normalize_brackets(configured)
-    status = str(args.get("filing_status", "mfj")).lower()
-    return _normalize_brackets(
-        args.get(
-            "federal_brackets_single" if status in {"single", "s"} else "federal_brackets_mfj",
-            FEDERAL_BRACKETS_SINGLE if status in {"single", "s"} else FEDERAL_BRACKETS_MFJ,
+        brackets = _normalize_brackets(configured)
+    else:
+        status = str(args.get("filing_status", "mfj")).lower()
+        brackets = _normalize_brackets(
+            args.get(
+                "federal_brackets_single"
+                if status in {"single", "s"}
+                else "federal_brackets_mfj",
+                FEDERAL_BRACKETS_SINGLE
+                if status in {"single", "s"}
+                else FEDERAL_BRACKETS_MFJ,
+            )
         )
-    )
+    return [
+        (upper * inflation_factor, rate) for upper, rate in brackets
+    ]
 
 
-def _state_tax(args: dict, gross_income: float, pretax_contribution: float = 0.0) -> float:
+def _state_tax(
+    args: dict,
+    gross_income: float,
+    pretax_contribution: float = 0.0,
+    inflation_factor: float = 1.0,
+) -> float:
     taxable = max(
         0.0,
         gross_income
         - pretax_contribution
-        - float(args.get("state_standard_deduction", 0.0)),
+        - float(args.get("state_standard_deduction", 0.0)) * inflation_factor,
     )
     return taxable * float(args.get("state_tax_rate", 0.0))
 
 
-def current_taxable_income(args: dict, pretax_contribution: float = 0.0) -> float:
+def current_taxable_income(
+    args: dict, pretax_contribution: float = 0.0, inflation_factor: float = 1.0
+) -> float:
     return max(
         0.0,
         float(args["annual_income"])
-        - float(args.get("standard_deduction", 0.0))
+        - float(args.get("standard_deduction", 0.0)) * inflation_factor
         - pretax_contribution,
     )
 
 
-def current_income_tax(args: dict, pretax_contribution: float = 0.0) -> float:
-    taxable = current_taxable_income(args, pretax_contribution)
-    federal = ordinary_income_tax(taxable, federal_brackets(args))
-    return federal + _state_tax(args, args["annual_income"], pretax_contribution)
+def current_income_tax(
+    args: dict, pretax_contribution: float = 0.0, inflation_factor: float = 1.0
+) -> float:
+    taxable = current_taxable_income(args, pretax_contribution, inflation_factor)
+    federal = ordinary_income_tax(taxable, federal_brackets(args, inflation_factor))
+    return federal + _state_tax(
+        args, args["annual_income"], pretax_contribution, inflation_factor
+    )
 
 
 def long_term_capital_gains_tax(
-    args: dict, gain: float, ordinary_taxable_income: float = 0.0
+    args: dict,
+    gain: float,
+    ordinary_taxable_income: float = 0.0,
+    inflation_factor: float = 1.0,
 ) -> float:
     """Return federal and state tax on qualified dividends or LTCG.
 
@@ -173,8 +255,10 @@ def long_term_capital_gains_tax(
     gain = max(0.0, gain)
     ordinary = max(0.0, ordinary_taxable_income)
     status = "single" if str(args.get("filing_status", "mfj")).lower() in {"single", "s"} else "mfj"
-    zero_limit = _status_value(args, "ltcg_0pct_limit", status)
-    fifteen_limit = _status_value(args, "ltcg_15pct_limit", status)
+    zero_limit = _status_value(args, "ltcg_0pct_limit", status, inflation_factor)
+    fifteen_limit = _status_value(
+        args, "ltcg_15pct_limit", status, inflation_factor
+    )
     zero_amount = min(gain, max(0.0, zero_limit - ordinary))
     remaining = gain - zero_amount
     fifteen_room = max(0.0, fifteen_limit - max(ordinary, zero_limit))
@@ -187,11 +271,18 @@ def long_term_capital_gains_tax(
     return federal + state
 
 
-def pretax_cash_cost(args: dict, contribution: float, other_pretax: float = 0.0) -> float:
+def pretax_cash_cost(
+    args: dict,
+    contribution: float,
+    other_pretax: float = 0.0,
+    inflation_factor: float = 1.0,
+) -> float:
     """Cash cost of a traditional contribution after its current tax savings."""
     contribution = max(0.0, contribution)
-    before = current_income_tax(args, other_pretax)
-    after = current_income_tax(args, other_pretax + contribution)
+    before = current_income_tax(args, other_pretax, inflation_factor)
+    after = current_income_tax(
+        args, other_pretax + contribution, inflation_factor
+    )
     return contribution - max(0.0, before - after)
 
 
@@ -200,18 +291,23 @@ def gross_contribution_for_cash(
     cash: float,
     maximum: float,
     other_pretax: float = 0.0,
+    inflation_factor: float = 1.0,
 ) -> float:
     """Solve for the largest traditional contribution affordable with cash."""
     cash = max(0.0, cash)
     maximum = max(0.0, maximum)
     if cash == 0.0 or maximum == 0.0:
         return 0.0
-    if pretax_cash_cost(args, maximum, other_pretax) <= cash:
+    if pretax_cash_cost(
+        args, maximum, other_pretax, inflation_factor
+    ) <= cash:
         return maximum
     low, high = 0.0, maximum
     for _ in range(48):
         middle = (low + high) / 2.0
-        if pretax_cash_cost(args, middle, other_pretax) <= cash:
+        if pretax_cash_cost(
+            args, middle, other_pretax, inflation_factor
+        ) <= cash:
             low = middle
         else:
             high = middle
@@ -226,45 +322,66 @@ def _annual_age(args: dict, year: int) -> int:
     return _starting_age(args) + year
 
 
-def _catchup(args: dict, name: str, age: int) -> float:
+def _inflation_factor(args: dict, year: int) -> float:
+    rate = float(args.get("inflation_rate", 0.0))
+    if rate <= -1.0:
+        raise ValueError("inflation rate must be greater than -100%")
+    return (1.0 + rate) ** max(0, int(year))
+
+
+def _catchup(
+    args: dict, name: str, age: int, inflation_factor: float = 1.0
+) -> float:
     if age < int(args.get("catchup_age", 50)):
         return 0.0
-    return float(args.get(name, 0.0))
+    return float(args.get(name, 0.0)) * inflation_factor
 
 
-def _employee_401k_limit(args: dict, age: int) -> float:
-    return float(args["employee_401k_limit"]) + _catchup(
-        args, "employee_401k_catchup", age
+def _employee_401k_limit(
+    args: dict, age: int, inflation_factor: float = 1.0
+) -> float:
+    return float(args["employee_401k_limit"]) * inflation_factor + _catchup(
+        args, "employee_401k_catchup", age, inflation_factor
     )
 
 
-def _solo_401k_total_limit(args: dict, age: int) -> float:
-    return float(args["solo_401k_limit"]) + _catchup(
-        args, "employee_401k_catchup", age
+def _solo_401k_total_limit(
+    args: dict, age: int, inflation_factor: float = 1.0
+) -> float:
+    return float(args["solo_401k_limit"]) * inflation_factor + _catchup(
+        args, "employee_401k_catchup", age, inflation_factor
     )
 
 
-def _solo_401k_employer_contribution(args: dict, age: int) -> float:
+def _solo_401k_employer_contribution(
+    args: dict, age: int, inflation_factor: float = 1.0
+) -> float:
     rate = float(args.get("solo_401k_employer_rate", 0.0))
     if rate <= 0.0 or float(args["annual_income"]) <= 0.0:
         return 0.0
     return min(
         max(0.0, float(args["annual_income"]) * rate),
-        _solo_401k_total_limit(args, age),
+        _solo_401k_total_limit(args, age, inflation_factor),
     )
 
 
-def roth_ira_limit(args: dict, age: int | None = None) -> float:
+def roth_ira_limit(
+    args: dict, age: int | None = None, inflation_factor: float = 1.0
+) -> float:
     if not args.get("roth_ira_eligible", True):
         return 0.0
     if age is None:
         age = _starting_age(args)
     income = float(args["annual_income"])
     status = "single" if str(args.get("filing_status", "mfj")).lower() in {"single", "s"} else "mfj"
-    start = _status_value(args, "roth_ira_phaseout_start", status)
-    end = _status_value(args, "roth_ira_phaseout_end", status)
-    limit = float(args["roth_ira_limit"]) + _catchup(
-        args, "roth_ira_catchup", age
+    start = _status_value(
+        args, "roth_ira_phaseout_start", status, inflation_factor
+    )
+    end = _status_value(
+        args, "roth_ira_phaseout_end", status, inflation_factor
+    )
+    limit = float(args["roth_ira_limit"]) * inflation_factor + _catchup(
+        args, "roth_ira_catchup", age, inflation_factor
     )
     if income <= start:
         return limit
@@ -305,12 +422,16 @@ def _annual_savings(args: dict, year: int) -> float:
 
 def _new_annual_usage(args: dict, year: int) -> dict[str, float]:
     age = _annual_age(args, year)
+    inflation_factor = _inflation_factor(args, year)
     return {
         "age": age,
+        "inflation_factor": inflation_factor,
         "annual_401k": 0.0,
         "annual_roth_ira": 0.0,
         "annual_solo": 0.0,
-        "employer_contribution": _solo_401k_employer_contribution(args, age),
+        "employer_contribution": _solo_401k_employer_contribution(
+            args, age, inflation_factor
+        ),
     }
 
 
@@ -325,40 +446,55 @@ def _apply_account_cash(
     """Apply cash to one account, returning (gross contribution, unused cash)."""
     cash = max(0.0, cash)
     age = int(usage["age"])
+    inflation_factor = float(usage["inflation_factor"])
     if account == "emergency_fund":
         room = max(0.0, float(args["emergency_fund_target"]) - balances[account])
         amount = min(cash, room)
         return amount, cash - amount
     if account == "roth_ira":
-        room = max(0.0, roth_ira_limit(args, age) - usage["annual_roth_ira"])
+        room = max(
+            0.0,
+            roth_ira_limit(args, age, inflation_factor)
+            - usage["annual_roth_ira"],
+        )
         amount = min(cash, room)
         usage["annual_roth_ira"] += amount
         return amount, cash - amount
     if account == "solo_401k":
         employee_room = max(
-            0.0, _employee_401k_limit(args, age) - usage["annual_401k"]
+            0.0,
+            _employee_401k_limit(args, age, inflation_factor)
+            - usage["annual_401k"],
         )
         total_room = max(
             0.0,
-            _solo_401k_total_limit(args, age)
+            _solo_401k_total_limit(args, age, inflation_factor)
             - usage["employer_contribution"]
             - usage["annual_solo"],
         )
         earned_income_room = max(0.0, float(args["annual_income"]) - usage["annual_solo"])
         maximum = min(employee_room, total_room, earned_income_room)
-        amount = gross_contribution_for_cash(args, cash, maximum)
-        cost = pretax_cash_cost(args, amount)
+        amount = gross_contribution_for_cash(
+            args, cash, maximum, inflation_factor=inflation_factor
+        )
+        cost = pretax_cash_cost(
+            args, amount, inflation_factor=inflation_factor
+        )
         usage["annual_solo"] += amount
         usage["annual_401k"] += amount
         return amount, max(0.0, cash - cost)
     if account == "roth_401k":
         employee_room = max(
-            0.0, _employee_401k_limit(args, age) - usage["annual_401k"]
+            0.0,
+            _employee_401k_limit(args, age, inflation_factor)
+            - usage["annual_401k"],
         )
         account_room = max(
             0.0,
-            float(args["roth_401k_limit"])
-            + _catchup(args, "employee_401k_catchup", age),
+            float(args["roth_401k_limit"]) * inflation_factor
+            + _catchup(
+                args, "employee_401k_catchup", age, inflation_factor
+            ),
         )
         amount = min(cash, employee_room, account_room)
         usage["annual_401k"] += amount
@@ -461,6 +597,28 @@ def _early_withdrawal_penalty_rate(args: dict) -> float:
     return rate
 
 
+def _rmd_factor(args: dict, age: int) -> float:
+    start_age = int(args.get("rmd_start_age", 73))
+    if age < start_age:
+        return float("inf")
+    if start_age < min(UNIFORM_LIFETIME):
+        raise ValueError("rmd_start_age must be at least 70")
+    return UNIFORM_LIFETIME.get(min(age, 120), 2.0)
+
+
+def _rmd_tax(args: dict, distribution: float, inflation_factor: float) -> float:
+    """Estimate incremental federal and state tax on one RMD."""
+    taxable_income = float(
+        args.get("rmd_taxable_income", args.get("retirement_taxable_income", 0.0))
+    )
+    brackets = federal_brackets(args, inflation_factor)
+    federal = ordinary_income_tax(
+        taxable_income + distribution, brackets
+    ) - ordinary_income_tax(taxable_income, brackets)
+    state = distribution * float(args.get("state_tax_rate", 0.0))
+    return max(0.0, federal + state)
+
+
 def _terminal_after_tax_value(
     args: dict,
     balances: dict[str, float],
@@ -468,9 +626,12 @@ def _terminal_after_tax_value(
     years: int,
 ) -> dict:
     retirement_income = float(args.get("retirement_taxable_income", 0.0))
-    brackets = federal_brackets(args)
+    inflation_factor = _inflation_factor(args, years)
+    brackets = federal_brackets(args, inflation_factor)
     brokerage_gain = max(0.0, balances["brokerage"] - basis["brokerage"])
-    brokerage_tax = long_term_capital_gains_tax(args, brokerage_gain, retirement_income)
+    brokerage_tax = long_term_capital_gains_tax(
+        args, brokerage_gain, retirement_income, inflation_factor
+    )
     brokerage = max(0.0, balances["brokerage"] - brokerage_tax)
 
     solo_tax = (
@@ -558,9 +719,12 @@ def _simulate_plan(
     balances, basis = _starting_balances(args)
     annual_contributions = []
     annual_employer_contributions = []
+    annual_rmds = []
     real_history = []
     inflation_factor = 1.0
-    brackets = federal_brackets(args)
+    rmd_total = 0.0
+    rmd_tax_total = 0.0
+    rmd_reinvested = 0.0
     min_emergency = float("inf")
     peak = 0.0
     max_drawdown = 0.0
@@ -572,13 +736,18 @@ def _simulate_plan(
     ) - 1.0
 
     for year in range(years):
+        year_inflation_factor = _inflation_factor(args, year)
+        brackets = federal_brackets(args, year_inflation_factor)
+        rmd_basis_balance = balances["solo_401k"]
         contributions = allocator(year, balances)
         annual_contributions.append(
             {name: contributions[name] for name in ACCOUNT_NAMES}
         )
         annual_employer_contributions.append(contributions["_employer_contribution"])
         solo_contribution = contributions["solo_401k"]
-        taxable_income = current_taxable_income(args, solo_contribution)
+        taxable_income = current_taxable_income(
+            args, solo_contribution, year_inflation_factor
+        )
 
         monthly_contributions = {
             name: contributions[name] / 12.0 for name in ACCOUNT_NAMES
@@ -603,7 +772,7 @@ def _simulate_plan(
                 elif account == "brokerage":
                     dividend = max(0.0, before_return * monthly_dividend_yield)
                     dividend_tax = long_term_capital_gains_tax(
-                        args, dividend, taxable_income
+                        args, dividend, taxable_income, year_inflation_factor
                     )
                     balances[account] = max(
                         0.0, before_return * (1.0 + stock_return) - dividend_tax
@@ -624,12 +793,51 @@ def _simulate_plan(
             if peak > 0.0:
                 max_drawdown = max(max_drawdown, (peak - real_value) / peak)
 
+        age = _annual_age(args, year)
+        rmd_factor = _rmd_factor(args, age)
+        rmd = (
+            min(balances["solo_401k"], rmd_basis_balance / rmd_factor)
+            if math.isfinite(rmd_factor) and rmd_basis_balance > 0.0
+            else 0.0
+        )
+        if rmd > 0.0:
+            rmd_tax = _rmd_tax(args, rmd, year_inflation_factor)
+            net_rmd = max(0.0, rmd - rmd_tax)
+            balances["solo_401k"] = max(0.0, balances["solo_401k"] - rmd)
+            if args.get("rmd_reinvest_after_tax", True):
+                balances["brokerage"] += net_rmd
+                basis["brokerage"] += net_rmd
+                rmd_reinvested += net_rmd
+            rmd_total += rmd
+            rmd_tax_total += rmd_tax
+            annual_rmds.append(
+                {
+                    "age": age,
+                    "factor": rmd_factor,
+                    "gross": rmd,
+                    "tax": rmd_tax,
+                    "reinvested": net_rmd
+                    if args.get("rmd_reinvest_after_tax", True)
+                    else 0.0,
+                }
+            )
+            real_value = sum(balances.values()) / inflation_factor
+            real_history[-1] = real_value
+            peak = max(peak, real_value)
+            if peak > 0.0:
+                max_drawdown = max(max_drawdown, (peak - real_value) / peak)
+
     terminal = _terminal_after_tax_value(args, balances, basis, years)
     terminal["strategy"] = label
     terminal["balances"] = balances
     terminal["basis"] = basis
     terminal["annual_contributions"] = annual_contributions
     terminal["annual_employer_contributions"] = annual_employer_contributions
+    terminal["annual_rmds"] = annual_rmds
+    terminal["rmd_total"] = rmd_total
+    terminal["rmd_tax"] = rmd_tax_total
+    terminal["rmd_reinvested"] = rmd_reinvested
+    terminal["total_tax_cost"] = terminal["terminal_cost"] + rmd_tax_total
     terminal["history"] = real_history
     terminal["max_drawdown"] = max_drawdown
     terminal["min_emergency"] = min_emergency if real_history else balances["emergency_fund"]
@@ -769,6 +977,8 @@ def _compact_result(result: dict) -> dict[str, float]:
         "terminal_tax": result["terminal_tax"],
         "early_withdrawal_penalty": result["early_withdrawal_penalty"],
         "terminal_cost": result["terminal_cost"],
+        "rmd_tax": result["rmd_tax"],
+        "total_tax_cost": result["total_tax_cost"],
         "min_emergency": result["min_emergency"],
         "max_drawdown": result["max_drawdown"],
     }
@@ -796,7 +1006,7 @@ def _objective_value(result: dict[str, float], objective: str) -> float:
     if objective in {"median", "mean", "p10", "p25"}:
         return result["real_value"]
     if objective == "min_tax":
-        return -result["terminal_cost"]
+        return -result["total_tax_cost"]
     if objective == "emergency":
         return result["min_emergency"]
     if objective == "drawdown":
@@ -824,6 +1034,8 @@ def _summarize_allocations(
         taxes = [result["terminal_tax"] for result in results]
         penalties = [result["early_withdrawal_penalty"] for result in results]
         terminal_costs = [result["terminal_cost"] for result in results]
+        rmd_taxes = [result["rmd_tax"] for result in results]
+        total_tax_costs = [result["total_tax_cost"] for result in results]
         emergencies = [result["min_emergency"] for result in results]
         drawdowns = [result["max_drawdown"] for result in results]
         objective_values = [
@@ -836,7 +1048,7 @@ def _summarize_allocations(
         elif objective == "p25":
             score = _percentile(objective_values, 0.25)
         elif objective == "min_tax":
-            score = -mean(terminal_costs)
+            score = -mean(total_tax_costs)
         elif objective == "emergency":
             score = mean(emergencies)
         elif objective == "drawdown":
@@ -855,6 +1067,8 @@ def _summarize_allocations(
                 "terminal_tax": mean(taxes),
                 "early_withdrawal_penalty": mean(penalties),
                 "terminal_cost": mean(terminal_costs),
+                "rmd_tax": mean(rmd_taxes),
+                "total_tax_cost": mean(total_tax_costs),
                 "min_emergency": mean(emergencies),
                 "max_drawdown": mean(drawdowns),
                 "objective": objective,
@@ -1044,6 +1258,7 @@ def print_allocation_results(
             _currency(summary["p75"]),
             _currency(summary["terminal_tax"]),
             _currency(summary["early_withdrawal_penalty"]),
+            _currency(summary["rmd_tax"]),
             f"{summary['max_drawdown']:.1%}",
         ]
         for index, summary in enumerate(summaries[:top])
@@ -1060,6 +1275,7 @@ def print_allocation_results(
                 "P75 real",
                 "Avg terminal tax",
                 "Avg early penalty",
+                "Avg RMD tax",
                 "Avg drawdown",
             ],
             tablefmt="simple",
@@ -1069,8 +1285,10 @@ def print_allocation_results(
     print(f"\nRecommended annual allocation: {_allocation_with_dollars(args, best['allocation'])}")
     print(
         "Traditional solo 401k contributions receive a current tax deduction; "
-        "brokerage gains use the configured stacked LTCG brackets. Early "
-        "withdrawal penalties use the configured terminal age and rate."
+        "brokerage gains use the configured stacked LTCG brackets. Limits and "
+        "brackets are inflation-indexed; RMDs are reinvested after tax by "
+        "default, and early withdrawal penalties use the configured terminal "
+        "age and rate."
     )
 
 
@@ -1115,6 +1333,8 @@ def load_toml_config(filepath: str) -> dict:
         "ltcg_15pct_rate": 0.15,
         "ltcg_20pct_rate": 0.20,
         "retirement_taxable_income": 0.0,
+        "rmd_start_age": 73,
+        "rmd_reinvest_after_tax": True,
         "early_withdrawal_penalty_rate": 0.10,
         "early_withdrawal_penalty_age": 59.5,
         "terminal_withdrawal_age": None,
@@ -1128,6 +1348,9 @@ def load_toml_config(filepath: str) -> dict:
     }
     defaults.update(data)
     defaults["projection_years"] = int(defaults["projection_years"])
+    defaults["rmd_start_age"] = int(defaults["rmd_start_age"])
+    if defaults["rmd_start_age"] < min(UNIFORM_LIFETIME):
+        raise ValueError("rmd_start_age must be at least 70")
     defaults["federal_brackets_mfj"] = _normalize_brackets(defaults["federal_brackets_mfj"])
     defaults["federal_brackets_single"] = _normalize_brackets(
         defaults["federal_brackets_single"]
@@ -1183,8 +1406,10 @@ def print_results(summaries: list[dict], top: int) -> None:
     )
     print(
         "Traditional solo 401k contributions receive a current tax deduction; "
-        "brokerage gains use the configured stacked LTCG brackets. Early "
-        "withdrawal penalties use the configured terminal age and rate."
+        "brokerage gains use the configured stacked LTCG brackets. Limits and "
+        "brackets are inflation-indexed; RMDs are reinvested after tax by "
+        "default, and early withdrawal penalties use the configured terminal "
+        "age and rate."
     )
 
 
