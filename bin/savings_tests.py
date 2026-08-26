@@ -100,3 +100,66 @@ def test_monte_carlo_is_reproducible():
     second, raw_second = savings.run_monte_carlo(args, simulations=3, seed=7)
     assert [row["median"] for row in first] == [row["median"] for row in second]
     assert raw_first == raw_second
+
+
+def test_loads_all_starting_balances(tmp_path):
+    config = tmp_path / "balances.toml"
+    config.write_text(
+        """
+        starting_emergency_fund = 1000
+        starting_roth_ira = 2000
+        starting_solo_401k = 3000
+        starting_roth_401k = 4000
+        starting_brokerage = 5000
+        starting_brokerage_basis = 4500
+        """
+    )
+    args = savings.load_toml_config(str(config))
+    assert args["starting_emergency_fund"] == 1000
+    assert args["starting_roth_ira"] == 2000
+    assert args["starting_solo_401k"] == 3000
+    assert args["starting_roth_401k"] == 4000
+    assert args["starting_brokerage"] == 5000
+    assert args["starting_brokerage_basis"] == 4500
+
+
+def test_solo_401k_supports_employer_contributions_and_catchup():
+    args = make_args(
+        starting_age=50,
+        annual_income=100000.0,
+        annual_savings=30000.0,
+        solo_401k_employer_rate=0.25,
+        solo_401k_limit=70000.0,
+        employee_401k_limit=23500.0,
+        employee_401k_catchup=7500.0,
+    )
+    balances = {account: 0.0 for account in savings.ACCOUNT_NAMES}
+    allocated = savings.allocate_savings(
+        args,
+        ("solo_401k", "roth_401k", "roth_ira", "emergency_fund", "brokerage"),
+        balances,
+    )
+    assert allocated["_employer_contribution"] == pytest.approx(25000.0)
+    assert allocated["solo_401k"] + allocated["_employer_contribution"] <= 77500.0 + 1e-9
+
+
+def test_market_paths_are_monthly():
+    args = make_args(projection_years=2)
+    stock, inflation = savings.make_market_paths(args, savings.random.Random(3))
+    assert len(stock) == 24
+    assert len(inflation) == 24
+
+
+def test_optimizer_returns_a_dollar_split():
+    args = make_args(
+        annual_savings=2000.0,
+        projection_years=1,
+        optimization_step=1000.0,
+        optimization_passes=1,
+    )
+    allocation, summary = savings.optimize_allocation(
+        args, simulations=2, seed=5, objective="median"
+    )
+    assert set(allocation) == set(savings.ACCOUNT_NAMES)
+    assert sum(allocation.values()) == pytest.approx(1.0)
+    assert summary["allocation"] == allocation
