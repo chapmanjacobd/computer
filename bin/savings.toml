@@ -1,0 +1,29 @@
+# Annual cash available after normal living expenses and payroll taxes.
+annual_savings = 40000
+annual_income = 100000
+filing_status = "mfj"
+
+projection_years = 30
+emergency_fund_target = 30000
+emergency_fund_return = 0.03
+
+# Existing balances are optional; omitted accounts start at zero.
+# starting_brokerage = 0
+# starting_brokerage_basis = 0
+
+roth_ira_limit = 7000
+employee_401k_limit = 23500
+solo_401k_limit = 23500
+roth_401k_limit = 23500
+
+stock_return = 0.07
+stock_volatility = 0.18
+inflation_rate = 0.03
+inflation_volatility = 0.015
+brokerage_dividend_yield = 0.02
+
+# The ordinary income is taxable income after deductions.
+retirement_taxable_income = 0
+
+monte_carlo_simulations = 1000
+monte_carlo_seed = 42
