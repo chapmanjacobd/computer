@@ -28,13 +28,14 @@
     endPct: 35,
     stepPct: 2,
     delayMs: 3500,
-    discountRate: 6.8,     // annual %, opportunity cost of capital
-    appreciationRate: 3.5,  // annual %, expected property appreciation
+    discountRate: 7,     // annual %, opportunity cost of capital
+    appreciationRate: 3,  // annual %, expected property appreciation
+    projectionYears: 8,   // years to project equity and costs
     topN: 10,
   };
 
   const MIN_SCORE = 4.4;
-  const MONTHS_8YR = 96;
+  const projectionMonths = () => CONFIG.projectionYears * 12;
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -161,7 +162,7 @@
   // NPV of total cash outflows: down payment + upfront costs + interest.
   // Down payment and upfront are paid today (no discounting).
   // Interest is discounted by the opportunity cost of capital.
-  // Also returns equity at 8yr (down payment + principal paid).
+  // Also returns equity at end of projection period (down payment + principal paid).
   function computeLoanMetrics(loan, loanAmount, downPaymentDollar) {
     if (loanAmount <= 0) {
       return {
@@ -172,7 +173,7 @@
 
     const r = loan.rate / 100 / 12;
     const d = CONFIG.discountRate / 100 / 12;
-    const months = Math.min(MONTHS_8YR, loan.loanTermMonths);
+    const months = Math.min(projectionMonths(), loan.loanTermMonths);
 
     let balance = loanAmount;
     let npvInterest = 0;
@@ -196,9 +197,9 @@
     };
   }
 
-  // Total property appreciation over 8 years.
+  // Total property appreciation over projection period.
   function computeAppreciation(homePrice) {
-    return homePrice * (Math.pow(1 + CONFIG.appreciationRate / 100, 8) - 1);
+    return homePrice * (Math.pow(1 + CONFIG.appreciationRate / 100, CONFIG.projectionYears) - 1);
   }
 
   function renderPanel(topLoans, totalCount) {
@@ -237,7 +238,7 @@
         <span id="__dp_scan_close__" style="cursor:pointer;padding:0 4px;">&#x2715;</span>
       </div>
       <div style="font-size:10px;color:#888;margin-bottom:8px;">
-        ${totalCount} loans tracked &middot; Discount: ${CONFIG.discountRate}% &middot; Appreciation: ${CONFIG.appreciationRate}% &middot; Score &ge; ${MIN_SCORE}
+        ${totalCount} loans tracked &middot; Discount: ${CONFIG.discountRate}% &middot; Appreciation: ${CONFIG.appreciationRate}% &middot; Projection: ${CONFIG.projectionYears}yr &middot; Score &ge; ${MIN_SCORE}
       </div>
       <table style="border-collapse:collapse;width:100%;">
         <thead>
@@ -247,7 +248,7 @@
             <th style="text-align:right;padding:3px 5px;">DP%</th>
             <th style="text-align:right;padding:3px 5px;">Rate</th>
             <th style="text-align:right;padding:3px 5px;">NPV Cost</th>
-            <th style="text-align:right;padding:3px 5px;">Equity@8yr</th>
+            <th style="text-align:right;padding:3px 5px;">Equity@${CONFIG.projectionYears}yr</th>
             <th style="text-align:right;padding:3px 5px;">Appreciation</th>
           </tr>
         </thead>
