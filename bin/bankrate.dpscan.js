@@ -111,6 +111,9 @@
       const rateEl = art.querySelector('[data-testid="rate-value"]');
       const rate = rateEl ? parseFloat((rateEl.textContent || '').replace(/[^0-9.]/g, '')) : null;
 
+      const aprEl = art.querySelector('[data-testid="apr-value"]');
+      const apr = aprEl ? parseFloat((aprEl.textContent || '').replace(/[^0-9.]/g, '')) : null;
+
       const pmtEl = art.querySelector('[data-testid="payment-amount"]');
       const monthlyPayment = pmtEl
         ? parseFloat((pmtEl.textContent || '').replace(/[^0-9.]/g, ''))
@@ -126,7 +129,7 @@
         if (m) upfrontCosts = parseFloat(m[1].replace(/,/g, '')) || 0;
       }
 
-      if (rate === null || monthlyPayment === null || monthlyPayment <= 0) continue;
+      if (rate === null || apr === null || monthlyPayment === null || monthlyPayment <= 0) continue;
 
       const ptsEl = art.querySelector('[data-testid="points-value"]');
       let points = 0;
@@ -142,6 +145,7 @@
         lenderName: displayName,
         loanTermMonths,
         rate,
+        apr,
         monthlyPayment,
         upfrontCosts,
         customerScore: scoreEl
@@ -219,7 +223,7 @@
         <td style="padding:3px 5px;color:#888;">${i + 1}</td>
         <td style="padding:3px 5px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.lenderName}">${r.lenderName}</td>
         <td style="padding:3px 5px;text-align:right;">${r.percent}%</td>
-        <td style="padding:3px 5px;text-align:right;">${r.rate.toFixed(3)}%</td>
+        <td style="padding:3px 5px;text-align:right;">${r.apr.toFixed(3)}%</td>
         <td style="padding:3px 5px;text-align:right;font-weight:bold;${i === 0 ? 'color:#5f5;' : ''}">${fmt(r.npvCost)}</td>
         <td style="padding:3px 5px;text-align:right;color:#8cf;">${fmt(r.equityAt8yr)}</td>
       </tr>`
@@ -234,19 +238,21 @@
       <div style="font-size:10px;color:#888;margin-bottom:8px;">
         ${totalCount} loans tracked &middot; Discount: ${CONFIG.discountRate}% &middot; Appreciation: ${CONFIG.appreciationRate}% &middot; Projection: ${CONFIG.projectionYears}yr &middot; Score &ge; ${MIN_SCORE}
       </div>
-      <table style="border-collapse:collapse;width:100%;">
-        <thead>
-          <tr style="border-bottom:1px solid #444;">
-            <th style="text-align:left;padding:3px 5px;">#</th>
-            <th style="text-align:left;padding:3px 5px;">Lender</th>
-            <th style="text-align:right;padding:3px 5px;">DP%</th>
-            <th style="text-align:right;padding:3px 5px;">Rate</th>
-            <th style="text-align:right;padding:3px 5px;">NPV Cost</th>
-            <th style="text-align:right;padding:3px 5px;">Equity@${CONFIG.projectionYears}yr</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div style="max-height:250px;overflow-y:auto;">
+        <table style="border-collapse:collapse;width:100%;">
+          <thead>
+            <tr style="border-bottom:1px solid #444;">
+              <th style="text-align:left;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">#</th>
+              <th style="text-align:left;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">Lender</th>
+              <th style="text-align:right;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">DP%</th>
+              <th style="text-align:right;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">APR</th>
+              <th style="text-align:right;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">NPV Cost</th>
+              <th style="text-align:right;padding:3px 5px;position:sticky;top:0;background:#1a1a1a;">Equity@${CONFIG.projectionYears}yr</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
       <div style="margin-top:8px;border-top:1px solid #444;padding-top:6px;font-size:10px;color:#888;">
         NPV = DP + upfront + discounted interest. Equity = DP + principal paid.
         <br>Click bookmarklet again to scan more. Clears on page reload.
@@ -302,6 +308,7 @@
         lenderName: loan.lenderName,
         loanTermMonths: loan.loanTermMonths,
         rate: loan.rate,
+        apr: loan.apr,
         monthlyPayment: loan.monthlyPayment,
         upfrontCosts: loan.upfrontCosts,
         customerScore: loan.customerScore,
@@ -311,7 +318,7 @@
       newResults.push(entry);
       console.log(
         `[DP Scan] ${pct}% | ${loan.lenderName} → ` +
-          `rate ${loan.rate.toFixed(3)}%, pmt $${loan.monthlyPayment}, ` +
+          `apr ${loan.apr.toFixed(3)}%, pmt $${loan.monthlyPayment}, ` +
           `NPV $${Math.round(npvCost).toLocaleString()}, ` +
           `equity $${Math.round(equityAt8yr).toLocaleString()}`
       );
@@ -335,8 +342,7 @@
   allResults.sort((a, b) => a.npvCost - b.npvCost);
   window.__dpScanResults = allResults;
 
-  const top = allResults.slice(0, CONFIG.topN);
-  console.table(top);
-  console.log(`[DP Scan] BEST:`, top[0]);
-  renderPanel(top, allResults.length);
+  console.table(allResults);
+  console.log(`[DP Scan] BEST:`, allResults[0]);
+  renderPanel(allResults, allResults.length);
 })();
