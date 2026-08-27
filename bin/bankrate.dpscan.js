@@ -28,7 +28,8 @@
     endPct: 35,
     stepPct: 2,
     delayMs: 3500,
-    discountRate: 7, // annual %, opportunity cost of capital
+    discountRate: 6.8,     // annual %, opportunity cost of capital
+    appreciationRate: 3.5,  // annual %, expected property appreciation
     topN: 10,
   };
 
@@ -151,8 +152,14 @@
   // NPV of total cash outflows: down payment + upfront costs + interest.
   // Down payment and upfront are paid today (no discounting).
   // Interest is discounted by the opportunity cost of capital.
-  function computeNPVCost(loan, loanAmount, downPaymentDollar) {
-    if (loanAmount <= 0) return downPaymentDollar + loan.upfrontCosts;
+  // Also returns equity at 8yr (down payment + principal paid).
+  function computeLoanMetrics(loan, loanAmount, downPaymentDollar) {
+    if (loanAmount <= 0) {
+      return {
+        npvCost: downPaymentDollar + loan.upfrontCosts,
+        equityAt8yr: downPaymentDollar,
+      };
+    }
 
     const r = loan.rate / 100 / 12;
     const d = CONFIG.discountRate / 100 / 12;
@@ -173,7 +180,16 @@
       if (balance <= 0) break;
     }
 
-    return downPaymentDollar + loan.upfrontCosts + npvInterest;
+    const principalPaid = loanAmount - Math.max(balance, 0);
+    return {
+      npvCost: downPaymentDollar + loan.upfrontCosts + npvInterest,
+      equityAt8yr: downPaymentDollar + principalPaid,
+    };
+  }
+
+  // Total property appreciation over 8 years.
+  function computeAppreciation(homePrice) {
+    return homePrice * (Math.pow(1 + CONFIG.appreciationRate / 100, 8) - 1);
   }
 
   function renderPanel(topLoans, totalCount) {
@@ -186,21 +202,22 @@
       position:fixed; top:12px; right:12px; z-index:2147483647;
       background:#111; color:#eee; font:11px/1.4 -apple-system,monospace;
       padding:12px 14px; border-radius:8px; max-height:85vh; overflow:auto;
-      box-shadow:0 4px 18px rgba(0,0,0,.45); width:520px;
+      box-shadow:0 4px 18px rgba(0,0,0,.45); width:640px;
     `;
+
+    const fmt = (n) => '$' + Math.round(n).toLocaleString();
 
     const rows = topLoans
       .map(
         (r, i) => `
       <tr style="background:${i === 0 ? '#1a3a1a' : 'transparent'}">
         <td style="padding:3px 5px;color:#888;">${i + 1}</td>
-        <td style="padding:3px 5px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.lenderName}">${r.lenderName}</td>
+        <td style="padding:3px 5px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.lenderName}">${r.lenderName}</td>
         <td style="padding:3px 5px;text-align:right;">${r.percent}%</td>
-        <td style="padding:3px 5px;text-align:right;">$${r.downPaymentDollar.toLocaleString()}</td>
         <td style="padding:3px 5px;text-align:right;">${r.rate.toFixed(3)}%</td>
-        <td style="padding:3px 5px;text-align:right;">$${r.monthlyPayment.toLocaleString()}</td>
-        <td style="padding:3px 5px;text-align:right;">$${r.upfrontCosts.toLocaleString()}</td>
-        <td style="padding:3px 5px;text-align:right;font-weight:bold;${i === 0 ? 'color:#5f5;' : ''}">$${Math.round(r.npvCost).toLocaleString()}</td>
+        <td style="padding:3px 5px;text-align:right;font-weight:bold;${i === 0 ? 'color:#5f5;' : ''}">${fmt(r.npvCost)}</td>
+        <td style="padding:3px 5px;text-align:right;color:#8cf;">${fmt(r.equityAt8yr)}</td>
+        <td style="padding:3px 5px;text-align:right;color:#5d5;">${fmt(r.appreciation)}</td>
       </tr>`
       )
       .join('');
@@ -211,7 +228,7 @@
         <span id="__dp_scan_close__" style="cursor:pointer;padding:0 4px;">&#x2715;</span>
       </div>
       <div style="font-size:10px;color:#888;margin-bottom:8px;">
-        ${totalCount} loans tracked &middot; Discount rate: ${CONFIG.discountRate}% &middot; Score &ge; ${MIN_SCORE}
+        ${totalCount} loans tracked &middot; Discount: ${CONFIG.discountRate}% &middot; Appreciation: ${CONFIG.appreciationRate}% &middot; Score &ge; ${MIN_SCORE}
       </div>
       <table style="border-collapse:collapse;width:100%;">
         <thead>
@@ -219,17 +236,17 @@
             <th style="text-align:left;padding:3px 5px;">#</th>
             <th style="text-align:left;padding:3px 5px;">Lender</th>
             <th style="text-align:right;padding:3px 5px;">DP%</th>
-            <th style="text-align:right;padding:3px 5px;">DP$</th>
             <th style="text-align:right;padding:3px 5px;">Rate</th>
-            <th style="text-align:right;padding:3px 5px;">Mo.Pmt</th>
-            <th style="text-align:right;padding:3px 5px;">Upfront</th>
-            <th style="text-align:right;padding:3px 5px;">NPV</th>
+            <th style="text-align:right;padding:3px 5px;">NPV Cost</th>
+            <th style="text-align:right;padding:3px 5px;">Equity@8yr</th>
+            <th style="text-align:right;padding:3px 5px;">Appreciation</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
       <div style="margin-top:8px;border-top:1px solid #444;padding-top:6px;font-size:10px;color:#888;">
-        Click bookmarklet again to scan more. Clears on page reload.
+        NPV = DP + upfront + discounted interest. Equity = DP + principal paid. Appreciation = home value gain.
+        <br>Click bookmarklet again to scan more. Clears on page reload.
       </div>
     `;
     document.body.appendChild(panel);
@@ -270,6 +287,8 @@
       ? parseFloat((dollarInput.value || '').replace(/[^0-9.]/g, '')) || 0
       : 0;
     const loanAmount = computeLoanAmount(downPaymentDollar, pct);
+    const homePrice = downPaymentDollar + loanAmount;
+    const appreciation = computeAppreciation(homePrice);
 
     const lenders = collectLenderData();
     if (!lenders.length) {
@@ -278,11 +297,12 @@
     }
 
     for (const loan of lenders) {
-      const npvCost = computeNPVCost(loan, loanAmount, downPaymentDollar);
+      const { npvCost, equityAt8yr } = computeLoanMetrics(loan, loanAmount, downPaymentDollar);
       const entry = {
         percent: pct,
         downPaymentDollar,
         loanAmount,
+        homePrice,
         lenderName: loan.lenderName,
         loanTermMonths: loan.loanTermMonths,
         rate: loan.rate,
@@ -290,12 +310,16 @@
         upfrontCosts: loan.upfrontCosts,
         customerScore: loan.customerScore,
         npvCost,
+        equityAt8yr,
+        appreciation,
       };
       newResults.push(entry);
       console.log(
         `[DP Scan] ${pct}% | ${loan.lenderName} → ` +
           `rate ${loan.rate.toFixed(3)}%, pmt $${loan.monthlyPayment}, ` +
-          `upfront $${loan.upfrontCosts}, NPV $${Math.round(npvCost).toLocaleString()}`
+          `NPV $${Math.round(npvCost).toLocaleString()}, ` +
+          `equity $${Math.round(equityAt8yr).toLocaleString()}, ` +
+          `appr $${Math.round(appreciation).toLocaleString()}`
       );
     }
   }
