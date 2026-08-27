@@ -570,6 +570,93 @@ def test_invalid_ltcg_harvesting_configuration_is_rejected(tmp_path):
         savings.load_toml_config(str(config))
 
 
+def test_compact_result_keeps_harvest_details():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=1000.0,
+        starting_brokerage_basis=0.0,
+        ltcg_harvesting=1000,
+        ltcg_bracket0_limit=0.0,
+        ltcg_bracket1_limit=0.0,
+        state_tax_rate=0.0,
+        state_capital_gains_tax_rate=0.0,
+        projection_years=1,
+    )
+    result = savings.simulate_strategy(
+        args, tuple(savings.ACCOUNT_NAMES), stock_returns=[1.0], inflation_rates=[0.0]
+    )
+    compact = savings._compact_result(result)
+    assert compact["ltcg_harvested"] == pytest.approx(1000.0)
+    assert compact["ltcg_harvesting"][0]["gain"] == pytest.approx(1000.0)
+
+
+def test_harvest_plan_rows_median_across_trials():
+    args = make_args(ltcg_harvesting="0%")
+    trials = [
+        {
+            "ltcg_harvesting": [
+                {"age": 30, "gain": 100.0, "tax": 0.0, "zero_percent_room": 50.0}
+            ]
+        },
+        {
+            "ltcg_harvesting": [
+                {"age": 30, "gain": 300.0, "tax": 0.0, "zero_percent_room": 60.0}
+            ]
+        },
+        {
+            "ltcg_harvesting": [
+                {"age": 30, "gain": 200.0, "tax": 0.0, "zero_percent_room": 70.0}
+            ]
+        },
+        {
+            "ltcg_harvesting": [
+                {"age": 30, "gain": 400.0, "tax": 0.0, "zero_percent_room": 80.0}
+            ]
+        },
+    ]
+    assert savings._harvest_plan_rows(args, trials) == [
+        [30, "$200", "$0", "$60", "100%"]
+    ]
+
+
+def test_harvest_plan_is_printed_when_harvesting_enabled(capsys):
+    allocation = {
+        name: float(name == "brokerage") for name in savings.ACCOUNT_NAMES
+    }
+    args = make_args(ltcg_harvesting="0%")
+    summary = {
+        "allocation": allocation,
+        "median": 1.0,
+        "p10": 1.0,
+        "p75": 1.0,
+        "terminal_tax": 0.0,
+        "early_withdrawal_penalty": 0.0,
+        "rmd_tax": 0.0,
+        "max_drawdown": 0.0,
+        "ltcg_harvested": 300.0,
+    }
+    raw = [
+        [
+            {
+                "ltcg_harvesting": [
+                    {
+                        "age": 30,
+                        "gain": 200.0,
+                        "tax": 0.0,
+                        "zero_percent_room": 60.0,
+                    }
+                ]
+            }
+        ]
+    ]
+    savings.print_allocation_results(args, [summary], "median", 1, raw)
+    out = capsys.readouterr().out
+    assert "Annual LTCG harvesting plan" in out
+    assert "Gain to harvest" in out
+    assert "$200" in out
+    assert "Average lifetime LTCG harvested: $300" in out
+
+
 def test_inactive_schedule_does_not_fall_back_to_scalar_income():
     args = make_args(
         annual_savings=None,

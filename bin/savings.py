@@ -72,19 +72,6 @@ ALLOCATION_OBJECTIVES = (
     "shortfall",
     "warnings",
 )
-MODEL_NOTES = (
-    "Traditional solo 401k contributions receive a current tax deduction; "
-    "brokerage gains use the configured stacked LTCG brackets. Limits and "
-    "brackets are inflation-indexed; RMDs are reinvested after tax by "
-    "default, early withdrawal penalties use the configured terminal age and "
-    "rate. Displayed NPV discounts after-tax terminal proceeds and cash "
-    "withdrawals, then subtracts starting assets and employee contribution "
-    "cash costs using the configured annual discount rate; when omitted, "
-    "discount_rate defaults to inflation_rate. NPV can be negative when "
-    "discounted proceeds are below those cash costs; it is not a terminal "
-    "account balance. Early-withdrawal taxes and penalties can make retirement "
-    "account NPVs especially low."
-)
 
 FEDERAL_BRACKETS_MFJ = [
     (24800, 0.10),
@@ -1801,7 +1788,7 @@ def run_monte_carlo(
     return summaries, raw
 
 
-def _compact_result(result: dict) -> dict[str, float]:
+def _compact_result(result: dict) -> dict:
     return {
         "npv": result["npv"],
         "final_value": result["final_value"],
@@ -1817,12 +1804,14 @@ def _compact_result(result: dict) -> dict[str, float]:
         "retirement_shortfall": result["retirement_shortfall"],
         "warning_count": float(len(result["warnings"])),
         "total_taxes_paid": result["total_taxes_paid"],
+        "ltcg_harvested": result["ltcg_harvested"],
+        "ltcg_harvesting": result["ltcg_harvesting"],
     }
 
 
 def _run_allocation_trial(
     payload: tuple[dict, int, list[dict[str, float]]],
-) -> list[dict[str, float]]:
+) -> list[dict]:
     args, seed, allocations = payload
     stock, inflation = make_market_paths(args, random.Random(seed))
     return [
@@ -1881,6 +1870,7 @@ def _summarize_allocations(
         successes = [result["retirement_success"] for result in results]
         shortfalls = [result["retirement_shortfall"] for result in results]
         warning_counts = [result["warning_count"] for result in results]
+        harvested = [result["ltcg_harvested"] for result in results]
         objective_values = [_objective_value(result, objective) for result in results]
         if objective == "mean":
             score = mean(objective_values)
@@ -1922,6 +1912,7 @@ def _summarize_allocations(
                 "retirement_success": mean(successes),
                 "retirement_shortfall": mean(shortfalls),
                 "warning_count": mean(warning_counts),
+                "ltcg_harvested": mean(harvested),
                 "objective": objective,
                 "score": score,
                 "probability_best": best_counts[index] / len(trials),
@@ -1937,7 +1928,7 @@ def run_allocation_monte_carlo(
     seed: int | None = None,
     workers: int = DEFAULT_WORKERS,
     objective: str = "median",
-) -> tuple[list[dict], list[list[dict[str, float]]]]:
+) -> tuple[list[dict], list[list[dict]]]:
     """Evaluate fixed dollar splits using common monthly market paths."""
     if objective not in ALLOCATION_OBJECTIVES:
         raise ValueError(f"objective must be one of {ALLOCATION_OBJECTIVES}")
@@ -1950,7 +1941,11 @@ def run_allocation_monte_carlo(
 
     raw = [[trial[index] for trial in trials] for index in range(len(normalized))]
     summaries = _summarize_allocations(normalized, trials, objective)
-    summaries.sort(key=lambda row: row["score"], reverse=True)
+    order = sorted(
+        range(len(summaries)), key=lambda index: summaries[index]["score"], reverse=True
+    )
+    summaries = [summaries[index] for index in order]
+    raw = [raw[index] for index in order]
     return summaries, raw
 
 
@@ -2099,8 +2094,46 @@ def _allocation_with_dollars(args: dict, allocation: dict[str, float]) -> str:
     )
 
 
+def _harvest_plan_rows(args: dict, trials: list[dict]) -> list[list]:
+    """Median annual LTCG harvesting amounts across Monte Carlo trials."""
+    years = int(args["projection_years"])
+    start_age = _starting_age(args)
+    rows = []
+    for age in range(start_age, start_age + years):
+        gains = []
+        taxes = []
+        rooms = []
+        for trial in trials:
+            gain = 0.0
+            tax = 0.0
+            for entry in trial.get("ltcg_harvesting", ()):
+                if entry["age"] == age:
+                    gain += entry["gain"]
+                    tax += entry["tax"]
+                    rooms.append(entry["zero_percent_room"])
+            gains.append(gain)
+            taxes.append(tax)
+        if max(gains) <= 1e-9:
+            continue
+        share = sum(1 for gain in gains if gain > 1e-9) / len(gains)
+        rows.append(
+            [
+                age,
+                _currency(_percentile(gains, 0.5)),
+                _currency(_percentile(taxes, 0.5)),
+                _currency(_percentile(rooms, 0.5)),
+                f"{share:.0%}",
+            ]
+        )
+    return rows
+
+
 def print_allocation_results(
-    args: dict, summaries: list[dict], objective: str, top: int
+    args: dict,
+    summaries: list[dict],
+    objective: str,
+    top: int,
+    raw: list[list[dict]] | None = None,
 ) -> None:
     rows = [
         [
@@ -2135,7 +2168,27 @@ def print_allocation_results(
     best = summaries[0]
     recommendation = _allocation_with_dollars(args, best["allocation"])
     print(f"\nRecommended annual allocation: {recommendation}")
-    print(MODEL_NOTES)
+    if raw and args.get("ltcg_harvesting", "none") != "none":
+        plan = _harvest_plan_rows(args, raw[0])
+        if plan:
+            print("\nAnnual LTCG harvesting plan (median across trials):")
+            print(
+                tabulate(
+                    plan,
+                    headers=[
+                        "Age",
+                        "Gain to harvest",
+                        "Harvest tax",
+                        "0% room left",
+                        "Share of trials",
+                    ],
+                    tablefmt="simple",
+                )
+            )
+            print(
+                "Average lifetime LTCG harvested: "
+                f"{_currency(best.get('ltcg_harvested', 0.0))}"
+            )
 
 
 def load_toml_config(filepath: str) -> dict:
@@ -2401,7 +2454,7 @@ def main() -> None:
             tuple(_normalize_allocation(existing).values()) for existing in allocations
         }:
             allocations.append(allocation)
-    summaries, _ = run_allocation_monte_carlo(
+    summaries, raw = run_allocation_monte_carlo(
         config,
         allocations,
         simulations=simulations,
@@ -2409,7 +2462,7 @@ def main() -> None:
         workers=args.workers,
         objective=args.objective,
     )
-    print_allocation_results(config, summaries, args.objective, args.top)
+    print_allocation_results(config, summaries, args.objective, args.top, raw)
 
 
 if __name__ == "__main__":

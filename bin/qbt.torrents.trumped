@@ -17,6 +17,15 @@ def parse_args():
 
 
 def is_trumped_torrent(t):
+    if (
+        t.state_enum.is_complete
+        or t.state_enum.is_stopped
+        or t.state_enum.is_errored
+        or t.state_enum.is_checking
+        or 'queued' in t.state
+    ):
+        return False
+
     for tr, msg in torrents_info.get_error_messages(t):
         if any(
             s in msg.lower()
