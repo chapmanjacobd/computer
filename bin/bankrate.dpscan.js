@@ -128,8 +128,18 @@
 
       if (rate === null || monthlyPayment === null || monthlyPayment <= 0) continue;
 
+      const ptsEl = art.querySelector('[data-testid="points-value"]');
+      let points = 0;
+      if (ptsEl) {
+        points = parseFloat((ptsEl.textContent || '').replace(/[^0-9.]/g, '')) || 0;
+      }
+
+      const displayName = points > 0
+        ? `${lenderName} (${points} pt${points !== 1 ? 's' : ''})`
+        : lenderName;
+
       lenders.push({
-        lenderName,
+        lenderName: displayName,
         loanTermMonths,
         rate,
         monthlyPayment,
@@ -205,7 +215,7 @@
       box-shadow:0 4px 18px rgba(0,0,0,.45); width:640px;
     `;
 
-    const fmt = (n) => '$' + Math.round(n).toLocaleString();
+    const fmt = (n) => '$' + Math.round(n || 0).toLocaleString();
 
     const rows = topLoans
       .map(
