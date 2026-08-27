@@ -197,11 +197,6 @@
     };
   }
 
-  // Total property appreciation over projection period.
-  function computeAppreciation(homePrice) {
-    return homePrice * (Math.pow(1 + CONFIG.appreciationRate / 100, CONFIG.projectionYears) - 1);
-  }
-
   function renderPanel(topLoans, totalCount) {
     const existing = document.getElementById('__dp_scan_panel__');
     if (existing) existing.remove();
@@ -227,7 +222,6 @@
         <td style="padding:3px 5px;text-align:right;">${r.rate.toFixed(3)}%</td>
         <td style="padding:3px 5px;text-align:right;font-weight:bold;${i === 0 ? 'color:#5f5;' : ''}">${fmt(r.npvCost)}</td>
         <td style="padding:3px 5px;text-align:right;color:#8cf;">${fmt(r.equityAt8yr)}</td>
-        <td style="padding:3px 5px;text-align:right;color:#5d5;">${fmt(r.appreciation)}</td>
       </tr>`
       )
       .join('');
@@ -249,13 +243,12 @@
             <th style="text-align:right;padding:3px 5px;">Rate</th>
             <th style="text-align:right;padding:3px 5px;">NPV Cost</th>
             <th style="text-align:right;padding:3px 5px;">Equity@${CONFIG.projectionYears}yr</th>
-            <th style="text-align:right;padding:3px 5px;">Appreciation</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
       <div style="margin-top:8px;border-top:1px solid #444;padding-top:6px;font-size:10px;color:#888;">
-        NPV = DP + upfront + discounted interest. Equity = DP + principal paid. Appreciation = home value gain.
+        NPV = DP + upfront + discounted interest. Equity = DP + principal paid.
         <br>Click bookmarklet again to scan more. Clears on page reload.
       </div>
     `;
@@ -293,8 +286,6 @@
       : 0;
     const loanAmount = computeLoanAmount(downPaymentDollar, pct);
     const homePrice = downPaymentDollar + loanAmount;
-    const appreciation = computeAppreciation(homePrice);
-
     const lenders = collectLenderData();
     if (!lenders.length) {
       console.warn(`[DP Scan] ${pct}%: no qualifying lenders found, skipping.`);
@@ -316,15 +307,13 @@
         customerScore: loan.customerScore,
         npvCost,
         equityAt8yr,
-        appreciation,
       };
       newResults.push(entry);
       console.log(
         `[DP Scan] ${pct}% | ${loan.lenderName} → ` +
           `rate ${loan.rate.toFixed(3)}%, pmt $${loan.monthlyPayment}, ` +
           `NPV $${Math.round(npvCost).toLocaleString()}, ` +
-          `equity $${Math.round(equityAt8yr).toLocaleString()}, ` +
-          `appr $${Math.round(appreciation).toLocaleString()}`
+          `equity $${Math.round(equityAt8yr).toLocaleString()}`
       );
     }
   }
