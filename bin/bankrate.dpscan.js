@@ -26,7 +26,7 @@
   const CONFIG = {
     startPct: 20,
     endPct: 35,
-    stepPct: 1,
+    stepPct: 2,
     delayMs: 3500,
     discountRate: 7, // annual %, opportunity cost of capital
     topN: 10,
@@ -148,10 +148,11 @@
     return homePrice - downPaymentDollar;
   }
 
-  // NPV of total interest paid over 8 years + upfront costs.
-  // Uses standard amortization to split each payment into interest vs principal.
-  function computeNPVCost(loan, loanAmount) {
-    if (loanAmount <= 0) return loan.upfrontCosts;
+  // NPV of total cash outflows: down payment + upfront costs + interest.
+  // Down payment and upfront are paid today (no discounting).
+  // Interest is discounted by the opportunity cost of capital.
+  function computeNPVCost(loan, loanAmount, downPaymentDollar) {
+    if (loanAmount <= 0) return downPaymentDollar + loan.upfrontCosts;
 
     const r = loan.rate / 100 / 12;
     const d = CONFIG.discountRate / 100 / 12;
@@ -172,7 +173,7 @@
       if (balance <= 0) break;
     }
 
-    return loan.upfrontCosts + npvInterest;
+    return downPaymentDollar + loan.upfrontCosts + npvInterest;
   }
 
   function renderPanel(topLoans, totalCount) {
@@ -277,7 +278,7 @@
     }
 
     for (const loan of lenders) {
-      const npvCost = computeNPVCost(loan, loanAmount);
+      const npvCost = computeNPVCost(loan, loanAmount, downPaymentDollar);
       const entry = {
         percent: pct,
         downPaymentDollar,
