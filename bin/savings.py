@@ -22,6 +22,7 @@ import itertools
 import math
 import os
 import random
+import re
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from statistics import mean
@@ -321,18 +322,119 @@ def long_term_capital_gains_tax(
     gain = max(0.0, gain)
     ordinary = max(0.0, ordinary_taxable_income)
     status = _single_or_mfj_status(args)
-    zero_limit = _status_value(args, "ltcg_0pct_limit", status, inflation_factor)
-    fifteen_limit = _status_value(args, "ltcg_15pct_limit", status, inflation_factor)
+    zero_limit = _status_value(args, "ltcg_bracket0_limit", status, inflation_factor)
+    fifteen_limit = _status_value(args, "ltcg_bracket1_limit", status, inflation_factor)
     zero_amount = min(gain, max(0.0, zero_limit - ordinary))
     remaining = gain - zero_amount
     fifteen_room = max(0.0, fifteen_limit - max(ordinary, zero_limit))
     fifteen_amount = min(remaining, fifteen_room)
     twenty_amount = remaining - fifteen_amount
-    federal = fifteen_amount * float(args["ltcg_15pct_rate"]) + twenty_amount * float(
-        args["ltcg_20pct_rate"]
+    federal = (
+        zero_amount * float(args["ltcg_bracket0_rate"])
+        + fifteen_amount * float(args["ltcg_bracket1_rate"])
+        + twenty_amount * float(args["ltcg_bracket2_rate"])
     )
     state = gain * _state_capital_gains_rate(args)
     return federal + state
+
+
+def _ltcg_zero_percent_room(
+    args: dict,
+    ordinary_taxable_income: float,
+    inflation_factor: float = 1.0,
+) -> float:
+    """Return the remaining federal 0% LTCG bracket room."""
+    status = _single_or_mfj_status(args)
+    zero_limit = _status_value(args, "ltcg_bracket0_limit", status, inflation_factor)
+    return max(0.0, zero_limit - max(0.0, ordinary_taxable_income))
+
+
+def _ltcg_harvest_request(
+    args: dict,
+    unrealized_gain: float,
+    ordinary_taxable_income: float,
+    inflation_factor: float = 1.0,
+) -> float:
+    """Return the configured amount of gain to realize this year."""
+    setting = args["ltcg_harvesting"]
+    if setting == "none":
+        return 0.0
+    if isinstance(setting, int) and not isinstance(setting, bool):
+        return min(unrealized_gain, float(setting))
+    if isinstance(setting, float):
+        return unrealized_gain * setting
+    if not isinstance(setting, str):
+        raise ValueError(
+            "ltcg_harvesting must be none, a non-negative integer, a rate from "
+            "0 to 1, or a bracket target such as 0% or 0%70"
+        )
+
+    match = re.fullmatch(r"(\d+(?:\.\d+)?)%(?:(\d+(?:\.\d+)?))?", setting)
+    if match is None:
+        raise ValueError(
+            "ltcg_harvesting must be none, a non-negative integer, a rate from "
+            "0 to 1, or a bracket target such as 0% or 0%70"
+        )
+    target_rate = float(match.group(1)) / 100.0
+    harvest_rate = 1.0 if match.group(2) is None else float(match.group(2)) / 100.0
+    status = _single_or_mfj_status(args)
+    zero_limit = _status_value(args, "ltcg_bracket0_limit", status, inflation_factor)
+    fifteen_limit = _status_value(args, "ltcg_bracket1_limit", status, inflation_factor)
+    zero_rate = float(args["ltcg_bracket0_rate"])
+    fifteen_rate = float(args["ltcg_bracket1_rate"])
+    twenty_rate = float(args["ltcg_bracket2_rate"])
+    if math.isclose(target_rate, zero_rate):
+        room = zero_limit - ordinary_taxable_income
+    elif math.isclose(target_rate, fifteen_rate):
+        room = fifteen_limit - ordinary_taxable_income
+    elif math.isclose(target_rate, twenty_rate):
+        room = unrealized_gain
+    else:
+        raise ValueError(
+            "ltcg_harvesting bracket target must be 0%, "
+            f"{fifteen_rate:.0%}, or {twenty_rate:.0%}"
+        )
+    return min(unrealized_gain * harvest_rate, max(0.0, room))
+
+
+def _validate_ltcg_harvesting(args: dict) -> None:
+    setting = args["ltcg_harvesting"]
+    if setting == "none":
+        return
+    if isinstance(setting, bool):
+        raise ValueError(
+            "ltcg_harvesting must be none, a non-negative integer, a rate from "
+            "0 to 1, or a bracket target such as 0% or 0%70"
+        )
+    if isinstance(setting, int):
+        if setting < 0:
+            raise ValueError("ltcg_harvesting amount must be non-negative")
+        return
+    if isinstance(setting, float):
+        if not 0.0 <= setting <= 1.0:
+            raise ValueError("ltcg_harvesting rate must be between 0 and 1")
+        return
+    if not isinstance(setting, str):
+        raise ValueError(
+            "ltcg_harvesting must be none, a non-negative integer, a rate from "
+            "0 to 1, or a bracket target such as 0% or 0%70"
+        )
+    match = re.fullmatch(r"(\d+(?:\.\d+)?)%(?:(\d+(?:\.\d+)?))?", setting)
+    if match is None or float(match.group(2) or 100.0) > 100.0:
+        raise ValueError(
+            "ltcg_harvesting must be none, a non-negative integer, a rate from "
+            "0 to 1, or a bracket target such as 0% or 0%70"
+        )
+    target_rate = float(match.group(1)) / 100.0
+    if not any(
+        math.isclose(target_rate, rate)
+        for rate in (
+            float(args["ltcg_bracket0_rate"]),
+            float(args["ltcg_bracket1_rate"]),
+            float(args["ltcg_bracket2_rate"]),
+        )
+    ):
+        raise ValueError("ltcg_harvesting bracket target must match an LTCG rate")
 
 
 def pretax_cash_cost(
@@ -1412,26 +1514,14 @@ def _simulate_plan(
                 max_drawdown = max(max_drawdown, (peak - portfolio_value) / peak)
 
         age = _annual_age(args, year)
-        harvesting_enabled = bool(
-            args.get(
-                "ltcg_harvesting",
-                args.get("harvest_ltcg", args.get("ltcg_harvest", False)),
-            )
-        )
         harvested = 0.0
         harvest_tax = 0.0
-        if harvesting_enabled and balances["brokerage"] > basis["brokerage"]:
+        if balances["brokerage"] > basis["brokerage"]:
             unrealized = max(0.0, balances["brokerage"] - basis["brokerage"])
-            requested = float(
-                args.get(
-                    "ltcg_harvest_amount",
-                    args.get(
-                        "ltcg_harvest_target",
-                        unrealized * float(args.get("ltcg_harvest_rate", 1.0)),
-                    ),
-                )
+            harvested = _ltcg_harvest_request(
+                args, unrealized, taxable_income, year_inflation_factor
             )
-            harvested = min(unrealized, max(0.0, requested))
+        if harvested > 0.0:
             harvest_tax = long_term_capital_gains_tax(
                 args, harvested, taxable_income, year_inflation_factor
             )
@@ -1441,7 +1531,14 @@ def _simulate_plan(
             basis["brokerage"] = balances["brokerage"]
             harvested_total += harvested
             harvesting_history.append(
-                {"age": age, "gain": harvested, "tax": harvest_tax}
+                {
+                    "age": age,
+                    "gain": harvested,
+                    "tax": harvest_tax,
+                    "zero_percent_room": _ltcg_zero_percent_room(
+                        args, taxable_income, year_inflation_factor
+                    ),
+                }
             )
             year_taxes += harvest_tax
         conversion = min(balances["solo_401k"], _roth_conversion_amount(args, year))
@@ -2086,12 +2183,13 @@ def load_toml_config(filepath: str) -> dict:
         "inflation_rate": 0.03,
         "inflation_volatility": 0.015,
         "brokerage_dividend_yield": 0.02,
-        "ltcg_0pct_limit_mfj": 98900.0,
-        "ltcg_15pct_limit_mfj": 613700.0,
-        "ltcg_0pct_limit_single": 49450.0,
-        "ltcg_15pct_limit_single": 545500.0,
-        "ltcg_15pct_rate": 0.15,
-        "ltcg_20pct_rate": 0.20,
+        "ltcg_bracket0_limit_mfj": 98900.0,
+        "ltcg_bracket1_limit_mfj": 613700.0,
+        "ltcg_bracket0_limit_single": 49450.0,
+        "ltcg_bracket1_limit_single": 545500.0,
+        "ltcg_bracket0_rate": 0.0,
+        "ltcg_bracket1_rate": 0.15,
+        "ltcg_bracket2_rate": 0.20,
         "retirement_taxable_income": 0.0,
         "retirement_start_age": None,
         "retirement_annual_expenses": None,
@@ -2101,8 +2199,7 @@ def load_toml_config(filepath: str) -> dict:
         "retirement_withdrawal_order": None,
         "restrict_early_withdrawals": True,
         "roth_conversions": [],
-        "ltcg_harvesting": False,
-        "ltcg_harvest_rate": 1.0,
+        "ltcg_harvesting": "none",
         "rmd_start_age": 73,
         "rmd_reinvest_after_tax": True,
         "early_withdrawal_penalty_rate": 0.10,
@@ -2207,14 +2304,7 @@ def load_toml_config(filepath: str) -> dict:
             amount = entry.get("annual_amount", entry.get("amount"))
             if amount is None or float(amount) < 0:
                 raise ValueError("roth conversion amounts must be non-negative")
-    harvest_rate = defaults.get("ltcg_harvest_rate")
-    if harvest_rate is not None and not 0.0 <= float(harvest_rate) <= 1.0:
-        raise ValueError("ltcg_harvest_rate must be between 0% and 100%")
-    harvest_amount = defaults.get(
-        "ltcg_harvest_amount", defaults.get("ltcg_harvest_target")
-    )
-    if harvest_amount is not None and float(harvest_amount) < 0:
-        raise ValueError("ltcg_harvest_amount must be non-negative")
+    _validate_ltcg_harvesting(defaults)
     defaults["early_withdrawal_penalty_age"] = float(
         defaults["early_withdrawal_penalty_age"]
     )
@@ -2258,7 +2348,6 @@ def print_results(summaries: list[dict], top: int) -> None:
         f"\nRecommended priority order: {best['strategy']}"
         f"\nFirst destination for new savings: {first_place}"
     )
-    print(MODEL_NOTES)
 
 
 def main() -> None:

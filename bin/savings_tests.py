@@ -24,7 +24,7 @@ def make_args(**overrides):
             "discount_rate": 0.0,
             "brokerage_dividend_yield": 0.0,
             "state_tax_rate": 0.0,
-            "ltcg_0pct_limit": 1000000.0,
+            "ltcg_bracket0_limit": 1000000.0,
             "retirement_taxable_income": 0.0,
         }
     )
@@ -34,10 +34,10 @@ def make_args(**overrides):
 
 def test_ltcg_tax_stacks_after_ordinary_income():
     args = make_args(
-        ltcg_0pct_limit=100.0,
-        ltcg_15pct_limit=200.0,
-        ltcg_15pct_rate=0.15,
-        ltcg_20pct_rate=0.20,
+        ltcg_bracket0_limit=100.0,
+        ltcg_bracket1_limit=200.0,
+        ltcg_bracket1_rate=0.15,
+        ltcg_bracket2_rate=0.20,
     )
     assert savings.long_term_capital_gains_tax(args, 100.0, 60.0) == pytest.approx(9.0)
 
@@ -122,9 +122,9 @@ def test_employer_contribution_cannot_exceed_total_401k_limit():
 
 def test_roth_beats_taxable_when_capital_gains_are_taxed():
     args = make_args(
-        ltcg_0pct_limit=0.0,
-        ltcg_15pct_limit=0.0,
-        ltcg_15pct_rate=0.15,
+        ltcg_bracket0_limit=0.0,
+        ltcg_bracket1_limit=0.0,
+        ltcg_bracket1_rate=0.15,
     )
     roth = savings.simulate_strategy(
         args,
@@ -446,8 +446,8 @@ def test_capital_gains_state_rate_is_separate():
     args = make_args(
         state_tax_rate=0.0,
         state_capital_gains_tax_rate=0.05,
-        ltcg_0pct_limit=0.0,
-        ltcg_15pct_limit=0.0,
+        ltcg_bracket0_limit=0.0,
+        ltcg_bracket1_limit=0.0,
     )
     assert savings.long_term_capital_gains_tax(args, 100.0) == pytest.approx(25.0)
 
@@ -496,10 +496,9 @@ def test_ltcg_harvesting_realizes_gain_and_updates_basis():
         annual_savings=0.0,
         starting_brokerage=1000.0,
         starting_brokerage_basis=0.0,
-        ltcg_harvesting=True,
-        ltcg_harvest_amount=1000.0,
-        ltcg_0pct_limit=0.0,
-        ltcg_15pct_limit=0.0,
+        ltcg_harvesting=1000,
+        ltcg_bracket0_limit=0.0,
+        ltcg_bracket1_limit=0.0,
         state_tax_rate=0.0,
         state_capital_gains_tax_rate=0.0,
         projection_years=1,
@@ -510,6 +509,65 @@ def test_ltcg_harvesting_realizes_gain_and_updates_basis():
     assert result["ltcg_harvested"] == pytest.approx(1000.0)
     assert result["ltcg_harvesting"][0]["tax"] == pytest.approx(200.0)
     assert result["basis"]["brokerage"] == pytest.approx(result["balances"]["brokerage"])
+
+
+def test_ltcg_harvesting_can_fill_remaining_zero_percent_bracket():
+    args = make_args(
+        annual_savings=0.0,
+        annual_income=60.0,
+        standard_deduction=0.0,
+        starting_brokerage=1000.0,
+        starting_brokerage_basis=0.0,
+        ltcg_harvesting="0%",
+        ltcg_bracket0_limit=100.0,
+        ltcg_bracket1_limit=1000.0,
+        state_tax_rate=0.0,
+        state_capital_gains_tax_rate=0.0,
+        projection_years=1,
+    )
+    result = savings.simulate_strategy(
+        args, tuple(savings.ACCOUNT_NAMES), stock_returns=[1.0], inflation_rates=[0.0]
+    )
+    assert result["ltcg_harvested"] == pytest.approx(40.0)
+    assert result["ltcg_harvesting"][0]["zero_percent_room"] == pytest.approx(40.0)
+    assert result["ltcg_harvesting"][0]["tax"] == pytest.approx(0.0)
+
+
+def test_ltcg_harvesting_can_limit_bracket_harvest_by_gain_fraction():
+    args = make_args(
+        annual_savings=0.0,
+        annual_income=0.0,
+        starting_brokerage=1000.0,
+        starting_brokerage_basis=0.0,
+        ltcg_harvesting="0%70",
+        ltcg_bracket0_limit=1000.0,
+        state_tax_rate=0.0,
+        state_capital_gains_tax_rate=0.0,
+    )
+    result = savings.simulate_strategy(
+        args, tuple(savings.ACCOUNT_NAMES), stock_returns=[0.0], inflation_rates=[0.0]
+    )
+    assert result["ltcg_harvested"] == pytest.approx(700.0)
+
+
+def test_ltcg_harvesting_float_is_unbracketed_gain_fraction():
+    args = make_args(
+        annual_savings=0.0,
+        starting_brokerage=1000.0,
+        starting_brokerage_basis=0.0,
+        ltcg_harvesting=0.25,
+    )
+    result = savings.simulate_strategy(
+        args, tuple(savings.ACCOUNT_NAMES), stock_returns=[0.0], inflation_rates=[0.0]
+    )
+    assert result["ltcg_harvested"] == pytest.approx(250.0)
+
+
+def test_invalid_ltcg_harvesting_configuration_is_rejected(tmp_path):
+    config = tmp_path / "invalid_harvesting.toml"
+    config.write_text('annual_savings = 1000\nltcg_harvesting = true\n')
+    with pytest.raises(ValueError, match="ltcg_harvesting"):
+        savings.load_toml_config(str(config))
 
 
 def test_inactive_schedule_does_not_fall_back_to_scalar_income():
