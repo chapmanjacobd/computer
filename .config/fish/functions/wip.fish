@@ -26,7 +26,7 @@ function wip
     echo $msg
 
     if set -q _flag_yes; or gum confirm --default=no
-        set -l commit_oid (git commit-tree $tree_oid -p $parent_oid -m "$msg")
+        set -l commit_oid (git commit-tree $tree_oid -p $parent_oid -S -m "$msg")
         git update-ref HEAD $commit_oid $parent_oid
         git pull
         git push

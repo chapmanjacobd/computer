@@ -12,7 +12,7 @@ function wipm
 
     if gum confirm --default=no
         # 3. Create commit object pointing directly to frozen tree
-        set -l commit_oid (git commit-tree $tree_oid -p $parent_oid -m "$argv")
+        set -l commit_oid (git commit-tree $tree_oid -p $parent_oid -S -m "$argv")
 
         # 4. Atomically advance HEAD/branch to new commit (validating parent didn't move)
         git update-ref HEAD $commit_oid $parent_oid

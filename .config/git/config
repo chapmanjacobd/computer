@@ -85,6 +85,7 @@
     diff-deleted = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*31m-\"; }; f"
     diff-added = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*32m\\+\"; }; f"
 	pop = !git.pop
+	pushff = "!f() { git push origin \"+HEAD:refs/heads/$(git main)\" \"$@\"; }; f"
 [advice]
     skippedCherryPicks = false
 [branch]

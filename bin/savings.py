@@ -79,7 +79,10 @@ MODEL_NOTES = (
     "rate. Displayed NPV discounts after-tax terminal proceeds and cash "
     "withdrawals, then subtracts starting assets and employee contribution "
     "cash costs using the configured annual discount rate; when omitted, "
-    "discount_rate defaults to inflation_rate."
+    "discount_rate defaults to inflation_rate. NPV can be negative when "
+    "discounted proceeds are below those cash costs; it is not a terminal "
+    "account balance. Early-withdrawal taxes and penalties can make retirement "
+    "account NPVs especially low."
 )
 
 FEDERAL_BRACKETS_MFJ = [
@@ -2004,7 +2007,6 @@ def print_allocation_results(
 ) -> None:
     rows = [
         [
-            index + 1,
             _allocation_with_dollars(args, summary["allocation"]),
             _currency(summary["median"]),
             _currency(summary["p10"]),
@@ -2014,14 +2016,13 @@ def print_allocation_results(
             _currency(summary["rmd_tax"]),
             f"{summary['max_drawdown']:.1%}",
         ]
-        for index, summary in enumerate(summaries[:top])
+        for summary in summaries[:top]
     ]
     print(f"Optimized annual cash allocations (objective: {objective}):")
     print(
         tabulate(
             rows,
             headers=[
-                "Rank",
                 "Annual allocation",
                 "Median NPV",
                 "P10 NPV",
@@ -2229,21 +2230,19 @@ def _currency(value: float) -> str:
 def print_results(summaries: list[dict], top: int) -> None:
     rows = [
         [
-            index + 1,
             summary["strategy"],
             _currency(summary["median"]),
             _currency(summary["p25"]),
             _currency(summary["p75"]),
             f"{summary['probability_best']:.1%}",
         ]
-        for index, summary in enumerate(summaries[:top])
+        for summary in summaries[:top]
     ]
     print("After-tax NPV by priority order:")
     print(
         tabulate(
             rows,
             headers=[
-                "Rank",
                 "Priority order",
                 "Median NPV",
                 "P25 NPV",

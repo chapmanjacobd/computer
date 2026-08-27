@@ -669,3 +669,42 @@ def test_invalid_withdrawal_order_is_rejected(tmp_path):
     )
     with pytest.raises(ValueError, match="withdrawal_order"):
         savings.load_toml_config(str(config))
+
+
+def test_reports_do_not_include_rank_column(capsys):
+    allocation = {
+        name: float(name == "brokerage") for name in savings.ACCOUNT_NAMES
+    }
+    savings.print_allocation_results(
+        {"annual_savings": 1000.0},
+        [
+            {
+                "allocation": allocation,
+                "median": 1.0,
+                "p10": -2.0,
+                "p75": 3.0,
+                "terminal_tax": 0.0,
+                "early_withdrawal_penalty": 0.0,
+                "rmd_tax": 0.0,
+                "max_drawdown": 0.0,
+            }
+        ],
+        "median",
+        1,
+    )
+    assert "Rank" not in capsys.readouterr().out
+
+    savings.print_results(
+        [
+            {
+                "strategy": "Brokerage",
+                "order": tuple(savings.ACCOUNT_NAMES),
+                "median": 1.0,
+                "p25": 0.0,
+                "p75": 2.0,
+                "probability_best": 1.0,
+            }
+        ],
+        1,
+    )
+    assert "Rank" not in capsys.readouterr().out
