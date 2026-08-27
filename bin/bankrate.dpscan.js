@@ -7,8 +7,8 @@
  * paid over 8 years plus upfront costs at a configurable discount rate,
  * and ranks the top loans across the session.
  *
- * Results persist in sessionStorage across bookmarklet clicks and clear
- * on page reload. Displayed in a floating panel (no alert() used).
+ * Results persist in memory across bookmarklet clicks and clear on page
+ * reload. Displayed in a floating panel (no alert() used).
  *
  * IMPORTANT — read this:
  * Bankrate's rate table is a React app with auto-generated class names that
@@ -34,7 +34,6 @@
   };
 
   const MIN_SCORE = 4.4;
-  const STORAGE_KEY = 'dp_scan_results';
   const MONTHS_8YR = 96;
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -275,12 +274,7 @@
     return;
   }
 
-  let allResults = [];
-  try {
-    allResults = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
-  } catch {
-    allResults = [];
-  }
+  let allResults = window.__dpScanResults || [];
 
   const newResults = [];
 
@@ -349,7 +343,7 @@
   }
 
   allResults.sort((a, b) => a.npvCost - b.npvCost);
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(allResults));
+  window.__dpScanResults = allResults;
 
   const top = allResults.slice(0, CONFIG.topN);
   console.table(top);
