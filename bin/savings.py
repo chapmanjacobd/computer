@@ -703,10 +703,11 @@ def _solo_401k_employer_contribution(
     owner: str | None = None,
 ) -> float:
     rate = float(args.get("solo_401k_employer_rate", 0.0))
-    if rate <= 0.0 or _annual_income(args, year) <= 0.0:
+    owner_income = _annual_income(args, year, owner)
+    if rate <= 0.0 or owner_income <= 0.0:
         return 0.0
     return min(
-        max(0.0, _annual_income(args, year) * rate),
+        max(0.0, owner_income * rate),
         _solo_401k_total_limit(args, age, inflation_factor, owner),
     )
 
@@ -916,20 +917,21 @@ def _apply_account_cash(
             - usage["employer_contribution_by_owner"].get(owner, 0.0)
             - used_solo,
         )
-        earned_income_room = max(0.0, _annual_income(args, year) - used_solo)
+        owner_income = _annual_income(args, year, owner)
+        earned_income_room = max(0.0, owner_income - used_solo)
         maximum = min(employee_room, total_room, earned_income_room)
         amount = gross_contribution_for_cash(
             args,
             cash,
             maximum,
             inflation_factor=inflation_factor,
-            annual_income=_annual_income(args, year),
+            annual_income=owner_income,
         )
         cost = pretax_cash_cost(
             args,
             amount,
             inflation_factor=inflation_factor,
-            annual_income=_annual_income(args, year),
+            annual_income=owner_income,
         )
         usage["annual_solo"] += amount
         usage["annual_solo_by_owner"][owner] = used_solo + amount
