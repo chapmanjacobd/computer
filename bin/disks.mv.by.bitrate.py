@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import os
+import shutil
 import sqlite3
 import subprocess
 from collections import defaultdict
@@ -47,10 +48,7 @@ def get_mounts(args) -> List[MountInfo]:
 
                 mounts.append(MountInfo(path=os.path.abspath(mountpoint), total_size=total_size, free_space=free_space))
             except (PermissionError, OSError, subprocess.CalledProcessError, ValueError):
-                if args.exists:
-                    continue
-                else:
-                    mounts.append(MountInfo(path=mountpoint, total_size=nums.human_to_bytes("3TB"), free_space=0))
+                log.warning("Skipping mount %s (unable to stat)", mountpoint)
     else:
         import psutil
 
@@ -116,7 +114,16 @@ def query_databases(args: argparse.Namespace, mounts: List[MountInfo]) -> List[M
     return files
 
 
-def move_file(src, dst) -> bool:
+def update_db_path(db_path: str, src: str, dst: str) -> None:
+    try:
+        with sqlite3.connect(db_path) as conn:
+            conn.execute("UPDATE media SET path = ? WHERE path = ?", (dst, src))
+    except Exception as e:
+        log.error(f"Failed to update db path {src} -> {dst} in {db_path}: {e}")
+
+
+def move_file(f: MediaFile, dst: str, min_free: int) -> bool:
+    src = f.path
     if not os.path.exists(src):
         return False
 
@@ -126,16 +133,37 @@ def move_file(src, dst) -> bool:
         log.error(f"Failed to mkdir for {dst}")
         return False
 
+    dest_mount = os.path.dirname(dst)
     try:
-        log.info("%s", src)
-        log.info("--> %s", dst)
-
-        subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
-        os.remove(src)
-        return True
-    except subprocess.CalledProcessError as e:
-        log.error(f"Failed to move {src}: {e.stderr.decode()}")
+        free_space = shutil.disk_usage(dest_mount).free
+        if free_space < (f.size + min_free):
+            log.error("Not enough free space on %s (have %s, need %s): %s", dest_mount, free_space, f.size + min_free, dst)
+            return False
+    except OSError as e:
+        log.error(f"Failed to check free space on {dest_mount}: {e}")
         return False
+
+    log.info("%s", src)
+    log.info("--> %s", dst)
+
+    try:
+        subprocess.run(["cp", "--sparse=auto", "-p", src, dst], check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        log.error(f"Failed to copy {src}: {e.stderr.decode()}")
+        try:
+            os.remove(dst)
+        except OSError:
+            pass
+        return False
+
+    try:
+        os.remove(src)
+    except OSError as e:
+        log.error(f"Copied to {dst} but failed to remove {src}: {e}")
+        return False
+
+    update_db_path(f.db_path, src, dst)
+    return True
 
 
 def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
@@ -166,6 +194,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
     planned_moves = []
     while iteration < 3 and work_queue:
         still_waiting = []
+        iteration_moves = 0
         for f in work_queue:
             best_target = None
 
@@ -193,6 +222,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
                     continue
 
                 planned_moves.append((f, best_target))
+                iteration_moves += 1
                 best_target.free_space -= f.size
                 f.mount.free_space += f.size  # Simulate space recovery
             else:
@@ -202,7 +232,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
             "Planning iteration",
             iteration,
             "planned",
-            len(planned_moves),
+            iteration_moves,
             "; still waiting for",
             len(still_waiting),
             "files",
@@ -241,7 +271,7 @@ def plan_and_execute(args, files: List[MediaFile], mounts: List[MountInfo]):
         for f, target in planned_moves:
             rel_path = os.path.relpath(f.path, f.mount.path)
             dest_path = os.path.join(target.path, rel_path)
-            move_file(f.path, dest_path)
+            move_file(f, dest_path, args.min_free)
 
 
 def main():
