@@ -30,6 +30,6 @@ function js2bookmarklet --description 'Convert a JS file into a bookmarklet'
         echo -n $code >$args[2]
         echo "Bookmarklet saved to $args[2]"
     else
-        echo $code
+        echo $code | cb
     end
 end
