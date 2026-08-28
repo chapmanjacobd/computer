@@ -18,7 +18,6 @@ brokerage account after estimated taxes by default.
 """
 
 import argparse
-import itertools
 import math
 import os
 import random
@@ -60,6 +59,37 @@ ACCOUNT_LABELS = {
     "brokerage": "Brokerage",
     "hsa": "HSA",
 }
+BASIS_ACCOUNTS = ("brokerage", "roth_ira", "roth_401k")
+
+
+def _owners(args: dict) -> tuple[str, ...]:
+    """Return the ordered owners, defaulting to a single primary owner."""
+    tables = args.get("owner")
+    if isinstance(tables, dict) and tables:
+        return tuple(str(name) for name in tables)
+    return ("primary",)
+
+
+def _owner_config(args: dict, owner: str) -> dict:
+    tables = args.get("owner")
+    if isinstance(tables, dict):
+        return tables.get(owner) or {}
+    return {}
+
+
+def _base_account(name: str) -> tuple[str, str]:
+    """Split a per-owner account name into (base account, owner)."""
+    account, _, owner = name.rpartition("_")
+    return (account, owner) if owner else (name, "")
+
+
+def _account_names(args: dict) -> tuple[str, ...]:
+    """Return every per-owner account name."""
+    return tuple(
+        f"{account}_{owner}"
+        for account in ACCOUNT_NAMES
+        for owner in _owners(args)
+    )
 ALLOCATION_OBJECTIVES = (
     "median",
     "mean",
@@ -473,11 +503,12 @@ def gross_contribution_for_cash(
     return low
 
 
-def _validate_account_order(order: tuple[str, ...]) -> None:
-    if not (set(order) == set(ACCOUNT_NAMES) and len(order) == len(ACCOUNT_NAMES)):
-        raise ValueError(
-            f"order must contain each account exactly once: {ACCOUNT_NAMES}"
-        )
+def _validate_account_order(args: dict, order: tuple[str, ...]) -> None:
+    accounts = _account_names(args)
+    if not (set(order) == set(accounts) and len(order) == len(accounts)):
+        raise ValueError(f"order must contain each account exactly once: {accounts}")
+    if any(base not in ACCOUNT_NAMES for base, _ in map(_base_account, order)):
+        raise ValueError(f"order contains unknown account: {order}")
 
 
 def _validate_withdrawal_order(order: list[str]) -> None:
@@ -611,9 +642,15 @@ def _scheduled_contributions(args: dict, year: int) -> list[dict]:
             raise ValueError(
                 "contribution schedules require non-negative annual_amount"
             )
-        result.append(
-            {"account": account, "amount": float(amount), "owner": entry.get("owner")}
-        )
+        owners = [str(entry["owner"])] if entry.get("owner") else list(_owners(args))
+        for owner in owners:
+            result.append(
+                {
+                    "account": f"{account}_{owner}",
+                    "amount": float(amount),
+                    "owner": owner,
+                }
+            )
     return result
 
 
@@ -651,6 +688,10 @@ def _owner_limit(
     values = args.get(f"{name}_by_owner")
     if owner and isinstance(values, dict) and owner in values:
         return float(values[owner]) * inflation_factor
+    if owner:
+        table = _owner_config(args, owner)
+        if table and name in table:
+            return float(table[name]) * inflation_factor
     return float(args.get(name, 0.0)) * inflation_factor
 
 
@@ -721,32 +762,26 @@ def hsa_limit(
     return max(0.0, limit)
 
 
-def _account_owner(args: dict, account: str) -> str | None:
-    owners = args.get("account_owners", {})
-    if isinstance(owners, dict) and account in owners:
-        return str(owners[account])
-    value = args.get(f"{account}_owner")
-    return None if value is None else str(value)
-
-
 def allocate_savings(
     args: dict, order: tuple[str, ...], balances: dict[str, float], year: int = 0
 ) -> dict[str, float]:
     """Allocate one year's after-tax cash budget according to an account order."""
-    _validate_account_order(order)
+    _validate_account_order(args, order)
 
-    contributions = dict.fromkeys(ACCOUNT_NAMES, 0.0)
+    contributions = dict.fromkeys(_account_names(args), 0.0)
     usage = _new_annual_usage(args, year)
     cash = _annual_savings(args, year)
 
     scheduled = _scheduled_contributions(args, year)
     scheduled_accounts = set()
     for item in scheduled:
-        amount, cash = _apply_account_cash(
-            args, item["account"], min(cash, item["amount"]), balances, year, usage
+        requested = min(cash, item["amount"])
+        amount, remainder = _apply_account_cash(
+            args, item["account"], requested, balances, year, usage
         )
         contributions[item["account"]] += amount
         scheduled_accounts.add(item["account"])
+        cash -= requested - remainder
 
     for account in order:
         if cash <= 1e-9:
@@ -758,6 +793,9 @@ def allocate_savings(
 
     contributions["_cash_remaining"] = max(0.0, cash)
     contributions["_employer_contribution"] = usage["employer_contribution"]
+    contributions["_employer_contribution_by_owner"] = usage[
+        "employer_contribution_by_owner"
+    ]
     return contributions
 
 
@@ -782,15 +820,19 @@ def _annual_contribution_cash_cost(
 ) -> float:
     """Return the cash outflow for one year's employee contributions."""
     inflation_factor = _inflation_factor(args, year)
-    cash_cost = sum(
-        contributions[name] for name in ACCOUNT_NAMES if name != "solo_401k"
-    )
-    return cash_cost + pretax_cash_cost(
-        args,
-        contributions["solo_401k"],
-        inflation_factor=inflation_factor,
-        annual_income=annual_income,
-    )
+    cash_cost = 0.0
+    for name in _account_names(args):
+        base, _ = _base_account(name)
+        if base == "solo_401k":
+            cash_cost += pretax_cash_cost(
+                args,
+                contributions[name],
+                inflation_factor=inflation_factor,
+                annual_income=annual_income,
+            )
+        else:
+            cash_cost += contributions[name]
+    return cash_cost
 
 
 def _new_annual_usage(args: dict, year: int) -> dict[str, float]:
@@ -803,16 +845,23 @@ def _new_annual_usage(args: dict, year: int) -> dict[str, float]:
         "annual_401k_by_owner": {},
         "annual_roth_ira": 0.0,
         "annual_roth_ira_by_owner": {},
+        "annual_emergency": 0.0,
         "annual_solo": 0.0,
+        "annual_solo_by_owner": {},
         "annual_hsa": 0.0,
         "annual_hsa_by_owner": {},
-        "employer_contribution": _solo_401k_employer_contribution(
-            args,
-            age,
-            inflation_factor,
-            year,
-            _account_owner(args, "solo_401k"),
+        "employer_contribution": sum(
+            _solo_401k_employer_contribution(
+                args, age, inflation_factor, year, owner
+            )
+            for owner in _owners(args)
         ),
+        "employer_contribution_by_owner": {
+            owner: _solo_401k_employer_contribution(
+                args, age, inflation_factor, year, owner
+            )
+            for owner in _owners(args)
+        },
     }
 
 
@@ -824,31 +873,39 @@ def _apply_account_cash(
     year: int,
     usage: dict[str, float],
 ) -> tuple[float, float]:
-    """Apply cash to one account, returning (gross contribution, unused cash)."""
+    """Apply cash to one per-owner account, returning (gross, unused cash)."""
     cash = max(0.0, cash)
     age = int(usage["age"])
     inflation_factor = float(usage["inflation_factor"])
-    if account == "emergency_fund":
-        room = max(0.0, float(args["emergency_fund_target"]) - balances[account])
+    base, owner = _base_account(account)
+    if base == "emergency_fund":
+        total_emergency = sum(
+            balances[name]
+            for name in balances
+            if _base_account(name)[0] == "emergency_fund"
+        )
+        room = max(
+            0.0,
+            float(args["emergency_fund_target"])
+            - total_emergency
+            - usage["annual_emergency"],
+        )
         amount = min(cash, room)
+        usage["annual_emergency"] += amount
         return amount, cash - amount
-    if account == "roth_ira":
-        owner = _account_owner(args, account)
+    if base == "roth_ira":
         used_roth_ira = usage["annual_roth_ira_by_owner"].get(owner, 0.0)
         room = max(
             0.0,
-            roth_ira_limit(
-                args, age, inflation_factor, _account_owner(args, account), year
-            )
-            - used_roth_ira,
+            roth_ira_limit(args, age, inflation_factor, owner, year) - used_roth_ira,
         )
         amount = min(cash, room)
         usage["annual_roth_ira"] += amount
         usage["annual_roth_ira_by_owner"][owner] = used_roth_ira + amount
         return amount, cash - amount
-    if account == "solo_401k":
-        owner = _account_owner(args, account)
+    if base == "solo_401k":
         used_401k = usage["annual_401k_by_owner"].get(owner, 0.0)
+        used_solo = usage["annual_solo_by_owner"].get(owner, 0.0)
         employee_room = max(
             0.0,
             _employee_401k_limit(args, age, inflation_factor, owner) - used_401k,
@@ -856,10 +913,10 @@ def _apply_account_cash(
         total_room = max(
             0.0,
             _solo_401k_total_limit(args, age, inflation_factor, owner)
-            - usage["employer_contribution"]
-            - usage["annual_solo"],
+            - usage["employer_contribution_by_owner"].get(owner, 0.0)
+            - used_solo,
         )
-        earned_income_room = max(0.0, _annual_income(args, year) - usage["annual_solo"])
+        earned_income_room = max(0.0, _annual_income(args, year) - used_solo)
         maximum = min(employee_room, total_room, earned_income_room)
         amount = gross_contribution_for_cash(
             args,
@@ -875,11 +932,11 @@ def _apply_account_cash(
             annual_income=_annual_income(args, year),
         )
         usage["annual_solo"] += amount
+        usage["annual_solo_by_owner"][owner] = used_solo + amount
         usage["annual_401k"] += amount
         usage["annual_401k_by_owner"][owner] = used_401k + amount
         return amount, max(0.0, cash - cost)
-    if account == "roth_401k":
-        owner = _account_owner(args, account)
+    if base == "roth_401k":
         used_401k = usage["annual_401k_by_owner"].get(owner, 0.0)
         employee_room = max(
             0.0,
@@ -887,32 +944,22 @@ def _apply_account_cash(
         )
         account_room = max(
             0.0,
-            _owner_limit(
-                args,
-                "roth_401k_limit",
-                owner,
-                inflation_factor,
-            )
+            _owner_limit(args, "roth_401k_limit", owner, inflation_factor)
             + _catchup(args, "employee_401k_catchup", age, inflation_factor),
         )
         amount = min(cash, employee_room, account_room)
         usage["annual_401k"] += amount
         usage["annual_401k_by_owner"][owner] = used_401k + amount
         return amount, cash - amount
-    if account == "brokerage":
+    if base == "brokerage":
         return cash, 0.0
-    if account == "hsa":
-        owner = _account_owner(args, account)
+    if base == "hsa":
         used_hsa = (
             usage["annual_hsa"]
             if args.get("hsa_shared_limit", args.get("hsa_family", False))
             else usage["annual_hsa_by_owner"].get(owner, 0.0)
         )
-        room = max(
-            0.0,
-            hsa_limit(args, age, inflation_factor, _account_owner(args, account))
-            - used_hsa,
-        )
+        room = max(0.0, hsa_limit(args, age, inflation_factor, owner) - used_hsa)
         amount = min(cash, room)
         usage["annual_hsa"] += amount
         usage["annual_hsa_by_owner"][owner] = (
@@ -929,14 +976,20 @@ def allocate_fixed_savings(
     year: int = 0,
 ) -> dict[str, float]:
     """Allocate a fixed annual cash split, sending capped amounts to brokerage."""
-    weights = _normalize_allocation(allocation)
+    weights = _normalize_allocation(args, allocation)
 
     annual_cash = _annual_savings(args, year)
-    contributions = dict.fromkeys(ACCOUNT_NAMES, 0.0)
+    contributions = dict.fromkeys(_account_names(args), 0.0)
     usage = _new_annual_usage(args, year)
-    unused = annual_cash * weights["brokerage"]
-    for account in ACCOUNT_NAMES:
-        if account == "brokerage":
+    brokerage_weights = {
+        account: weights[account]
+        for account in _account_names(args)
+        if _base_account(account)[0] == "brokerage"
+    }
+    unused = sum(annual_cash * weight for weight in brokerage_weights.values())
+    for account in _account_names(args):
+        base, _ = _base_account(account)
+        if base == "brokerage":
             continue
         requested = annual_cash * weights[account]
         amount, remainder = _apply_account_cash(
@@ -945,9 +998,20 @@ def allocate_fixed_savings(
         contributions[account] += amount
         unused += remainder
 
-    contributions["brokerage"] = unused
-    contributions["_cash_remaining"] = 0.0
+    total_brokerage_weight = sum(brokerage_weights.values())
+    for account, weight in brokerage_weights.items():
+        contributions[account] = (
+            unused * (weight / total_brokerage_weight)
+            if total_brokerage_weight > 0.0
+            else 0.0
+        )
+    contributions["_cash_remaining"] = (
+        unused if total_brokerage_weight <= 0.0 else 0.0
+    )
     contributions["_employer_contribution"] = usage["employer_contribution"]
+    contributions["_employer_contribution_by_owner"] = usage[
+        "employer_contribution_by_owner"
+    ]
     return contributions
 
 
@@ -987,17 +1051,15 @@ def make_market_paths(
 
 def _starting_balances(args: dict) -> tuple[dict[str, float], dict[str, float]]:
     balances = {}
+    basis = {}
     for account in ACCOUNT_NAMES:
-        owner = _account_owner(args, account)
-        owner_key = f"starting_{account}_{owner}" if owner else ""
-        balances[account] = float(
-            args.get(owner_key, args.get(f"starting_{account}", 0.0))
-        )
-    basis = {
-        "brokerage": float(args.get("starting_brokerage_basis", balances["brokerage"])),
-        "roth_ira": float(args.get("starting_roth_ira_basis", balances["roth_ira"])),
-        "roth_401k": float(args.get("starting_roth_401k_basis", balances["roth_401k"])),
-    }
+        for owner in _owners(args):
+            name = f"{account}_{owner}"
+            config = _owner_config(args, owner)
+            balance = float(config.get(f"{account}_balance", 0.0))
+            balances[name] = balance
+            if account in BASIS_ACCOUNTS:
+                basis[name] = float(config.get(f"{account}_basis", balance))
     return balances, basis
 
 
@@ -1072,50 +1134,65 @@ def _terminal_after_tax_value(
     terminal_age = _terminal_withdrawal_age(args, years)
     penalty_age = float(args.get("early_withdrawal_penalty_age", 59.5))
     penalty_rate = _early_withdrawal_penalty_rate(args)
-    brokerage_gain = max(0.0, balances["brokerage"] - basis["brokerage"])
+    account_names = _account_names(args)
+
+    def total(base: str) -> float:
+        return sum(
+            balances[name] for name in account_names if _base_account(name)[0] == base
+        )
+
+    def total_basis(base: str) -> float:
+        return sum(
+            basis.get(name, balances[name])
+            for name in account_names
+            if _base_account(name)[0] == base
+        )
+
+    brokerage_balance = total("brokerage")
+    brokerage_gain = max(0.0, brokerage_balance - total_basis("brokerage"))
     brokerage_tax = long_term_capital_gains_tax(
         args, brokerage_gain, retirement_income, inflation_factor
     )
-    brokerage = max(0.0, balances["brokerage"] - brokerage_tax)
+    brokerage = max(0.0, brokerage_balance - brokerage_tax)
 
+    solo_balance = total("solo_401k")
     solo_tax = _incremental_ordinary_tax(
         args,
-        balances["solo_401k"],
+        solo_balance,
         retirement_income,
         inflation_factor,
     )
+    hsa_balance = total("hsa")
     hsa_tax = 0.0
     hsa_penalty = 0.0
     if not args.get("hsa_qualified_withdrawals", True):
-        hsa_tax = balances.get("hsa", 0.0) * float(
-            args.get("hsa_withdrawal_tax_rate", 0.20)
-        )
+        hsa_tax = hsa_balance * float(args.get("hsa_withdrawal_tax_rate", 0.20))
         if terminal_age < float(args.get("hsa_penalty_age", 65)):
-            hsa_penalty = balances.get("hsa", 0.0) * float(
-                args.get("hsa_penalty_rate", 0.20)
-            )
+            hsa_penalty = hsa_balance * float(args.get("hsa_penalty_rate", 0.20))
     penalty_applies = terminal_age < penalty_age
+    roth_ira_penalty = (
+        penalty_rate * max(0.0, total("roth_ira") - total_basis("roth_ira"))
+        if penalty_applies
+        else 0.0
+    )
+    roth_401k_penalty = (
+        penalty_rate * max(0.0, total("roth_401k") - total_basis("roth_401k"))
+        if penalty_applies
+        else 0.0
+    )
     early_penalties = {
-        "solo_401k": penalty_rate * balances["solo_401k"] if penalty_applies else 0.0,
-        "roth_ira": (
-            penalty_rate * max(0.0, balances["roth_ira"] - basis["roth_ira"])
-            if penalty_applies
-            else 0.0
-        ),
-        "roth_401k": (
-            penalty_rate * max(0.0, balances["roth_401k"] - basis["roth_401k"])
-            if penalty_applies
-            else 0.0
-        ),
+        "solo_401k": penalty_rate * solo_balance if penalty_applies else 0.0,
+        "roth_ira": roth_ira_penalty,
+        "roth_401k": roth_401k_penalty,
         "hsa": hsa_penalty,
     }
     early_withdrawal_penalty = sum(early_penalties.values())
-    solo = max(0.0, balances["solo_401k"] - solo_tax - early_penalties["solo_401k"])
-    roth_ira = max(0.0, balances["roth_ira"] - early_penalties["roth_ira"])
-    roth_401k = max(0.0, balances["roth_401k"] - early_penalties["roth_401k"])
-    hsa = max(0.0, balances.get("hsa", 0.0) - hsa_tax - hsa_penalty)
+    solo = max(0.0, solo_balance - solo_tax - early_penalties["solo_401k"])
+    roth_ira = max(0.0, total("roth_ira") - roth_ira_penalty)
+    roth_401k = max(0.0, total("roth_401k") - roth_401k_penalty)
+    hsa = max(0.0, hsa_balance - hsa_tax - hsa_penalty)
     after_tax = (
-        balances["emergency_fund"] + hsa + roth_ira + roth_401k + brokerage + solo
+        total("emergency_fund") + hsa + roth_ira + roth_401k + brokerage + solo
     )
     return {
         "final_value": after_tax,
@@ -1174,16 +1251,21 @@ def _pay_tax_from_balances(
 ) -> float:
     """Pay a tax bill from taxable cash first, then the emergency fund."""
     remaining = max(0.0, float(amount))
-    for account in ("brokerage", "emergency_fund"):
+    for base in ("brokerage", "emergency_fund"):
         if remaining <= 1e-9:
             break
-        available = max(0.0, balances.get(account, 0.0))
-        payment = min(available, remaining)
-        balances[account] = available - payment
-        if account == "brokerage" and available > 0.0:
-            cost_ratio = min(1.0, max(0.0, basis.get(account, 0.0)) / available)
-            basis[account] = max(0.0, basis.get(account, 0.0) - payment * cost_ratio)
-        remaining -= payment
+        for account in sorted(
+            (name for name in balances if _base_account(name)[0] == base)
+        ):
+            if remaining <= 1e-9:
+                break
+            available = max(0.0, balances.get(account, 0.0))
+            payment = min(available, remaining)
+            balances[account] = available - payment
+            if base == "brokerage" and available > 0.0:
+                cost_ratio = min(1.0, max(0.0, basis.get(account, 0.0)) / available)
+                basis[account] = max(0.0, basis.get(account, 0.0) - payment * cost_ratio)
+            remaining -= payment
     return remaining
 
 
@@ -1213,6 +1295,9 @@ def _withdraw_for_expenses(
         "solo_401k",
     ]
     _validate_withdrawal_order(order)
+    expanded = [
+        f"{base}_{owner}" for base in order for owner in _owners(args)
+    ]
     tax = 0.0
     raised = 0.0
     distributions = {}
@@ -1220,18 +1305,19 @@ def _withdraw_for_expenses(
     penalty_age = float(args.get("early_withdrawal_penalty_age", 59.5))
     penalty_rate = _early_withdrawal_penalty_rate(args)
     restrict_early_withdrawals = bool(args.get("restrict_early_withdrawals", False))
-    for account in order:
+    for account in expanded:
         if raised >= need - 1e-9:
             break
+        base, _ = _base_account(account)
         available = balances.get(account, 0.0)
         if available <= 0:
             continue
-        if restrict_early_withdrawals and account == "solo_401k" and age < penalty_age:
+        if restrict_early_withdrawals and base == "solo_401k" and age < penalty_age:
             warnings.append(f"withdrawal restricted for {account}")
             continue
         if (
             restrict_early_withdrawals
-            and account == "hsa"
+            and base == "hsa"
             and not args.get("hsa_qualified_withdrawals", True)
             and age < float(args.get("hsa_penalty_age", 65))
         ):
@@ -1239,7 +1325,7 @@ def _withdraw_for_expenses(
             continue
         if (
             restrict_early_withdrawals
-            and account in {"roth_ira", "roth_401k"}
+            and base in {"roth_ira", "roth_401k"}
             and age < penalty_age
         ):
             available = min(available, max(0.0, basis.get(account, 0.0)))
@@ -1247,30 +1333,30 @@ def _withdraw_for_expenses(
         if amount <= 0.0:
             continue
         account_tax = 0.0
-        if account == "solo_401k":
+        if base == "solo_401k":
             account_tax = _rmd_tax(args, amount, inflation_factor, taxable_income)
-        elif account == "brokerage":
+        elif base == "brokerage":
             gain_ratio = (
-                max(0.0, available - basis.get("brokerage", available)) / available
+                max(0.0, available - basis.get(account, available)) / available
             )
             account_tax = long_term_capital_gains_tax(
                 args, amount * gain_ratio, taxable_income, inflation_factor
             )
-            basis["brokerage"] = max(
-                0.0, basis.get("brokerage", 0.0) - amount * gain_ratio
+            basis[account] = max(
+                0.0, basis.get(account, 0.0) - amount * gain_ratio
             )
-        elif account in {"roth_ira", "roth_401k"}:
+        elif base in {"roth_ira", "roth_401k"}:
             taxable_part = max(0.0, amount - basis.get(account, 0.0))
             if age < penalty_age:
                 penalty = taxable_part * penalty_rate
                 account_tax += penalty
                 warnings.append(f"early withdrawal penalty on {account}")
             basis[account] = max(0.0, basis.get(account, 0.0) - amount)
-        elif account == "hsa" and not args.get("hsa_qualified_withdrawals", True):
+        elif base == "hsa" and not args.get("hsa_qualified_withdrawals", True):
             account_tax = amount * float(args.get("hsa_withdrawal_tax_rate", 0.20))
             if age < float(args.get("hsa_penalty_age", 65)):
                 account_tax += amount * float(args.get("hsa_penalty_rate", 0.20))
-        if account == "solo_401k" and age < penalty_age:
+        if base == "solo_401k" and age < penalty_age:
             account_tax += amount * penalty_rate
             warnings.append("early withdrawal penalty on solo_401k")
         balances[account] = max(0.0, available - amount)
@@ -1352,10 +1438,16 @@ def _simulate_plan(
         1.0 / 12.0
     ) - 1.0
 
+    account_names = _account_names(args)
+
     for year in range(years):
         year_inflation_factor = _inflation_factor(args, year)
         brackets = federal_brackets(args, year_inflation_factor)
-        rmd_basis_balance = balances["solo_401k"]
+        rmd_basis_balance = sum(
+            balances[name]
+            for name in account_names
+            if _base_account(name)[0] == "solo_401k"
+        )
         contributions = allocator(year, balances)
         retirement_age_config = _retirement_start_age(args)
         if (
@@ -1363,9 +1455,12 @@ def _simulate_plan(
             and _annual_age(args, year) >= retirement_age_config
             and not args.get("continue_contributing_after_retirement", False)
         ):
-            contributions = dict.fromkeys(ACCOUNT_NAMES, 0.0)
+            contributions = dict.fromkeys(account_names, 0.0)
             contributions["_cash_remaining"] = 0.0
             contributions["_employer_contribution"] = 0.0
+            contributions["_employer_contribution_by_owner"] = {
+                owner: 0.0 for owner in _owners(args)
+            }
         income_for_year = _annual_income(args, year)
         expenses_for_year = _annual_expenses(args, year)
         annual_cash_contribution = _annual_contribution_cash_cost(
@@ -1374,10 +1469,14 @@ def _simulate_plan(
         annual_income.append(income_for_year)
         annual_expenses.append(expenses_for_year)
         annual_contributions.append(
-            {name: contributions[name] for name in ACCOUNT_NAMES}
+            {name: contributions[name] for name in account_names}
         )
         annual_employer_contributions.append(contributions["_employer_contribution"])
-        solo_contribution = contributions["solo_401k"]
+        solo_contribution = sum(
+            contributions[name]
+            for name in account_names
+            if _base_account(name)[0] == "solo_401k"
+        )
         taxable_income = current_taxable_income(
             args, solo_contribution, year_inflation_factor, income_for_year
         )
@@ -1388,12 +1487,12 @@ def _simulate_plan(
         year_distributions = {}
         year_shortfall = 0.0
 
-        monthly_contributions = {
-            name: contributions[name] / 12.0 for name in ACCOUNT_NAMES
-        }
-        monthly_contributions["solo_401k"] += (
-            contributions["_employer_contribution"] / 12.0
-        )
+        monthly_contributions = {name: contributions[name] / 12.0 for name in account_names}
+        employer_by_owner = contributions.get("_employer_contribution_by_owner", {})
+        for name in account_names:
+            base, owner = _base_account(name)
+            if base == "solo_401k":
+                monthly_contributions[name] += employer_by_owner.get(owner, 0.0) / 12.0
         for month in range(year * 12, (year + 1) * 12):
             monthly_cash_contribution = annual_cash_contribution / 12.0
             npv_cash_flow -= monthly_cash_contribution / _discount_factor(
@@ -1402,10 +1501,11 @@ def _simulate_plan(
             stock_return = stock_returns[month]
             inflation_rate = inflation_rates[month]
             month_tax = 0.0
-            for account in ACCOUNT_NAMES:
+            for account in account_names:
                 contribution = monthly_contributions[account]
                 before_return = balances[account] + contribution
-                if account == "emergency_fund":
+                base, _ = _base_account(account)
+                if base == "emergency_fund":
                     interest = before_return * monthly_emergency_return
                     tax_rate = marginal_ordinary_rate(taxable_income, brackets) + float(
                         args.get("state_tax_rate", 0.0)
@@ -1414,7 +1514,7 @@ def _simulate_plan(
                     balances[account] = max(
                         0.0, before_return + interest * (1.0 - tax_rate)
                     )
-                elif account == "brokerage":
+                elif base == "brokerage":
                     dividend = max(0.0, before_return * monthly_dividend_yield)
                     dividend_tax = long_term_capital_gains_tax(
                         args, dividend, taxable_income, year_inflation_factor
@@ -1425,8 +1525,10 @@ def _simulate_plan(
                     )
                     basis[account] += contribution + max(0.0, dividend - dividend_tax)
                 else:
-                    balances[account] = max(0.0, before_return * (1.0 + stock_return))
-                    if account in {"roth_ira", "roth_401k"}:
+                    balances[account] = max(
+                        0.0, before_return * (1.0 + stock_return)
+                    )
+                    if base in {"roth_ira", "roth_401k"}:
                         basis[account] += contribution
             retirement_age = _retirement_start_age(args)
             current_age = _starting_age(args) + month / 12.0
@@ -1495,27 +1597,56 @@ def _simulate_plan(
             portfolio_value = gross_value / _discount_factor(args, (month + 1) / 12.0)
             npv_value = npv_cash_flow + portfolio_value
             npv_history.append(npv_value)
-            min_emergency = min(min_emergency, balances["emergency_fund"])
+            min_emergency = min(
+                min_emergency,
+                sum(
+                    balances[name]
+                    for name in account_names
+                    if _base_account(name)[0] == "emergency_fund"
+                ),
+            )
             peak = max(peak, portfolio_value)
             if peak > 0.0:
                 max_drawdown = max(max_drawdown, (peak - portfolio_value) / peak)
 
         age = _annual_age(args, year)
+        brokerage_names = [
+            name for name in account_names if _base_account(name)[0] == "brokerage"
+        ]
+        solo_names = [
+            name for name in account_names if _base_account(name)[0] == "solo_401k"
+        ]
+        total_brokerage = sum(balances[name] for name in brokerage_names)
+        brokerage_gains = {
+            name: max(0.0, balances[name] - basis.get(name, balances[name]))
+            for name in brokerage_names
+        }
+        total_brokerage_gain = sum(brokerage_gains.values())
         harvested = 0.0
         harvest_tax = 0.0
-        if balances["brokerage"] > basis["brokerage"]:
-            unrealized = max(0.0, balances["brokerage"] - basis["brokerage"])
+        if total_brokerage_gain > 0.0:
             harvested = _ltcg_harvest_request(
-                args, unrealized, taxable_income, year_inflation_factor
+                args, total_brokerage_gain, taxable_income, year_inflation_factor
             )
         if harvested > 0.0:
             harvest_tax = long_term_capital_gains_tax(
                 args, harvested, taxable_income, year_inflation_factor
             )
-            balances["brokerage"] = max(0.0, balances["brokerage"] - harvest_tax)
-            # The sale and immediate repurchase establish basis equal to the
-            # post-tax proceeds; the tax is not an untracked terminal charge.
-            basis["brokerage"] = balances["brokerage"]
+            for name in brokerage_names:
+                balance_share = (
+                    balances[name] / total_brokerage if total_brokerage > 0.0 else 0.0
+                )
+                gain_share = (
+                    brokerage_gains[name] / total_brokerage_gain
+                    if total_brokerage_gain > 0.0
+                    else 0.0
+                )
+                balances[name] = max(
+                    0.0, balances[name] - harvest_tax * balance_share
+                )
+                # Realizing a gain raises basis by that gain; it does not reset
+                # the basis of unrelated unrealized gains.
+                basis[name] = basis.get(name, balances[name]) + harvested * gain_share
             harvested_total += harvested
             harvesting_history.append(
                 {
@@ -1528,7 +1659,8 @@ def _simulate_plan(
                 }
             )
             year_taxes += harvest_tax
-        conversion = min(balances["solo_401k"], _roth_conversion_amount(args, year))
+        total_solo = sum(balances[name] for name in solo_names)
+        conversion = min(total_solo, _roth_conversion_amount(args, year))
         conversion_tax = 0.0
         if conversion > 0:
             conversion_tax = _incremental_ordinary_tax(
@@ -1537,9 +1669,14 @@ def _simulate_plan(
                 taxable_income,
                 year_inflation_factor,
             )
-            balances["solo_401k"] -= conversion
-            balances["roth_ira"] += conversion
-            basis["roth_ira"] += conversion
+            for name in solo_names:
+                share = balances[name] / total_solo if total_solo > 0.0 else 0.0
+                amount = conversion * share
+                balances[name] -= amount
+                owner = _base_account(name)[1]
+                roth = f"roth_ira_{owner}"
+                balances[roth] += amount
+                basis[roth] += amount
             unpaid_conversion_tax = _pay_tax_from_balances(
                 balances, basis, conversion_tax
             )
@@ -1554,19 +1691,28 @@ def _simulate_plan(
             year_taxes += conversion_tax
         rmd_factor = _rmd_factor(args, age)
         rmd_tax = 0.0
+        total_solo_now = sum(balances[name] for name in solo_names)
         rmd = (
-            min(balances["solo_401k"], rmd_basis_balance / rmd_factor)
+            min(total_solo_now, rmd_basis_balance / rmd_factor)
             if math.isfinite(rmd_factor) and rmd_basis_balance > 0.0
             else 0.0
         )
         if rmd > 0.0:
             rmd_tax = _rmd_tax(args, rmd, year_inflation_factor, taxable_income)
             net_rmd = max(0.0, rmd - rmd_tax)
-            balances["solo_401k"] = max(0.0, balances["solo_401k"] - rmd)
+            rmd_shares = {
+                name: (balances[name] / total_solo_now if total_solo_now > 0.0 else 0.0)
+                for name in solo_names
+            }
+            for name in solo_names:
+                balances[name] = max(0.0, balances[name] - rmd * rmd_shares[name])
             if args.get("rmd_reinvest_after_tax", True):
-                balances["brokerage"] += net_rmd
-                basis["brokerage"] += net_rmd
-                rmd_reinvested += net_rmd
+                for name in brokerage_names:
+                    owner = _base_account(name)[1]
+                    amount = net_rmd * rmd_shares.get(f"solo_401k_{owner}", 0.0)
+                    balances[name] += amount
+                    basis[name] += amount
+                    rmd_reinvested += amount
             rmd_total += rmd
             rmd_tax_total += rmd_tax
             year_taxes += rmd_tax
@@ -1642,7 +1788,13 @@ def _simulate_plan(
     terminal["npv_history"] = npv_history
     terminal["max_drawdown"] = max_drawdown
     terminal["min_emergency"] = (
-        min_emergency if npv_history else balances["emergency_fund"]
+        min_emergency
+        if npv_history
+        else sum(
+            balances[name]
+            for name in _account_names(args)
+            if _base_account(name)[0] == "emergency_fund"
+        )
     )
     terminal["npv"] = npv_cash_flow + terminal["final_value"] / _discount_factor(
         args, years
@@ -1660,11 +1812,15 @@ def simulate_strategy(
     rng: random.Random | None = None,
 ) -> dict:
     """Simulate one priority order and return nominal terminal value and NPV."""
-    _validate_account_order(order)
+    _validate_account_order(args, order)
+    labels = []
+    for name in order:
+        base, owner = _base_account(name)
+        labels.append(f"{ACCOUNT_LABELS[base]} ({owner})")
     return _simulate_plan(
         args,
         lambda year, balances: allocate_savings(args, order, balances, year),
-        " -> ".join(ACCOUNT_LABELS[name] for name in order),
+        " -> ".join(labels),
         stock_returns,
         inflation_rates,
         rng,
@@ -1679,8 +1835,8 @@ def simulate_allocation(
     rng: random.Random | None = None,
 ) -> dict:
     """Simulate a fixed annual cash allocation across all destinations."""
-    weights = _normalize_allocation(allocation)
-    label = _allocation_label(weights, separator=", ")
+    weights = _normalize_allocation(args, allocation)
+    label = _allocation_label(args, weights, separator=", ")
     return _simulate_plan(
         args,
         lambda year, balances: allocate_fixed_savings(args, weights, balances, year),
@@ -1691,10 +1847,11 @@ def simulate_allocation(
     )
 
 
-def _normalize_allocation(allocation: dict[str, float]) -> dict[str, float]:
-    if set(allocation) != set(ACCOUNT_NAMES):
-        raise ValueError(f"allocation must contain each account: {ACCOUNT_NAMES}")
-    values = {name: max(0.0, float(allocation[name])) for name in ACCOUNT_NAMES}
+def _normalize_allocation(args: dict, allocation: dict[str, float]) -> dict[str, float]:
+    accounts = _account_names(args)
+    if set(allocation) != set(accounts):
+        raise ValueError(f"allocation must contain each account: {accounts}")
+    values = {name: max(0.0, float(allocation[name])) for name in accounts}
     total = sum(values.values())
     if total <= 0.0:
         raise ValueError("allocation must contain a positive total")
@@ -1703,20 +1860,6 @@ def _normalize_allocation(allocation: dict[str, float]) -> dict[str, float]:
 
 def _derive_seed(seed: int, simulation: int) -> int:
     return (seed + simulation * 1000003) & ((1 << 64) - 1)
-
-
-def _run_trial(payload: tuple[dict, int, list[tuple[str, ...]]]) -> list[float]:
-    args, seed, orders = payload
-    stock, inflation = make_market_paths(args, random.Random(seed))
-    return [
-        simulate_strategy(
-            args,
-            order,
-            stock_returns=stock,
-            inflation_rates=inflation,
-        )["npv"]
-        for order in orders
-    ]
 
 
 def _percentile(values: list[float], fraction: float) -> float:
@@ -1753,39 +1896,6 @@ def _best_counts(trials: list[list[float]]) -> list[int]:
             if value == best:
                 best_counts[index] += 1
     return best_counts
-
-
-def run_monte_carlo(
-    args: dict,
-    simulations: int | None = None,
-    seed: int | None = None,
-    workers: int = DEFAULT_WORKERS,
-) -> tuple[list[dict], list[list[float]]]:
-    simulations, seed = _monte_carlo_options(args, simulations, seed)
-    orders = list(itertools.permutations(ACCOUNT_NAMES))
-    payloads = (
-        (args, _derive_seed(seed, index), orders) for index in range(simulations)
-    )
-    trials = _run_trials(payloads, _run_trial, workers)
-
-    raw = [[trial[index] for trial in trials] for index in range(len(orders))]
-    best_counts = _best_counts(trials)
-
-    summaries = []
-    for index, (order, values) in enumerate(zip(orders, raw, strict=True)):
-        summaries.append(
-            {
-                "strategy": " -> ".join(ACCOUNT_LABELS[name] for name in order),
-                "order": order,
-                "median": _percentile(values, 0.50),
-                "p25": _percentile(values, 0.25),
-                "p75": _percentile(values, 0.75),
-                "mean": mean(values),
-                "probability_best": best_counts[index] / simulations,
-            }
-        )
-    summaries.sort(key=lambda row: row["median"], reverse=True)
-    return summaries, raw
 
 
 def _compact_result(result: dict) -> dict:
@@ -1846,6 +1956,7 @@ def _objective_value(result: dict[str, float], objective: str) -> float:
 
 
 def _summarize_allocations(
+    args: dict,
     allocations: list[dict[str, float]],
     trials: list[list[dict[str, float]]],
     objective: str,
@@ -1894,8 +2005,8 @@ def _summarize_allocations(
             score = _percentile(objective_values, 0.50)
         summaries.append(
             {
-                "allocation": _normalize_allocation(allocation),
-                "strategy": _allocation_label(allocation),
+                "allocation": _normalize_allocation(args, allocation),
+                "strategy": _allocation_label(args, allocation),
                 "median": _percentile(values, 0.50),
                 "p10": _percentile(values, 0.10),
                 "p25": _percentile(values, 0.25),
@@ -1933,14 +2044,14 @@ def run_allocation_monte_carlo(
     if objective not in ALLOCATION_OBJECTIVES:
         raise ValueError(f"objective must be one of {ALLOCATION_OBJECTIVES}")
     simulations, seed = _monte_carlo_options(args, simulations, seed)
-    normalized = [_normalize_allocation(allocation) for allocation in allocations]
+    normalized = [_normalize_allocation(args, allocation) for allocation in allocations]
     payloads = (
         (args, _derive_seed(seed, index), normalized) for index in range(simulations)
     )
     trials = _run_trials(payloads, _run_allocation_trial, workers)
 
     raw = [[trial[index] for trial in trials] for index in range(len(normalized))]
-    summaries = _summarize_allocations(normalized, trials, objective)
+    summaries = _summarize_allocations(args, normalized, trials, objective)
     order = sorted(
         range(len(summaries)), key=lambda index: summaries[index]["score"], reverse=True
     )
@@ -1949,37 +2060,52 @@ def run_allocation_monte_carlo(
     return summaries, raw
 
 
-def _allocation_label(allocation: dict[str, float], separator: str = " | ") -> str:
-    weights = _normalize_allocation(allocation)
-    return separator.join(
-        f"{ACCOUNT_LABELS[name]} {weights[name]:.0%}"
-        for name in ACCOUNT_NAMES
-        if weights[name] > 1e-9
-    )
+def _allocation_label(
+    args: dict, allocation: dict[str, float], separator: str = " | "
+) -> str:
+    weights = _normalize_allocation(args, allocation)
+    parts = []
+    for name in ACCOUNT_NAMES:
+        for owner in _owners(args):
+            key = f"{name}_{owner}"
+            if weights[key] > 1e-9:
+                parts.append(f"{ACCOUNT_LABELS[name]} ({owner}) {weights[key]:.0%}")
+    return separator.join(parts)
 
 
 def _priority_cash_allocation(args: dict, order: tuple[str, ...]) -> dict[str, float]:
-    balances = dict.fromkeys(ACCOUNT_NAMES, 0.0)
+    balances = dict.fromkeys(_account_names(args), 0.0)
     contributions = allocate_savings(args, order, balances)
-    allocation = {name: contributions[name] for name in ACCOUNT_NAMES}
-    allocation["solo_401k"] = pretax_cash_cost(args, contributions["solo_401k"])
-    return _normalize_allocation(allocation)
+    allocation = {name: contributions[name] for name in _account_names(args)}
+    for name in _account_names(args):
+        base, _ = _base_account(name)
+        if base == "solo_401k":
+            allocation[name] = pretax_cash_cost(args, contributions[name])
+    return _normalize_allocation(args, allocation)
 
 
 def _seed_allocations(args: dict) -> list[dict[str, float]]:
     seeds = []
     for account in ACCOUNT_NAMES:
-        seeds.append({name: 1.0 if name == account else 0.0 for name in ACCOUNT_NAMES})
+        for owner in _owners(args):
+            name = f"{account}_{owner}"
+            seeds.append(
+                {key: 1.0 if key == name else 0.0 for key in _account_names(args)}
+            )
     seeds.append(
         _priority_cash_allocation(
             args,
-            (
-                "emergency_fund",
-                "roth_ira",
-                "solo_401k",
-                "roth_401k",
-                "brokerage",
-                "hsa",
+            tuple(
+                f"{base}_{owner}"
+                for base in (
+                    "emergency_fund",
+                    "roth_ira",
+                    "solo_401k",
+                    "roth_401k",
+                    "brokerage",
+                    "hsa",
+                )
+                for owner in _owners(args)
             ),
         )
     )
@@ -1997,7 +2123,8 @@ def optimize_allocation(
     annual_savings = _annual_savings(args, 0)
     if annual_savings == 0.0:
         allocation = {
-            name: 1.0 if name == "brokerage" else 0.0 for name in ACCOUNT_NAMES
+            name: 1.0 if _base_account(name)[0] == "brokerage" else 0.0
+            for name in _account_names(args)
         }
         summaries, _ = run_allocation_monte_carlo(
             args,
@@ -2014,16 +2141,16 @@ def optimize_allocation(
         annual_savings / 200.0,
     )
     passes = max(1, int(args.get("optimization_passes", 3)))
-    starts = [_normalize_allocation(start) for start in _seed_allocations(args)]
+    starts = [_normalize_allocation(args, start) for start in _seed_allocations(args)]
     cache = {}
 
     def key(allocation):
-        return tuple(round(allocation[name], 12) for name in ACCOUNT_NAMES)
+        return tuple(round(allocation[name], 12) for name in _account_names(args))
 
     def evaluate(candidates):
         unique = []
         for candidate in candidates:
-            candidate = _normalize_allocation(candidate)
+            candidate = _normalize_allocation(args, candidate)
             if key(candidate) not in cache:
                 cache[key(candidate)] = None
                 unique.append(candidate)
@@ -2041,7 +2168,7 @@ def optimize_allocation(
                 {key(candidate): by_key[key(candidate)] for candidate in unique}
             )
         return [
-            cache[key(_normalize_allocation(candidate))] for candidate in candidates
+            cache[key(_normalize_allocation(args, candidate))] for candidate in candidates
         ]
 
     best_allocation = starts[0]
@@ -2051,11 +2178,11 @@ def optimize_allocation(
         current_summary = evaluate([current])[0]
         for _ in range(passes):
             candidates = []
-            for source in ACCOUNT_NAMES:
+            for source in _account_names(args):
                 source_cash = current[source] * annual_savings
                 if source_cash < step:
                     continue
-                for target in ACCOUNT_NAMES:
+                for target in _account_names(args):
                     if target == source:
                         continue
                     transfer = step
@@ -2084,18 +2211,21 @@ def optimize_allocation(
 
 
 def _allocation_with_dollars(args: dict, allocation: dict[str, float]) -> str:
-    weights = _normalize_allocation(allocation)
+    weights = _normalize_allocation(args, allocation)
     annual_savings = _annual_savings(args, 0)
-    return " | ".join(
-        f"{ACCOUNT_LABELS[name]} "
-        f"{_currency(weights[name] * annual_savings)} ({weights[name]:.0%})"
-        for name in ACCOUNT_NAMES
-        if weights[name] > 1e-9
-    )
+    parts = []
+    for name in _account_names(args):
+        if weights[name] > 1e-9:
+            base, owner = _base_account(name)
+            parts.append(
+                f"{ACCOUNT_LABELS[base]} ({owner}) "
+                f"{_currency(weights[name] * annual_savings)} ({weights[name]:.0%})"
+            )
+    return " | ".join(parts)
 
 
 def _harvest_plan_rows(args: dict, trials: list[dict]) -> list[list]:
-    """Median annual LTCG harvesting amounts across Monte Carlo trials."""
+    """Annual LTCG plan with conditional mean gains and median context."""
     years = int(args["projection_years"])
     start_age = _starting_age(args)
     rows = []
@@ -2116,10 +2246,11 @@ def _harvest_plan_rows(args: dict, trials: list[dict]) -> list[list]:
         if max(gains) <= 1e-9:
             continue
         share = sum(1 for gain in gains if gain > 1e-9) / len(gains)
+        harvested_gains = [gain for gain in gains if gain > 1e-9]
         rows.append(
             [
                 age,
-                _currency(_percentile(gains, 0.5)),
+                _currency(mean(harvested_gains)),
                 _currency(_percentile(taxes, 0.5)),
                 _currency(_percentile(rooms, 0.5)),
                 f"{share:.0%}",
@@ -2171,15 +2302,15 @@ def print_allocation_results(
     if raw and args.get("ltcg_harvesting", "none") != "none":
         plan = _harvest_plan_rows(args, raw[0])
         if plan:
-            print("\nAnnual LTCG harvesting plan (median across trials):")
+            print("\nAnnual LTCG harvesting plan:")
             print(
                 tabulate(
                     plan,
                     headers=[
                         "Age",
-                        "Gain to harvest",
-                        "Harvest tax",
-                        "0% room left",
+                        "Mean gain if harvested",
+                        "Harvest tax (median)",
+                        "0% room left (median)",
                         "Share of trials",
                     ],
                     tablefmt="simple",
@@ -2283,12 +2414,6 @@ def load_toml_config(filepath: str) -> dict:
     )
     if "federal_brackets" in defaults:
         defaults["federal_brackets"] = _normalize_brackets(defaults["federal_brackets"])
-    if "starting_brokerage_basis" not in defaults:
-        defaults["starting_brokerage_basis"] = defaults.get("starting_brokerage", 0.0)
-    for account in ("roth_ira", "roth_401k"):
-        basis_key = f"starting_{account}_basis"
-        if basis_key not in defaults:
-            defaults[basis_key] = defaults.get(f"starting_{account}", 0.0)
     defaults["early_withdrawal_penalty_rate"] = _early_withdrawal_penalty_rate(defaults)
     _discount_rate(defaults)
     status = str(defaults.get("filing_status", "mfj")).lower()
@@ -2370,39 +2495,6 @@ def _currency(value: float) -> str:
     return f"${value:,.0f}"
 
 
-def print_results(summaries: list[dict], top: int) -> None:
-    rows = [
-        [
-            summary["strategy"],
-            _currency(summary["median"]),
-            _currency(summary["p25"]),
-            _currency(summary["p75"]),
-            f"{summary['probability_best']:.1%}",
-        ]
-        for summary in summaries[:top]
-    ]
-    print("After-tax NPV by priority order:")
-    print(
-        tabulate(
-            rows,
-            headers=[
-                "Priority order",
-                "Median NPV",
-                "P25 NPV",
-                "P75 NPV",
-                "P(best)",
-            ],
-            tablefmt="simple",
-        )
-    )
-    best = summaries[0]
-    first_place = ACCOUNT_LABELS[best["order"][0]]
-    print(
-        f"\nRecommended priority order: {best['strategy']}"
-        f"\nFirst destination for new savings: {first_place}"
-    )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compare savings allocations across taxable and retirement accounts"
@@ -2450,8 +2542,9 @@ def main() -> None:
     )
     allocations = [optimized]
     for allocation in _seed_allocations(config):
-        if tuple(_normalize_allocation(allocation).values()) not in {
-            tuple(_normalize_allocation(existing).values()) for existing in allocations
+        if tuple(_normalize_allocation(config, allocation).values()) not in {
+            tuple(_normalize_allocation(config, existing).values())
+            for existing in allocations
         }:
             allocations.append(allocation)
     summaries, raw = run_allocation_monte_carlo(
