@@ -116,13 +116,31 @@ The Contractor is an independent contractor, not an employee of the Client. The 
 ~< if termination >~
 ~< set ns.n = ns.n + 1 >~
 \section*{<< ns.n >>. Termination}
-<< termination.clause | latex >>
+<< termination | latex >>
 ~< endif >~
 
 ~< if limitation_of_liability >~
 ~< set ns.n = ns.n + 1 >~
 \section*{<< ns.n >>. Limitation of Liability}
 << limitation_of_liability | latex >>
+~< endif >~
+
+~< if indemnification >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Indemnification}
+<< indemnification | latex >>
+~< endif >~
+
+~< if governing_law >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Governing Law}
+<< governing_law | latex >>
+~< endif >~
+
+~< if entire_agreement >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Entire Agreement}
+<< entire_agreement | latex >>
 ~< endif >~
 
 ~< if client or company.name >~

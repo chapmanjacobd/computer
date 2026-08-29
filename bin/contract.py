@@ -34,23 +34,14 @@ def main():
     data = yaml.safe_load(Path(sys.argv[2]).read_text())
     output_pdf = Path(sys.argv[3])
 
-    if data.get("scope_of_work"):
-        data["scope_of_work"] = md_to_latex(data["scope_of_work"])
-
     timeline = data.get("timeline") or {}
     for m in timeline.get("milestones", []):
         if m.get("description"):
             m["description"] = md_to_latex(m["description"])
 
-    for key in ("intellectual_property", "confidentiality", "limitation_of_liability"):
+    for key in ("scope_of_work", "intellectual_property", "confidentiality", "limitation_of_liability", "indemnification", "governing_law", "entire_agreement", "termination"):
         if isinstance(data.get(key), str):
             data[key] = md_to_latex(data[key])
-
-    term = data.get("termination")
-    if isinstance(term, str):
-        data["termination"] = {"clause": md_to_latex(term)}
-    elif isinstance(term, dict) and term.get("clause"):
-        term["clause"] = md_to_latex(term["clause"])
 
     env = Environment(
         loader=FileSystemLoader(template_path.parent),
@@ -82,9 +73,11 @@ def main():
         ip=data.get("intellectual_property"),
         confidentiality=data.get("confidentiality"),
         limitation_of_liability=data.get("limitation_of_liability"),
+        indemnification=data.get("indemnification"),
+        governing_law=data.get("governing_law"),
+        entire_agreement=data.get("entire_agreement"),
         termination=data.get("termination"),
     )
-
     with tempfile.TemporaryDirectory() as tmp:
         tmp = Path(tmp)
         tex_file = tmp / "contract.tex"
