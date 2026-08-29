@@ -42,7 +42,7 @@ def main():
         if m.get("description"):
             m["description"] = md_to_latex(m["description"])
 
-    for key in ("intellectual_property", "confidentiality"):
+    for key in ("intellectual_property", "confidentiality", "limitation_of_liability"):
         if isinstance(data.get(key), str):
             data[key] = md_to_latex(data[key])
 
@@ -81,6 +81,7 @@ def main():
         independent=data.get("independent_status"),
         ip=data.get("intellectual_property"),
         confidentiality=data.get("confidentiality"),
+        limitation_of_liability=data.get("limitation_of_liability"),
         termination=data.get("termination"),
     )
 
