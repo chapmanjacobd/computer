@@ -15,7 +15,7 @@
 """
 
 from library.utils import argparse_utils
-import Tkinter as tk
+import tkinter as tk
 import os
 from shutil import copyfile, move
 from PIL import ImageTk, Image
@@ -137,7 +137,7 @@ class ImageGui:
         :return: Resized image
         """
         image = Image.open(path)
-        image = image.resize(size, Image.ANTIALIAS)
+        image = image.resize(size, Image.LANCZOS)
         return image
 
     @staticmethod
@@ -150,7 +150,7 @@ class ImageGui:
         """
         root, file_name = os.path.split(input_path)
         output_path = os.path.join(root, label, file_name)
-        print " %s --> %s" % (file_name, label)
+        print(" %s --> %s" % (file_name, label))
         copyfile(input_path, output_path)
 
     @staticmethod
@@ -164,7 +164,7 @@ class ImageGui:
         """
         root, file_name = os.path.split(input_path)
         output_path = os.path.join(root, label, file_name)
-        print " %s --> %s" % (file_name, label)
+        print(" %s --> %s" % (file_name, label))
         move(input_path, output_path)
 
 
