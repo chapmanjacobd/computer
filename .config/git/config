@@ -163,3 +163,4 @@
 	writeBitmapLookup = true
 [maintenance]
 	repo = /home/xk
+	repo = /home/xk/github/xk/mc
