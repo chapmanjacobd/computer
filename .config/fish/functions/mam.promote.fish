@@ -1,22 +1,16 @@
 function mam.promote -a max
     load.env.mam
 
-    ~/lb/
     if test $max -gt 0
-        for dir in new/
-            set filled (ssh backup torrent.promote .local/data/rtorrent/watch/$dir -n $max | count)
-            echo Moved $filled from new/
-            set max (math $max-$filled)
-        end
-        for dir in vip_new/
-            set filled (ssh backup torrent.promote .local/data/rtorrent/watch/$dir --reverse -n $max | count)
-            echo Moved $filled from vip_new/
-            set max (math $max-$filled)
-        end
-        for dir in nonvip_new/
-            set filled (ssh backup torrent.promote .local/data/rtorrent/watch/$dir -n $max | count)
-            echo Moved $filled from nonvip_new/
-            set max (math $max-$filled)
-        end
+        set filled (torrent.promote ~/.local/data/rtorrent/watch/new -n $max | count)
+        echo Moved $filled from new/
+        set max (math $max-$filled)
+
+        set filled (torrent.promote ~/.local/data/rtorrent/watch/vip_new --reverse -n $max | count)
+        echo Moved $filled from vip_new/
+        set max (math $max-$filled)
+
+        set filled (torrent.promote ~/.local/data/rtorrent/watch/nonvip_new -n $max | count)
+        echo Moved $filled from nonvip_new/
     end
 end
