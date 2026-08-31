@@ -194,12 +194,18 @@ if __name__ == "__main__":
         make_folder(os.path.join(input_folder, label))
 
     # Put all image file paths into a list
+    supported = set(Image.registered_extensions())
     paths = []
     for file in os.listdir(input_folder):
-        if file.endswith(".tif") or file.endswith(".tiff"):
+        if os.path.splitext(file)[1].lower() in supported:
 
             path = os.path.join(input_folder, file)
             paths.append(path)
+
+    # Check that there are images to sort
+    if not paths:
+        print("No supported image files found in %s" % input_folder)
+        exit(1)
 
     # Start the GUI
     root = tk.Tk()
