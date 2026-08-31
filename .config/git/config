@@ -18,10 +18,13 @@
     logallrefupdates = true
     attributesfile = /home/xk/.config/git/attributes
 	hooksPath = /dev/null
+	commitGraph = true
+	multiPackIndex = true
 [transfer]
     fsckobjects = true
 [fetch]
     fsckobjects = true
+	writeCommitGraph = true
 [receive]
     fsckObjects = true
 [init]
@@ -156,3 +159,7 @@
 	trustExitCode = false
 [mergetool "kdiff3"]
 	trustExitCode = false
+[pack]
+	writeBitmapLookup = true
+[maintenance]
+	repo = /home/xk
