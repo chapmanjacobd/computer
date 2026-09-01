@@ -24,8 +24,28 @@ ATTACHMENT_KEYS = (
     "flood_disclosure",
     "radon_guide",
     "radon_disclosure",
+    "lead_pamphlet",
     "lead_disclosure",
     "move_in_report",
+)
+
+NARRATIVE_KEYS = (
+    "rent",
+    "deposit",
+    "utilities",
+    "late_fees",
+    "renters_insurance",
+    "pets",
+    "occupancy",
+    "parking",
+    "repairs",
+    "entry",
+    "subletting",
+    "default",
+    "abandonment",
+    "governing_law",
+    "whole_agreement",
+    "flood_disclosure",
 )
 
 
@@ -139,14 +159,20 @@ def normalize_occupants(raw_occupants) -> list[dict[str, str]]:
     occupants = []
     for occupant in raw_occupants:
         if isinstance(occupant, str):
-            occupants.append({"name": occupant, "role": "Occupant"})
+            name = occupant.strip()
+            if not name:
+                raise ValueError("each occupant must have a nonempty name")
+            occupants.append({"name": name, "role": "Occupant"})
             continue
         if not isinstance(occupant, dict) or not isinstance(occupant.get("name"), str):
             raise ValueError("each occupant must have a name")
+        name = occupant["name"].strip()
+        if not name:
+            raise ValueError("each occupant must have a nonempty name")
         occupants.append(
             {
-                "name": occupant["name"],
-                "role": str(occupant.get("role") or "Occupant"),
+                "name": name,
+                "role": str(occupant.get("role") or "Occupant").strip() or "Occupant",
             }
         )
     return occupants
@@ -232,6 +258,13 @@ def main():
         raise ValueError("occupants are required for a non-draft lease")
     if len(occupants) > max_occupants:
         raise ValueError(f"occupancy cannot exceed {max_occupants} people")
+    if not draft:
+        occupant_names = {occupant["name"].casefold() for occupant in occupants}
+        missing_tenants = [name for name in tenant_names if name.casefold() not in occupant_names]
+        if missing_tenants:
+            raise ValueError(
+                "each tenant must appear in occupants; missing: " + ", ".join(missing_tenants)
+            )
     if not isinstance(landlord, dict) or not landlord.get("name"):
         raise ValueError("landlord.name is required")
     if not isinstance(premises, dict) or not premises.get("address"):
@@ -248,8 +281,19 @@ def main():
     if data.get("rent_amount") is None:
         raise ValueError("rent_amount is required")
 
+    lease_date = parse_date(data["date"], "date")
     term_start = parse_date(term["start_date"], "term.start_date")
     term_end = parse_date(term["end_date"], "term.end_date")
+    year_built = premises.get("year_built")
+    if year_built is not None and (
+        isinstance(year_built, bool)
+        or not isinstance(year_built, int)
+        or year_built < 1
+        or year_built > lease_date.year
+    ):
+        raise ValueError("premises.year_built must be a valid year no later than the lease date")
+    if not draft and year_built is None:
+        raise ValueError("premises.year_built is required for a non-draft lease")
     monthly_rent = parse_money(data["rent_amount"], "rent_amount")
     periods = rent_periods(term_start, term_end, monthly_rent)
     first_period = periods[0]
@@ -260,16 +304,27 @@ def main():
 
     resolved_attachments = {} if draft else resolve_attachments(data.get("attachments"), yaml_path)
     if not draft:
-        required_attachments = ("safe_homes_summary", "flood_disclosure", "radon_guide", "radon_disclosure")
+        required_attachments = [
+            "safe_homes_summary",
+            "flood_disclosure",
+            "radon_guide",
+            "radon_disclosure",
+            "move_in_report",
+        ]
+        if year_built < 1978:
+            required_attachments.extend(("lead_pamphlet", "lead_disclosure"))
         missing_attachments = [key for key in required_attachments if key not in resolved_attachments]
         if missing_attachments:
             raise ValueError(
                 "non-draft leases require PDF attachments: " + ", ".join(missing_attachments)
             )
 
-    for key in ("premises", "rent", "utilities", "pets", "late_fees", "flood_disclosure"):
+    for key in NARRATIVE_KEYS:
         if isinstance(data.get(key), str):
             data[key] = md_to_latex(data[key])
+    for key in ("description", "condition"):
+        if isinstance(premises.get(key), str):
+            premises[key] = md_to_latex(premises[key])
 
     env = Environment(
         loader=FileSystemLoader(template_path.parent),

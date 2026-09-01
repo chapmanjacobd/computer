@@ -83,6 +83,10 @@ This Residential Lease Agreement (the \textbf{Agreement}) is entered into as of 
 \section*{<< ns.n >>. Premises}
 Landlord leases to Tenant the premises located at \textbf{<< premises.address | latex >>} in \textbf{<< premises.city | latex >>}, \textbf{<< premises.state | latex >>} \textbf{<< premises.zip | latex >>} (\textbf{<< premises.county | latex >>}), together with the appliances and fixtures listed in the move-in condition report (the \textbf{Premises}).
 
+~< if premises.year_built >~
+The Premises were constructed in \textbf{<< premises.year_built | latex >>}.
+~< endif >~
+
 ~< if premises.description >~
 The Premises consist of: << premises.description >>
 ~< endif >~
@@ -104,7 +108,16 @@ The term of this Agreement shall begin on \textbf{<< term.start_date | latex >>}
 << rent >>
 \textbf{Base monthly rent:} << rent_amount >>
 
-\textbf{Rent schedule:} The initial partial period from \textbf{<< rent_schedule.first.start | latex >>} through \textbf{<< rent_schedule.first.end | latex >>} is << rent_schedule.first.amount >>. The regular monthly periods are due on the first day of each calendar month at << rent_amount >>~< if rent_schedule.regular >~, for << rent_schedule.regular | length >> full calendar months~< endif >~. The final partial period from \textbf{<< rent_schedule.last.start | latex >>} through \textbf{<< rent_schedule.last.end | latex >>} is << rent_schedule.last.amount >>. No additional full-month rent is due for a period outside the Term.
+\textbf{Rent schedule:}
+~< if rent_schedule.periods | length == 1 >~
+Rent for the period from \textbf{<< rent_schedule.first.start | latex >>} through \textbf{<< rent_schedule.first.end | latex >>} is << rent_schedule.first.amount >>. This is the only rent period in the Term.
+~< else >~
+The first rent period from \textbf{<< rent_schedule.first.start | latex >>} through \textbf{<< rent_schedule.first.end | latex >>} is << rent_schedule.first.amount >>.
+~< if rent_schedule.regular >~
+The next << rent_schedule.regular | length >> full calendar month~< if rent_schedule.regular | length != 1 >~s are~< else >~ is~< endif >~ due on the first day of each month at << rent_amount >> per month.
+~< endif >~
+The final rent period from \textbf{<< rent_schedule.last.start | latex >>} through \textbf{<< rent_schedule.last.end | latex >>} is << rent_schedule.last.amount >>. No additional rent is due for a period outside the Term.
+~< endif >~
 ~< endif >~
 
 ~< if deposit >~
