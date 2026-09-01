@@ -65,13 +65,6 @@ def latex_escape(s: str) -> str:
     return str(s).translate(replacements)
 
 
-def latex_or_url(s: str) -> str:
-    if str(s).startswith(("http://", "https://")):
-        escaped_url = str(s).replace("%", r"\%").replace("#", r"\#").replace("_", r"\_")
-        return rf"\href{{{escaped_url}}}{{{escaped_url}}}"
-    return latex_escape(s)
-
-
 def md_to_latex(s: str) -> str:
     return pypandoc.convert_text(s, to='latex', format='md').strip()
 
@@ -299,8 +292,6 @@ def main():
     first_period = periods[0]
     last_period = periods[-1]
     regular_periods = periods[1:-1] if len(periods) > 2 else []
-    if len(periods) == 1:
-        regular_periods = []
 
     resolved_attachments = {} if draft else resolve_attachments(data.get("attachments"), yaml_path)
     if not draft:
@@ -339,11 +330,23 @@ def main():
     )
 
     env.filters["latex"] = latex_escape
-    env.filters["latex_or_url"] = latex_or_url
 
     notices = data.get("notices") or {}
     if not isinstance(notices, dict):
         raise ValueError("notices must be a mapping")
+    if not draft and not notices:
+        raise ValueError("notices are required for a non-draft lease")
+    if not draft:
+        missing_notice_fields = [
+            field
+            for field in ("landlord_address", "tenant_address", "payment_method")
+            if not notices.get(field)
+        ]
+        if missing_notice_fields:
+            raise ValueError(
+                "notices fields are required for a non-draft lease: "
+                + ", ".join(missing_notice_fields)
+            )
     emergency_contact = data.get("emergency_contact") or {}
     if not isinstance(emergency_contact, dict):
         raise ValueError("emergency_contact must be a mapping")
@@ -406,7 +409,7 @@ def main():
                 shutil.copyfile(source, destination)
 
         subprocess.run(
-            ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", tex_file.name],
+            ["pdflatex", "-interaction=batchmode", "-halt-on-error", tex_file.name],
             cwd=tmp,
             check=True,
         )

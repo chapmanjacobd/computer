@@ -37,7 +37,9 @@
 ~< endif >~
 ~< endfor >~
 
-\textbf{<< "DRAFT - COMPLETE BEFORE SIGNING" if draft else "" >>}
+~< if draft >~
+\textbf{DRAFT - COMPLETE BEFORE SIGNING}
+~< endif >~
 
 \begin{tabularx}{\textwidth}{l X l}
 \hspace{-8pt}
