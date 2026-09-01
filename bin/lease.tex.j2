@@ -1,0 +1,265 @@
+% LaTeX Residential Lease Agreement Template
+% Modeled on the contract/invoice engines in ~/bin/.
+% Usage: lease.py lease.tex.j2 lease.yaml output.pdf
+% All sections are optional; omit the key in the YAML to drop the section.
+
+\documentclass[letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks]{hyperref}
+\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{ragged2e}
+\usepackage{hhline}
+\usepackage{array}
+\usepackage{textcomp}
+\usepackage{pdfpages}
+
+\hypersetup{ urlcolor=blue }
+
+\newcolumntype{L}{>{\RaggedRight\arraybackslash\hyphenpenalty=10000}X}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\begin{document}
+\thispagestyle{empty}
+
+~< if attachments.safe_homes_summary >~
+\includepdf[pages=-,pagecommand={\thispagestyle{empty}}]{<< attachments.safe_homes_summary | latex >>}
+~< endif >~
+~< for attachment_key, attachment_filename in attachments.items() >~
+~< if attachment_key != "safe_homes_summary" >~
+\includepdf[pages=-,pagecommand={\thispagestyle{empty}}]{<< attachment_filename | latex >>}
+~< endif >~
+~< endfor >~
+
+\textbf{<< "DRAFT - COMPLETE BEFORE SIGNING" if draft else "" >>}
+
+\begin{tabularx}{\textwidth}{l X l}
+\hspace{-8pt}
+\multirow{5}{*} &
+\textbf{<< company.name | default("", true) | latex >>} &
+\hskip12pt\multirow{5}{*}{
+\begin{tabular}{r}
+\footnotesize\bf RESIDENTIAL \\[-0.8ex]
+\footnotesize\bf LEASE \\[-0.4ex]
+~< if lease.id >~
+\footnotesize\bf ID \\[-0.8ex]
+\footnotesize << lease.id | latex >> \\[-0.4ex]
+~< endif >~
+\footnotesize\bf DATE \\[-0.8ex]
+\footnotesize << lease.date | latex >>
+\end{tabular}} \\
+~< if company.contact >~
+& << company.contact | latex >> & \\
+~< endif >~
+~< if company.address >~
+& << company.address | latex >> & \\
+~< endif >~
+~< if company.phone >~
+& << company.phone | latex >> & \\
+~< endif >~
+~< if company.email >~
+& << company.email | latex >> & \\
+~< endif >~
+\end{tabularx}
+
+\vspace{0.8cm}
+
+\Large\textbf{RESIDENTIAL LEASE AGREEMENT}\normalsize
+
+~< set ns = namespace(n=0) >~
+
+~< if landlord.name or premises.address >~
+This Residential Lease Agreement (the \textbf{Agreement}) is entered into as of \textbf{<< lease.date | latex >>} by and between \textbf{<< landlord.name | latex >>} (the \textbf{Landlord}) and \textbf{<< tenant | latex >>} (the \textbf{Tenant}). The parties agree as follows:
+~< endif >~
+
+~< if premises >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Premises}
+Landlord leases to Tenant the premises located at \textbf{<< premises.address | latex >>} in \textbf{<< premises.city | latex >>}, \textbf{<< premises.state | latex >>} \textbf{<< premises.zip | latex >>} (\textbf{<< premises.county | latex >>}), together with the appliances and fixtures listed in the move-in condition report (the \textbf{Premises}).
+
+~< if premises.description >~
+The Premises consist of: << premises.description >>
+~< endif >~
+
+~< if premises.condition >~
+\textbf{Condition of Premises:} << premises.condition >>
+~< endif >~
+~< endif >~
+
+~< if term >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Term}
+The term of this Agreement shall begin on \textbf{<< term.start_date | latex >>} and end on \textbf{<< term.end_date | latex >>}~< if term.length_months >~, a period of \textbf{<< term.length_months | latex >>} months~< endif >~ (the \textbf{Term}). This is a fixed-term lease. Upon expiration, absent renewal, Tenant shall vacate the Premises. Occupation past the end of the Term, or any holdover for any period, creates a month-to-month tenancy terminable by either party upon thirty (30) days written notice; rent during any holdover shall be one and one-half (1.5) times the monthly rent, to the extent permitted by law.
+~< endif >~
+
+~< if rent >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Rent}
+<< rent >>
+\textbf{Base monthly rent:} << rent_amount >>
+
+\textbf{Rent schedule:} The initial partial period from \textbf{<< rent_schedule.first.start | latex >>} through \textbf{<< rent_schedule.first.end | latex >>} is << rent_schedule.first.amount >>. The regular monthly periods are due on the first day of each calendar month at << rent_amount >>~< if rent_schedule.regular >~, for << rent_schedule.regular | length >> full calendar months~< endif >~. The final partial period from \textbf{<< rent_schedule.last.start | latex >>} through \textbf{<< rent_schedule.last.end | latex >>} is << rent_schedule.last.amount >>. No additional full-month rent is due for a period outside the Term.
+~< endif >~
+
+~< if deposit >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Deposit and Fees}
+<< deposit >>
+~< endif >~
+
+~< if utilities >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Utilities and Services}
+<< utilities >>
+~< endif >~
+
+~< if late_fees >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Late Fees}
+<< late_fees >>
+~< endif >~
+
+~< if renters_insurance >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Renters Insurance}
+<< renters_insurance >>
+~< endif >~
+
+~< if pets >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Pets}
+<< pets >>
+~< endif >~
+
+~< if occupancy >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Occupancy}
+<< occupancy >>
+\textbf{Maximum occupancy:} << max_occupants | latex >> persons, subject to applicable occupancy and housing codes.
+~< endif >~
+
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Schedule of Occupants}
+~< if occupants >~
+\begin{tabularx}{\textwidth}{X X}
+\textbf{Name} & \textbf{Role} \\
+~< for occupant in occupants >~
+<< occupant.name | latex >> & << occupant.role | latex >> \\
+~< endfor >~
+\end{tabularx}
+~< else >~
+\textit{To be completed before signing. Every adult tenant must be named above and every occupant must be listed here.}
+~< endif >~
+
+~< if parking >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Parking}
+<< parking >>
+~< endif >~
+
+~< if repairs >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Maintenance and Repairs}
+<< repairs >>
+~< endif >~
+
+~< if entry >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Right of Entry}
+<< entry >>
+~< endif >~
+
+~< if subletting >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Assignment and Subletting}
+<< subletting >>
+~< endif >~
+
+~< if default >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Default and Remedies}
+<< default >>
+~< endif >~
+
+~< if abandonment >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Abandonment}
+<< abandonment >>
+~< endif >~
+
+~< if governing_law >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Governing Law}
+<< governing_law >>
+~< endif >~
+
+~< if whole >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Entire Agreement}
+<< whole >>
+~< endif >~
+
+~< if flood_disclosure or addenda >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Disclosures and Addenda}
+~< if flood_disclosure >~
+\textbf{Flood disclosure:} << flood_disclosure >>
+
+~< endif >~
+~< if addenda >~
+The following documents must be delivered with this Agreement and identified in the signed packet:
+\begin{itemize}
+~< for addendum in addenda >~
+\item << addendum | latex >>
+~< endfor >~
+\end{itemize}
+~< endif >~
+~< endif >~
+
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Notices and Emergency Contact}
+Landlord notices shall be delivered to \textbf{<< notices.landlord_address | default(landlord.address, true) | latex >>}. Tenant's notice address is \textbf{<< notices.tenant_address | default("", true) | latex >>}. Rent shall be paid by << notices.payment_method | default("", true) | latex >>.
+
+\textbf{Landlord contact:} << notices.landlord_name | default(landlord.name, true) | latex >>; << notices.landlord_phone | default(company.phone, true) | latex >>; << notices.landlord_email | default(company.email, true) | latex >>.
+
+~< if emergency_contact.name or emergency_contact.phone >~
+\textbf{Emergency contact:} << emergency_contact.name | default(landlord.name, true) | latex >>; << emergency_contact.phone | default(company.phone, true) | latex >>. This contact may coordinate emergency access and repairs but may not change the Tenant's rights under this Agreement.
+~< endif >~
+
+~< if landlord.name or tenant or draft >~
+~< set ns.n = ns.n + 1 >~
+\section*{<< ns.n >>. Signatures}
+The parties have executed this Agreement as of the date first written above. The parties shall sign or initial each attached disclosure and addendum actually delivered with this Agreement. No statement in this section substitutes for delivery of a required notice or disclosure.
+
+\vspace{0.8cm}
+
+\begin{tabularx}{\textwidth}{X X}
+\rule{0pt}{2ex}\textbf{<< landlord.name | default(company.name, true) | latex >>} & \textbf{<< tenant_names[0] | latex >>} \\
+Landlord & Tenant \\[2.5ex]
+\rule{0pt}{2ex}\rule{5cm}{0.4pt} & \rule{5cm}{0.4pt} \\
+Signature & Signature \\[2.5ex]
+\rule{5cm}{0.4pt} & \rule{5cm}{0.4pt} \\
+Date & Date \\
+\end{tabularx}
+
+~< for tenant_name in tenant_names[1:] >~
+
+\vspace{0.5cm}
+\begin{tabularx}{\textwidth}{X}
+\textbf{<< tenant_name | latex >>} \\
+Tenant \\
+\rule{5cm}{0.4pt} \\
+Signature \\
+\rule{5cm}{0.4pt} \\
+Date \\
+\end{tabularx}
+~< endfor >~
+~< endif >~
+
+\end{document}
