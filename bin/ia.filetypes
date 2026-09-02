@@ -56,6 +56,7 @@ def process_item(identifier, verbose=False):
         
         # Aggregate by file format
         stats = defaultdict(lambda: {'sizes': [], 'count': 0})
+        derived_stats = defaultdict(lambda: {'sizes': [], 'count': 0})
         
         for file_info in files:
             fmt = file_info.get('format', 'Unknown').lower()
@@ -65,14 +66,19 @@ def process_item(identifier, verbose=False):
             except (TypeError, ValueError):
                 size = 0
             if size > 0:  # Only count files with valid sizes
-                stats[fmt]['sizes'].append(size)
-                stats[fmt]['count'] += 1
+                if file_info.get('source') == 'derivative':
+                    derived_stats[fmt]['sizes'].append(size)
+                    derived_stats[fmt]['count'] += 1
+                else:
+                    stats[fmt]['sizes'].append(size)
+                    stats[fmt]['count'] += 1
         
         # Calculate statistics for each format
         result = {
             'identifier': identifier,
             'total_files': len(files),
-            'formats': {}
+            'formats': {},
+            'derived_formats': {}
         }
         
         for fmt, data in stats.items():
@@ -80,6 +86,19 @@ def process_item(identifier, verbose=False):
             if sizes:
                 min_val, median, max_val = calculate_stats(sizes)
                 result['formats'][fmt] = {
+                    'count': len(sizes),
+                    'min': min_val,
+                    'median': median,
+                    'max': max_val,
+                    'total_size': sum(sizes),
+                    'all_sizes': sizes
+                }
+
+        for fmt, data in derived_stats.items():
+            sizes = data['sizes']
+            if sizes:
+                min_val, median, max_val = calculate_stats(sizes)
+                result['derived_formats'][fmt] = {
                     'count': len(sizes),
                     'min': min_val,
                     'median': median,
@@ -96,17 +115,12 @@ def process_item(identifier, verbose=False):
             'error': str(e)
         }
 
-def aggregate_results(results):
-    """Aggregate file stats for the same format across all result items."""
+def _aggregate_formats(items):
+    """Aggregate file stats grouped by format."""
     agg = defaultdict(list)
-    total_files = 0
-    for result in results:
-        if 'formats' not in result:
-            continue
-        total_files += result.get('total_files', 0)
-        for fmt, stats in result['formats'].items():
+    for item in items:
+        for fmt, stats in item.get('formats', {}).items():
             agg[fmt].extend(stats['all_sizes'])
-
     formats = {}
     for fmt, sizes in agg.items():
         min_val, median, max_val = calculate_stats(sizes)
@@ -117,7 +131,15 @@ def aggregate_results(results):
             'max': max_val,
             'total_size': sum(sizes),
         }
-    return total_files, formats
+    return formats
+
+
+def aggregate_results(results):
+    """Aggregate file stats for the same format across all result items."""
+    total_files = sum(r.get('total_files', 0) for r in results if 'formats' in r)
+    valid = [r for r in results if 'formats' in r]
+    return total_files, _aggregate_formats(valid), _aggregate_formats(
+        [{'formats': r.get('derived_formats', {})} for r in valid])
 
 
 def print_results(results, detailed=False, json_output=False):
@@ -130,39 +152,60 @@ def print_results(results, detailed=False, json_output=False):
     for err in errors:
         print(f"ERROR: {err}")
 
-    total_files, formats = aggregate_results(results)
+    total_files, formats, derived_formats = aggregate_results(results)
     print(f"Total Files: {total_files}")
 
-    if not formats:
+    if not formats and not derived_formats:
         print("No files with valid sizes found")
         return
 
-    # Sort formats by total size (largest first)
-    sorted_formats = sorted(
-        formats.items(),
-        key=lambda x: x[1]['total_size'],
-        reverse=True
-    )
-
     headers = ["Format", "Count", "Min", "Median", "Max", "Total"]
-    rows = [
-        [fmt, stats['count'], format_size(stats['min']),
-         format_size(stats['median']), format_size(stats['max']),
-         format_size(stats['total_size'])]
-        for fmt, stats in sorted_formats
-    ]
-    print("\nFile Type Statistics:")
-    print(tabulate(rows, headers=headers, tablefmt="simple"))
+
+    def build_table(group):
+        sorted_formats = sorted(
+            group.items(),
+            key=lambda x: x[1]['total_size'],
+            reverse=True
+        )
+        return tabulate(
+            [[fmt, stats['count'], format_size(stats['min']),
+              format_size(stats['median']), format_size(stats['max']),
+              format_size(stats['total_size'])]
+             for fmt, stats in sorted_formats],
+            headers=headers, tablefmt="simple"
+        )
+
+    if derived_formats:
+        print("\nDerived File Type Statistics:")
+        print(build_table(derived_formats))
+
+    if formats:
+        print("\nOriginal File Type Statistics:")
+        print(build_table(formats))
 
     if detailed:
         headers_d = ["Format", "Count", "Min", "Median", "Max"]
-        rows_d = [
-            [fmt, stats['count'], f"{stats['min']:,}",
-             f"{stats['median']:.1f}", f"{stats['max']:,}"]
-            for fmt, stats in sorted_formats
-        ]
-        print("\nDetailed Statistics (in bytes):")
-        print(tabulate(rows_d, headers=headers_d, tablefmt="simple"))
+
+        def build_table_d(group):
+            sorted_formats = sorted(
+                group.items(),
+                key=lambda x: x[1]['total_size'],
+                reverse=True
+            )
+            return tabulate(
+                [[fmt, stats['count'], f"{stats['min']:,}",
+                  f"{stats['median']:.1f}", f"{stats['max']:,}"]
+                 for fmt, stats in sorted_formats],
+                headers=headers_d, tablefmt="simple"
+            )
+
+        if derived_formats:
+            print("\nDerived Detailed Statistics (in bytes):")
+            print(build_table_d(derived_formats))
+
+        if formats:
+            print("\nOriginal Detailed Statistics (in bytes):")
+            print(build_table_d(formats))
 
 def main():
     parser = argparse.ArgumentParser(
