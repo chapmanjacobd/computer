@@ -6,27 +6,12 @@ Usage: python ia_stats.py identifier1 identifier2 identifier3 ...
 
 import argparse
 import json
-import sys
 from collections import defaultdict
+from statistics import median
 
 from internetarchive import get_item
 from tabulate import tabulate
 
-
-def calculate_stats(values):
-    """Calculate min, median, max for a list of values."""
-    if not values:
-        return None, None, None
-    sorted_vals = sorted(values)
-    count = len(sorted_vals)
-    min_val = sorted_vals[0]
-    max_val = sorted_vals[-1]
-    # Calculate median
-    if count % 2 == 0:
-        median = (sorted_vals[count//2 - 1] + sorted_vals[count//2]) / 2
-    else:
-        median = sorted_vals[count//2]
-    return min_val, median, max_val
 
 def format_size(size_bytes):
     """Format size in human-readable format."""
@@ -38,26 +23,23 @@ def format_size(size_bytes):
         size_bytes /= 1024.0
     return f"{size_bytes:.1f} PB"
 
-def process_item(identifier, verbose=False):
+
+def process_item(identifier):
     """Process a single item and return file statistics by format."""
     try:
         item = get_item(identifier)
-        
-        # Get the files list from the item
-        # Access item metadata properly
         files = item.files if hasattr(item, 'files') else []
-        
-        # Alternatively, you can use item.metadata.get('files', [])
+
         if not files:
             return {
                 'identifier': identifier,
                 'error': 'No files found'
             }
-        
+
         # Aggregate by file format
-        stats = defaultdict(lambda: {'sizes': [], 'count': 0})
-        derived_stats = defaultdict(lambda: {'sizes': [], 'count': 0})
-        
+        stats = defaultdict(list)
+        derived_stats = defaultdict(list)
+
         for file_info in files:
             fmt = file_info.get('format', 'Unknown').lower()
             size = file_info.get('size', 0)
@@ -67,82 +49,68 @@ def process_item(identifier, verbose=False):
                 size = 0
             if size > 0:  # Only count files with valid sizes
                 if file_info.get('source') == 'derivative':
-                    derived_stats[fmt]['sizes'].append(size)
-                    derived_stats[fmt]['count'] += 1
+                    derived_stats[fmt].append(size)
                 else:
-                    stats[fmt]['sizes'].append(size)
-                    stats[fmt]['count'] += 1
-        
-        # Calculate statistics for each format
+                    stats[fmt].append(size)
+
         result = {
             'identifier': identifier,
             'total_files': len(files),
-            'formats': {},
-            'derived_formats': {}
+            'formats': {fmt: {'count': len(sizes), 'sizes': sizes}
+                        for fmt, sizes in stats.items()},
+            'derived_formats': {fmt: {'count': len(sizes), 'sizes': sizes}
+                                for fmt, sizes in derived_stats.items()}
         }
-        
-        for fmt, data in stats.items():
-            sizes = data['sizes']
-            if sizes:
-                min_val, median, max_val = calculate_stats(sizes)
-                result['formats'][fmt] = {
-                    'count': len(sizes),
-                    'min': min_val,
-                    'median': median,
-                    'max': max_val,
-                    'total_size': sum(sizes),
-                    'all_sizes': sizes
-                }
 
-        for fmt, data in derived_stats.items():
-            sizes = data['sizes']
-            if sizes:
-                min_val, median, max_val = calculate_stats(sizes)
-                result['derived_formats'][fmt] = {
-                    'count': len(sizes),
-                    'min': min_val,
-                    'median': median,
-                    'max': max_val,
-                    'total_size': sum(sizes),
-                    'all_sizes': sizes
-                }
-        
         return result
-        
+
     except Exception as e:
         return {
             'identifier': identifier,
             'error': str(e)
         }
 
+
 def _aggregate_formats(items):
     """Aggregate file stats grouped by format."""
     agg = defaultdict(list)
     for item in items:
         for fmt, stats in item.get('formats', {}).items():
-            agg[fmt].extend(stats['all_sizes'])
-    formats = {}
-    for fmt, sizes in agg.items():
-        min_val, median, max_val = calculate_stats(sizes)
-        formats[fmt] = {
-            'count': len(sizes),
-            'min': min_val,
-            'median': median,
-            'max': max_val,
-            'total_size': sum(sizes),
-        }
-    return formats
+            agg[fmt].extend(stats['sizes'])
+    return {fmt: {'count': len(sizes), 'total_size': sum(sizes), 'sizes': sizes}
+            for fmt, sizes in agg.items()}
 
 
 def aggregate_results(results):
     """Aggregate file stats for the same format across all result items."""
     total_files = sum(r.get('total_files', 0) for r in results if 'formats' in r)
     valid = [r for r in results if 'formats' in r]
-    return total_files, _aggregate_formats(valid), _aggregate_formats(
+    formats = _aggregate_formats(valid)
+    derived = _aggregate_formats(
         [{'formats': r.get('derived_formats', {})} for r in valid])
+    return total_files, formats, derived
 
 
-def print_results(results, detailed=False, json_output=False):
+def build_table(group):
+    """Build a table of format stats with Median column last."""
+    headers = ["Format", "Median", "Count", "Total"]
+    sorted_formats = sorted(
+        group.items(),
+        key=lambda x: (x[1]['total_size'], x[1]['count']),
+        reverse=True
+    )
+    rows = []
+    for fmt, stats in sorted_formats:
+        rows.append([
+            fmt,
+            format_size(median(stats['sizes'])),
+            stats['count'],
+            format_size(stats['total_size']),
+        ])
+    return tabulate(rows, headers=headers, tablefmt="simple")
+
+
+def print_results(results, json_output=False):
     """Print the aggregated results in a formatted way."""
     if json_output:
         print(json.dumps(results, indent=2, default=str))
@@ -159,22 +127,6 @@ def print_results(results, detailed=False, json_output=False):
         print("No files with valid sizes found")
         return
 
-    headers = ["Format", "Count", "Min", "Median", "Max", "Total"]
-
-    def build_table(group):
-        sorted_formats = sorted(
-            group.items(),
-            key=lambda x: x[1]['total_size'],
-            reverse=True
-        )
-        return tabulate(
-            [[fmt, stats['count'], format_size(stats['min']),
-              format_size(stats['median']), format_size(stats['max']),
-              format_size(stats['total_size'])]
-             for fmt, stats in sorted_formats],
-            headers=headers, tablefmt="simple"
-        )
-
     if derived_formats:
         print("\nDerived File Type Statistics:")
         print(build_table(derived_formats))
@@ -183,29 +135,6 @@ def print_results(results, detailed=False, json_output=False):
         print("\nOriginal File Type Statistics:")
         print(build_table(formats))
 
-    if detailed:
-        headers_d = ["Format", "Count", "Min", "Median", "Max"]
-
-        def build_table_d(group):
-            sorted_formats = sorted(
-                group.items(),
-                key=lambda x: x[1]['total_size'],
-                reverse=True
-            )
-            return tabulate(
-                [[fmt, stats['count'], f"{stats['min']:,}",
-                  f"{stats['median']:.1f}", f"{stats['max']:,}"]
-                 for fmt, stats in sorted_formats],
-                headers=headers_d, tablefmt="simple"
-            )
-
-        if derived_formats:
-            print("\nDerived Detailed Statistics (in bytes):")
-            print(build_table_d(derived_formats))
-
-        if formats:
-            print("\nOriginal Detailed Statistics (in bytes):")
-            print(build_table_d(formats))
 
 def main():
     parser = argparse.ArgumentParser(
@@ -216,50 +145,28 @@ Examples:
   python ia_stats.py annas_archive_english
   python ia_stats.py LEGOManiaUS-SeptemberOctober1995-Miniland
   python ia_stats.py item1 item2 item3
-  python ia_stats.py --detail item1 item2
   python ia_stats.py --json item1 item2 > stats.json
         """
     )
-    
+
     parser.add_argument(
         'identifiers',
         nargs='+',
         help='One or more Internet Archive item identifiers'
     )
-    
-    parser.add_argument(
-        '-d', '--detail',
-        action='store_true',
-        help='Show detailed statistics in bytes'
-    )
-    
+
     parser.add_argument(
         '-j', '--json',
         action='store_true',
         help='Output results in JSON format'
     )
-    
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Show verbose output (progress messages)'
-    )
-    
+
     args = parser.parse_args()
-    
-    # Process all identifiers
-    results = []
-    total = len(args.identifiers)
-    
-    for i, identifier in enumerate(args.identifiers, 1):
-        if args.verbose:
-            print(f"Processing [{i}/{total}]: {identifier}", file=sys.stderr)
-        
-        result = process_item(identifier, args.verbose)
-        results.append(result)
-    
-    # Print results
-    print_results(results, args.detail, args.json)
+
+    results = [process_item(identifier) for identifier in args.identifiers]
+
+    print_results(results, args.json)
+
 
 if __name__ == "__main__":
     main()
