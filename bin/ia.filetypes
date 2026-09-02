@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""
+Internet Archive Item File Statistics CLI
+Usage: python ia_stats.py identifier1 identifier2 identifier3 ...
+"""
+
+import argparse
+import json
+import sys
+from collections import defaultdict
+
+from internetarchive import get_item
+
+
+def calculate_stats(values):
+    """Calculate min, median, max for a list of values."""
+    if not values:
+        return None, None, None
+    sorted_vals = sorted(values)
+    count = len(sorted_vals)
+    min_val = sorted_vals[0]
+    max_val = sorted_vals[-1]
+    # Calculate median
+    if count % 2 == 0:
+        median = (sorted_vals[count//2 - 1] + sorted_vals[count//2]) / 2
+    else:
+        median = sorted_vals[count//2]
+    return min_val, median, max_val
+
+def format_size(size_bytes):
+    """Format size in human-readable format."""
+    if size_bytes is None:
+        return "N/A"
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.1f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.1f} PB"
+
+def process_item(identifier, verbose=False):
+    """Process a single item and return file statistics by format."""
+    try:
+        item = get_item(identifier)
+        files = item.get('files', [])
+        
+        if not files:
+            return {
+                'identifier': identifier,
+                'error': 'No files found'
+            }
+        
+        # Aggregate by file format
+        stats = defaultdict(lambda: {'sizes': [], 'count': 0})
+        
+        for file_info in files:
+            fmt = file_info.get('format', 'Unknown').lower()
+            size = file_info.get('size', 0)
+            if size > 0:  # Only count files with valid sizes
+                stats[fmt]['sizes'].append(size)
+                stats[fmt]['count'] += 1
+        
+        # Calculate statistics for each format
+        result = {
+            'identifier': identifier,
+            'total_files': len(files),
+            'formats': {}
+        }
+        
+        for fmt, data in stats.items():
+            sizes = data['sizes']
+            if sizes:
+                min_val, median, max_val = calculate_stats(sizes)
+                result['formats'][fmt] = {
+                    'count': len(sizes),
+                    'min': min_val,
+                    'median': median,
+                    'max': max_val,
+                    'total_size': sum(sizes)
+                }
+        
+        return result
+        
+    except Exception as e:
+        return {
+            'identifier': identifier,
+            'error': str(e)
+        }
+
+def print_results(results, detailed=False, json_output=False):
+    """Print the results in a formatted way."""
+    if json_output:
+        print(json.dumps(results, indent=2, default=str))
+        return
+    
+    for result in results:
+        print(f"\n{'='*60}")
+        print(f"Identifier: {result['identifier']}")
+        print(f"{'='*60}")
+        
+        if 'error' in result:
+            print(f"  ERROR: {result['error']}")
+            continue
+        
+        print(f"  Total Files: {result['total_files']}")
+        
+        if not result['formats']:
+            print("  No files with valid sizes found")
+            continue
+        
+        # Sort formats by total size (largest first)
+        sorted_formats = sorted(
+            result['formats'].items(),
+            key=lambda x: x[1]['total_size'],
+            reverse=True
+        )
+        
+        print("\n  File Type Statistics:")
+        print(f"  {'Format':<15} {'Count':<8} {'Min':<12} {'Median':<12} {'Max':<12} {'Total':<12}")
+        print(f"  {'-'*15} {'-'*8} {'-'*12} {'-'*12} {'-'*12} {'-'*12}")
+        
+        for fmt, stats in sorted_formats:
+            print(f"  {fmt:<15} {stats['count']:<8} "
+                  f"{format_size(stats['min']):<12} "
+                  f"{format_size(stats['median']):<12} "
+                  f"{format_size(stats['max']):<12} "
+                  f"{format_size(stats['total_size']):<12}")
+        
+        if detailed:
+            print("\n  Detailed Statistics (in bytes):")
+            print(f"  {'Format':<15} {'Count':<8} {'Min':<15} {'Median':<15} {'Max':<15}")
+            print(f"  {'-'*15} {'-'*8} {'-'*15} {'-'*15} {'-'*15}")
+            for fmt, stats in sorted_formats:
+                print(f"  {fmt:<15} {stats['count']:<8} "
+                      f"{stats['min']:<15,} "
+                      f"{stats['median']:<15.1f} "
+                      f"{stats['max']:<15,}")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Get file statistics for Internet Archive items by file type',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python ia_stats.py annas_archive_english
+  python ia_stats.py item1 item2 item3
+  python ia_stats.py --detail item1 item2
+  python ia_stats.py --json item1 item2 > stats.json
+        """
+    )
+    
+    parser.add_argument(
+        'identifiers',
+        nargs='+',
+        help='One or more Internet Archive item identifiers'
+    )
+    
+    parser.add_argument(
+        '-d', '--detail',
+        action='store_true',
+        help='Show detailed statistics in bytes'
+    )
+    
+    parser.add_argument(
+        '-j', '--json',
+        action='store_true',
+        help='Output results in JSON format'
+    )
+    
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Show verbose output (progress messages)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Process all identifiers
+    results = []
+    total = len(args.identifiers)
+    
+    for i, identifier in enumerate(args.identifiers, 1):
+        if args.verbose:
+            print(f"Processing [{i}/{total}]: {identifier}", file=sys.stderr)
+        
+        result = process_item(identifier, args.verbose)
+        results.append(result)
+    
+    # Print results
+    print_results(results, args.detail, args.json)
+
+if __name__ == "__main__":
+    main()
