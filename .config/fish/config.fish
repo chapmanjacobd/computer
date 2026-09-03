@@ -65,8 +65,6 @@ bind alt-right nextd-or-forward-token
 bind alt-left prevd-or-backward-token
 bind alt-delete kill-token
 
-bind \e\[99\;6u fish_clipboard_copy
-
 bind \e, kill-selection backward-kill-token yank yank backward-delete-char
 
 bind ctrl-y redo
@@ -81,6 +79,12 @@ function cmd_to_clipboard
     commandline | head -c -1 | cb
 end
 bind \e\[99\;6u cmd_to_clipboard
+
+function insert_newline
+    commandline --insert \n
+end
+bind --mode default \e\[13\;2u insert_newline
+bind --mode insert \e\[13\;2u insert_newline
 
 function insert_previous_command
     commandline --insert -- (history -1)
