@@ -45,6 +45,10 @@ fzf_configure_bindings --directory=\cf --git_status=\cs --git_log=\cg --processe
 bind alt-r history-pager
 bind --mode insert alt-r history-pager
 
+if test -n "$TMUX"
+    set -gx TERM xterm-kitty
+end
+
 if test -z "$SSH_TTY"; and test -z "$TMUX"
     bind pageup "kitty @ scroll-window 1p-"
     bind pagedown "kitty @ scroll-window 1p"
