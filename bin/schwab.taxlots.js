@@ -69,21 +69,48 @@
         return lots;
     }
 
-    async function processLotDetails(accountId, symbol) {
-        await delay(2000);
+    function getOpenLotModal() {
+        const titleElement = document.getElementById('open-lot-overlay-modal-title');
+        const modalOverlay = titleElement?.closest('.sdps-modal__overlay--open') ||
+            document.querySelector('#open-lot-overlay .sdps-modal__overlay--open');
+        if (modalOverlay) {
+            return { container: modalOverlay, titleElement };
+        }
 
-        const overlay = document.getElementById('open-lot-overlay');
-        if (!overlay || !overlay.classList.contains('sdps-modal--open')) {
+        const modalHost = document.getElementById('open-lot-overlay');
+        if (modalHost?.classList.contains('sdps-modal--open')) {
+            return { container: modalHost, titleElement };
+        }
+
+        return null;
+    }
+
+    async function waitForLotDetailsModal(timeoutMs = 10000) {
+        const deadline = Date.now() + timeoutMs;
+
+        while (Date.now() < deadline) {
+            const modal = getOpenLotModal();
+            if (
+                modal &&
+                modal.titleElement &&
+                document.getElementById('responsiveLotTable')
+            ) {
+                return modal;
+            }
+            await delay(250);
+        }
+
+        return getOpenLotModal();
+    }
+
+    async function processLotDetails(accountId, symbol) {
+        const modal = await waitForLotDetailsModal();
+        if (!modal) {
             log('Overlay not found or not open');
             return false;
         }
 
-        const titleElement = document.getElementById('open-lot-overlay-modal-title');
-        if (!titleElement) {
-            log('Title element not found');
-            return false;
-        }
-
+        const { container: overlay, titleElement } = modal;
         const extractedSymbol = extractSymbolFromTitle(titleElement.textContent);
         if (!extractedSymbol) {
             log('Could not extract symbol from title');
@@ -139,17 +166,7 @@
 
         log(`Clicking Next Steps button for: ${symbol} in account ${accountId}`);
         clickControl(button);
-        await delay(1500);
-
-        const dropdown = document.getElementById('nextStepsList');
-        if (!dropdown || !dropdown.classList.contains('show')) {
-            log('Dropdown not found or not open');
-            return false;
-        }
-
-        const lotDetailsButton = Array.from(dropdown.querySelectorAll('span')).find(span =>
-            span.textContent.trim() === 'Lot Details'
-        );
+        const lotDetailsButton = await waitForLotDetailsOption();
 
         if (!lotDetailsButton) {
             log('Lot Details option not found');
@@ -159,7 +176,7 @@
         }
 
         log('Clicking Lot Details option');
-        clickControl(lotDetailsButton.closest('button') || lotDetailsButton);
+        clickControl(lotDetailsButton);
 
         const success = await processLotDetails(accountId, symbol);
         processedButtons.add(uniqueId);
@@ -217,8 +234,33 @@
     }
 
     function clickControl(element) {
-        const nativeButton = element.matches('button') ? element : element.querySelector('button');
-        (nativeButton || element).click();
+        const clickable = element.closest('button, [role="menuitem"], [role="option"]') || element;
+        const nativeButton = clickable.matches('button') ? clickable : clickable.querySelector('button');
+        (nativeButton || clickable).click();
+    }
+
+    function findLotDetailsOption() {
+        const candidates = document.querySelectorAll(
+            '#nextStepsList span, #nextStepsList button, ' +
+            '[role="menuitem"], [role="option"], button, span, li, a'
+        );
+
+        return Array.from(candidates).find(candidate =>
+            candidate.textContent.replace(/\s+/g, ' ').trim().toLowerCase() === 'lot details' &&
+            isVisible(candidate)
+        );
+    }
+
+    async function waitForLotDetailsOption(timeoutMs = 10000) {
+        const deadline = Date.now() + timeoutMs;
+
+        while (Date.now() < deadline) {
+            const option = findLotDetailsOption();
+            if (option) return option;
+            await delay(250);
+        }
+
+        return findLotDetailsOption();
     }
 
     async function waitForNextStepButtons(timeoutMs = 20000) {
