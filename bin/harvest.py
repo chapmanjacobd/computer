@@ -56,6 +56,32 @@ SWAP_MAP = {
     "VOO": "VTI",
 }
 
+SWAP_GROUPS = (
+    ("DFUS", "AVUS", "SCHB", "VTI", "ITOT"),
+    ("SCHF", "AVIV", "DFAI", "VEA", "IEFA"),
+    ("AVUV", "DFSV", "FNDA", "VIOV", "IJS"),
+    ("AVDV", "DISV", "FNDC", "VSS"),
+    ("SCHE", "AVES", "DFEM", "VWO", "IEMG"),
+    ("SWNTX", "AVBD", "DFBIX", "BNDX"),
+    ("SCHP", "AVIP", "DFAIP", "SWRSX", "VVAX", "DFIP", "VTIP"),
+    ("AVHY", "DFHIX", "SCYB", "JNK", "VWEHX"),
+)
+
+
+def _build_swap_map() -> dict[str, str]:
+    """Return the symbol -> swap-partner map, merging group rings over base pairs."""
+    merged = dict(SWAP_MAP)
+    for group in SWAP_GROUPS:
+        symbols = tuple(dict.fromkeys(group))
+        for index, symbol in enumerate(symbols):
+            merged[symbol] = symbols[(index + 1) % len(symbols)]
+    return merged
+
+
+def swap_partner(symbol: str) -> str | None:
+    """Return a valid swap partner for a symbol, or None."""
+    return _build_swap_map().get(symbol)
+
 MONTH_ABBREV = {
     "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
     "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
@@ -361,7 +387,7 @@ def _print_losses(losses: list[dict]) -> None:
             f"${lot['market_value']:,.0f}",
             f"${lot['gain']:,.0f}",
             f"${lot['gain_pct']:.1f}%",
-            SWAP_MAP.get(lot["symbol"], "no partner"),
+            swap_partner(lot["symbol"]) or "no partner",
         ]
         for lot in losses
     ]

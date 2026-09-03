@@ -248,6 +248,29 @@ def test_swap_map_bidirectional():
     assert harvest.SWAP_MAP.get("VEU") is None
 
 
+def test_swap_groups_merged():
+    assert harvest.swap_partner("VEA") in {"SCHF", "AVIV", "DFAI", "VEA", "IEFA"}
+    assert harvest.swap_partner("DFUS") in {"DFUS", "AVUS", "SCHB", "VTI", "ITOT"}
+    assert harvest.swap_partner("AVUV") in {"AVUV", "DFSV", "FNDA", "VIOV", "IJS"}
+    assert harvest.swap_partner("SCHE") in {"SCHE", "AVES", "DFEM", "VWO", "IEMG"}
+    assert harvest.swap_partner("SWNTX") in {"SWNTX", "AVBD", "DFBIX", "BNDX"}
+    assert harvest.swap_partner("VTIP") in {"AVIP", "DFIP", "SCHP", "VTIP"}
+    assert harvest.swap_partner("VEU") is None
+
+
+def test_swap_groups_ring_complete():
+    known = set()
+    for group in harvest.SWAP_GROUPS:
+        known.update(group)
+    known.update(harvest.SWAP_MAP)
+    merged = harvest._build_swap_map()
+    for symbol in known:
+        partner = harvest.swap_partner(symbol)
+        assert partner is not None
+        assert partner != symbol
+        assert partner in merged
+
+
 def test_parse_money():
     assert harvest._parse_money("$6,000.00") == 6000.0
     assert harvest._parse_money("-$250.00") == -250.0
