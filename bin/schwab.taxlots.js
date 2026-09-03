@@ -2,6 +2,7 @@
     'use strict';
 
     const taxLotData = {};
+    const accountNames = {};
     const processedButtons = new Set();
     let currentIndex = 0;
     let nextStepButtons = [];
@@ -97,7 +98,7 @@
             ) {
                 return modal;
             }
-            await delay(250);
+            await delay(100);
         }
 
         return getOpenLotModal();
@@ -140,7 +141,7 @@
 
         symbolObj[symbol] = symbolObj[symbol].concat(lots);
 
-        log(`Extracted ${lots.length} lots for ${symbol} in account ${accountId}`);
+        log(`Extracted ${lots.length} lots for ${symbol} in ${accountNames[accountId] || 'account'}`);
 
         const closeButton = overlay.querySelector('.sdps-modal__close');
         if (closeButton) {
@@ -159,11 +160,11 @@
         const uniqueId = `${accountId}-${symbol}`;
 
         if (processedButtons.has(uniqueId)) {
-            log(`Button for ${symbol} in account ${accountId} already processed, skipping`);
+            log(`Button for ${symbol} in ${accountNames[accountId] || 'account'} already processed, skipping`);
             return false;
         }
 
-        log(`Clicking Next Steps button for: ${symbol} in account ${accountId}`);
+        log(`Clicking Next Steps button for: ${symbol} in ${accountNames[accountId] || 'account'}`);
         clickControl(button);
         const lotDetailsButton = await waitForLotDetailsOption();
 
@@ -262,7 +263,7 @@
         while (Date.now() < deadline) {
             const option = findLotDetailsOption();
             if (option) return option;
-            await delay(250);
+            await delay(100);
         }
 
         return findLotDetailsOption();
@@ -275,6 +276,20 @@
         return Array.from(accountList.querySelectorAll(
             'a[id^="account-selector-header-"][id*="-account-"]'
         )).map(option => option.id);
+    }
+
+    function getAccountName(element) {
+        const nameElement = element?.querySelector('.sdps-account-selector__left-col');
+        return nameElement?.textContent.replace(/\s+/g, ' ').trim() || null;
+    }
+
+    function getCurrentAccountName() {
+        const selectedOption = document.querySelector(
+            '#account-selector-list a.sdps-is-selected'
+        );
+        return getAccountName(selectedOption) ||
+            getAccountName(document.getElementById('account-selector')) ||
+            'account';
     }
 
     function getCurrentAccountId() {
@@ -296,7 +311,7 @@
             return false;
         }
 
-        log(`Switching to account ${option.textContent.replace(/\s+/g, ' ').trim()}`);
+        log(`Switching to account ${getAccountName(option) || 'account'}`);
         clickControl(selector);
         await delay(300);
 
@@ -311,7 +326,7 @@
         while (Date.now() < deadline) {
             const selectedOption = document.getElementById(accountOptionId);
             if (selectedOption?.classList.contains('sdps-is-selected')) return true;
-            await delay(250);
+            await delay(100);
         }
 
         log(`Account ${accountOptionId} was not selected`);
@@ -320,6 +335,7 @@
 
     async function waitForNextStepButtons(timeoutMs = 20000, previousAccountId = null) {
         const deadline = Date.now() + timeoutMs;
+        let accountChangedAt = null;
 
         while (Date.now() < deadline) {
             const buttons = findNextStepButtons();
@@ -329,6 +345,13 @@
             ) {
                 return buttons;
             }
+
+            const currentAccountId = getCurrentAccountId();
+            if (previousAccountId && currentAccountId && currentAccountId !== previousAccountId) {
+                accountChangedAt ??= Date.now();
+                if (Date.now() - accountChangedAt >= 1000) return buttons;
+            }
+
             await delay(500);
         }
 
@@ -359,13 +382,16 @@
         log('All buttons processed for current account');
     }
 
-    async function processAccount(previousAccountId = null) {
+    async function processAccount(previousAccountId = null, accountName = 'account') {
         currentIndex = 0;
-        nextStepButtons = await waitForNextStepButtons(20000, previousAccountId);
+        const timeoutMs = previousAccountId ? 8000 : 20000;
+        nextStepButtons = await waitForNextStepButtons(timeoutMs, previousAccountId);
         log(`Found ${nextStepButtons.length} Next Steps buttons`);
 
         if (nextStepButtons.length > 0) {
+            accountNames[getAccountIdFromElement(nextStepButtons[0])] = accountName;
             await processNextButton();
+            return;
         } else {
             log('No positions found for current account');
         }
@@ -381,9 +407,9 @@
         return value;
     }
 
-    function convertAccountToCSV(accountId, symbolArray) {
+    function convertAccountToCSV(accountName, symbolArray) {
         const rows = [[
-            'Account ID',
+            'Account Name',
             'Symbol',
             'Open Date',
             'Quantity',
@@ -400,7 +426,7 @@
             Object.entries(symbolObj).forEach(([symbol, lots]) => {
                 lots.forEach(lot => {
                     rows.push([
-                        accountId,
+                        accountName,
                         symbol,
                         lot.open_date,
                         lot.quantity,
@@ -419,9 +445,8 @@
         return rows.map(row => row.map(escapeCSVField).join(',')).join('\n');
     }
 
-    function accountFilename(accountId) {
-        const accountLabel = accountId
-            .replace(/^holdingsAccount_/i, 'account-')
+    function accountFilename(accountName) {
+        const accountLabel = accountName
             .replace(/[^a-z0-9_-]/gi, '-')
             .replace(/-+/g, '-')
             .replace(/^-|-$/g, '') || 'account-unknown';
@@ -442,7 +467,7 @@
 
     function displayResults() {
         log('=== EXTRACTION COMPLETE ===');
-        console.log('Tax Lot Data:', JSON.stringify(taxLotData, null, 2));
+        log('Tax lot data is ready for export');
 
         const accounts = Object.keys(taxLotData);
         let totalSymbols = 0;
@@ -450,7 +475,8 @@
 
         accounts.forEach(accountId => {
             const symbolArray = taxLotData[accountId];
-            downloadCSV(accountFilename(accountId), convertAccountToCSV(accountId, symbolArray));
+            const accountName = accountNames[accountId] || 'account';
+            downloadCSV(accountFilename(accountName), convertAccountToCSV(accountName, symbolArray));
 
             symbolArray.forEach(symbolObj => {
                 const symbols = Object.keys(symbolObj);
@@ -484,7 +510,8 @@
 
         const accountOptionIds = findAccountOptionIds();
 
-        for (const accountOptionId of accountOptionIds) {
+        for (let index = 0; index < accountOptionIds.length; index++) {
+            const accountOptionId = accountOptionIds[index];
             const option = document.getElementById(accountOptionId);
             if (!option) continue;
 
@@ -492,11 +519,16 @@
             const accountBeforeSwitch = isSelected ? null : getCurrentAccountId();
             if (!isSelected && !await selectAccount(accountOptionId)) continue;
 
-            await processAccount(accountBeforeSwitch);
+            await processAccount(
+                accountBeforeSwitch,
+                getAccountName(option) || `account-${index + 1}`
+            );
         }
 
         if (accountOptionIds.length === 0) {
             nextStepButtons = initialButtons;
+            const accountId = getAccountIdFromElement(initialButtons[0]);
+            accountNames[accountId] = getCurrentAccountName();
             await processNextButton();
         }
 
