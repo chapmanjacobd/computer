@@ -295,28 +295,88 @@
         setTimeout(processNextButton, 2000);
     }
 
-    function displayResults() {
-        log('=== EXTRACTION COMPLETE ===');
-        console.log('Tax Lot Data:', JSON.stringify(taxLotData, null, 2));
+    function escapeCSVField(field) {
+        if (field === null || field === undefined) return '';
 
-        const blob = new Blob([JSON.stringify(taxLotData, null, 2)], {
-            type: 'application/json'
+        const value = String(field);
+        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+            return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+    }
+
+    function convertAccountToCSV(accountId, symbolArray) {
+        const rows = [[
+            'Account ID',
+            'Symbol',
+            'Open Date',
+            'Quantity',
+            'Price',
+            'Cost Per Share',
+            'Market Value',
+            'Cost Basis',
+            'Gain/Loss ($)',
+            'Gain/Loss (%)',
+            'Holding Period'
+        ]];
+
+        symbolArray.forEach(symbolObj => {
+            Object.entries(symbolObj).forEach(([symbol, lots]) => {
+                lots.forEach(lot => {
+                    rows.push([
+                        accountId,
+                        symbol,
+                        lot.open_date,
+                        lot.quantity,
+                        lot.price,
+                        lot.cost_per_share,
+                        lot.market_value,
+                        lot.cost_basis,
+                        lot.gain_or_loss,
+                        lot.gain_or_loss_percentage,
+                        lot.holding_period
+                    ]);
+                });
+            });
         });
+
+        return rows.map(row => row.map(escapeCSVField).join(',')).join('\n');
+    }
+
+    function accountFilename(accountId) {
+        const accountLabel = accountId
+            .replace(/^holdingsAccount_/i, 'account-')
+            .replace(/[^a-z0-9_-]/gi, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '') || 'account-unknown';
+        return `schwab-tax-lots-${accountLabel}.csv`;
+    }
+
+    function downloadCSV(filename, content) {
+        const blob = new Blob([content], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'schwab-tax-lots.json';
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }
+
+    function displayResults() {
+        log('=== EXTRACTION COMPLETE ===');
+        console.log('Tax Lot Data:', JSON.stringify(taxLotData, null, 2));
 
         const accounts = Object.keys(taxLotData);
         let totalSymbols = 0;
         let totalPositions = 0;
 
         accounts.forEach(accountId => {
-            taxLotData[accountId].forEach(symbolObj => {
+            const symbolArray = taxLotData[accountId];
+            downloadCSV(accountFilename(accountId), convertAccountToCSV(accountId, symbolArray));
+
+            symbolArray.forEach(symbolObj => {
                 const symbols = Object.keys(symbolObj);
                 totalSymbols += symbols.length;
                 symbols.forEach(symbol => {
@@ -327,7 +387,7 @@
 
         alert(
             `Extraction complete! Found ${totalSymbols} symbols across ${accounts.length} accounts ` +
-            `with ${totalPositions} total lot entries. Data saved to schwab-tax-lots.json`
+            `with ${totalPositions} total lot entries. Saved one CSV per account.`
         );
     }
 
