@@ -13,12 +13,8 @@ TRASH = "/home/xk/bin/trash.background"
 IMAGE_EXTS = frozenset({".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tif", ".tiff"})
 
 
-def get_terminal_size():
-    return os.get_terminal_size(0)
-
-
 def get_kitty_cell_size():
-    """Query Kitty for cell size in pixels (defaults 8x16 on failure)."""
+    """Query terminal size in pixels via CSI 14 t, derive cell size in pixels."""
     sys.stdout.write("\033[14t")
     sys.stdout.flush()
     fd = sys.stdin.fileno()
@@ -37,12 +33,15 @@ def get_kitty_cell_size():
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
     try:
+        # Response: ESC[14;{pix_rows};{pix_cols}t
         parts = response.decode().rstrip("t").split(";")
-        height = int(parts[1])
-        width = int(parts[2])
-        return width, height
+        pix_h = int(parts[1])
+        pix_w = int(parts[2])
     except (IndexError, ValueError):
         return 8, 16
+
+    cols, rows = os.get_terminal_size(0)
+    return pix_w // cols, pix_h // rows
 
 
 def resize_image(img, max_w, max_h):
@@ -110,8 +109,8 @@ def parser_setup():
         help="Recurse into directories",
     )
     p.add_argument(
-        "-m", "--max", type=int, default=24,
-        help="Maximum image size in cells (default: 24)",
+        "-m", "--max", type=int, default=100,
+        help="Maximum image size in cells",
     )
     return p
 
@@ -125,12 +124,9 @@ def main():
         sys.exit(1)
     current = 0
 
-    cols, rows = get_terminal_size()
     cell_w, cell_h = get_kitty_cell_size()
-    # Cap at half the terminal.
-    max_cells = min(args.max, cols // 2, rows // 2)
-    max_w = max_cells * cell_w
-    max_h = max_cells * cell_h
+    max_w = args.max * cell_w
+    max_h = args.max * cell_h
 
     def signal_handler(sig, frame):
         print("\n")
