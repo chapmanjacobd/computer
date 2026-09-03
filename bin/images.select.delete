@@ -1,0 +1,182 @@
+#!/usr/bin/python3
+import argparse
+import base64
+import os
+import signal
+import sys
+import termios
+import tty
+
+from PIL import Image
+
+TRASH = "/home/xk/bin/trash.background"
+IMAGE_EXTS = frozenset({".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tif", ".tiff"})
+
+
+def get_terminal_size():
+    return os.get_terminal_size(0)
+
+
+def get_kitty_cell_size():
+    """Query Kitty for cell size in pixels (defaults 8x16 on failure)."""
+    sys.stdout.write("\033[14t")
+    sys.stdout.flush()
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        response = b""
+        while True:
+            ch = sys.stdin.buffer.read(1)
+            if ch == b"":
+                break
+            response += ch
+            if ch == b"t":
+                break
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+    try:
+        parts = response.decode().rstrip("t").split(";")
+        height = int(parts[1])
+        width = int(parts[2])
+        return width, height
+    except (IndexError, ValueError):
+        return 8, 16
+
+
+def resize_image(img, max_w, max_h):
+    """Resize preserving aspect ratio, never exceeding max_w x max_h."""
+    w, h = img.size
+    if w <= max_w and h <= max_h:
+        return img
+    ratio = min(max_w / w, max_h / h)
+    return img.resize((int(w * ratio), int(h * ratio)), Image.Resampling.LANCZOS)
+
+
+def display_image_kitty(img):
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    w, h = img.size
+    b64 = base64.standard_b64encode(img.tobytes()).decode("ascii")
+    chunk_size = 4096
+    chunks = [b64[i : i + chunk_size] for i in range(0, len(b64), chunk_size)]
+    for i, chunk in enumerate(chunks):
+        m = 1 if i < len(chunks) - 1 else 0
+        if i == 0:
+            sys.stdout.write(f"\033_Ga=T,t=d,s={w},v={h},m={m};{chunk}\033\\")
+        else:
+            sys.stdout.write(f"\033_Gm={m};{chunk}\033\\")
+        sys.stdout.flush()
+
+
+def is_image(path):
+    return os.path.splitext(path)[1].lower() in IMAGE_EXTS
+
+
+def collect_images(args, recursive):
+    images = []
+    for arg in args:
+        if os.path.isdir(arg):
+            if recursive:
+                for root, _, files in os.walk(arg):
+                    images.extend(
+                        os.path.join(root, f)
+                        for f in sorted(files)
+                        if is_image(f)
+                    )
+            else:
+                images.extend(
+                    os.path.join(arg, f)
+                    for f in sorted(os.listdir(arg))
+                    if is_image(f)
+                )
+        else:
+            images.append(arg)
+    return images
+
+
+def parser_setup():
+    p = argparse.ArgumentParser(
+        prog="images.select.delete",
+        description="View images one at a time in the Kitty terminal and trash or keep each.",
+    )
+    p.add_argument(
+        "paths", nargs="*", default=["."],
+        help="Files or directories to view (default: current directory)",
+    )
+    p.add_argument(
+        "-R", "--recursive", action="store_true",
+        help="Recurse into directories",
+    )
+    p.add_argument(
+        "-m", "--max", type=int, default=24,
+        help="Maximum image size in cells (default: 24)",
+    )
+    return p
+
+
+def main():
+    args = parser_setup().parse_args()
+
+    images = collect_images(args.paths, args.recursive)
+    if not images:
+        print("No images found.", file=sys.stderr)
+        sys.exit(1)
+    current = 0
+
+    cols, rows = get_terminal_size()
+    cell_w, cell_h = get_kitty_cell_size()
+    # Cap at half the terminal.
+    max_cells = min(args.max, cols // 2, rows // 2)
+    max_w = max_cells * cell_w
+    max_h = max_cells * cell_h
+
+    def signal_handler(sig, frame):
+        print("\n")
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+
+    try:
+        tty.setcbreak(fd)
+
+        while current < len(images):
+            path = images[current]
+            if not os.path.exists(path):
+                print(f"File not found: {path}", file=sys.stderr)
+                current += 1
+                continue
+            try:
+                img = Image.open(path)
+            except Exception as e:
+                print(f"Cannot open {path}: {e}", file=sys.stderr)
+                current += 1
+                continue
+
+            display_image_kitty(resize_image(img, max_w, max_h))
+            sys.stdout.write(f"\n{path}\n")
+            sys.stdout.flush()
+
+            # Move cursor below the image so it stays in the scrollback.
+            ch = sys.stdin.buffer.read(1)
+            if ch in (b"\n", b"\r", b"\x03"):
+                print("\n")
+                sys.exit(0)
+            if ch in (b"n", b"d"):
+                os.system(f"'{TRASH}' '{path}'")
+                print(f"Deleted: {path}")
+                current += 1
+            if ch in (b"o", b"t"):
+                print(f"Kept: {path}")
+                current += 1
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+if __name__ == "__main__":
+    main()
