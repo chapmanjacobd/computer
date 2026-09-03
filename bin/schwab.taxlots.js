@@ -155,8 +155,7 @@
         const row = button.closest('tr[data-symbol]');
         const symbol = row ? row.getAttribute('data-symbol') : 'unknown';
 
-        const accountContainer = button.closest('tbody[id*="holdingsAccount_"]');
-        const accountId = accountContainer ? accountContainer.id : 'holdingsAccount_unknown';
+        const accountId = getAccountIdFromElement(button);
         const uniqueId = `${accountId}-${symbol}`;
 
         if (processedButtons.has(uniqueId)) {
@@ -233,6 +232,12 @@
         return buttons;
     }
 
+    function getAccountIdFromElement(element) {
+        if (!element) return null;
+        const accountContainer = element.closest('tbody[id*="holdingsAccount_"]');
+        return accountContainer ? accountContainer.id : 'holdingsAccount_unknown';
+    }
+
     function clickControl(element) {
         const clickable = element.closest('button, [role="menuitem"], [role="option"]') || element;
         const nativeButton = clickable.matches('button') ? clickable : clickable.querySelector('button');
@@ -263,36 +268,107 @@
         return findLotDetailsOption();
     }
 
-    async function waitForNextStepButtons(timeoutMs = 20000) {
+    function findAccountOptionIds() {
+        const accountList = document.getElementById('account-selector-list');
+        if (!accountList) return [];
+
+        return Array.from(accountList.querySelectorAll(
+            'a[id^="account-selector-header-"][id*="-account-"]'
+        )).map(option => option.id);
+    }
+
+    function getCurrentAccountId() {
+        const accountContainer = document.querySelector('tbody[id*="holdingsAccount_"]');
+        return accountContainer ? accountContainer.id : null;
+    }
+
+    async function selectAccount(accountOptionId) {
+        const option = document.getElementById(accountOptionId);
+        if (!option) {
+            log(`Account option ${accountOptionId} not found`);
+            return false;
+        }
+        if (option.classList.contains('sdps-is-selected')) return true;
+
+        const selector = document.getElementById('account-selector');
+        if (!selector) {
+            log('Account selector button not found');
+            return false;
+        }
+
+        log(`Switching to account ${option.textContent.replace(/\s+/g, ' ').trim()}`);
+        clickControl(selector);
+        await delay(300);
+
+        const refreshedOption = document.getElementById(accountOptionId);
+        if (!refreshedOption) {
+            log(`Account option ${accountOptionId} disappeared after opening selector`);
+            return false;
+        }
+        clickControl(refreshedOption);
+
+        const deadline = Date.now() + 10000;
+        while (Date.now() < deadline) {
+            const selectedOption = document.getElementById(accountOptionId);
+            if (selectedOption?.classList.contains('sdps-is-selected')) return true;
+            await delay(250);
+        }
+
+        log(`Account ${accountOptionId} was not selected`);
+        return false;
+    }
+
+    async function waitForNextStepButtons(timeoutMs = 20000, previousAccountId = null) {
         const deadline = Date.now() + timeoutMs;
 
         while (Date.now() < deadline) {
             const buttons = findNextStepButtons();
-            if (buttons.length > 0) return buttons;
+            if (
+                buttons.length > 0 &&
+                (!previousAccountId || getAccountIdFromElement(buttons[0]) !== previousAccountId)
+            ) {
+                return buttons;
+            }
             await delay(500);
         }
 
-        return findNextStepButtons();
+        const buttons = findNextStepButtons();
+        if (previousAccountId && getAccountIdFromElement(buttons[0]) === previousAccountId) {
+            return [];
+        }
+        return buttons;
     }
 
     async function processNextButton() {
-        if (currentIndex >= nextStepButtons.length) {
-            log('All buttons processed');
-            displayResults();
-            return;
+        while (currentIndex < nextStepButtons.length) {
+            const button = nextStepButtons[currentIndex];
+            log(`Processing button ${currentIndex + 1} of ${nextStepButtons.length}`);
+
+            try {
+                await clickLotDetails(button);
+            } catch (error) {
+                log(`Error processing button ${currentIndex}: ${error.message}`);
+            }
+
+            currentIndex++;
+            if (currentIndex < nextStepButtons.length) {
+                await delay(2000);
+            }
         }
 
-        const button = nextStepButtons[currentIndex];
-        log(`Processing button ${currentIndex + 1} of ${nextStepButtons.length}`);
+        log('All buttons processed for current account');
+    }
 
-        try {
-            await clickLotDetails(button);
-        } catch (error) {
-            log(`Error processing button ${currentIndex}: ${error.message}`);
+    async function processAccount(previousAccountId = null) {
+        currentIndex = 0;
+        nextStepButtons = await waitForNextStepButtons(20000, previousAccountId);
+        log(`Found ${nextStepButtons.length} Next Steps buttons`);
+
+        if (nextStepButtons.length > 0) {
+            await processNextButton();
+        } else {
+            log('No positions found for current account');
         }
-
-        currentIndex++;
-        setTimeout(processNextButton, 2000);
     }
 
     function escapeCSVField(field) {
@@ -400,15 +476,31 @@
         }
 
         log('Waiting for the positions table to load...');
-        nextStepButtons = await waitForNextStepButtons();
-        log(`Found ${nextStepButtons.length} Next Steps buttons`);
-
-        if (nextStepButtons.length === 0) {
+        const initialButtons = await waitForNextStepButtons();
+        if (initialButtons.length === 0) {
             alert('No Next Steps buttons found. Make sure you are on the positions page.');
             return;
         }
 
-        processNextButton();
+        const accountOptionIds = findAccountOptionIds();
+
+        for (const accountOptionId of accountOptionIds) {
+            const option = document.getElementById(accountOptionId);
+            if (!option) continue;
+
+            const isSelected = option.classList.contains('sdps-is-selected');
+            const accountBeforeSwitch = isSelected ? null : getCurrentAccountId();
+            if (!isSelected && !await selectAccount(accountOptionId)) continue;
+
+            await processAccount(accountBeforeSwitch);
+        }
+
+        if (accountOptionIds.length === 0) {
+            nextStepButtons = initialButtons;
+            await processNextButton();
+        }
+
+        displayResults();
     }
 
     init();
