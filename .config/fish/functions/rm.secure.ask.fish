@@ -16,7 +16,7 @@ function rm.secure.ask
         echo (count (find $target -type f)) files
         echo
 
-        if confirm.yes "Shred $target?"
+        if confirm "Shred $target?"
             rm.secure $target
         else
             echo "Skipped $target"

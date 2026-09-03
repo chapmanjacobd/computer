@@ -21,13 +21,15 @@ function rm.secure
         return 1
     end
 
+    set -l mounts (df --output=target $files $dirs | tail -n +2 | sort -u)
+
     shred -u -z -n 3 $files
 
     for dir in $dirs
         rm -rf $dir
     end
 
-    for target_mount in (df --output=target $files $dirs | tail -n +2 | sort -u)
+    for target_mount in $mounts
         sudo fstrim -v "$target_mount"
     end
 end
