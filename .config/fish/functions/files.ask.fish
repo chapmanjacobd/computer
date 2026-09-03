@@ -17,11 +17,16 @@ function files.ask
 
         echo "--- $target ($nfiles files) ---"
         for f in $list
-            ls -lh $f | awk '{print $5, $NF}'
+            echo $f
         end
         echo
 
-        if confirm "Expand $target?"
+        read -P "Expand $target? " response
+        if test $status -ne 0
+            break
+        end
+
+        if contains $response y Y yes YES
             set -a result $list
         else
             echo "Skipped $target"
