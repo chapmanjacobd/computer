@@ -5,7 +5,7 @@ function qbt.unseed.old.local
     # check file existence, prevent ghost seed
     library torrents --no-stopped --no-errored --ul --no-all-exists --seeders=-2 --stop --move dump --delete-rows
     # stop incomplete
-    library torrents --incomplete --time-active=+85days --time-unseeded=+100days --delete-incomplete --stop --move broken --tag library-delete -v
+    library torrents --incomplete --time-active=+85days --time-unseeded=+100days --delete-incomplete --stop --move broken --delete-rows -v
     library torrents --incomplete --progress=-2.8% --time-downloading=+15days --time-stalled=+15days --stop --delete-incomplete --move broken --delete-rows -v
     library torrents --incomplete --no-private --time-downloading=+27days --time-stalled=+27days --stop --delete-incomplete --move broken --delete-rows -v
 end
