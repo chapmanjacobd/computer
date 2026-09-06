@@ -1,0 +1,9 @@
+{
+  "cursor": {
+    "style": "block",
+    "blinking": false
+  },
+  "scroll_acceleration": {
+    "enabled": false
+  }
+}
