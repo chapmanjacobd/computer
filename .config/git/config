@@ -54,7 +54,7 @@
     create = !git switch $(git main) && git switch -c
     ccp = "!f() { git create \"$1\"; shift; git cherry-pick \"$@\"; }; f"
     delete = branch -D
-    rename = branch -M
+    rename = "!f() { if [ \"$#\" -eq 0 ]; then printf '%s\\n' 'usage: git rename <name> [words...]' >&2; return 2; fi; if [ \"$#\" -eq 2 ] && git show-ref --verify --quiet \"refs/heads/$1\"; then git branch -M \"$@\"; return; fi; name=$(printf '%s\\n' \"$*\" | sed -E 's/[[:space:]]+/-/g; s/^-+//; s/-+$//'); case \"$name\" in */*) ;; *-*) name=$(printf '%s\\n' \"$name\" | sed 's/-/\\//');; esac; git branch -M \"$name\"; }; f"
     grame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
     startover = "!f() { git reset --hard $(git merge-base $(git main) HEAD); git rebase $(git main); }; f"
     diffbranch = diff --ignore-all-space -U0 DEV...HEAD
