@@ -1,7 +1,12 @@
 # Defined via `source`
 function dorganize
     ~/sync/world/downloads/
+
+    if test (count ~/Downloads/\[(seq 0 9)*.torrent) -gt 0
+        lb mv (fd --max-depth=1 '\[[0-9].*\.torrent' ~/Downloads/) ~/.local/data/rtorrent/watch/new/
+    end
     lb mv . -etorrent ~/.local/data/qbittorrent/queue/
+
     lb unar -y *Subtitle*
 
     unardel *.zip
