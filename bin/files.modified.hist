@@ -1,0 +1,241 @@
+#!/usr/bin/python3
+"""Chart recursive file modification times without an external chart tool.
+
+Script-specific options control the chart. Other options are passed through to
+fd, so fd's filters such as --changed-within and --changed-before remain
+available.
+"""
+
+import argparse
+import datetime
+import math
+import os
+import shutil
+import stat
+import subprocess
+import sys
+
+
+FD_OPTIONS_WITH_VALUES = {
+    "--base-directory",
+    "--changed-before",
+    "--changed-within",
+    "--change-newer-than",
+    "--change-older-than",
+    "--color",
+    "--exclude",
+    "--exec",
+    "--exec-batch",
+    "--extension",
+    "--format",
+    "--hyperlink",
+    "--ignore-file",
+    "--max-buffer-size",
+    "--max-buffer-time",
+    "--max-depth",
+    "--max-results",
+    "--min-depth",
+    "--owner",
+    "--newer",
+    "--older",
+    "--search-path",
+    "--size",
+    "--threads",
+    "--type",
+}
+
+
+def parse_args(argv: list[str]) -> tuple[argparse.Namespace, list[str], list[str]]:
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        add_help=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("-h", "--help", action="store_true")
+    parser.add_argument("-o", "--outliers", action="store_true")
+    parser.add_argument("--width", type=positive_int, default=80)
+    parser.add_argument("--intervals", type=positive_int, default=20)
+    args, remainder = parser.parse_known_args(argv)
+
+    paths, fd_args = split_paths(remainder)
+    return args, paths, fd_args
+
+
+def positive_int(value: str) -> int:
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be greater than zero")
+    return number
+
+
+def split_paths(arguments: list[str]) -> tuple[list[str], list[str]]:
+    """Separate existing input paths from fd arguments.
+
+    fd has many options and their complete option set should not be duplicated
+    here. Existing paths are therefore treated as roots, while non-path
+    positional arguments are retained as fd patterns or option values.
+    """
+    paths = []
+    fd_args = []
+    index = 0
+    while index < len(arguments):
+        argument = arguments[index]
+        fd_args.append(argument)
+        index += 1
+
+        option = argument.split("=", 1)[0]
+        if argument.startswith("-") and "=" not in argument and option in FD_OPTIONS_WITH_VALUES:
+            if index < len(arguments):
+                fd_args.append(arguments[index])
+                index += 1
+            continue
+
+        if argument.startswith("-") or not os.path.exists(argument):
+            continue
+
+        fd_args.pop()
+        paths.append(argument)
+
+    return paths or ["."], fd_args
+
+
+def find_files(root: str, fd_args: list[str]) -> list[tuple[float, bytes]]:
+    exact_path = None
+    if os.path.isdir(root):
+        search_root = root
+    elif os.path.isfile(root):
+        exact_path = os.path.abspath(root)
+        search_root = os.path.dirname(root) or "."
+    else:
+        raise RuntimeError(f"search path is not a file or directory: {root}")
+
+    fd = shutil.which("fd") or shutil.which("fdfind")
+    if fd is None:
+        raise FileNotFoundError("fd-find executable not found (looked for fd and fdfind)")
+
+    depth_args = ["--max-depth", "1"] if exact_path else []
+    command = [fd, "--type", "file", "--print0", *depth_args, *fd_args, "--", ".", search_root]
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.stderr:
+        sys.stderr.buffer.write(result.stderr)
+    if result.returncode not in (0, 1):
+        raise RuntimeError(f"fd exited with status {result.returncode}")
+
+    records = []
+    for path in result.stdout.split(b"\0"):
+        if not path:
+            continue
+        if exact_path and os.path.abspath(os.fsdecode(path)) != exact_path:
+            continue
+        try:
+            metadata = os.lstat(path)
+        except OSError as error:
+            print(f"files.modified.hist: cannot stat {os.fsdecode(path)}: {error}", file=sys.stderr)
+            continue
+        if not stat.S_ISREG(metadata.st_mode):
+            continue
+        records.append((metadata.st_mtime, path))
+    return records
+
+
+def format_timestamp(timestamp: float, span: float) -> str:
+    date = datetime.datetime.fromtimestamp(timestamp)
+    if span < 24 * 60 * 60:
+        return date.strftime("%H:%M:%S")
+    return date.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def quartile(values: list[float], fraction: float) -> float:
+    position = (len(values) - 1) * fraction
+    lower = math.floor(position)
+    upper = math.ceil(position)
+    if lower == upper:
+        return values[lower]
+    weight = position - lower
+    return values[lower] + (values[upper] - values[lower]) * weight
+
+
+def print_outliers(records: list[tuple[float, bytes]]) -> None:
+    if len(records) < 2:
+        return
+
+    values = sorted(timestamp for timestamp, _ in records)
+    lower_quartile = quartile(values, 0.25)
+    upper_quartile = quartile(values, 0.75)
+    fence = 1.5 * (upper_quartile - lower_quartile)
+    lower_fence = lower_quartile - fence
+    upper_fence = upper_quartile + fence
+
+    for timestamp, path in sorted(records):
+        if timestamp < lower_fence or timestamp > upper_fence:
+            date = datetime.datetime.fromtimestamp(timestamp)
+            print(f"{date:%Y-%m-%d %H:%M:%S}\t{os.fsdecode(path)}")
+
+
+def print_chart(records: list[tuple[float, bytes]], width: int, intervals: int) -> None:
+    if not records:
+        print("Matches: 0.")
+        return
+
+    values = [timestamp for timestamp, _ in records]
+    first = min(values)
+    last = max(values)
+    span = last - first
+    if span == 0:
+        buckets = [len(records)]
+        labels = [first]
+    else:
+        buckets = [0] * intervals
+        for timestamp in values:
+            bucket = min(int((timestamp - first) / span * intervals), intervals - 1)
+            buckets[bucket] += 1
+        if intervals == 1:
+            labels = [first]
+        else:
+            labels = [
+                first + span * index / (intervals - 1)
+                for index in range(intervals)
+            ]
+
+    maximum = max(buckets)
+    count_width = max(3, len(str(maximum)))
+    label_width = max(len(format_timestamp(label, span)) for label in labels)
+    available_bar_width = max(1, width - label_width - count_width - 8)
+    count_per_symbol = max(1, math.ceil(maximum / available_bar_width))
+
+    print(f"Matches: {len(records)}.")
+    print(f"Each ∎ represents a count of {count_per_symbol}")
+    for label, count in zip(labels, buckets):
+        bar = "∎" * math.ceil(count / count_per_symbol) if count else ""
+        stamp = format_timestamp(label, span)
+        print(f"[{stamp:>{label_width}}] [{count:>{count_width}}] {bar}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    args, paths, fd_args = parse_args(argv if argv is not None else sys.argv[1:])
+    if args.help:
+        print(__doc__.strip())
+        print("\nUsage: files.modified.hist.py [OPTIONS] [FD_OPTIONS] [DIR ...]")
+        print("\nOptions:")
+        print("  -o, --outliers       print timestamps and paths outside 1.5x IQR fences")
+        print("      --width N        chart width (default: 80)")
+        print("      --intervals N    number of chart buckets (default: 20)")
+        print("\nAll other arguments are forwarded to fd.")
+        return 0
+
+    try:
+        for path in paths:
+            print(path)
+            records = find_files(path, fd_args)
+            if args.outliers:
+                print_outliers(records)
+            else:
+                print_chart(records, args.width, args.intervals)
+    except (FileNotFoundError, RuntimeError) as error:
+        print(f"files.modified.hist.py: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
