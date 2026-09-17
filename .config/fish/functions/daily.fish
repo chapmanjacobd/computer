@@ -16,7 +16,7 @@ function daily
     pip install --upgrade pychromecast
 
     history.sync
-    # command trash-empty 10 -f
+    command trash-empty 10 -f
 
     ~/j/social/
     library tildes ~/lb/sites/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
