@@ -11,7 +11,7 @@ function tv
     screen.blank.no && xset s off
     #breaktimer disable && pkill breaktimer
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
-    vol 65
+    vol 45
     ~/bin/autostart.sh &
     pkill -9 projectM-pulseau
 
