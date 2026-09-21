@@ -2,8 +2,9 @@
 function torganize
     parallel server.ssh {} qbt.prioritize ::: $servers
 
-    if test (count ~/Downloads/\[(seq 0 9)*.torrent) -gt 0
-        lb mv (fd --max-depth=1 '\[[0-9].*\.torrent' --changed-before 5mins ~/Downloads/) ~/.local/data/rtorrent/watch/new/
+    set rtorrent_files (fd --max-depth=1 '\[[0-9].*\.torrent' --changed-before 5mins ~/Downloads/)
+    if test (count $rtorrent_files) -gt 0
+        lb mv $rtorrent_files ~/.local/data/rtorrent/watch/new/
     end
 
     lb playlists ~/lb/torrents.db -pa
