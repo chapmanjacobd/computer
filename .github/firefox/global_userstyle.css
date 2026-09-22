@@ -222,6 +222,10 @@ url-prefix("file://") {
     a:active {
         color: #823D10 !important;
     }
+    
+    a div, a b {
+        color: unset !important;
+    }
 
     /* "Top level" div */
     body > div {
