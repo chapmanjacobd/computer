@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: git.amend.undo [--dry-run]
+
+Move HEAD back to the commit before the most recent amend and leave only
+the amend's changes staged.
+EOF
+}
+
+dry_run=false
+case "${1:-}" in
+    "")
+        ;;
+    --dry-run|-n)
+        dry_run=true
+        ;;
+    --help|-h)
+        usage
+        exit 0
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac
+
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    printf '%s\n' 'error: not inside a Git repository' >&2
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    printf '%s\n' 'error: worktree must be clean before undoing an amend' >&2
+    exit 1
+fi
+
+current_head=$(git rev-parse --verify HEAD)
+previous_head=$(git rev-parse --verify 'HEAD@{1}^{commit}' 2>/dev/null) || {
+    printf '%s\n' 'error: no previous HEAD reflog entry found' >&2
+    exit 1
+}
+reflog_subject=$(git reflog -1 --format='%gs' HEAD)
+
+case "$reflog_subject" in
+    'commit (amend): '*)
+        ;;
+    *)
+        printf 'error: latest HEAD reflog entry is not an amend: %s\n' "$reflog_subject" >&2
+        exit 1
+        ;;
+esac
+
+printf 'Current amended commit: %s\n' "$current_head"
+printf 'Restore HEAD to:       %s\n' "$previous_head"
+
+if "$dry_run"; then
+    printf '%s\n' 'Dry run; no changes made.'
+    exit 0
+fi
+
+git reset --soft 'HEAD@{1}'
+printf '%s\n' 'HEAD restored; amend changes are staged.'
+git diff --cached --stat
