@@ -432,7 +432,7 @@ abbr -a -- filterByGenre files.audio.genre
 abbr -a -- gitignore git.ignore
 abbr -a -- snapshot_restore folder.snapshot.restore
 abbr -a -- snakecase lines.to.snake.case
-abbr -a -- syncweb-release syncweb.release
+abbr -a -- syncwebpy.release syncwebpy.release
 abbr -a -- lbrelease lb.release
 abbr -a -- close_window window.close
 abbr -a -- fzf-choose fzf.choose
