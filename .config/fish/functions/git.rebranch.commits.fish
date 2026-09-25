@@ -1,16 +1,19 @@
-function git.rebranch.commits --description "fzf multi-select commits and cherry-pick them onto a new branch off main"
+function git.rebranch.commits --description "fzf multi-select commits, cherry-pick them onto a new branch off main, and remove them from the source branch"
     set -l dry_run 0
+    set -l no_remove 0
     for arg in $argv
         switch $arg
             case --dry-run
                 set dry_run 1
+            case --no-remove
+                set no_remove 1
             case '-*'
                 echo "git.rebranch.commits: unknown option: $arg" >&2
                 return 2
         end
     end
 
-    # safety: working tree must be clean before switching branches
+    # safety: working tree must be clean before switching branches / hard resets
     if not git diff --quiet; or not git diff --cached --quiet
         echo "working tree is dirty; commit or stash before rebranching" >&2
         return 1
@@ -44,25 +47,41 @@ function git.rebranch.commits --description "fzf multi-select commits and cherry
         return 0
     end
 
-    # extract shas (newest-first as shown), dedupe, then reverse for oldest-first cherry-pick
+    # expand to full shas (newest-first as shown), dedupe, then reverse for oldest-first cherry-pick
     set -l shas
     set -l seen
     for line in $picked
-        set -l sha (echo $line | awk '{print $1}')
-        if test -n "$sha"; and not contains -- $sha $seen
-            set -a shas $sha
-            set -a seen $sha
+        set -l short (echo $line | awk '{print $1}')
+        if test -n "$short"
+            set -l full (git rev-parse --verify --quiet "$short^{commit}")
+            if test -n "$full"; and not contains -- $full $seen
+                set -a shas $full
+                set -a seen $full
+            end
         end
     end
     set shas (printf '%s\n' $shas | tac | string match -v '')
+
+    # what to keep on the source branch (everything ahead of main except the selected commits)
+    set -l source (git rev-parse --abbrev-ref HEAD)
+    set -l fork (git merge-base $main $source)
+    set -l keep
+    for c in (git rev-list --reverse $fork..$source)
+        if not contains -- $c $shas
+            set -a keep $c
+        end
+    end
 
     # default branch name from the newest selected commit's subject
     set -l newest $shas[-1]
     set -l def (git log -1 --format=%s $newest | string lower | string replace -ra '[^a-z0-9]+' '-' | string trim -c '-' | string sub -l 50)
 
-    echo "selected $(count $shas) commit(s):"
+    echo "selected "(count $shas)" commit(s) to move:"
     for sha in $shas
-        echo "  $sha $(git log -1 --format=%s $sha)"
+        printf '  %s  %s\n' $sha (git log -1 --format=%s $sha)
+    end
+    if test $no_remove -eq 0
+        echo "kept on $source: "(count $keep)" commit(s)"
     end
     echo "new branch default: $def"
     read -P "branch name> " -l name
@@ -77,6 +96,9 @@ function git.rebranch.commits --description "fzf multi-select commits and cherry
 
     echo
     echo "plan: git switch -c $name $main; and git cherry-pick $shas"
+    if test $no_remove -eq 0
+        echo "      git switch $source; git reset --hard $fork; git cherry-pick $keep"
+    end
     if test $dry_run -eq 1
         echo "(dry run; nothing executed)"
         return 0
@@ -88,6 +110,30 @@ function git.rebranch.commits --description "fzf multi-select commits and cherry
         return 1
     end
 
-    git switch -c $name $main
-    and git cherry-pick $shas
+    # build the new branch off main
+    if not git switch -c $name $main
+        echo "failed to create branch $name" >&2
+        return 1
+    end
+    if not git cherry-pick $shas
+        echo "cherry-pick stopped; resolve and run 'git cherry-pick --continue'" >&2
+        return 1
+    end
+
+    # remove the selected commits from the source branch
+    if test $no_remove -eq 0
+        git switch -q $source
+        and git reset -q --hard $fork
+        or begin
+            echo "failed to reset $source" >&2
+            return 1
+        end
+        if set -q keep[1]
+            if not git cherry-pick $keep
+                echo "cherry-pick stopped on $source; resolve and run 'git cherry-pick --continue'" >&2
+                return 1
+            end
+        end
+        git switch -q $name
+    end
 end
