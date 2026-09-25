@@ -510,7 +510,7 @@ abbr -a -- logeach log.each
 abbr -a -- eachpc servers.ssh.each
 abbr -a -- speak text.to.speach
 abbr -a -- git_branch git.branch
-abbr -a -- gitMoveToNewBranch git.rebranch
+abbr -a -- gitMoveToNewBranch git.rebranch.unstaged
 abbr -a -- redarc_site_search redarc.site.search
 abbr -a -- mam_search mam.search
 abbr -a -- lt-search lt.search
