@@ -2,8 +2,14 @@
 function dorganize
     ~/sync/world/downloads/
 
-    if test (count ~/Downloads/\[(seq 0 9)*.torrent) -gt 0
-        lb mv ~/Downloads/\[(seq 0 9)*.torrent ~/.local/data/rtorrent/watch/new/
+    set rtorrent_files
+    for torrent in (fd --no-ignore --max-depth=1 -e torrent ~/Downloads/)
+        if string match -rq '\[[0-9].*\.torrent$' -- $torrent; and strings $torrent | rg -q 't.myan'
+            set --append rtorrent_files $torrent
+        end
+    end
+    if test (count $rtorrent_files) -gt 0
+        lb mv $rtorrent_files ~/.local/data/rtorrent/watch/new/
     end
     lb mv -etorrent . ~/.local/data/qbittorrent/queue/
 
