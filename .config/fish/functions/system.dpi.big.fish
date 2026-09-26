@@ -2,7 +2,7 @@
 function system.dpi.big
     xrandr --dpi 192
     echo 'Xft.dpi: 192' | xrdb -override
-    sed -i 's/ScaleFactor=1/ScaleFactor=2' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
+    sed -i 's/ScaleFactor=1/ScaleFactor=2/' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
 
     set fopt layout.css.devPixelsPerPx
     set fset 1.7
