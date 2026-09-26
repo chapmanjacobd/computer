@@ -106,7 +106,7 @@ function git.rebranch.commits --description "fzf multi-select commits, cherry-pi
 
     read -P "proceed? [y/N] " -l answer
     if not string match -qi 'y*' -- $answer
-        echo "aborted"
+        echo aborted
         return 1
     end
 

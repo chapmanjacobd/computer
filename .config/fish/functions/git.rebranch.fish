@@ -103,7 +103,7 @@ function git.rebranch --description "Rebase a branch flat onto the default branc
 
     read -P "proceed? [y/N] " -l answer
     if not string match -qi 'y*' -- $answer
-        echo "aborted"
+        echo aborted
         return 1
     end
 
