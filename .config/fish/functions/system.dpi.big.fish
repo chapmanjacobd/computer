@@ -3,6 +3,7 @@ function system.dpi.big
     xrandr --dpi 192
     echo 'Xft.dpi: 192' | xrdb -override
     sed -i 's/ScaleFactor=1/ScaleFactor=2/' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
+    qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'panels().forEach(function(panel) { if (panel.location === "bottom" && panel.screen >= 0) panel.height = 64; });'
 
     set fopt layout.css.devPixelsPerPx
     set fset 1.7
