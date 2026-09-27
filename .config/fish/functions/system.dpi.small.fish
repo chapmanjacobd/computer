@@ -1,6 +1,6 @@
 function system.dpi.small
-    xrandr --dpi 96
-    echo 'Xft.dpi: 96' | xrdb -override
+    xrandr --dpi 128
+    echo 'Xft.dpi: 128' | xrdb -override
     sed -i 's/ScaleFactor=2/ScaleFactor=1/' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
 
     set fopt layout.css.devPixelsPerPx
