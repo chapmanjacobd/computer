@@ -3,7 +3,7 @@ function dorganize
     ~/sync/world/downloads/
 
     set rtorrent_files
-    for torrent in (fd --no-ignore --max-depth=1 -e torrent ~/Downloads/)
+    for torrent in (fd --no-ignore --max-depth=1 -e torrent . ~/Downloads/)
         if string match -rq '\[[0-9].*\.torrent$' -- $torrent; and strings $torrent | rg -q 't.myan'
             set --append rtorrent_files $torrent
         end
