@@ -12,8 +12,6 @@ function sitdown
         kscreen-doctor output.HDMI-1.disable output.DVI-D-0.disable
     end
 
-    system.dpi.small
-
     #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
     kwriteconfig5 --file kwinrc --group Script-krohnkite enableTileLayout false
     krohnkite.on
@@ -24,4 +22,6 @@ function sitdown
 
     sudo pkill -f wheel.py
     ~/bin/autostart.sh &
+
+    system.dpi.small
 end
