@@ -1,4 +1,5 @@
 /syncthing/**
+/catt/catt.cfg
 /borg/
 /yarn/
 /Code/

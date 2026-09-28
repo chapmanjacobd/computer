@@ -11,7 +11,7 @@ function daily
     lb christen --run ~/sync/
     files.casefold ~/sync/ --run
 
-    catt volume 0 && catt volume 40
+    catt -d (lt.device) volume 0 && catt -d (lt.device) volume 40
     servers.ssh pip install --upgrade --pre yt-dlp[default,curl-cffi] yt-dlp-ejs
     pip install --upgrade pychromecast
 

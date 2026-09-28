@@ -5,19 +5,19 @@ function catt.volume.ramp --argument target_volume
         return 1
     end
 
-    set current_volume (catt info | grep 'volume_level:' | awk '{print $2}')
+    set current_volume (catt -d (lt.device) info | grep 'volume_level:' | awk '{print $2}')
     set current_volume (math -s 0 "$current_volume * 100")
 
     if test $current_volume -lt $target_volume
         while test $current_volume -lt $target_volume
             set current_volume (math $current_volume + 1)
-            catt volume $current_volume
+            catt -d (lt.device) volume $current_volume
             sleep 2
         end
     else
         while test $current_volume -gt $target_volume
             set current_volume (math $current_volume - 1)
-            catt volume $current_volume
+            catt -d (lt.device) volume $current_volume
             sleep 2
         end
     end

@@ -1,7 +1,7 @@
 # Defined interactively
 function cr
-    catt stop
+    catt -d (lt.device) stop
     pkill catt
-    catt volume 0 && catt volume 30
-    catt stop
+    catt -d (lt.device) volume 0 && catt -d (lt.device) volume 30
+    catt -d (lt.device) stop
 end
