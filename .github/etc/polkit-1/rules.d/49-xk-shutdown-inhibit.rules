@@ -1,0 +1,20 @@
+// Allow user "xk" to take shutdown/sleep inhibitors with no password prompt.
+// The login1 inhibit actions only allow this in an *active* session; from an
+// SSH session polkit falls back to allow_any=auth_admin_keep (the prompt).
+polkit.addRule(function (action, subject) {
+    if (subject.user != "xk") {
+        return undefined; // other users: fall through to the default policy
+    }
+
+    var inhibit = [
+        "org.freedesktop.login1.inhibit-block-shutdown",
+        "org.freedesktop.login1.inhibit-block-sleep",
+        "org.freedesktop.login1.inhibit-block-idle",
+        "org.freedesktop.login1.inhibit-delay-shutdown",
+        "org.freedesktop.login1.inhibit-delay-sleep"
+    ];
+
+    if (inhibit.indexOf(action.id) > -1) {
+        return polkit.Result.YES;
+    }
+});
