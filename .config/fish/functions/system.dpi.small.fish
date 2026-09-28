@@ -2,7 +2,6 @@ function system.dpi.small
     xrandr --dpi 128
     echo 'Xft.dpi: 128' | xrdb -override
     sed -i 's/ScaleFactor=2/ScaleFactor=1/' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
-    qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'panels().forEach(function(panel) { if (panel.location === "bottom" && panel.screen >= 0) panel.height = 42; });'
 
     set fopt layout.css.devPixelsPerPx
     set fset 1.1
@@ -15,4 +14,6 @@ function system.dpi.small
             echo "user_pref(\"$fopt\",$fset);" >>$target
         end
     end
+
+    qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'panels().forEach(function(panel) { if (panel.location === "bottom" && panel.screen >= 0) panel.height = 42; });'
 end
