@@ -22,5 +22,5 @@ function tv
     windows.maximize.all
     # projectM-pulseaudio &
 
-    system.dpi.big
+    # system.dpi.big
 end
