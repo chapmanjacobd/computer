@@ -42,11 +42,13 @@
 & << company.contact >> & \\
 ~< endif >~
 ~< if company.address >~
-& << company.address >> & \\
+& << company.address | latex_multiline >> & \\
 ~< endif >~
-& << company.phone >> & \\
-& << company.website >> & \\
 & << company.email >> & \\
+& << company.phone >> & \\
+~< if company.website >~
+& << company.website >> & \\
+~< endif >~
 \end{tabularx}
 
 \vspace{1cm}

@@ -15,6 +15,10 @@ def latex_escape(s: str) -> str:
     return s.replace("&", r"\&").replace("%", r"\%").replace("_", r"\_").replace("#", r"\#").replace("$", r"\$")
 
 
+def latex_multiline(s: str) -> str:
+    return latex_escape(s).replace("\n", r"\newline ")
+
+
 def latex_or_url(s: str) -> str:
     if s.startswith("http"):
         return rf"\href{{{s}}}{{{s}}}"
@@ -50,6 +54,7 @@ def main():
     )
 
     env.filters["latex"] = latex_escape
+    env.filters["latex_multiline"] = latex_multiline
     env.filters["latex_or_url"] = latex_or_url
 
     tex = env.get_template(template_path.name).render(
