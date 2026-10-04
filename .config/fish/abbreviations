@@ -1253,3 +1253,4 @@ abbr -a -- df "df -Th | grep -vE '(tmpfs|devtmpfs|efivarfs|overlay|squashfs|fuse
 abbr -a -- audioctl wpctl
 abbr -a -- git.moved 'git log -p -G'
 abbr -a -- copyq.clean 'cat ~/bin/copyq.clean.js | copyq eval -'
+abbr -a -- pdftext mutool draw -F txt
