@@ -55,7 +55,6 @@ SETUVAR --export R_HISTFILE:/home/xk/\x2elocal/state/Rhistory
 SETUVAR --export R_PROFILE_USER:/home/xk/\x2econfig/R/profile
 SETUVAR --export SQLITE_HISTORY:/home/xk/\x2elocal/state/sqlite_history
 SETUVAR --export TESTCONTAINERS_RYUK_DISABLED:true
-SETUVAR --export TQDM_DISABLE:1
 SETUVAR --export TS_NO_LOGS_NO_SUPPORT:true
 SETUVAR --export WINEPREFIX:/home/xk/\x2elocal/share/wine
 SETUVAR --export XAUTHORITY:/run/user/1000/Xauthority
