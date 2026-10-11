@@ -2,8 +2,8 @@ function lb.release --argument newver
     ~/lb/
     set oldver (awk -F'"' '/^__version__/{print $2}' library/__main__.py)
 
-    #PYTHON_KEYRING_BACKEND=keyring.backends.fail.Keyring poetry update
-    sed -i "s|$oldver|$newver|" library/__main__.py
+    sed -i -E "s|^version = \"[^\"]+\"|version = \"$newver\"|" pyproject.toml
+    sed -i -E "s|^__version__ = \"[^\"]+\"|__version__ = \"$newver\"|" library/__main__.py
 
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
     rg db.execute
@@ -25,10 +25,9 @@ function lb.release --argument newver
     git status
     if gum confirm --default=no
         servers.ssh pip install --upgrade pip
-        pip install --upgrade pip pdm
-
-        pdm lock --group deluxe,test
-        git add pdm.lock
+        uv lock
+        uv build --no-sources --clear
+        git add uv.lock
         git commit -m "$newver"
 
         git pull
