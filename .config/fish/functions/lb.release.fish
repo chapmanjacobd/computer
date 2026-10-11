@@ -1,9 +1,8 @@
 function lb.release --argument newver
     ~/lb/
-    set oldver (awk -F'"' '/^__version__/{print $2}' library/__main__.py)
+    set oldver (awk -F'"' '/^version =/{print $2}' pyproject.toml)
 
     sed -i -E "s|^version = \"[^\"]+\"|version = \"$newver\"|" pyproject.toml
-    sed -i -E "s|^__version__ = \"[^\"]+\"|__version__ = \"$newver\"|" library/__main__.py
 
     echo "All of these things should be assigning to a variable; if updating data use db.conn.execute"
     rg db.execute
