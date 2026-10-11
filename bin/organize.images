@@ -20,6 +20,7 @@ import os
 from shutil import copyfile, move
 from PIL import ImageTk, Image
 
+
 class ImageGui:
     """
     GUI for iFind1 image sorting. This draws the GUI and handles all the events.
@@ -75,17 +76,17 @@ class ImageGui:
         # Place buttons in grid
         for ll, button in enumerate(self.buttons):
             button.grid(row=0, column=ll, sticky='we')
-            #frame.grid_columnconfigure(ll, weight=1)
+            # frame.grid_columnconfigure(ll, weight=1)
 
         # Place progress label in grid
         self.progress_label.grid(row=0, column=self.n_labels, sticky='we')
 
         # Place the image in grid
-        self.image_panel.grid(row=1, column=0, columnspan=self.n_labels+1, sticky='we')
+        self.image_panel.grid(row=1, column=0, columnspan=self.n_labels + 1, sticky='we')
 
         # key bindings (so number pad can be used as shortcut)
         for key in range(self.n_labels):
-            master.bind(str(key+1), self.vote_key)
+            master.bind(str(key + 1), self.vote_key)
 
     def show_next_image(self):
         """
@@ -125,11 +126,11 @@ class ImageGui:
         :param event: The event contains information about which key was pressed
         """
         pressed_key = int(event.char)
-        label = self.labels[pressed_key-1]
+        label = self.labels[pressed_key - 1]
         self.vote(label)
 
     @staticmethod
-    def _load_image(path, size=(800,600)):
+    def _load_image(path, size=(800, 600)):
         """
         Loads and resizes an image from a given path using the Pillow library
         :param path: Path to image
@@ -175,6 +176,7 @@ def make_folder(directory):
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
+
 
 # The main bit of the script only gets exectured if it is directly called
 if __name__ == "__main__":

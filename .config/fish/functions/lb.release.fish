@@ -23,7 +23,7 @@ function lb.release --argument newver
     echo
     git status
     if gum confirm --default=no
-        servers.ssh pip install --upgrade pip
+        pip install --upgrade pip
         uv lock
         uv build --no-sources --clear
         git add uv.lock
@@ -32,7 +32,7 @@ function lb.release --argument newver
         git pull
         git push
         git tag -a "v$newver" && git push --tags
-        servers.sync
+        echo servers.sync
     else
         return 1
     end
