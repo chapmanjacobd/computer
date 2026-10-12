@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -eu
+
+pane_id=${1:?missing pane id}
+before=$(tmux display-message -p -t "$pane_id" '#{copy_cursor_line}')
+tmux send-keys -t "$pane_id" -X next-prompt
+after=$(tmux display-message -p -t "$pane_id" '#{copy_cursor_line}')
+
+if [ "$before" = "$after" ]; then
+    tmux send-keys -t "$pane_id" -X cancel
+fi
