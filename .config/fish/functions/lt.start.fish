@@ -1,4 +1,4 @@
 function lt.start
     lt.stop
-    lt -r -c (lt.device)
+    lt -r -c
 end
