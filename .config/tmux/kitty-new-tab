@@ -13,53 +13,23 @@ if [ -n "${KITTY_WINDOW_ID:-}" ]; then
     window_match="id:$KITTY_WINDOW_ID"
 fi
 window_json=$(kitty_remote_control ls --match "$window_match" --output-format=json)
-window_info=$(
+source_pid=$(
     printf '%s' "$window_json" |
         jq -r '
             .[].tabs[].windows[]
-            | [
-                (.pid // ""),
-                (.title // ""),
-                (.cwd // ""),
-                (
-                    .foreground_processes[]?
-                    | select((.cmdline[0] // "") | test("(^|/)tmux$"))
-                    | .pid
-                )
-            ]
-            | @tsv
+            | .pid
         ' |
         head -n 1
 )
 
-IFS=$'\t' read -r source_window_pid source_title source_cwd source_pid <<< "$window_info"
-
-tab=$(printf '\t')
-tmux_clients=$(tmux list-clients -F "#{client_pid}${tab}#{client_tty}${tab}#{pane_id}" 2>/dev/null || true)
 pane_id=
-
-if [ -n "$source_window_pid" ] && [ -e "/proc/$source_window_pid/fd/0" ]; then
-    source_tty=$(readlink "/proc/$source_window_pid/fd/0" 2>/dev/null || true)
-    if [ -n "$source_tty" ]; then
-        pane_id=$(
-            printf '%s\n' "$tmux_clients" |
-                awk -F '\t' -v tty="$source_tty" '$2 == tty { print $3; exit }'
-        )
-    fi
-fi
-
-if [ -z "$pane_id" ] && [ -n "$source_pid" ]; then
+if [ -n "$source_pid" ] && [ -e "/proc/$source_pid/fd/0" ]; then
+    source_tty=$(readlink "/proc/$source_pid/fd/0" 2>/dev/null || true)
+    tab=$(printf '\t')
+    tmux_clients=$(tmux list-clients -F "#{client_tty}${tab}#{pane_id}" 2>/dev/null || true)
     pane_id=$(
         printf '%s\n' "$tmux_clients" |
-            awk -F '\t' -v pid="$source_pid" '$1 == pid { print $3; exit }'
-    )
-fi
-
-if [ -z "$pane_id" ] && [ -n "$source_title" ] && [ -n "$source_cwd" ]; then
-    pane_id=$(
-        tmux list-panes -a -F "#{pane_id}${tab}#{pane_title}${tab}#{pane_current_path}" 2>/dev/null |
-            awk -F '\t' -v title="$source_title" -v cwd="$source_cwd" \
-                '$2 == title && $3 == cwd { print $1; exit }'
+            awk -F '\t' -v tty="$source_tty" '$1 == tty { print $2; exit }'
     )
 fi
 
