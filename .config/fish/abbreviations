@@ -56,7 +56,6 @@ abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
 abbr -a -- curl curl -s
 abbr -a -- bootlogs journalctl -r -b -1
-abbr -a -- resetusb sudo /home/xk/bin/usb-reset.sh
 abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -- tl files.lines.truncate 1
