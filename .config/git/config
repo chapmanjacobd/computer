@@ -166,3 +166,7 @@
 	repo = /home/xk/github/xk/mc
 [maintenance "prefetch"]
 	enabled = false
+[credential "https://github.com"]
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = !/usr/bin/gh auth git-credential
