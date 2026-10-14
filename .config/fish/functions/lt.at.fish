@@ -5,10 +5,11 @@
 #   now       what is playing
 #
 # A queue here (lb listen/lt) or a local mpv video means this machine is
-# playing: act here. Otherwise len and pakon forward to each other, and the
-# phone asks the computers who is playing. stop with nothing playing is a
-# no-op (lt.start relies on that). The speaker is lt.device TARGET, so a verb
-# sent to pakon lands on pakon's speaker.
+# playing: act here. Otherwise len and pakon check each other and forward only
+# when the peer is reachable and playing, and the phone asks the computers who
+# is playing. stop with nothing playing is a no-op (lt.start relies on that).
+# The speaker is lt.device TARGET, so a verb sent to pakon lands on pakon's
+# speaker.
 function lt.at --argument action
     set -l target
     if lt.playing
@@ -16,9 +17,13 @@ function lt.at --argument action
     else
         switch (hostname)
             case len
-                set target pakon
+                if ssh -o BatchMode=yes -o ConnectTimeout=3 pakon lt.playing
+                    set target pakon
+                end
             case pakon
-                set target len
+                if ssh -o BatchMode=yes -o ConnectTimeout=3 len lt.playing
+                    set target len
+                end
             case '*'
                 if ssh -o BatchMode=yes -o ConnectTimeout=3 pakon lt.playing
                     set target pakon
