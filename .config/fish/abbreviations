@@ -94,7 +94,6 @@ abbr -a -- color pastel
 abbr -a -- cbf cb.file
 abbr -a -- inotify kde-inotify-survey
 abbr -a -- syss timer.status
-abbr -a -- dl file.eval.shuf-repeat
 abbr -a -- re file.eval.random
 abbr -a -- random-eval file.eval.random
 abbr -a -- er file.eval.random
@@ -1254,3 +1253,4 @@ abbr -a -- copyq.clean 'cat ~/bin/copyq.clean.js | copyq eval -'
 abbr -a -- pdftext mutool draw -F txt
 abbr -a -- unset set -Ue
 abbr -a -- usbreset sudo /home/xk/bin/usb.reset.sh
+abbr -a -- dl file.eval.shuf.repeat
