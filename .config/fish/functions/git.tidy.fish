@@ -90,9 +90,7 @@ function git.tidy --description "Prune remotes, delete merged branches, and run 
         end
 
         for branch in $merged_branches
-            if test "$branch" = "$current_branch"; or \
-                    test "$branch" = "$protected_branch"; or \
-                    contains -- "$branch" $worktree_branches
+            if test "$branch" = "$current_branch"; or test "$branch" = "$protected_branch"; or contains -- "$branch" $worktree_branches
                 continue
             end
             set -a deletable_branches "$branch"
