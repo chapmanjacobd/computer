@@ -35,6 +35,8 @@ SETUVAR --export MCAT_LS_HEIGHT:4c
 SETUVAR --export MCAT_LS_OPTS:height\x3d4c
 SETUVAR --export MCAT_THEME:makurai\x2dlight
 SETUVAR --export MPV_SOCKET:/home/xk/\x2econfig/mpv/socket
+SETUVAR --export NEXTEST_FINAL_STATUS_LEVEL:fail
+SETUVAR --export NEXTEST_STATUS_LEVEL:fail
 SETUVAR --export NPM_CONFIG_CACHE:/home/xk/\x2ecache/npm
 SETUVAR --export NPM_CONFIG_INIT_MODULE:/home/xk/\x2econfig/npm/config/npm\x2dinit\x2ejs
 SETUVAR --export NPM_CONFIG_USERCONFIG:/home/xk/\x2econfig/npm/npmrc
