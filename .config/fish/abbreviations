@@ -669,7 +669,7 @@ abbr -a -- ffa video.to.audio
 abbr -a -- has_audio ffprobe.has.audio
 abbr -a -- keepscreenon screen.blank.no
 abbr -a -- not_exists paths.exists.no
-abbr -a -- slideshowgen images.to.videoo
+abbr -a -- slideshowgen images.to.video
 abbr -a -- ro_mounts mounts.ro
 abbr -a -- appendbuffer cb.append.auto
 abbr -a -- html_wrap_quote cb.html.quote.wrap

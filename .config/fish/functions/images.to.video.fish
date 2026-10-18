@@ -1,4 +1,4 @@
-function images.to.videoo --argument pictime crossfadetime
+function images.to.video --argument pictime crossfadetime
     while read -l line
         set listOfImages "$listOfImages" "$line" \n
     end
