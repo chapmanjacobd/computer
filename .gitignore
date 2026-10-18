@@ -370,3 +370,4 @@
 /.config/Signal
 /.config/chromium-headless
 /.config/opencode
+/.ansible_async

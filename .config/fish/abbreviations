@@ -1254,3 +1254,4 @@ abbr -a -- pdftext mutool draw -F txt
 abbr -a -- unset set -Ue
 abbr -a -- usbreset sudo /home/xk/bin/usb.reset.sh
 abbr -a -- dl file.eval.shuf.repeat
+abbr -a -- gi git.ignore
