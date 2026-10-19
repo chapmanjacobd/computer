@@ -2,7 +2,7 @@
 import sys, time, warnings
 from pathlib import Path
 
-from library.mediafiles import media_check
+from library.file import media_check
 from library.utils import arggroups, argparse_utils, shell_utils, path_utils, processes, web
 
 
@@ -66,5 +66,5 @@ def javtiful() -> None:
 
 
 if __name__ == "__main__":
-    # cat ~/.jobs/javtiful | parallel -j16 --joblog /home/xk/.jobs/joblog_javtiful --shuf --resume-failed python -m library.scratch.javtiful {}
+    # cat ~/.jobs/javtiful | parallel -j16 --joblog /home/xk/.jobs/joblog_javtiful --shuf --resume-failed python ~/bin/javtiful.py {}
     javtiful()

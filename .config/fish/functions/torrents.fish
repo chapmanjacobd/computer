@@ -1,4 +1,4 @@
 # Defined interactively
 function torrents
-    parallel server.ssh {} lb torrents $argv ::: (servers.ssh.connectable $servers)
+    parallel server.ssh {} lb torrent info $argv ::: (servers.ssh.connectable $servers)
 end

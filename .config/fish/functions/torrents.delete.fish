@@ -1,8 +1,8 @@
 # Defined interactively
 function torrents.delete
-    lb torrents $argv
+    lb torrent info $argv
     or return
     if confirm
-        lb torrents $argv --delete-rows
+        lb torrent info $argv --delete-rows
     end
 end

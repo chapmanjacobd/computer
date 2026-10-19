@@ -20,5 +20,5 @@ function diskstatus
 
     mounts.ro
 
-    lb mu (nofs which -a d:/)
+    lb filesystem mounts stats (nofs which -a d:/)
 end

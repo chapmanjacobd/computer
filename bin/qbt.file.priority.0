@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import os
 
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils
 

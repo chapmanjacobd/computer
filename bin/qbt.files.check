@@ -3,7 +3,7 @@ import os.path
 from collections import defaultdict
 from pathlib import Path
 
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils, shell_utils
 

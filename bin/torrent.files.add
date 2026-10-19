@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import libtorrent as lt
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.utils import arggroups, devices, strings
 
 

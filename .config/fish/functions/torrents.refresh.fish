@@ -5,8 +5,8 @@ function torrents.refresh
     for s in (servers.ssh.connectable $servers)
         set urls (ssh -T $s qbt.torrents.refresh)
         if test -n "$urls"
-            lb links --cookies-from-browser firefox --path-include /download/torrent/ --download $urls
-            ssh -T $s lb torrents --tagged library-refresh --untag library-refresh --start
+            lb links download --cookies-from-browser firefox --path-include /download/torrent/ $urls
+            ssh -T $s lb torrent info --tagged library-refresh --untag library-refresh --start
         end
     end
     trash (pwd)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.playback import torrents_info
 from library.utils import arggroups, argparse_utils, consts, iterables, printing, strings
 

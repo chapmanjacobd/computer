@@ -2,6 +2,6 @@
 function sdb
     for db in ~/mc/*.db ~/lb/tabs.db ~/lb/dl/*.db
         echo $db
-        lb sdb $db media $argv
+        lb database search $db media $argv
     end
 end

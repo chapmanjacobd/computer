@@ -2,24 +2,24 @@
 function lb.stats
     for db in ~/lb/fs/tax.db ~/lb/fs/video.db
         echo $db
-        lb wt $db -p a
+        lb play video $db -p a
         echo $db deleted
-        lb wt $db -w time_deleted'>'0 -p a
+        lb play video $db -w time_deleted'>'0 -p a
     end
 
     for db in ~/lb/fs/tax_sounds.db ~/lb/fs/audio.db
         echo $db
-        lb lt $db -p a
+        lb play audio $db -p a
         echo $db deleted
-        lb lt $db -w time_deleted'>'0 -p a
+        lb play audio $db -w time_deleted'>'0 -p a
         echo $db played
-        lb lt $db -w play_count'>'0 -p a
+        lb play audio $db -w play_count'>'0 -p a
     end
 
     echo bigdirs
     for db in ~/lb/fs/tax.db ~/lb/fs/video.db ~/lb/fs/tax_sounds.db ~/lb/fs/audio.db
         echo $db
-        lb bigdirs $db -L 5
+        lb folder large $db -L 5
     end
 
     links.db.stats ~/mc/cine.db ~/mc/links.db ~/mc/music.db ~/mc/tv.db ~/lb/sites/manual/*.db

@@ -5,7 +5,7 @@ function folder.trash
         set dir (path dirname "$argv")
     end
 
-    lb du "$dir"
+    lb filesystem usage "$dir"
 
     if gum confirm --default=no "Confirm delete"
         trash "$dir"

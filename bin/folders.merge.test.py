@@ -16,7 +16,7 @@ def test_simple_file(temp_file_tree):
     target = temp_file_tree({})
 
     src1_inodes = read_relative_file_tree_dict(src1)
-    lb(["merge-folders", "--replace", src1, target])
+    lb(["folder", "merge", "move", "--replace", src1, target])
 
     assert read_relative_file_tree_dict(target) == src1_inodes
 
@@ -26,7 +26,7 @@ def test_simple_folder(temp_file_tree):
     target = temp_file_tree({})
 
     src1_inodes = read_relative_file_tree_dict(src1)
-    lb(["merge-folders", "--no-replace", src1, target])
+    lb(["folder", "merge", "move", "--no-replace", src1, target])
 
     assert read_relative_file_tree_dict(target) == src1_inodes
 
@@ -37,7 +37,7 @@ def test_dupe_replace(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--replace", src1, target])
+    lb(["folder", "merge", "move", "--replace", src1, target])
 
     assert not Path(src1).exists()
     assert read_relative_file_tree_dict(target) == target_inodes | src1_inodes
@@ -49,7 +49,7 @@ def test_dupe_skip(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--no-replace", src1, target])
+    lb(["folder", "merge", "move", "--no-replace", src1, target])
 
     assert Path(src1).exists()
     assert read_relative_file_tree_dict(src1) == src1_inodes
@@ -62,7 +62,7 @@ def test_folder_conflict_replace(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--replace", src1, target])
+    lb(["folder", "merge", "move", "--replace", src1, target])
 
     assert Path(src1).exists()
     assert read_relative_file_tree_dict(src1) == src1_inodes
@@ -75,7 +75,7 @@ def test_file_conflict_replace(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--replace", src1, target])
+    lb(["folder", "merge", "move", "--replace", src1, target])
 
     assert Path(src1).exists()
     assert read_relative_file_tree_dict(src1) == src1_inodes
@@ -88,7 +88,7 @@ def test_folder_conflict_skip(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--no-replace", src1, target])
+    lb(["folder", "merge", "move", "--no-replace", src1, target])
 
     assert Path(src1).exists()
     assert read_relative_file_tree_dict(src1) == src1_inodes
@@ -101,7 +101,7 @@ def test_file_conflict_skip(temp_file_tree):
 
     src1_inodes = read_relative_file_tree_dict(src1)
     target_inodes = read_relative_file_tree_dict(target)
-    lb(["merge-folders", "--no-replace", src1, target])
+    lb(["folder", "merge", "move", "--no-replace", src1, target])
 
     assert Path(src1).exists()
     assert read_relative_file_tree_dict(src1) == src1_inodes

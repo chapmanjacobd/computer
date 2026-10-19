@@ -2,7 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import libtorrent as lt
 
-from library.mediafiles.torrents_dump import gen_torrents
+from library.torrent.torrents_dump import gen_torrents
 from library.utils import arggroups, argparse_utils
 
 parser = argparse_utils.ArgumentParser()

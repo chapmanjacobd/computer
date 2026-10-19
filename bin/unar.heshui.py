@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import argparse
+import shutil
 from library.utils import argparse_utils
 import os
 import tempfile
@@ -8,8 +9,7 @@ from collections import Counter, OrderedDict
 from pathlib import Path
 
 import rarfile
-from library.mediafiles import process_ffmpeg
-from library.folders.rel_mv import rel_move
+from library.shrink import process_ffmpeg
 from library.utils import objects, arggroups
 from library.utils.log_utils import log
 
@@ -17,6 +17,20 @@ from library.utils.log_utils import log
 
 TEMP_BASE_DIR = Path('~/.tmp').expanduser()
 TEMP_BASE_DIR.mkdir(exist_ok=True)
+
+
+def rel_move(paths, output_prefix, *, simulate=False, relative_from):
+    relative_root = Path(relative_from[0])
+    for path in paths:
+        if path is None:
+            continue
+        path = Path(path)
+        destination = Path(output_prefix) / path.relative_to(relative_root)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if simulate:
+            print(f"mv {path} {destination}")
+        else:
+            shutil.move(str(path), str(destination))
 
 
 def parse_args() -> argparse.Namespace:

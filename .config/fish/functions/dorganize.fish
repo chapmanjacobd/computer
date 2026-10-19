@@ -13,7 +13,7 @@ function dorganize
     end
     lb mv -etorrent . ~/.local/data/qbittorrent/queue/
 
-    lb unar -y *Subtitle*
+    lb archive extract -y *Subtitle*
 
     unardel *.zip
     unardel *.rar

@@ -1,8 +1,8 @@
 # Defined interactively
 function tabsdel
-    lb tabs ~/lb/tabs.db $argv -p
+    lb tabs open ~/lb/tabs.db $argv -p
     or return
     if confirm
-        lb tabs ~/lb/tabs.db $argv --soft-delete -p
+        lb tabs open ~/lb/tabs.db $argv --soft-delete -p
     end
 end

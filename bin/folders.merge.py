@@ -6,7 +6,7 @@ from library.utils import arg_utils, arggroups, argparse_utils, consts, devices,
 from library.utils.log_utils import log
 
 
-usage = """library merge-folders [--replace] [--no-replace] [--simulate] SOURCES ... DESTINATION
+usage = """library mv [--replace] [--no-replace] [--simulate] SOURCES ... DESTINATION
 
     Merge multiple folders with the same file tree into a single folder.
 

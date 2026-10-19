@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.utils import arggroups, argparse_utils
 
 from torrentool.api import Torrent

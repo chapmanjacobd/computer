@@ -10,7 +10,7 @@ function weekly
     porn.mv.random
     #mrrelax
     folder.goal -S=+281G -S=-282G --yes /mnt/d4/library/video/ ~/sync/video/
-    lb christen --run ~/sync/
+    lb file normalize --run ~/sync/
     files.casefold ~/sync/ --run
 
     morganize.all
@@ -18,7 +18,7 @@ function weekly
     mam.update
 
     for f in /home/xk/.local/share/nicotine/usershares/*
-        lb nicotine-import ~/lb/sites/todo/soulseek/(path basename $f).db $f
+        lb database import nicotine ~/lb/sites/todo/soulseek/(path basename $f).db $f
     end
 
     lb.refresh
@@ -37,14 +37,14 @@ function weekly
         sqlite --no-headers --raw-lines ~/lb/sites/social/reddit.db "select text from posts where permalink like '%$title%' order by timestamp desc limit 1" >$title.md
     end
     fd -S-12b -tf -x rm
-    lb mergedbs --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
+    lb database merge --pk id ~/lb/sites/social/reddit.db ~/lb/sites/social/BuonaparteII.db
 
-    lb merge-online-local ~/lb/dl/video.db --yes
-    lb merge-online-local ~/lb/dl/audio.db --yes
+    lb database merge online-local ~/lb/dl/video.db --yes
+    lb database merge online-local ~/lb/dl/audio.db --yes
 
     tubeupdate
     for db in ~/lb/sites/*.db ~/lb/sites/manual/*.db
-        lb linksupdate $db
+        lb database update links $db
     end
 
     cd (d dump/image/art/)

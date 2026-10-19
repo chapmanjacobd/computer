@@ -6,4 +6,4 @@ set duplicate $argv[1]
 set original $argv[2]
 
 rm "$duplicate"
-lb mergerfs-cp "$original" "$duplicate"
+lb folder copy mergerfs "$original" "$duplicate"

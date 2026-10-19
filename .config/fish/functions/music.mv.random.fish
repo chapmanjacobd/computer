@@ -1,16 +1,16 @@
 function music.mv.random
-    lb copy-play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/mnt/ --target-prefix /mnt/
+    lb database copy play-counts ~/lb/audio.db /home/xk/lb/fs/audio.db --source-prefix ~/sync/audio/weekly/mnt/ --target-prefix /mnt/
 
     lb mv ~/sync/audio/weekly/ (d check/audio/)
 
     lb relmv (
-        lb media ~/lb/fs/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 1600 -p f
+        lb play media ~/lb/fs/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 1600 -p f
     ) ~/sync/audio/weekly/
 
     lb relmv (
-        lb media ~/lb/fs/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf --folders | shuf | head -n 30
+        lb play media ~/lb/fs/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf --folders | shuf | head -n 30
     ) ~/sync/audio/weekly/
 
-    lb christen --run ~/sync/audio/
+    lb file normalize --run ~/sync/audio/
     files.casefold ~/sync/audio/ --run
 end

@@ -4,7 +4,7 @@
 #   stop      stop playback        pause/play  toggle playback
 #   now       what is playing
 #
-# A queue here (lb listen/lt) or a local mpv video means this machine is
+# A queue here (lb play audio) or a local mpv video means this machine is
 # playing: act here. Otherwise len and pakon check each other and forward only
 # when the peer is reachable and playing, and the phone asks the computers who
 # is playing. stop with nothing playing is a no-op (lt.start relies on that).
@@ -45,16 +45,16 @@ function lt.at --argument action
     set -l target_args
     switch $action
         case next
-            set cmd lb next --delete-files
+            set cmd lb playback next --delete-files
             set target_args -t (lt.device $target)
         case stop
-            set cmd lb stop
+            set cmd lb playback stop
             set target_args -t (lt.device $target)
         case pause play
-            set cmd lb pause
+            set cmd lb playback pause
             set target_args -t (lt.device $target)
         case now
-            set cmd lb now
+            set cmd lb playback now
         case '*'
             echo "lt.at: no such action: $action" >&2
             return 1

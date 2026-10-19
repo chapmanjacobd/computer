@@ -8,7 +8,7 @@ function daily
     lb mv ~/sync/video/keep/ (d archive/video/keep/)
     mkdir ~/sync/video/keep/
 
-    lb christen --run ~/sync/
+    lb file normalize --run ~/sync/
     files.casefold ~/sync/ --run
 
     catt -d (lt.device) volume 0 && catt -d (lt.device) volume 40
@@ -19,7 +19,7 @@ function daily
     command trash-empty 10 -f
 
     ~/j/social/
-    library tildes ~/lb/sites/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
+    library database add tildes ~/lb/sites/social/tildes.db xk3 --cookies ~/.local/cookies-tildes-net.txt
     for title in (sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db 'select path from media' | sed 's|.*\(/\)||' | lines.no.empty | chars.no.quotes)
         sqlite --no-headers --raw-lines ~/lb/sites/social/tildes.db "select text from media where path like '%$title'" >$title.html
     end
@@ -35,9 +35,9 @@ function daily
     files.urls.fill.web.titles (files.urls)
     morganize.all
 
-    library download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
+    library database download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
 
-    lb hnadd --oldest ~/lb/hackernews/hn.db
+    lb database add hackernews --oldest ~/lb/hackernews/hn.db
 
     files.casefold ~/sync/ --run
     priv.daily

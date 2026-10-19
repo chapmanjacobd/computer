@@ -1,6 +1,7 @@
 # Defined via `source`
 function lt.args
-    echo "listen
+    echo "play
+audio
 -w
 play_count=0
 -k

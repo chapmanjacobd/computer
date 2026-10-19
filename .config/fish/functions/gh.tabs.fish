@@ -9,5 +9,5 @@ function gh.tabs
         echo "https://github.com/$user?tab=repositories&type=source
 https://gist.github.com/$user
 https://gist.github.com/$user/starred"
-    end | lb linksdb ~/mc/links.db -c p1 --skip-extract -
+    end | lb database add links ~/mc/links.db -c p1 --skip-extract -
 end

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import pandas as pd
-from library.mediafiles import torrents_start
+from library.torrent import torrents_start
 from library.playback import torrents_info
 from library.text import regex_sort
 from library.utils import arggroups, argparse_utils, iterables

@@ -3,7 +3,7 @@ import sys, time, warnings
 from pathlib import Path
 from urllib.parse import urljoin
 
-from library.mediafiles import media_check
+from library.file import media_check
 from library.utils import arggroups, argparse_utils, shell_utils, path_utils, processes, web
 
 
@@ -170,5 +170,5 @@ def jav_guru() -> None:
 
 
 if __name__ == "__main__":
-    # cat ~/.jobs/javguru | parallel -j3 --joblog /home/xk/.jobs/joblog_javguru --resume-failed python -m library.scratch.javguru {}
+    # cat ~/.jobs/javguru | parallel -j3 --joblog /home/xk/.jobs/joblog_javguru --resume-failed python ~/bin/javguru.py {}
     jav_guru()

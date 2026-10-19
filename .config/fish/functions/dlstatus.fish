@@ -2,18 +2,18 @@
 function dlstatus
     for db in $argv
         echo $db
-        lb ds $db
+        lb database download status $db
         echo
     end
 
     # for db in $argv
     #    echo $db
-    #    lb wt -w time_downloaded\>(timestamp 24 hours ago) -pa $db
+    #    lb play video -w time_downloaded\>(timestamp 24 hours ago) -pa $db
     # end
 
     # for db in $argv
     #    echo $db
-    #     lb history --freqency weekly downloaded $db
+    #     lb database history --freqency weekly downloaded $db
     # end
 
     # lsodl
