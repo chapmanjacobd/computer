@@ -28,6 +28,7 @@ cmake
 copyq
 corectrl
 coreutils
+cracklib-devel
 darktable
 datamash
 ddcutil
