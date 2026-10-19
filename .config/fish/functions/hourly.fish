@@ -1,9 +1,6 @@
 # Defined interactively
 function hourly
-    load.env.mam
-    ~/bin/mam_upload_credit.sh
-
-    mam.promote (mam.slots --account-max 144 --max 5 --cookie $MAM_COOKIE)
+    priv.hourly
 
     torganize
     if test (uptime.seconds) -gt 3600; and not copying
