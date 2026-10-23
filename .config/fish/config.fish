@@ -4,6 +4,12 @@ status job-control full  # https://github.com/fish-shell/fish-shell/issues/5036
 
 set NPM_PACKAGES "$HOME/.npm-packages"
 
+# Keep agent configuration and instruction sources in user config only.
+set -gx OPENCODE_CONFIG_DIR "$HOME/.config/opencode"
+set -gx OPENCODE_CONFIG_PROJECT_DISABLE 1
+set -gx OPENCODE_DISABLE_CLAUDE_CODE 1
+set -gx COPILOT_CUSTOM_INSTRUCTIONS_DIRS "$HOME/.config/copilot"
+
 if not status --is-interactive
     return 0
 end
