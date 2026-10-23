@@ -194,7 +194,6 @@ abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
 abbr -a -- qbt_torrents.py lb torrents
 abbr -a -- sysedit systemctl edit --full
 abbr -a -- services systemctl list-units --type=service --all
-abbr -a -- arpa sudo arp-scan 192.168.1.0/24
 abbr -a -- helgrind valgrind --tool=helgrind
 abbr -a -- drd valgrind --tool=drd
 abbr -a -- locateremote 'locate.remote.mv --hosts backup r730xd -- (cb | chars.no.quote)'
@@ -1255,3 +1254,4 @@ abbr -a -- unset set -Ue
 abbr -a -- usbreset sudo /home/xk/bin/usb.reset.sh
 abbr -a -- dl file.eval.shuf.repeat
 abbr -a -- gi git.ignore
+abbr -a -- arpa ip -4 neigh show
