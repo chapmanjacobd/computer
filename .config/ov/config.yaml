@@ -32,7 +32,7 @@ General:
   AlternateRows: false
   ColumnMode: false
   LineNumMode: false
-  WrapMode: false
+  Wrap: "none"
   ColumnDelimiter: ","
   MarkStyleWidth: 1
 
