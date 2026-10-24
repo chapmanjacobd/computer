@@ -1255,3 +1255,4 @@ abbr -a -- usbreset sudo /home/xk/bin/usb.reset.sh
 abbr -a -- dl file.eval.shuf.repeat
 abbr -a -- gi git.ignore
 abbr -a -- arpa ip -4 neigh show
+abbr -a -- gitstash git stash --keep-index
