@@ -1256,3 +1256,4 @@ abbr -a -- dl file.eval.shuf.repeat
 abbr -a -- gi git.ignore
 abbr -a -- arpa ip -4 neigh show
 abbr -a -- gitstash git stash --keep-index
+abbr -a -- stash git stash --keep-index
