@@ -1,9 +1,21 @@
 #!/usr/bin/python3
-import sys, time, warnings
+import sys, tempfile, time, warnings
 from pathlib import Path
 
 from library.file import media_check
-from library.utils import arggroups, argparse_utils, shell_utils, path_utils, processes, web
+from library.utils import arggroups, argparse_utils, path_utils, processes, web
+
+
+def tempdir_unlink(pattern):
+    temp_dir = Path(tempfile.gettempdir())
+    cutoff = time.time() - 15 * 60
+
+    for p in temp_dir.glob(pattern):
+        try:
+            if p.stat().st_mtime < cutoff:
+                p.unlink(missing_ok=True)
+        except FileNotFoundError:
+            pass
 
 
 def javtiful() -> None:
@@ -62,7 +74,7 @@ def javtiful() -> None:
             sys.exit(3)
 
     process_url(args.path)
-    shell_utils.tempdir_unlink("*.xpi")
+    tempdir_unlink("*.xpi")
 
 
 if __name__ == "__main__":

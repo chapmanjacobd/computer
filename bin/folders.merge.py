@@ -2,7 +2,7 @@
 import argparse, json, os
 from pathlib import Path
 
-from library.utils import arg_utils, arggroups, argparse_utils, consts, devices, path_utils, printing, shell_utils
+from library.utils import arggroups, argparse_utils, consts, devices, path_utils, printing, shell_utils
 from library.utils.log_utils import log
 
 
@@ -16,6 +16,17 @@ usage = """library mv [--replace] [--no-replace] [--simulate] SOURCES ... DESTIN
     If you only have one source then the count of trumps will always be zero.
     The count of conflicts also includes trumps.
 """
+
+
+def split_folder_glob(s):
+    p = Path(s).resolve()
+
+    if "*" not in s and not p.exists():
+        p.mkdir(parents=True, exist_ok=True)
+
+    if p.is_dir():
+        return p, "*"
+    return p.parent, p.name
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,7 +44,7 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_intermixed_args()
     arggroups.args_post(args, parser)
 
-    args.destination = arg_utils.split_folder_glob(args.destination)
+    args.destination = split_folder_glob(args.destination)
 
     return args
 
@@ -169,7 +180,7 @@ def merge_folders() -> None:
     clobber = False  # default nothing to clobber; no confirmation prompt
     print("Sources:")
     for source in args.sources:
-        source_folder, source_glob = arg_utils.split_folder_glob(source)
+        source_folder, source_glob = split_folder_glob(source)
         source_files, source_folders_dict = existing_stats(source_folder, source_glob)
         source_folders = source_folders_dict["file"] | source_folders_dict["folder"] | source_folders_dict["empty"]
 

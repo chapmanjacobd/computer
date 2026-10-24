@@ -23,7 +23,7 @@ def move_na_files(input_dir, output_dir):
                 if os.path.isfile(filepath):
                     try:
                         probe = processes.FFProbe(filepath)
-                    except processes.UnplayableFile:
+                    except processes.UnplayableFileError:
                         print("Unplayable", filepath)
                         os.unlink(filepath)
                         continue

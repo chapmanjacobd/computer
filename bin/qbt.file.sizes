@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import qbittorrentapi
-from library.playback import torrents_info
+from library.torrent import torrents_info
 from library.utils import arggroups, argparse_utils, iterables
 from library.utils.log_utils import log
 

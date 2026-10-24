@@ -1,7 +1,18 @@
 #!/usr/bin/python3
 from pathlib import Path
 
-from library.utils import arg_utils, arggroups, argparse_utils, shell_utils
+from library.utils import arggroups, argparse_utils, shell_utils
+
+
+def split_folder_glob(s):
+    p = Path(s).resolve()
+
+    if "*" not in s and not p.exists():
+        p.mkdir(parents=True, exist_ok=True)
+
+    if p.is_dir():
+        return p, "*"
+    return p.parent, p.name
 
 
 def cp_tree():
@@ -22,7 +33,7 @@ def cp_tree():
     args = parser.parse_args()
     arggroups.args_post(args, parser)
 
-    source_folder, source_glob = arg_utils.split_folder_glob(args.source)
+    source_folder, source_glob = split_folder_glob(args.source)
     source_folder = source_folder.resolve()
 
     if source_glob != '*' and args.ext:

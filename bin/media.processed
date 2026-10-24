@@ -16,7 +16,7 @@ def is_processed(filepath):
     elif ext in consts.VIDEO_EXTENSIONS | consts.AUDIO_ONLY_EXTENSIONS:
         try:
             probe = processes.FFProbe(filepath)
-        except (processes.UnplayableFile, TimeoutExpired):
+        except (processes.UnplayableFileError, TimeoutExpired):
             return False
         else:
             if probe.has_video:
