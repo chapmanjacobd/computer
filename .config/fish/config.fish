@@ -47,6 +47,9 @@ end
 
 source ~/.config/fish/functions/ls.fish
 
+# Wrap long lines in the Ctrl-F fzf preview.
+set --global fzf_directory_opts --preview-window=wrap
+set --global fzf_preview_file_cmd 'bat --style=numbers --color=always --wrap=character'
 fzf_configure_bindings --directory=\cf --git_status=\cs --git_log=\cg --processes=\cp --history=ctrl-r
 bind alt-r history-pager
 bind --mode insert alt-r history-pager
