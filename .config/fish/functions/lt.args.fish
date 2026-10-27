@@ -11,5 +11,6 @@ delete-if-audiobook
 if-audiobook
 --fetch-siblings-max
 2
+--db
 /home/xk/lb/audio.db"
 end
