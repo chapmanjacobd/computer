@@ -371,3 +371,4 @@
 /.config/chromium-headless
 /.config/opencode
 /.ansible_async
+/.ansible
