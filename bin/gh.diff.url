@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+
+import sys, re
+
+url = sys.argv[1].strip()
+
+# 1. PR changes/commits view pointing to a specific commit
+m = re.match(r"^https://github\.com/([^/]+/[^/]+)/pull/\d+/(?:changes|commits)/([0-9a-fA-F]+)", url)
+if m:
+    print(f"https://github.com/{m.group(1)}/commit/{m.group(2)}.diff")
+    sys.exit(0)
+
+# 2. Standard Commit URLs
+m = re.match(r"^(https://github\.com/[^/]+/[^/]+/commit/[0-9a-fA-F]+)", url)
+if m:
+    print(f"{m.group(1)}.diff")
+    sys.exit(0)
+
+# 3. Pull Request URLs
+m = re.match(r"^(https://github\.com/[^/]+/[^/]+/pull/\d+)", url)
+if m:
+    print(f"{m.group(1)}.diff")
+    sys.exit(0)
+
+# 4. Compare Views
+m = re.match(r"^(https://github\.com/[^/]+/[^/]+/compare/[^#?]+)", url)
+if m:
+    print(f"{m.group(1)}.diff")
+    sys.exit(0)
+
+print("Error: Unrecognized or unsupported GitHub URL format.", file=sys.stderr)
+sys.exit(1)
