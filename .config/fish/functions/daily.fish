@@ -37,7 +37,7 @@ function daily
 
     library database download ~/lb/dl/audio.db --audio --prefix (d dump/audio/) -w m.time_modified=0
 
-    lb database add hackernews --oldest ~/lb/hackernews/hn.db
+    lb database add hackernews --oldest /mnt/d6/archive/text/web/hackernews/hn.db
 
     files.casefold ~/sync/ --run
     priv.daily
