@@ -41,3 +41,4 @@ auto-save-list
 tramp
 .org-id-locations
 *_archive
+__pycache__/
