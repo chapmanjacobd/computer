@@ -14,5 +14,6 @@
       }
     }
   },
+  "model": "opencode-go/deepseek-v4.1-flash",
   "skills": ["~/.config/opencode/egm/skills"]
 }
