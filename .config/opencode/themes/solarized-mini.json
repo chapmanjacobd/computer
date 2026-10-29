@@ -30,11 +30,11 @@
       },
       "formfield": {
         "base": "#000000",
-        "$hovered": "#000000",
-        "$focused": "#000000",
-        "$pressed": "#000000",
+        "$hovered": "$hue.interactive.400",
+        "$focused": "$hue.interactive.400",
+        "$pressed": "$hue.interactive.400",
         "$disabled": "#999999",
-        "$selected": "#000000"
+        "$selected": "$hue.interactive.400"
       },
       "feedback": {
         "error": {
@@ -61,19 +61,26 @@
       "action": {
         "primary": {
           "base": "transparent",
-          "$hovered": "transparent",
-          "$focused": "transparent",
-          "$selected": "transparent"
+          "$hovered": "$hue.neutral.800",
+          "$focused": "$hue.interactive.800",
+          "$selected": "$hue.interactive.800"
         },
         "secondary": {
-          "base": "transparent"
+          "base": "transparent",
+          "$hovered": "$hue.neutral.800"
         },
         "destructive": {
-          "base": "transparent"
+          "base": "transparent",
+          "$hovered": "$hue.red.800",
+          "$focused": "$hue.red.800"
         }
       },
       "formfield": {
-        "base": "transparent"
+        "base": "transparent",
+        "$hovered": "$hue.neutral.800",
+        "$focused": "$hue.interactive.900",
+        "$pressed": "$hue.interactive.900",
+        "$selected": "$hue.interactive.900"
       },
       "feedback": {
         "error": {
@@ -152,10 +159,10 @@
         "base": "transparent",
         "action": {
           "primary": {
-            "$hovered": "transparent"
+            "$hovered": "$hue.neutral.800"
           },
           "secondary": {
-            "$hovered": "transparent"
+            "$hovered": "$hue.neutral.800"
           }
         }
       }
