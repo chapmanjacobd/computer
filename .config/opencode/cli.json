@@ -26,7 +26,8 @@
     "tps": false
   },
   "theme": {
-    "name": "solarized"
+    "name": "solarized-mini",
+    "mode": "light"
   },
   "mini": {
     "work_spinner": "block-soft-sweep",
