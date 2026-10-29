@@ -13,5 +13,6 @@
         }
       }
     }
-  }
+  },
+  "skills": ["~/.config/opencode/egm/skills"]
 }
