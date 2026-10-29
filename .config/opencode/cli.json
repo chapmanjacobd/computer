@@ -35,6 +35,6 @@
     "tools": "show",
     "shell_output": "show",
     "turn_summary": "hide",
-    "footer": "hide"
+    "footer": "show"
   }
 }
