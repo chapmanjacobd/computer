@@ -18,6 +18,7 @@ github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 github.com/sters/go-file-splitter@latest
 github.com/tdewolff/minify/v2/cmd/minify@latest
 github.com/x-motemen/gore/cmd/gore@latest
+golang.org/x/tools/cmd/deadcode@latest
 golang.org/x/tools/cmd/goimports@latest
 golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 gotest.tools/gotestsum@latest
