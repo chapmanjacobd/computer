@@ -1258,3 +1258,4 @@ abbr -a -- arpa ip -4 neigh show
 abbr -a -- gitstash git stash --keep-index
 abbr -a -- stash git stash --keep-index
 abbr -a -- n nano
+abbr -a -- rgopen rg.open
