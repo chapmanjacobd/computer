@@ -27,5 +27,13 @@
   },
   "theme": {
     "name": "solarized"
+  },
+  "mini": {
+    "work_spinner": "block-soft-sweep",
+    "thinking": "hide",
+    "tools": "hide",
+    "shell_output": "hide",
+    "turn_summary": "hide",
+    "footer": "hide"
   }
 }
