@@ -602,7 +602,6 @@ abbr -a -- random-file file.random
 abbr -a -- skipthrough mpv.seek.random
 abbr -a -- par eval.par
 abbr -a -- gdl dl.images
-abbr -a -- gls paths.git.ls
 abbr -a -- eval-random file.eval.random
 abbr -a -- randvid video.random
 abbr -a -- random_string chars.random
@@ -1259,3 +1258,4 @@ abbr -a -- gitstash git stash --keep-index
 abbr -a -- stash git stash --keep-index
 abbr -a -- n nano
 abbr -a -- rgopen rg.open
+abbr -a -- gls git log -p

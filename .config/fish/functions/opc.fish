@@ -1,4 +1,4 @@
 # Defined interactively
 function opc --description 'OpenCode mini in monochrome (for low-bandwidth SSH session)'
-    opencode mini --no-replay $argv
+    opencode mini $argv
 end
