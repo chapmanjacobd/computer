@@ -31,8 +31,8 @@
   "mini": {
     "work_spinner": "block-soft-sweep",
     "thinking": "hide",
-    "tools": "hide",
-    "shell_output": "hide",
+    "tools": "show",
+    "shell_output": "show",
     "turn_summary": "hide",
     "footer": "hide"
   }
