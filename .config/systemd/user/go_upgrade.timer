@@ -1,0 +1,10 @@
+[Unit]
+Description='On Mon *-*-* 05:12 run go.upgrade'
+
+[Timer]
+Persistent=yes
+OnCalendar=Mon *-*-* 05:12
+
+[Install]
+WantedBy=timers.target
+

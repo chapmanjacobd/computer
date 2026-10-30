@@ -1,0 +1,10 @@
+[Unit]
+Description='On Mon *-*-* 05:12 run go.upgrade'
+
+[Service]
+Type=simple
+RemainAfterExit=no
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sleep 100
+ExecStart='/usr/bin/fish' '-c' 'go.upgrade'
+
