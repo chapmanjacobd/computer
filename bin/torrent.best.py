@@ -5,18 +5,25 @@ The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
 A selected /torrent/ page downloads its .torrent plus the newest downloadable
 English subtitle into --prefix (default: ~/Downloads).
+
+Links are paced with --sleep-links (default: 3 seconds). If a 429 is received,
+downloads stop immediately; remaining movie/tv pages are still evaluated and
+the selected /torrent/ links are appended to
+~/.local/data/torrent.best/$domain.list.
 """
 
 import math
 import re
 import sys
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from functools import cmp_to_key
 from pathlib import Path
 from urllib.parse import unquote, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
+from library.data.http_errors import HTTPTooManyRequestsError
 from library.utils import arggroups, argparse_utils, path_utils, shell_utils, web
 from library.utils.log_utils import log
 
@@ -32,6 +39,8 @@ WEIGHTS = {
 }
 
 AGE_HALF_LIFE = 5.0
+DEFAULT_SLEEP_LINKS = 3.0
+TORRENT_LIST_ROOT = Path("~/.local/data/torrent.best")
 
 DEFAULT_COLUMNS = {"age": 3, "size": 4, "seeders": 5, "leechers": 6, "completed": 7}
 
@@ -65,6 +74,13 @@ class TorrentPage:
     subtitle_url: str | None
     subtitle_age_years: float | None
     is_english_subtitle: bool
+
+
+@dataclass
+class RunState:
+    downloads_blocked: bool = False
+    network_stopped: bool = False
+    remaining_torrent_urls: list[str] = field(default_factory=list)
 
 
 def parse_args():
@@ -102,6 +118,13 @@ def parse_args():
         metavar="SECONDS",
         help="When using Selenium, wait up to N seconds for torrent rows to appear",
     )
+    parser.add_argument(
+        "--sleep-links",
+        type=float,
+        default=DEFAULT_SLEEP_LINKS,
+        metavar="SECONDS",
+        help="Sleep N seconds between each page fetch or download link (default: 3)",
+    )
     arggroups.debug(parser)
 
     arggroups.paths_or_stdin(parser)
@@ -112,10 +135,22 @@ def parse_args():
     arggroups.args_post(args, parser)
 
     web.requests_session(args)  # prepare requests session / cookie jar
+    disable_429_retry(web.session)
     if args.selenium:
         arggroups.selenium_post(args)
 
     return args
+
+
+def disable_429_retry(session):
+    """Let 429 responses reach the caller immediately instead of backing off."""
+    for prefix in ("http://", "https://"):
+        adapter = session.get_adapter(prefix)
+        retry = getattr(adapter, "max_retries", None)
+        if retry is not None and 429 in getattr(retry, "status_forcelist", ()):
+            adapter.max_retries = retry.new(
+                status_forcelist=[status for status in retry.status_forcelist if status != 429]
+            )
 
 
 # ============================================================================
@@ -531,6 +566,80 @@ def parse_torrent_page(soup, base_url=None):
 
 
 # ============================================================================
+# Rate limiting and pacing
+# ============================================================================
+
+
+def pace_links(args):
+    seconds = getattr(args, "sleep_links", 0) or 0
+    last = getattr(args, "_last_link_finished", None)
+    if seconds <= 0 or last is None:
+        return
+
+    delay = seconds - (time.monotonic() - last)
+    if delay > 0:
+        time.sleep(delay)
+
+
+def mark_link_finished(args):
+    args._last_link_finished = time.monotonic()
+
+
+def is_rate_limit_error(excinfo):
+    if isinstance(excinfo, HTTPTooManyRequestsError):
+        return True
+    response = getattr(excinfo, "response", None)
+    return getattr(response, "status_code", None) == 429
+
+
+def html_looks_rate_limited(html):
+    if not html:
+        return False
+    match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+    text = (match.group(1) if match else html[:2000]).strip()
+    return bool(re.search(r"too many requests|rate limit", text, re.IGNORECASE) or re.fullmatch(r"429", text))
+
+
+def add_remaining(state, torrent_url):
+    if torrent_url and torrent_url not in state.remaining_torrent_urls:
+        state.remaining_torrent_urls.append(torrent_url)
+
+
+def torrent_list_path(url, base_dir=None):
+    domain = urlparse(url).hostname or "unknown"
+    root = Path(base_dir).expanduser() if base_dir else TORRENT_LIST_ROOT.expanduser()
+    return root / f"{domain}.list"
+
+
+def save_remaining_torrents(urls, base_dir=None):
+    by_domain = {}
+    for url in urls:
+        by_domain.setdefault((urlparse(url).hostname or "unknown"), []).append(url)
+
+    written = []
+    for links in by_domain.values():
+        path = torrent_list_path(links[0], base_dir)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        existing_text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+        existing = set(existing_text.splitlines())
+        new_links = [link for link in links if link not in existing]
+        if not new_links:
+            continue
+
+        with path.open("a", encoding="utf-8") as file:
+            if existing_text and not existing_text.endswith("\n"):
+                file.write("\n")
+            for link in new_links:
+                file.write(f"{link}\n")
+
+        log.warning("Saved %d remaining torrent link(s) to %s", len(new_links), path)
+        written.append(path)
+
+    return written
+
+
+# ============================================================================
 # Fetching and downloading
 # ============================================================================
 
@@ -565,12 +674,23 @@ def fetch_html(args, url):
         return path.read_text(encoding="utf-8", errors="replace")
 
     if getattr(args, "selenium", False):
-        web.selenium_get_page(args, url)
-        wait_for_selenium_content(args)
-        html = args.driver.page_source
+        pace_links(args)
+        try:
+            web.selenium_get_page(args, url)
+            wait_for_selenium_content(args)
+            html = args.driver.page_source
+        finally:
+            mark_link_finished(args)
     else:
-        response = web.get(args, url)
-        html = response.text if response is not None else None
+        pace_links(args)
+        try:
+            response = web.get(args, url)
+            html = response.text if response is not None else None
+        finally:
+            mark_link_finished(args)
+
+    if html_looks_rate_limited(html):
+        raise HTTPTooManyRequestsError(f"429 Too Many Requests: {url}")
 
     log.debug("Fetched %s bytes from %s", len(html) if html else 0, url)
     return html
@@ -585,11 +705,76 @@ def download_file(args, url):
     destination = Path(args.prefix).expanduser()
     destination.mkdir(parents=True, exist_ok=True)
     output_path = destination / filename_from_url(url)
-    return web.download_url(args, url, str(output_path))
+    pace_links(args)
+    try:
+        return web.download_url(args, url, str(output_path))
+    finally:
+        mark_link_finished(args)
 
 
-def process_url(args, url):
-    html = fetch_html(args, url)
+def download_selected(args, torrent_url, details, state):
+    if not details.download_url:
+        log.warning("Could not find a download link on %s", torrent_url)
+        return
+
+    try:
+        downloaded = download_file(args, details.download_url)
+    except Exception as excinfo:
+        if not is_rate_limit_error(excinfo):
+            raise
+        state.downloads_blocked = True
+        add_remaining(state, torrent_url)
+        log.warning("HTTP 429 while downloading %s; disabling downloads and finishing evaluation", torrent_url)
+        return
+
+    if downloaded:
+        print(downloaded)
+
+    if not details.subtitle_url:
+        log.info("No downloadable English subtitle found on %s", torrent_url)
+        return
+
+    try:
+        downloaded = download_file(args, details.subtitle_url)
+    except Exception as excinfo:
+        if not is_rate_limit_error(excinfo):
+            raise
+        state.downloads_blocked = True
+        add_remaining(state, torrent_url)
+        log.warning("HTTP 429 while downloading the subtitle for %s; disabling downloads", torrent_url)
+        return
+
+    if downloaded:
+        print(downloaded)
+
+
+def process_url(args, url, state=None):
+    state = state or RunState()
+
+    if state.network_stopped and not getattr(args, "local_html", False):
+        if is_torrent_url(url):
+            add_remaining(state, url)
+            log.warning("Queued %s (network stopped after HTTP 429)", url)
+        else:
+            log.warning("Skipping %s: network stopped after HTTP 429", url)
+        return
+
+    direct_torrent_url = is_torrent_url(url)
+
+    try:
+        html = fetch_html(args, url)
+    except Exception as excinfo:
+        if not is_rate_limit_error(excinfo):
+            raise
+        state.downloads_blocked = True
+        state.network_stopped = True
+        if direct_torrent_url:
+            add_remaining(state, url)
+            log.warning("HTTP 429 while fetching %s; queued it and stopping network requests", url)
+        else:
+            log.warning("HTTP 429 while fetching %s; stopping network requests", url)
+        return
+
     if not html:
         log.warning("Could not get a response for %s", url)
         return
@@ -597,62 +782,75 @@ def process_url(args, url):
     soup = BeautifulSoup(html, "html.parser")
     base_url = None if getattr(args, "local_html", False) else url
 
-    if is_torrent_url(url) or (is_torrent_detail_page(soup) and not is_listing_url(url)):
+    if direct_torrent_url or (is_torrent_detail_page(soup) and not is_listing_url(url)):
         torrent_url = url
-        details = parse_torrent_page(soup, base_url)
-    else:
-        candidate = best_torrent_from_soup(soup, base_url)
-        if candidate is None:
-            if find_torrent_tables(soup):
-                log.warning("Found torrent table(s) in %s, but no rows had a usable detail link", url)
-            else:
-                log.warning(
-                    "Could not find any torrent rows in %s (try a larger --wait if the page loads them dynamically)",
-                    url,
-                )
-            return
-
-        torrent_url = candidate.url
         if getattr(args, "select_only", False):
             print(torrent_url)
             return
-
-        log.info("Selected %s (%s seeders, score %.3f)", candidate.title, candidate.seeders, candidate.score)
-        torrent_html = fetch_html(args, torrent_url)
-        if not torrent_html:
-            log.warning("Could not get a response for %s", torrent_url)
+        if state.downloads_blocked:
+            add_remaining(state, torrent_url)
+            log.warning("Downloads disabled after HTTP 429; queued %s", torrent_url)
             return
-        details = parse_torrent_page(BeautifulSoup(torrent_html, "html.parser"), torrent_url)
+        details = parse_torrent_page(soup, base_url)
+        download_selected(args, torrent_url, details, state)
+        return
 
+    candidate = best_torrent_from_soup(soup, base_url)
+    if candidate is None:
+        if find_torrent_tables(soup):
+            log.warning("Found torrent table(s) in %s, but no rows had a usable detail link", url)
+        else:
+            log.warning(
+                "Could not find any torrent rows in %s (try a larger --wait if the page loads them dynamically)",
+                url,
+            )
+        return
+
+    torrent_url = candidate.url
     if getattr(args, "select_only", False):
         print(torrent_url)
         return
 
-    if not details.download_url:
-        log.warning("Could not find a download link on %s", torrent_url)
+    log.info("Selected %s (%s seeders, score %.3f)", candidate.title, candidate.seeders, candidate.score)
+
+    if state.downloads_blocked:
+        add_remaining(state, torrent_url)
+        log.warning("Downloads disabled after HTTP 429; queued %s", torrent_url)
         return
 
-    downloaded = download_file(args, details.download_url)
-    if downloaded:
-        print(downloaded)
+    try:
+        torrent_html = fetch_html(args, torrent_url)
+    except Exception as excinfo:
+        if not is_rate_limit_error(excinfo):
+            raise
+        state.downloads_blocked = True
+        state.network_stopped = True
+        add_remaining(state, torrent_url)
+        log.warning("HTTP 429 while fetching %s; queued it and stopping network requests", torrent_url)
+        return
 
-    if details.subtitle_url:
-        downloaded = download_file(args, details.subtitle_url)
-        if downloaded:
-            print(downloaded)
-    else:
-        log.info("No downloadable English subtitle found on %s", torrent_url)
+    if not torrent_html:
+        log.warning("Could not get a response for %s", torrent_url)
+        return
+
+    details = parse_torrent_page(BeautifulSoup(torrent_html, "html.parser"), torrent_url)
+    download_selected(args, torrent_url, details, state)
 
 
 def main():
     args = parse_args()
+    state = RunState()
 
     try:
         for url in shell_utils.gen_paths(args):
-            process_url(args, url)
+            process_url(args, url, state)
     finally:
-        if getattr(args, "selenium", False) and getattr(args, "driver", None):
-            web.quit_selenium(args)
+        try:
+            if state.remaining_torrent_urls:
+                save_remaining_torrents(state.remaining_torrent_urls)
+        finally:
+            if getattr(args, "selenium", False) and getattr(args, "driver", None):
+                web.quit_selenium(args)
 
 
 if __name__ == "__main__":
