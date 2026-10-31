@@ -51,7 +51,7 @@
 [log]
     date = relative-local
 [alias]
-    create = "!f() { git switch \"$(git main)\" && git switch -c \"$@\"; }; f"
+    create = switch -c
     ccp = "!f() { git create \"$1\" && shift && git cherry-pick \"$@\"; }; f"
     delete = branch -D
     rename = "!fish -c 'git.rename $argv' --"
