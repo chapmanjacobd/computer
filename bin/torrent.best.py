@@ -6,9 +6,9 @@ completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
 A selected /torrent/ page downloads its .torrent plus the newest downloadable
 English subtitle into --prefix (default: ~/Downloads).
 
-Links are paced with --sleep-links (default: 3 seconds). If a 429 is received,
-downloads stop immediately; remaining movie/tv pages are still evaluated and
-the selected /torrent/ links are appended to
+Links are paced with --sleep-links (default: 3 seconds). If a 429 or 403 is
+received, downloads stop immediately; remaining movie/tv pages are still
+evaluated and the selected /torrent/ links are appended to
 ~/.local/data/torrent.best/$domain.list.
 """
 
@@ -41,6 +41,7 @@ WEIGHTS = {
 AGE_HALF_LIFE = 5.0
 DEFAULT_SLEEP_LINKS = 3.0
 TORRENT_LIST_ROOT = Path("~/.local/data/torrent.best")
+BLOCKED_STATUSES = {403, 429}
 
 DEFAULT_COLUMNS = {"age": 3, "size": 4, "seeders": 5, "leechers": 6, "completed": 7}
 
@@ -585,19 +586,30 @@ def mark_link_finished(args):
     args._last_link_finished = time.monotonic()
 
 
-def is_rate_limit_error(excinfo):
+def is_stop_error(excinfo):
     if isinstance(excinfo, HTTPTooManyRequestsError):
         return True
+
     response = getattr(excinfo, "response", None)
-    return getattr(response, "status_code", None) == 429
+    if getattr(response, "status_code", None) in BLOCKED_STATUSES:
+        return True
+
+    return bool(re.search(r"\bHTTP(?:403|429)\b", str(excinfo)))
 
 
-def html_looks_rate_limited(html):
+def html_looks_blocked(html):
     if not html:
         return False
     match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
     text = (match.group(1) if match else html[:2000]).strip()
-    return bool(re.search(r"too many requests|rate limit", text, re.IGNORECASE) or re.fullmatch(r"429", text))
+    return bool(
+        re.search(
+            r"too many requests|rate limit|access denied|just a moment|attention required|checking your browser",
+            text,
+            re.IGNORECASE,
+        )
+        or re.match(r"^\s*(?:403|429)\b", text)
+    )
 
 
 def add_remaining(state, torrent_url):
@@ -689,8 +701,8 @@ def fetch_html(args, url):
         finally:
             mark_link_finished(args)
 
-    if html_looks_rate_limited(html):
-        raise HTTPTooManyRequestsError(f"429 Too Many Requests: {url}")
+    if html_looks_blocked(html):
+        raise HTTPTooManyRequestsError(f"HTTP 429/403 block page: {url}")
 
     log.debug("Fetched %s bytes from %s", len(html) if html else 0, url)
     return html
@@ -720,11 +732,11 @@ def download_selected(args, torrent_url, details, state):
     try:
         downloaded = download_file(args, details.download_url)
     except Exception as excinfo:
-        if not is_rate_limit_error(excinfo):
+        if not is_stop_error(excinfo):
             raise
         state.downloads_blocked = True
         add_remaining(state, torrent_url)
-        log.warning("HTTP 429 while downloading %s; disabling downloads and finishing evaluation", torrent_url)
+        log.warning("HTTP 429/403 while downloading %s; disabling downloads and finishing evaluation", torrent_url)
         return
 
     if downloaded:
@@ -737,11 +749,11 @@ def download_selected(args, torrent_url, details, state):
     try:
         downloaded = download_file(args, details.subtitle_url)
     except Exception as excinfo:
-        if not is_rate_limit_error(excinfo):
+        if not is_stop_error(excinfo):
             raise
         state.downloads_blocked = True
         add_remaining(state, torrent_url)
-        log.warning("HTTP 429 while downloading the subtitle for %s; disabling downloads", torrent_url)
+        log.warning("HTTP 429/403 while downloading the subtitle for %s; disabling downloads", torrent_url)
         return
 
     if downloaded:
@@ -754,9 +766,9 @@ def process_url(args, url, state=None):
     if state.network_stopped and not getattr(args, "local_html", False):
         if is_torrent_url(url):
             add_remaining(state, url)
-            log.warning("Queued %s (network stopped after HTTP 429)", url)
+            log.warning("Queued %s (network stopped after HTTP 429/403)", url)
         else:
-            log.warning("Skipping %s: network stopped after HTTP 429", url)
+            log.warning("Skipping %s: network stopped after HTTP 429/403", url)
         return
 
     direct_torrent_url = is_torrent_url(url)
@@ -764,15 +776,15 @@ def process_url(args, url, state=None):
     try:
         html = fetch_html(args, url)
     except Exception as excinfo:
-        if not is_rate_limit_error(excinfo):
+        if not is_stop_error(excinfo):
             raise
         state.downloads_blocked = True
         state.network_stopped = True
         if direct_torrent_url:
             add_remaining(state, url)
-            log.warning("HTTP 429 while fetching %s; queued it and stopping network requests", url)
+            log.warning("HTTP 429/403 while fetching %s; queued it and stopping network requests", url)
         else:
-            log.warning("HTTP 429 while fetching %s; stopping network requests", url)
+            log.warning("HTTP 429/403 while fetching %s; stopping network requests", url)
         return
 
     if not html:
@@ -789,7 +801,7 @@ def process_url(args, url, state=None):
             return
         if state.downloads_blocked:
             add_remaining(state, torrent_url)
-            log.warning("Downloads disabled after HTTP 429; queued %s", torrent_url)
+            log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
             return
         details = parse_torrent_page(soup, base_url)
         download_selected(args, torrent_url, details, state)
@@ -815,18 +827,18 @@ def process_url(args, url, state=None):
 
     if state.downloads_blocked:
         add_remaining(state, torrent_url)
-        log.warning("Downloads disabled after HTTP 429; queued %s", torrent_url)
+        log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
         return
 
     try:
         torrent_html = fetch_html(args, torrent_url)
     except Exception as excinfo:
-        if not is_rate_limit_error(excinfo):
+        if not is_stop_error(excinfo):
             raise
         state.downloads_blocked = True
         state.network_stopped = True
         add_remaining(state, torrent_url)
-        log.warning("HTTP 429 while fetching %s; queued it and stopping network requests", torrent_url)
+        log.warning("HTTP 429/403 while fetching %s; queued it and stopping network requests", torrent_url)
         return
 
     if not torrent_html:
