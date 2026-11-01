@@ -1,8 +1,68 @@
 #!/usr/bin/fish
 
+# Clipboard helper.
+#
+# Normally reads/writes the local Wayland/X clipboard. When the command was
+# invoked from a remote terminal (SSH, e.g. Termux on a phone), writes go out
+# as OSC 52 instead, so the text lands in the clipboard of the device that ran
+# the command rather than in this machine's graphical clipboard. Reads from the
+# phone are pulled back over ssh.
+
+# Environment of the terminal that invoked this command: the tmux client with
+# the most recent activity (the one that pressed Enter), or our own if this is
+# not running under tmux.
+function _cb_client_environ
+    if set -q TMUX
+        set -l client_pid (tmux display-message -p '#{client_pid}' 2>/dev/null)
+        test -n "$client_pid"; or return 1
+        tr '\0' '\n' < /proc/$client_pid/environ 2>/dev/null
+    else
+        env
+    end
+end
+
+function _cb_client_var --argument-names name
+    set -l line (_cb_client_environ | string match -r "^$name=.*" | head -n1)
+    test -n "$line"; or return 1
+    string replace -- "$name=" '' $line
+end
+
+function _cb_remote_terminal
+    _cb_client_var SSH_CLIENT >/dev/null
+end
+
+# The phone is identified by the TERMUX marker its ssh client forwards
+# (~/.ssh/config SetEnv TERMUX=1, accepted via AcceptEnv on this host).
+# Connections without the marker fall back to matching the client address
+# against the tailnet address of `phone`.
+function _cb_phone_client
+    set -l marker (_cb_client_var TERMUX 2>/dev/null)
+    test "$marker" = 1; and return 0
+    set -l ip (_cb_client_var SSH_CLIENT 2>/dev/null | string split ' ' | head -n1)
+    test -n "$ip"; or return 1
+    tailscale status 2>/dev/null | awk '$2 == "phone" { print $1 }' | grep -qx -- "$ip"
+end
+
+# OSC 52 to the terminal (write-only). Termux, kitty, foot, wezterm etc. put the
+# text into the device's clipboard; tmux needs `set-clipboard on` to pass it on.
+function _cb_osc52 --argument-names file
+    printf '\e]52;c;%s\a' (base64 -w0 < $file)
+end
+
 if test -t 0
     if test -z "$argv"
-        if test -n "$WAYLAND_DISPLAY"
+        if _cb_remote_terminal
+            if not _cb_phone_client
+                echo 'cb: cannot read the clipboard of this remote terminal; paste in the terminal instead' >&2
+                exit 1
+            end
+            set -l text (ssh -T -o BatchMode=yes -o ConnectTimeout=5 phone termux-clipboard-get 2>/dev/null)
+            if test $status -ne 0
+                echo 'cb: could not read the phone clipboard (is sshd running on it?)' >&2
+                exit 1
+            end
+            printf '%s' "$text"
+        else if test -n "$WAYLAND_DISPLAY"
             wl-paste --no-newline
         else
             xsel --clipboard --output
@@ -13,7 +73,9 @@ if test -t 0
 else
     set tmp (mktemp)
     cat > $tmp
-    if test -n "$WAYLAND_DISPLAY"
+    if _cb_remote_terminal
+        _cb_osc52 $tmp
+    else if test -n "$WAYLAND_DISPLAY"
         wl-copy < $tmp
     else
         xsel --clipboard --input < $tmp
