@@ -11,6 +11,10 @@ Links are paced with --sleep-links (default: 3 seconds). If a 429 or 403 is
 received, downloads stop immediately; remaining movie/tv pages are still
 evaluated and the selected /torrent/ links are appended to
 ~/.local/data/torrent.best/$domain.list.
+
+With --drain-backlog, every .list file in ~/.local/data/torrent.best/ is processed
+instead: each line is downloaded and removed from its file once handled. On a
+429 or 403 the run stops and the file keeps the links that were not processed.
 """
 
 import math
@@ -114,6 +118,13 @@ def parse_args():
         "--select-only",
         action="store_true",
         help="Only print the selected /torrent/ page URL; do not download",
+    )
+    parser.add_argument(
+        "--drain-backlog",
+        "--backlog",
+        dest="drain_backlog",
+        action="store_true",
+        help="Process every .list file in ~/.local/data/torrent.best/ and remove links once downloaded",
     )
     parser.add_argument(
         "--wait",
@@ -675,6 +686,71 @@ def add_remaining(state, torrent_url):
         state.remaining_torrent_urls.append(torrent_url)
 
 
+def state_blocked(state):
+    return state.network_stopped or state.downloads_blocked
+
+
+def torrent_list_files(base_dir=None):
+    root = Path(base_dir).expanduser() if base_dir else TORRENT_LIST_ROOT.expanduser()
+    return sorted(root.glob("*.list"))
+
+
+def read_torrent_list(path):
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except FileNotFoundError:
+        return []
+    return [line.strip() for line in text.splitlines() if line.strip()]
+
+
+def save_torrent_list(path, links):
+    if links:
+        temporary = path.with_name(path.name + ".tmp")
+        temporary.write_text("\n".join(links) + "\n", encoding="utf-8")
+        temporary.replace(path)
+        log.info("Kept %d unprocessed link(s) in %s", len(links), path)
+    elif path.exists():
+        path.unlink()
+        log.info("Removed empty %s", path)
+
+
+def process_torrent_lists(args, state):
+    files = torrent_list_files()
+    if not files:
+        log.warning("No .list files found in %s", TORRENT_LIST_ROOT.expanduser())
+        return
+
+    for path in files:
+        links = read_torrent_list(path)
+        if not links:
+            save_torrent_list(path, links)
+            continue
+
+        # Each file is a single domain, so a 429/403 only blocks this file.
+        domain_state = RunState()
+        log.info("Processing %d link(s) from %s", len(links), path)
+
+        remaining = []
+        for index, url in enumerate(links):
+            if state_blocked(domain_state):
+                remaining.extend(links[index:])
+                break
+
+            if process_url(args, url, domain_state):
+                continue
+
+            remaining.append(url)
+            if state_blocked(domain_state):
+                remaining.extend(links[index + 1 :])
+                break
+
+        save_torrent_list(path, remaining)
+        state.torrents_downloaded += domain_state.torrents_downloaded
+
+        if state_blocked(domain_state):
+            log.warning("HTTP 429/403 on this domain; continuing with the next .list file")
+
+
 def torrent_list_path(url, base_dir=None):
     domain = urlparse(url).hostname or "unknown"
     root = Path(base_dir).expanduser() if base_dir else TORRENT_LIST_ROOT.expanduser()
@@ -785,9 +861,10 @@ def download_file(args, url, output_name=None):
 
 
 def download_selected(args, torrent_url, details, state, output_name=None, has_subtitle_info=True):
+    """Download the .torrent (and subtitle); return False only if a 429/403 blocked it."""
     if not details.download_url:
         log.warning("Could not find a download link on %s", torrent_url)
-        return
+        return False
 
     try:
         downloaded = download_file(args, details.download_url, output_name=output_name)
@@ -797,7 +874,7 @@ def download_selected(args, torrent_url, details, state, output_name=None, has_s
         state.downloads_blocked = True
         add_remaining(state, torrent_url)
         log.warning("HTTP 429/403 while downloading %s; disabling downloads and finishing evaluation", torrent_url)
-        return
+        return False
 
     if downloaded:
         print(downloaded)
@@ -806,7 +883,7 @@ def download_selected(args, torrent_url, details, state, output_name=None, has_s
     if not details.subtitle_url:
         if has_subtitle_info:
             log.info("No downloadable English subtitle found on %s", torrent_url)
-        return
+        return True
 
     try:
         downloaded = download_file(args, details.subtitle_url)
@@ -816,13 +893,15 @@ def download_selected(args, torrent_url, details, state, output_name=None, has_s
         state.downloads_blocked = True
         add_remaining(state, torrent_url)
         log.warning("HTTP 429/403 while downloading the subtitle for %s; disabling downloads", torrent_url)
-        return
+        return True
 
     if downloaded:
         print(downloaded)
+    return True
 
 
 def process_url(args, url, state=None):
+    """Process one URL; return False when it should stay queued (blocked or not downloaded)."""
     state = state or RunState()
 
     if state.network_stopped and not getattr(args, "local_html", False):
@@ -831,17 +910,17 @@ def process_url(args, url, state=None):
             log.warning("Queued %s (network stopped after HTTP 429/403)", url)
         else:
             log.warning("Skipping %s: network stopped after HTTP 429/403", url)
-        return
+        return False
 
     if is_torrents_url(url) and not getattr(args, "local_html", False):
         torrent_url = url.rstrip("/")
         if getattr(args, "select_only", False):
             print(torrent_url)
-            return
+            return True
         if state.downloads_blocked:
             add_remaining(state, torrent_url)
             log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
-            return
+            return False
         details = TorrentPage(
             title="",
             download_url=direct_torrents_download_url(torrent_url),
@@ -849,7 +928,7 @@ def process_url(args, url, state=None):
             subtitle_age_years=None,
             is_english_subtitle=False,
         )
-        download_selected(
+        return download_selected(
             args,
             torrent_url,
             details,
@@ -857,7 +936,6 @@ def process_url(args, url, state=None):
             output_name=direct_torrents_filename(torrent_url),
             has_subtitle_info=False,
         )
-        return
 
     direct_torrent_url = is_torrent_url(url)
 
@@ -873,11 +951,11 @@ def process_url(args, url, state=None):
             log.warning("HTTP 429/403 while fetching %s; queued it and stopping network requests", url)
         else:
             log.warning("HTTP 429/403 while fetching %s; stopping network requests", url)
-        return
+        return False
 
     if not html:
         log.warning("Could not get a response for %s", url)
-        return
+        return False
 
     soup = BeautifulSoup(html, "html.parser")
     base_url = None if getattr(args, "local_html", False) else url
@@ -886,14 +964,13 @@ def process_url(args, url, state=None):
         torrent_url = url
         if getattr(args, "select_only", False):
             print(torrent_url)
-            return
+            return True
         if state.downloads_blocked:
             add_remaining(state, torrent_url)
             log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
-            return
+            return False
         details = parse_torrent_page(soup, base_url)
-        download_selected(args, torrent_url, details, state)
-        return
+        return download_selected(args, torrent_url, details, state)
 
     candidate = best_torrent_from_soup(soup, base_url)
     if candidate is None:
@@ -904,19 +981,19 @@ def process_url(args, url, state=None):
                 "Could not find any torrent rows in %s (try a larger --wait if the page loads them dynamically)",
                 url,
             )
-        return
+        return False
 
     torrent_url = candidate.url
     if getattr(args, "select_only", False):
         print(torrent_url)
-        return
+        return True
 
     log.info("Selected %s (%s seeders, score %.3f)", candidate.title, candidate.seeders, candidate.score)
 
     if state.downloads_blocked:
         add_remaining(state, torrent_url)
         log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
-        return
+        return False
 
     if candidate_uses_direct_download(candidate):
         details = TorrentPage(
@@ -926,7 +1003,7 @@ def process_url(args, url, state=None):
             subtitle_age_years=None,
             is_english_subtitle=False,
         )
-        download_selected(
+        return download_selected(
             args,
             torrent_url,
             details,
@@ -934,7 +1011,6 @@ def process_url(args, url, state=None):
             output_name=direct_download_filename(candidate),
             has_subtitle_info=False,
         )
-        return
 
     try:
         torrent_html = fetch_html(args, torrent_url)
@@ -945,14 +1021,14 @@ def process_url(args, url, state=None):
         state.network_stopped = True
         add_remaining(state, torrent_url)
         log.warning("HTTP 429/403 while fetching %s; queued it and stopping network requests", torrent_url)
-        return
+        return False
 
     if not torrent_html:
         log.warning("Could not get a response for %s", torrent_url)
-        return
+        return False
 
     details = parse_torrent_page(BeautifulSoup(torrent_html, "html.parser"), torrent_url)
-    download_selected(args, torrent_url, details, state)
+    return download_selected(args, torrent_url, details, state)
 
 
 def print_download_summary(state):
@@ -965,8 +1041,11 @@ def main():
     state = RunState()
 
     try:
-        for url in shell_utils.gen_paths(args):
-            process_url(args, url, state)
+        if getattr(args, "drain_backlog", False):
+            process_torrent_lists(args, state)
+        else:
+            for url in shell_utils.gen_paths(args):
+                process_url(args, url, state)
     finally:
         try:
             if state.remaining_torrent_urls:
