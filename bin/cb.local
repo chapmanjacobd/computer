@@ -1,0 +1,22 @@
+#!/usr/bin/fish
+
+if test -t 0
+    if test -z "$argv"
+        if test -n "$WAYLAND_DISPLAY"
+            wl-paste --no-newline
+        else
+            xsel --clipboard --output
+        end
+    else  # allow cb -t text/html usage, etc
+        xclip -sel c -o $argv
+    end
+else
+    set tmp (mktemp)
+    cat > $tmp
+    if test -n "$WAYLAND_DISPLAY"
+        wl-copy < $tmp
+    else
+        xsel --clipboard --input < $tmp
+    end
+    rm -f $tmp
+end
