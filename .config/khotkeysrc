@@ -1279,7 +1279,7 @@ Type=SIMPLE_ACTION_DATA
 ActionsCount=1
 
 [Data_4_7Actions0]
-CommandURL=lb pause
+CommandURL=lb playback pause
 Type=COMMAND_URL
 
 [Data_4_7Conditions]

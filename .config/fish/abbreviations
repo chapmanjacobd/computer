@@ -40,7 +40,7 @@ abbr -a -- sze 'sudo zypper rm'
 abbr -a -- szi 'sudo zypper install --no-recommends'
 abbr -a -- szs 'sudo zypper search -s'
 abbr -a -- szu 'sudo zypper dup'
-abbr -a -- ta 'lb tabsadd --frequency quarterly --category misc ~/lb/tabs.db'
+abbr -a -- ta 'lb database add tabs --frequency quarterly --category misc ~/lb/tabs.db'
 abbr -a -- td tempdir
 abbr -a -- tee 'tee -a'
 abbr -a -- tmux 'tmux new-session -A -s phone'
@@ -50,14 +50,14 @@ abbr -a -- xpaste 'xclip -selection clipboard -o'
 abbr -a -- yt.ogg yta
 abbr -a -- str string
 abbr -a -- abbr abbrsave
-abbr -a -- fsadd lb fsadd
+abbr -a -- fsadd lb database add filesystem
 abbr -a -- wtep wt -OOO --lower 12 --upper 25
 abbr -a -- gitc git checkout
 abbr -a -- gitb git checkout -b
 abbr -a -- curl curl -s
 abbr -a -- bootlogs journalctl -r -b -1
-abbr -a -- kv 'keepvid (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
-abbr -a -- ka 'keepaud (lb now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
+abbr -a -- kv 'keepvid (lb playback now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
+abbr -a -- ka 'keepaud (lb playback now --mpv-socket ~/.config/mpv/socket | head -1 | cut -f2 | string trim)'
 abbr -a -- tl files.lines.truncate 1
 abbr -a -- suspend sudo systemctl suspend
 abbr -a -- vpn.partial sshuttle --dns -HNvr pakon
@@ -77,7 +77,7 @@ abbr -a -- diff 'delta --syntax-theme GitHub --max-line-length 1024'
 abbr -a -- ct cattrash
 abbr -a -- py python
 abbr -a -- sql sqlite --no-headers --raw-lines
-abbr -a -- ytd5 lb\ tubeadd\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/dl/video.db
+abbr -a -- ytd5 lb\ database\ add\ video\ --extractor-config\ match_filter=\'duration\>1440\'\ \~/lb/dl/video.db
 abbr -a -- gstat git diff --stat
 abbr -a -- soulseek nicotine
 abbr -a -- memray memray run --live
@@ -102,12 +102,12 @@ abbr -a -- abspath lsd
 abbr -a -- mv-ln mvln
 abbr -a -- mod_up clear_mod_keys.sh
 abbr -a -- tmpdir tmp
-abbr -a -- ytda 'lb dladd ~/lb/dl/audio.db (cb)'
+abbr -a -- ytda 'lb database add video ~/lb/dl/audio.db (cb)'
 abbr -a -- ytdan 'ytdan (cb)'
 abbr -a -- ytdn 'ytdn (cb)'
 abbr -a -- trashrestore trash.restore.d
 abbr -a -- file 'file -bi'
-abbr -a -- ytd 'lb dladd ~/lb/dl/video.db (cb)'
+abbr -a -- ytd 'lb database add video ~/lb/dl/video.db (cb)'
 abbr -a -- osq osqueryi
 abbr -a -- revsort sort.right
 abbr -a -- pcontinue ps.resume
@@ -122,16 +122,16 @@ abbr -a -- sys systemctl
 abbr -a -- ssys sudo systemctl
 abbr -a -- sysu systemctl --user
 abbr -a -- sed 'sed "s|||"'
-abbr -a -- magnets1337 'lb links (cb) --path-include magnet: | ssh backup tee -a ~/.local/magnets'
+abbr -a -- magnets1337 'lb links extract (cb) --path-include magnet: | ssh backup tee -a ~/.local/magnets'
 abbr -a -- gdt git diff --text
 abbr -a -- gdts git diff --text --staged
 abbr -a -- gdst git diff --text --staged
-abbr -a -- eda lb eda
+abbr -a -- eda lb table analyze
 abbr -a -- pstat pidstat -l --dec=0 3 1 -r
 abbr -a -- uuid lsblk -f
 abbr -a -- sshfs sshfs -o noauto,noatime,_netdev,reconnect,ConnectTimeout=10,ServerAliveInterval=8,TCPKeepAlive=no,auto_cache,cache_timeout=115200,attr_timeout=115200,entry_timeout=1200
 abbr -a -- opentabs file.urls.open
-abbr -a -- wdlf lb links --no-extract --download
+abbr -a -- wdlf lb download --direct
 abbr -a -- pidstat 'pidstat -dlh --human 20 1 | sort -k 4 --human-numeric-sort'
 abbr -a -- iotop sudo iotop -Poa
 abbr -a -- parent path dirname
@@ -139,8 +139,8 @@ abbr -a -- to_sync tosync
 abbr -a -- tzupdate sudo /home/xk/.cargo/bin/tzupdate
 abbr -a -- timezone_update tzupdate
 abbr -a -- erm 'string escape | xargs -P 20 -I{} rm {}'
-abbr -a -- linksadd 'cb | lb linksdb ~/mc/links.db -c p3 --skip-extract -'
-abbr -a -- music lb lt /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
+abbr -a -- linksadd 'cb | lb database add links ~/mc/links.db -c p3 --skip-extract -'
+abbr -a -- music lb play audio /home/xk/lb/audio.db -w play_count=0 -s weekly -E audiobooks --refresh
 abbr -a -- punpause-all ps.resume.all
 abbr -a -- punpause-fzf ps.fzf.resume
 abbr -a -- punpause ps.resume
@@ -191,7 +191,7 @@ abbr -a -- gitauthors git shortlog -sn
 abbr -a -- gitroot 'cd (git rev-parse --show-cdup)'
 abbr -a -- arp arp -n
 abbr -a -- gitserve git config receive.denyCurrentBranch updateInstead
-abbr -a -- qbt_torrents.py lb torrents
+abbr -a -- qbt_torrents.py lb torrent info
 abbr -a -- sysedit systemctl edit --full
 abbr -a -- services systemctl list-units --type=service --all
 abbr -a -- helgrind valgrind --tool=helgrind
@@ -214,7 +214,7 @@ abbr -a -- less ov
 abbr -a -- running 'timers.status && systemctl --user list-timers --all --no-pager --no-legend --state=running'
 abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list-timers --all --no-pager'
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
-abbr -a -- torrent.status 'print $servers | parallel server.ssh {} lb.dev torrents --dl -pa | ov'
+abbr -a -- torrent.status 'print $servers | parallel server.ssh {} lb.dev torrent info --dl -pa | ov'
 abbr -a -- zj z j
 abbr -a -- wipc git.checkpoint
 abbr -a -- gitconfig git config -l --show-origin
@@ -227,7 +227,7 @@ abbr -a -- printers lpstat -t
 abbr -a -- printer 'lpr -o media=letter -o fitplot -o page-ranges=1'
 abbr -a -- du 'du --block-size=1 --summarize --total -h'
 abbr -a -- tr tr.unicode
-abbr -a -- html_table 'lb tables --type html (cb.file.html)'
+abbr -a -- html_table 'lb table markdown --type html (cb.file.html)'
 abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
@@ -241,7 +241,7 @@ abbr -a -- lower string lower
 abbr -a -- tmux.slow tmux detach-client -a
 abbr -a -- locate 'servers.ssh locate --literal --ignore-case (cb | chars.no.quote)'
 abbr -a -- display set -gx DISPLAY :0
-abbr -a -- large.folders 'parallel lb du {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
+abbr -a -- large.folders 'parallel lb filesystem usage {} --parents -D=-7 --folder-size=+500G ::: ~/disks/*.db'
 abbr -a -- ps.size "ps -eo size,pid,user,command --sort -size | grep -v '^\\s*0'"
 abbr -a -- unshallow git fetch --unshallow
 abbr -a -- magnetsdl "aria2c --bt-metadata-only=true --bt-save-metadata=true (cb | grep -E '^magnet:')"
@@ -286,9 +286,9 @@ abbr -a -- kill.jobs 'kill (jobs -p)'
 abbr -a -- loc servers.ssh locate
 abbr -a -- lta ltd
 abbr -a -- grepmv 'mv (rg -i --files-with-matches src) dest'
-abbr -a -- now lb now
-abbr -a -- next lb next
-abbr -a -- torrent lb torrents-dump
+abbr -a -- now lb playback now
+abbr -a -- next lb playback next
+abbr -a -- torrent lb torrent dump
 abbr -a -- p systemctl status
 abbr -a -- pu systemctl status --user
 abbr -a -- reboot sudo systemctl reboot
@@ -301,7 +301,7 @@ abbr -a -- ping ping -c1
 abbr -a -- shutdown sudo shutdown now
 abbr -a -- su sudo su
 abbr -a -- userd systemctl --user
-abbr -a -- unardel lb unardel -v
+abbr -a -- unardel lb archive extract -v
 abbr -a -- ps.unit systemctl whoami
 abbr -a -- stat.web http HEAD
 abbr -a -- laptop2880 screen.virtual.2880
@@ -944,7 +944,7 @@ abbr -a -- gemini agy
 abbr -a -- g copilot --max-ai-credits=400
 abbr -a -- j journalctl --user -u
 abbr -a -- git.amend git.fixup
-abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb process-audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
+abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb shrink audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
 abbr -a -- ga git add -u
 abbr -a -- git.ssh git.remote.ssh
 abbr -a -- icat viu -h 30
