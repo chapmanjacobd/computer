@@ -82,6 +82,7 @@ class RunState:
     downloads_blocked: bool = False
     network_stopped: bool = False
     remaining_torrent_urls: list[str] = field(default_factory=list)
+    torrents_downloaded: int = 0
 
 
 def parse_args():
@@ -741,6 +742,7 @@ def download_selected(args, torrent_url, details, state):
 
     if downloaded:
         print(downloaded)
+        state.torrents_downloaded += 1
 
     if not details.subtitle_url:
         log.info("No downloadable English subtitle found on %s", torrent_url)
@@ -849,6 +851,11 @@ def process_url(args, url, state=None):
     download_selected(args, torrent_url, details, state)
 
 
+def print_download_summary(state):
+    sys.stdout.flush()
+    print(f"Total .torrent files downloaded: {state.torrents_downloaded}", file=sys.stderr)
+
+
 def main():
     args = parse_args()
     state = RunState()
@@ -861,6 +868,7 @@ def main():
             if state.remaining_torrent_urls:
                 save_remaining_torrents(state.remaining_torrent_urls)
         finally:
+            print_download_summary(state)
             if getattr(args, "selenium", False) and getattr(args, "driver", None):
                 web.quit_selenium(args)
 
