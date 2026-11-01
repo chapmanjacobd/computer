@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-"""Pick the best torrent from a /movie/ or /tv/ table and download it.
+"""Pick the best torrent from a listing table and download it.
 
 The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
-A selected /torrent/ page downloads its .torrent plus the newest downloadable
-English subtitle into --prefix (default: ~/Downloads).
+Rows with a direct /torrents/<id>/download link are downloaded without fetching the detail page;
+other selected /torrent/ pages download their .torrent plus the newest
+downloadable English subtitle into --prefix (default: ~/Downloads).
 
 Links are paced with --sleep-links (default: 3 seconds). If a 429 or 403 is
 received, downloads stop immediately; remaining movie/tv pages are still
@@ -66,6 +67,7 @@ class TorrentCandidate:
     score: float
     seeders: int
     has_english_subtitles: bool
+    download_url: str | None = None
 
 
 @dataclass
@@ -170,9 +172,9 @@ def build_column_map(table):
             columns["seeders"] = index
         elif "leech" in title or title == "l":
             columns["leechers"] = index
-        elif "completed" in title or title == "c":
+        elif "completed" in title or title in {"c", "dl"} or "downloads" in title:
             columns["completed"] = index
-        elif "age" in title or "uploaded" in title:
+        elif "age" in title or "uploaded" in title or "date" in title or "created" in title:
             columns["age"] = index
         elif "comment" in title:
             columns["comments"] = index
@@ -263,7 +265,16 @@ def has_english_subtitles(row):
 
 
 def has_free_download(row):
-    return row.select_one(".fa-star.text-gold") is not None
+    return (
+        row.select_one(
+            ".fa-star.text-gold,"
+            " [data-bs-original-title='Free Download'],"
+            " [data-original-title='Free Download'],"
+            " [aria-label='Free Download'],"
+            " [title='Free Download']"
+        )
+        is not None
+    )
 
 
 def get_resolution_rank(row):
@@ -339,6 +350,13 @@ def sort_torrent_rows(rows, columns):
     return sorted(rows, key=cmp_to_key(lambda a, b: compare_rows(a, b, columns)))
 
 
+def is_torrent_detail_link(href):
+    path = urlparse(href).path
+    if "/download" in path:
+        return False
+    return bool(re.search(r"/(?:torrent|torrents)/\d", path))
+
+
 def find_torrent_tables(soup):
     tables = []
     for table in soup.find_all("table"):
@@ -354,9 +372,7 @@ def find_torrent_tables(soup):
         has_peers = any(
             header in {"s", "l"} or "seed" in header or "leech" in header for header in headers
         )
-        has_detail_link = any(
-            re.search(r"/torrent/\d", urlparse(anchor["href"]).path) for anchor in table.find_all("a", href=True)
-        )
+        has_detail_link = any(is_torrent_detail_link(anchor["href"]) for anchor in table.find_all("a", href=True))
         if has_size and has_peers and has_detail_link:
             tables.append(table)
     return tables
@@ -378,7 +394,7 @@ def absolute_url(href, base_url=None):
 def detail_url_from_row(row, base_url=None, columns=None):
     # The filename anchor is the canonical detail link, even if the site
     # changes its URL shape (eg. /t/123 instead of /torrent/123).
-    anchor = row.select_one("a.torrent-filename[href]")
+    anchor = row.select_one("a.torrent-filename[href], a.torrent-link[href]")
     if anchor is not None:
         return absolute_url(anchor["href"], base_url)
 
@@ -389,20 +405,47 @@ def detail_url_from_row(row, base_url=None, columns=None):
             return absolute_url(anchor["href"], base_url)
 
     for anchor in row.find_all("a", href=True):
+        if is_torrent_detail_link(anchor["href"]):
+            return absolute_url(anchor["href"], base_url)
+    return None
+
+
+def row_download_url(row, columns=None, base_url=None):
+    anchors = []
+    download_cell = get_cell(row, (columns or {}).get("download"))
+    if download_cell is not None:
+        anchors.extend(download_cell.find_all("a", href=True))
+    anchors.extend(row.find_all("a", href=True))
+
+    for anchor in anchors:
         path = urlparse(anchor["href"]).path
-        if re.search(r"/torrent/\d", path):
+        if path.endswith("/download") or "/download/" in path:
             return absolute_url(anchor["href"], base_url)
     return None
 
 
 def row_title(row, columns=None):
-    anchor = row.select_one("a.torrent-filename")
+    anchor = row.select_one("a.torrent-filename, a.torrent-link")
     if anchor is not None:
         return anchor.get_text(" ", strip=True)
     filename_cell = get_cell(row, (columns or {}).get("filename"))
     if filename_cell is not None:
         return filename_cell.get_text(" ", strip=True)
     return row.get_text(" ", strip=True)
+
+
+def candidate_uses_direct_download(candidate):
+    if not candidate.download_url:
+        return False
+    detail_path = urlparse(candidate.url).path
+    download_path = urlparse(candidate.download_url).path
+    return bool(re.match(r"^/torrents/\d+", detail_path) and download_path.endswith("/download"))
+
+
+def direct_download_filename(candidate):
+    match = re.search(r"/torrents/(\d+)", urlparse(candidate.url).path)
+    prefix = f"{match.group(1)} - " if match else ""
+    return path_utils.clean_path(f"{prefix}{candidate.title}.torrent".encode(), max_name_len=255)
 
 
 def best_torrent_from_soup(soup, base_url=None):
@@ -426,6 +469,7 @@ def best_torrent_from_soup(soup, base_url=None):
                     score=get_qualitative_score(row, columns),
                     seeders=get_seeders(row, columns),
                     has_english_subtitles=has_english_subtitles(row),
+                    download_url=row_download_url(row, columns, base_url),
                 )
             )
 
@@ -468,8 +512,21 @@ def is_torrent_url(url):
     return url.startswith(("http://", "https://")) and bool(re.search(r"/torrent/\d", urlparse(url).path))
 
 
+def is_torrents_url(url):
+    return url.startswith(("http://", "https://")) and bool(re.fullmatch(r"/torrents/\d+/?", urlparse(url).path))
+
+
+def direct_torrents_download_url(url):
+    return url.rstrip("/") + "/download"
+
+
+def direct_torrents_filename(url):
+    match = re.search(r"/torrents/(\d+)", urlparse(url).path)
+    return f"{match.group(1) if match else 'torrent'}.torrent"
+
+
 def is_listing_url(url):
-    return bool(re.search(r"/(?:movie|movies|tv|series)/", urlparse(url).path, re.IGNORECASE))
+    return bool(re.search(r"/(?:movie|movies|tv|series|manga|mangas|anime|animes)/", urlparse(url).path, re.IGNORECASE))
 
 
 def details_value(table, label):
@@ -667,7 +724,9 @@ def wait_for_selenium_content(args):
 
         WebDriverWait(args.driver, timeout).until(
             lambda driver: driver.find_elements(
-                By.CSS_SELECTOR, '.torrent-file, a.torrent-filename, a[href*="/download/torrent/"]'
+                By.CSS_SELECTOR,
+                '.torrent-file, a.torrent-filename, a.torrent-link,'
+                ' a[href*="/download/torrent/"], a[href$="/download"]',
             )
         )
     except Exception as excinfo:
@@ -714,10 +773,10 @@ def filename_from_url(url):
     return path_utils.clean_path(filename.encode(), max_name_len=255)
 
 
-def download_file(args, url):
+def download_file(args, url, output_name=None):
     destination = Path(args.prefix).expanduser()
     destination.mkdir(parents=True, exist_ok=True)
-    output_path = destination / filename_from_url(url)
+    output_path = destination / (output_name or filename_from_url(url))
     pace_links(args)
     try:
         return web.download_url(args, url, str(output_path))
@@ -725,13 +784,13 @@ def download_file(args, url):
         mark_link_finished(args)
 
 
-def download_selected(args, torrent_url, details, state):
+def download_selected(args, torrent_url, details, state, output_name=None, has_subtitle_info=True):
     if not details.download_url:
         log.warning("Could not find a download link on %s", torrent_url)
         return
 
     try:
-        downloaded = download_file(args, details.download_url)
+        downloaded = download_file(args, details.download_url, output_name=output_name)
     except Exception as excinfo:
         if not is_stop_error(excinfo):
             raise
@@ -745,7 +804,8 @@ def download_selected(args, torrent_url, details, state):
         state.torrents_downloaded += 1
 
     if not details.subtitle_url:
-        log.info("No downloadable English subtitle found on %s", torrent_url)
+        if has_subtitle_info:
+            log.info("No downloadable English subtitle found on %s", torrent_url)
         return
 
     try:
@@ -766,11 +826,37 @@ def process_url(args, url, state=None):
     state = state or RunState()
 
     if state.network_stopped and not getattr(args, "local_html", False):
-        if is_torrent_url(url):
+        if is_torrent_url(url) or is_torrents_url(url):
             add_remaining(state, url)
             log.warning("Queued %s (network stopped after HTTP 429/403)", url)
         else:
             log.warning("Skipping %s: network stopped after HTTP 429/403", url)
+        return
+
+    if is_torrents_url(url) and not getattr(args, "local_html", False):
+        torrent_url = url.rstrip("/")
+        if getattr(args, "select_only", False):
+            print(torrent_url)
+            return
+        if state.downloads_blocked:
+            add_remaining(state, torrent_url)
+            log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
+            return
+        details = TorrentPage(
+            title="",
+            download_url=direct_torrents_download_url(torrent_url),
+            subtitle_url=None,
+            subtitle_age_years=None,
+            is_english_subtitle=False,
+        )
+        download_selected(
+            args,
+            torrent_url,
+            details,
+            state,
+            output_name=direct_torrents_filename(torrent_url),
+            has_subtitle_info=False,
+        )
         return
 
     direct_torrent_url = is_torrent_url(url)
@@ -830,6 +916,24 @@ def process_url(args, url, state=None):
     if state.downloads_blocked:
         add_remaining(state, torrent_url)
         log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
+        return
+
+    if candidate_uses_direct_download(candidate):
+        details = TorrentPage(
+            title=candidate.title,
+            download_url=candidate.download_url,
+            subtitle_url=None,
+            subtitle_age_years=None,
+            is_english_subtitle=False,
+        )
+        download_selected(
+            args,
+            torrent_url,
+            details,
+            state,
+            output_name=direct_download_filename(candidate),
+            has_subtitle_info=False,
+        )
         return
 
     try:
