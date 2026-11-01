@@ -8,12 +8,23 @@
 # the command rather than in this machine's graphical clipboard. Reads from the
 # phone are pulled back over ssh.
 
-# Environment of the terminal that invoked this command: the tmux client with
-# the most recent activity (the one that pressed Enter), or our own if this is
+# pid of the tmux client that most recently sent input, among the clients
+# attached to the session containing this pane. That is the terminal that
+# pressed Enter for this command.
+function _cb_client_pid
+    set -l session (tmux display-message -p -t $TMUX_PANE '#{session_id}' 2>/dev/null)
+    test -n "$session"; or return 1
+    set -l pid (tmux list-clients -t $session -F '#{client_activity} #{client_pid}' 2>/dev/null |
+        sort -k1,1nr | head -n1 | awk '{ print $2 }')
+    test -n "$pid"; or return 1
+    echo $pid
+end
+
+# Environment of the terminal that invoked this command, or our own if this is
 # not running under tmux.
 function _cb_client_environ
     if set -q TMUX
-        set -l client_pid (tmux display-message -p '#{client_pid}' 2>/dev/null)
+        set -l client_pid (_cb_client_pid 2>/dev/null)
         test -n "$client_pid"; or return 1
         tr '\0' '\n' < /proc/$client_pid/environ 2>/dev/null
     else
@@ -31,13 +42,8 @@ function _cb_remote_terminal
     _cb_client_var SSH_CLIENT >/dev/null
 end
 
-# The phone is identified by the TERMUX marker its ssh client forwards
-# (~/.ssh/config SetEnv TERMUX=1, accepted via AcceptEnv on this host).
-# Connections without the marker fall back to matching the client address
-# against the tailnet address of `phone`.
+# The phone is the SSH client whose address is the tailnet address of `phone`.
 function _cb_phone_client
-    set -l marker (_cb_client_var TERMUX 2>/dev/null)
-    test "$marker" = 1; and return 0
     set -l ip (_cb_client_var SSH_CLIENT 2>/dev/null | string split ' ' | head -n1)
     test -n "$ip"; or return 1
     tailscale status 2>/dev/null | awk '$2 == "phone" { print $1 }' | grep -qx -- "$ip"
