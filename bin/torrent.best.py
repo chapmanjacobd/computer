@@ -142,8 +142,14 @@ def parse_args():
     )
     arggroups.debug(parser)
 
-    arggroups.paths_or_stdin(parser)
+    arggroups.paths_or_stdin(parser, required=False)
     args = parser.parse_intermixed_args()
+
+    if getattr(args, "drain_backlog", False):
+        if args.paths:
+            log.warning("Ignoring positional paths because --drain-backlog reads the .list files")
+    elif args.paths is None:
+        args.paths = argparse_utils.read_stdin(parser.prog)
 
     if args.local_html:
         args.selenium = False
