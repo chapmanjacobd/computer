@@ -38,13 +38,30 @@ function _cb_client_var --argument-names name
     string replace -- "$name=" '' $line
 end
 
+function _cb_client_ip
+    set -l ip (_cb_client_var SSH_CLIENT 2>/dev/null | string split ' ' | head -n1)
+    test -n "$ip"; or return 1
+    echo $ip
+end
+
+# A connection from this host to itself (ssh localhost, ssh pakon) is still a
+# local terminal, not a remote device.
+function _cb_self_client
+    set -l ip (_cb_client_ip 2>/dev/null)
+    test -n "$ip"; or return 1
+    string match -q '127.*' -- $ip; and return 0
+    test "$ip" = '::1'; and return 0
+    contains -- $ip (hostname -I 2>/dev/null | string split ' ')
+end
+
 function _cb_remote_terminal
-    _cb_client_var SSH_CLIENT >/dev/null
+    _cb_client_ip >/dev/null; or return 1
+    not _cb_self_client
 end
 
 # The phone is the SSH client whose address is the tailnet address of `phone`.
 function _cb_phone_client
-    set -l ip (_cb_client_var SSH_CLIENT 2>/dev/null | string split ' ' | head -n1)
+    set -l ip (_cb_client_ip 2>/dev/null)
     test -n "$ip"; or return 1
     tailscale status 2>/dev/null | awk '$2 == "phone" { print $1 }' | grep -qx -- "$ip"
 end
