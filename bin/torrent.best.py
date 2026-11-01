@@ -736,22 +736,23 @@ def process_torrent_lists(args, state):
         domain_state = RunState()
         log.info("Processing %d link(s) from %s", len(links), path)
 
-        remaining = []
-        for index, url in enumerate(links):
-            if state_blocked(domain_state):
-                remaining.extend(links[index:])
-                break
+        remaining = list(links)
+        try:
+            for index, url in enumerate(links):
+                if state_blocked(domain_state):
+                    remaining = links[index:]
+                    break
 
-            if process_url(args, url, domain_state):
-                continue
-
-            remaining.append(url)
-            if state_blocked(domain_state):
-                remaining.extend(links[index + 1 :])
-                break
-
-        save_torrent_list(path, remaining)
-        state.torrents_downloaded += domain_state.torrents_downloaded
+                # Keep the current link unless it is handled, so a failure or
+                # Ctrl-C during processing leaves it queued.
+                remaining = links[index:]
+                if process_url(args, url, domain_state):
+                    remaining = links[index + 1 :]
+                elif state_blocked(domain_state):
+                    break
+        finally:
+            save_torrent_list(path, remaining)
+            state.torrents_downloaded += domain_state.torrents_downloaded
 
         if state_blocked(domain_state):
             log.warning("HTTP 429/403 on this domain; continuing with the next .list file")
