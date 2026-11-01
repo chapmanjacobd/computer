@@ -3,10 +3,10 @@
 # Clipboard helper.
 #
 # Normally reads/writes the local Wayland/X clipboard. When the command was
-# invoked from a remote terminal (SSH, e.g. Termux on a phone), writes go out
-# as OSC 52 instead, so the text lands in the clipboard of the device that ran
-# the command rather than in this machine's graphical clipboard. Reads from the
-# phone are pulled back over ssh.
+# invoked from a remote terminal (SSH), writes go out as OSC 52 instead, so the
+# text lands in the clipboard of the device that ran the command rather than in
+# this machine's graphical clipboard; reads are pulled back by asking that
+# device's own cb over ssh.
 
 # pid of the tmux client that most recently sent input, among the clients
 # attached to the session containing this pane. That is the terminal that
@@ -59,11 +59,14 @@ function _cb_remote_terminal
     not _cb_self_client
 end
 
-# The phone is the SSH client whose address is the tailnet address of `phone`.
-function _cb_phone_client
+# Host to ask for the clipboard: the tailnet name of the client address, so
+# that per-host ssh config (port, user, key) applies; the bare address when
+# the client is not a tailnet node.
+function _cb_client_host
     set -l ip (_cb_client_ip 2>/dev/null)
     test -n "$ip"; or return 1
-    tailscale status 2>/dev/null | awk '$2 == "phone" { print $1 }' | grep -qx -- "$ip"
+    set -l name (tailscale status 2>/dev/null | awk -v ip=$ip '$1 == ip { print $2; exit }')
+    test -n "$name"; and echo $name; or echo $ip
 end
 
 # OSC 52 to the terminal (write-only). Termux, kitty, foot, wezterm etc. put the
@@ -72,16 +75,26 @@ function _cb_osc52 --argument-names file
     printf '\e]52;c;%s\a' (base64 -w0 < $file)
 end
 
-if test -t 0
+# -r/--get forces the read path. Needed when cb is run over ssh (`ssh host cb
+# -r`), where stdin is never a terminal and the write path would otherwise
+# clobber that machine's clipboard.
+set -l get 0
+if test (count $argv) -gt 0
+    string match -qr '^(-r|--get)$' -- $argv; and set get 1
+    set argv (string match -v -r '^(-r|--get)$' -- $argv)
+end
+
+if test -t 0; or test $get = 1
     if test -z "$argv"
         if _cb_remote_terminal
-            if not _cb_phone_client
-                echo 'cb: cannot read the clipboard of this remote terminal; paste in the terminal instead' >&2
+            set -l host (_cb_client_host)
+            test -n "$host"; or begin
+                echo 'cb: cannot tell which host this terminal came from' >&2
                 exit 1
             end
-            set -l text (ssh -T -o BatchMode=yes -o ConnectTimeout=5 phone termux-clipboard-get 2>/dev/null)
+            set -l text (ssh -T -o BatchMode=yes -o ConnectTimeout=5 $host 'cb -r' 2>/dev/null)
             if test $status -ne 0
-                echo 'cb: could not read the phone clipboard (is sshd running on it?)' >&2
+                echo "cb: could not read the clipboard from $host" >&2
                 exit 1
             end
             printf '%s' "$text"
