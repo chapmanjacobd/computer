@@ -91,7 +91,7 @@ def locate_remote(args, hostname):
                     try:
                         sftp.remove(remote_path)
                     except OSError:
-                        print(hostname, "could not remove", remote_path)
+                        print(hostname, "copied", remote_path, "(could not remove remote file)")
 
 
 def main():
