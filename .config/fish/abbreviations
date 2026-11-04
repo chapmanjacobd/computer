@@ -941,7 +941,6 @@ abbr -a -- gem gemini
 abbr -a -- fixup git.fixup
 abbr -a -- sha sha256sum
 abbr -a -- gemini agy
-abbr -a -- g copilot --max-ai-credits=400
 abbr -a -- j journalctl --user -u
 abbr -a -- git.amend git.fixup
 abbr -a -- taxes "wt.dev ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb shrink audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
@@ -1260,3 +1259,4 @@ abbr -a -- rgopen rg.open
 abbr -a -- gls git log -p
 abbr -a -- gla git log --oneline --decorate --all --graph --stat
 abbr -a -- gl git log --oneline --decorate --stat --first-parent
+abbr -a -- g copilot --max-ai-credits=400 --allow-all
