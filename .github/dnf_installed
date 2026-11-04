@@ -10,6 +10,7 @@ b2
 bash
 bat
 bcc
+bchunk
 binwalk
 bitstream-vera-fonts-all
 blas-devel
@@ -217,6 +218,7 @@ qbittorrent-nox
 qdirstat
 qemu
 qemu-user-static
+qtractor
 quickemu
 qutebrowser
 R-devel
@@ -253,6 +255,7 @@ swtpm
 symlinks
 syncthing
 sysfsutils
+systemd-container
 systemtap
 terminus-fonts
 terminus-fonts-console
