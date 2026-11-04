@@ -8,7 +8,6 @@ cargo-nextest
 cargo-release
 cargo-tarpaulin
 choose
-dbcrossbar
 dezoomify-rs
 diskus
 du-dust

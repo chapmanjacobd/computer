@@ -37,7 +37,7 @@ sudo dnf install --allowerasing ffmpeg python3 python3-pip git android-tools Ima
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-sudo dnf group install -y multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
+sudo dnf group install -y multimedia --skip-broken --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
 sudo dnf group install -y sound-and-video
 
 sudo systemctl start btrfsmaintenance-refresh
@@ -48,16 +48,16 @@ apply_updates = yes
 ' | sudo tee -a /etc/dnf/automatic.conf
 sudo systemctl enable --now dnf5-automatic.timer
 
-sudo rm /etc/profile.d/which2.sh
+sudo rm -f /etc/profile.d/which2.sh
 sudo loginctl enable-linger xk
-chsh -s /bin/fish
+sudo chsh -s /bin/fish xk
 fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher (cat ~/.config/fish/fish_plugins)'
 
 sudo dnf remove -y kcalc PackageKit konversation falkon dragon konversation falkon kget ktorrent konqueror chromium autokey kontact dolphin Kontact dolphin kwrite calligra\* korganizer kmail akregator knode krdc krfb konqueror ktnef kaddressbook konversation kf5-akonadi-server mariadb-common kmail kontact akregator dragon kmag kmines kmousetool korganizer kwrite kaddressbook elisa-player gnome-keyring bolt
 
 sudo dnf group install -y c-development
 
-sudo dnf install -y --skip-unavailable $(cat ~/.github/dnf_installed)
+sudo dnf install -y --skip-unavailable --skip-broken $(cat ~/.github/dnf_installed)
 
 wget1 -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
@@ -75,21 +75,21 @@ sudo systemctl disable --now /usr/lib/systemd/system/sysstat-*.timer
 # rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd  # Plasma 6 does not like this...
 
 for dep in $(cat .github/cargo_installed); do
-    cargo install $dep
+    cargo install --locked $dep
 done
 
-go.upgrade 1.26.3
+fish -c go.upgrade
 
 for dep in $(cat .github/go_installed); do
-    go install $dep
+    /usr/local/go/bin/go install $dep
 done
 
 # sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
 # sudo dnf install -y xpra
 
 # alternatives: https://github.com/wg-easy/wg-easy https://github.com/juanfont/headscale ZeroTier netbird
-sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
-sudo dnf install tailscale
+sudo dnf config-manager addrepo -y --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo dnf install -y tailscale
 
 echo 'unqualified-search-registries = ["docker.io"]' | sudo tee /etc/containers/registries.conf
 

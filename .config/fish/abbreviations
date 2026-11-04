@@ -1260,4 +1260,3 @@ abbr -a -- rgopen rg.open
 abbr -a -- gls git log -p
 abbr -a -- gla git log --oneline --decorate --all --graph --stat
 abbr -a -- gl git log --oneline --decorate --stat --first-parent
-abbr -a -- kssh kitty +kitten ssh

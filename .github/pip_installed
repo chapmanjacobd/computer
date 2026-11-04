@@ -13,7 +13,6 @@ dnspython
 duckdb
 emoji-country-flag
 evdev
-filprofiler
 freezegun
 fsspec
 gallery-dl
