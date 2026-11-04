@@ -4,11 +4,10 @@
 # units generated from this file.
 #
 
-UUID=b601306a-a3b5-4600-a221-e687fff9e2c3  /                       btrfs   subvol=root,compress=zstd:1 0 0
-UUID=5f787b5a-f4ef-4428-ad34-c7d2c75c2801  /boot                   ext4    defaults	  1 2
-UUID=FDA6-3907                             /boot/efi               vfat    umask=0077,shortname=winnt 0 2
-UUID=b601306a-a3b5-4600-a221-e687fff9e2c3  /home                   btrfs   subvol=home,compress=zstd:1 0 0
-UUID=ae8138c3-d0c0-45f2-82b4-fa4d4b59ee93  none                    swap    defaults	  0 0
+UUID=d1718e8f-36e7-46ed-8583-babc58a54b8d / btrfs subvol=root,noatime,compress=zstd:2,x-systemd.device-timeout=0 0 0
+UUID=67310b67-f52c-4b01-ae75-35483a8d2540 /boot ext4 defaults 1 2
+UUID=CD82-B650 /boot/efi vfat umask=0077,shortname=winnt 0 2
+UUID=d1718e8f-36e7-46ed-8583-babc58a54b8d /home btrfs subvol=home,noatime,compress=zstd:2,x-systemd.device-timeout=0 0 0
 
 tmpfs                                      /var/lib/upower         tmpfs   nosuid,noexec 0 0
 
