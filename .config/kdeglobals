@@ -134,7 +134,7 @@ View Style=Detail
 listViewIconSize=0
 
 [KScreen]
-ScaleFactor=1.25
+ScaleFactor=1
 ScreenScaleFactors=DisplayPort-0=1.25;DisplayPort-1=1.25;DisplayPort-2=1.25;HDMI-A-0=1.25;DVI-D-0=1.25;
 
 [KShortcutsDialog Settings]
