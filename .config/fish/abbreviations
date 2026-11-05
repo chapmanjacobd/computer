@@ -699,7 +699,6 @@ abbr -a -- vnc-backup vnc.backup
 abbr -a -- stickysync_backup stickysync.backup
 abbr -a -- podman-compose-cleanup podman.compose.cleanup
 abbr -a -- docker-cleanup docker.cleanup
-abbr -a -- copyq-search search.copyq
 abbr -a -- clear_scrollback scrollback.clear
 abbr -a -- gitls-commits paths.git.popular
 abbr -a -- unroman roman.to.number
