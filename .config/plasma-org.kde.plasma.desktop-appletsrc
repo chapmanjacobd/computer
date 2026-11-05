@@ -174,6 +174,10 @@ plugin=org.kde.plasma.vault
 immutability=1
 plugin=org.kde.plasma.dwellclicker
 
+[Containments][130][Applets][135][Applets][164]
+immutability=1
+plugin=org.kde.plasma.weather
+
 [Containments][130][Applets][135][Applets][214]
 immutability=1
 plugin=org.kde.plasma.brightness
@@ -350,7 +354,7 @@ DialogWidth=1536
 [Containments][160][Applets][163][Configuration][General]
 groupingStrategy=0
 highlightWindows=false
-launchers=applications:kitty.desktop,applications:firefox.desktop,applications:dev.zed.Zed.desktop,applications:codium.desktop,applications:org.kde.krusader.desktop,applications:dolphin-emu.desktop,applications:heroic.desktop,applications:net.lutris.Lutris.desktop
+launchers=applications:kitty.desktop,applications:firefox.desktop,applications:dev.zed.Zed.desktop,applications:org.kde.krusader.desktop,applications:dolphin-emu.desktop,applications:heroic.desktop,applications:net.lutris.Lutris.desktop
 maxStripes=1
 minimizeActiveTaskOnClick=false
 showToolTips=false
@@ -363,8 +367,8 @@ immutability=1
 lastScreen=0
 location=4
 plugin=org.kde.plasma.systemtray
-popupHeight=813
-popupWidth=1451
+popupHeight=700
+popupWidth=1250
 wallpaperplugin=org.kde.image
 
 [Containments][160][Applets][165][Applets][167][Configuration]
@@ -457,6 +461,10 @@ immutability=1
 plugin=org.kde.plasma.vault
 
 [Containments][160][Applets][165][Applets][213]
+immutability=1
+plugin=org.kde.plasma.dwellclicker
+
+[Containments][160][Applets][165][Applets][214]
 immutability=1
 plugin=org.kde.plasma.weather
 
@@ -701,6 +709,10 @@ plugin=org.kde.plasma.brightness
 immutability=1
 plugin=org.kde.plasma.dwellclicker
 
+[Containments][2][Applets][32][Applets][226]
+immutability=1
+plugin=org.kde.plasma.weather
+
 [Containments][2][Applets][32][Applets][34]
 immutability=1
 plugin=org.kde.plasma.volume
@@ -921,6 +933,7 @@ ItemGeometries-1080x1920=
 ItemGeometries-1097x617=
 ItemGeometries-1280x720=
 ItemGeometries-1280x800=
+ItemGeometries-1324x745=
 ItemGeometries-1440x900=
 ItemGeometries-1536x864=
 ItemGeometries-1536x960=
@@ -1208,6 +1221,10 @@ plugin=org.kde.plasma.brightness
 immutability=1
 plugin=org.kde.plasma.dwellclicker
 
+[Containments][73][Applets][78][Applets][227]
+immutability=1
+plugin=org.kde.plasma.weather
+
 [Containments][73][Applets][78][Applets][80][Configuration]
 PreloadWeight=42
 
@@ -1321,3 +1338,7 @@ PreloadWeight=55
 
 [Containments][8][Applets][15][Configuration]
 PreloadWeight=75
+
+[ScreenMapping]
+itemsOnDisabledScreens=1,577840c9-b0bb-4255-bc13-d26fe06d710e,32,desktop:/NoMachine,desktop:/mnt,desktop:/download.ebz.epson.net,desktop:/sync,desktop:/links,desktop:/Public,desktop:/read,desktop:/listen,desktop:/phone,desktop:/lb,desktop:/R,desktop:/j,desktop:/m,desktop:/world,desktop:/Syncweb,desktop:/Games,desktop:/win,desktop:/dump,desktop:/temp.db,desktop:/mc,desktop:/iiab,desktop:/disks,desktop:/bin,desktop:/Downloads,desktop:/watch,desktop:/d,desktop:/seeding,desktop:/test.fgb,desktop:/Music,desktop:/quest,desktop:/github,desktop:/Calibre Library
+screenMapping=

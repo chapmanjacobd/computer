@@ -3,19 +3,31 @@ function sitdown
     pkill projectM-jack
     pkill -9 projectM-pulsea
 
-    if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.DisplayPort-0.enable output.DisplayPort-0.mode.3440x1440@160
-        kscreen-doctor output.HDMI-A-0.disable output.DVI-D-0.disable
+    set -l displayport (_kscreen_output 'DisplayPort-[0-9]+')
+    if test -z "$displayport"
+        set displayport (_kscreen_output 'DP-[0-9]+')
     end
-    if grep -qEi "(DP-1)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.DP-1.enable output.DP-1.mode.3440x1440@160
-        kscreen-doctor output.HDMI-1.disable output.DVI-D-0.disable
+    if test -z "$displayport"
+        echo "No DisplayPort output found." >&2
+        return 1
     end
 
-    #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
-    kwriteconfig5 --file kwinrc --group Script-krohnkite enableTileLayout false
+    set -l changes output.$displayport.enable output.$displayport.mode.3440x1440@160
+    for output in (_kscreen_outputs)
+        if test "$output" != "$displayport"
+            set -a changes output.$output.disable
+        end
+    end
+    kscreen-doctor $changes
+
+    #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
+    kwriteconfig6 --file kwinrc --group Script-krohnkite enableTileLayout false
     krohnkite.on
-    kwin_x11 --replace & disown
+    if test "$XDG_SESSION_TYPE" = x11
+        kwin_x11 --replace & disown
+    else
+        qdbus org.kde.KWin /KWin reconfigure
+    end
 
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
     vol 60

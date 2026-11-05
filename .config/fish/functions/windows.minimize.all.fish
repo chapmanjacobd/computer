@@ -5,7 +5,7 @@ function windows.minimize.all
         wmctrl -i -r $win -b remove,maximized_horz,maximized_vert
     end
 
-    set is_enabled (kreadconfig5 --file kwinrc --group Plugins --key monocle_ultrawideEnabled)
+    set is_enabled (kreadconfig6 --file kwinrc --group Plugins --key monocle_ultrawideEnabled)
     if test "$is_enabled" = true
         krohnkite.off
         sleep 0.5

@@ -1,9 +1,18 @@
 # Defined interactively
 function display.enable --argument target
-    for enabled in (kscreen-doctor -o | grep -v disconnected | grep -i enabled | cut -d' ' -f3)
-        kscreen-doctor output.$enabled.disable
+    if not contains -- $target (_kscreen_outputs)
+        echo "Unknown output: $target" >&2
+        return 1
     end
-    kscreen-doctor output.$target.enable output.$target.mode.1920x1080@60
+
+    set -l changes
+    for output in (_kscreen_outputs)
+        if test "$output" != "$target"
+            set -a changes output.$output.disable
+        end
+    end
+    set -a changes output.$target.enable output.$target.mode.1920x1080@60
+    kscreen-doctor $changes
     krohnkite.off
     screen.blank.no && xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3

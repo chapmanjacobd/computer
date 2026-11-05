@@ -1,8 +1,18 @@
 # Defined in /home/xk/.config/fish/functions/system.dpi.small.fish @ line 1, copied in /home/xk/.config/fish/functions/funccp.fish @ line 3
 function system.dpi.big
-    xrandr --dpi 192
+    if test "$XDG_SESSION_TYPE" = x11
+        xrandr --dpi 192
+    end
     echo 'Xft.dpi: 192' | xrdb -override
-    sed -i 's/ScaleFactor=1/ScaleFactor=2/' ~/.config/kdeglobals ~/.config/xsettingsd/xsettingsd.conf
+    set -l changes
+    for output in (_kscreen_outputs)
+        set -a changes output.$output.scale.2
+    end
+    if test (count $changes) -gt 0
+        kscreen-doctor $changes
+    end
+    kwriteconfig6 --file kdeglobals --group KScreen --key ScaleFactor 2
+    sed -i -E 's/^Gdk\/UnscaledDPI .*/Gdk\/UnscaledDPI 196608/' ~/.config/xsettingsd/xsettingsd.conf
 
     set fopt layout.css.devPixelsPerPx
     set fset 1.7

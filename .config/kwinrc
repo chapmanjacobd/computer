@@ -193,6 +193,10 @@ tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"wi
 [Tiling][7db63634-f471-55c4-bdc4-eeee60320bab]
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
+[Tiling][8583a7c4-76d8-48b0-b7a4-d62e9a781503][49f9bcde-b04d-4625-94bd-b00d7d887651]
+padding=4
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
 [Tiling][8583a7c4-76d8-48b0-b7a4-d62e9a781503][92d54b45-3562-475f-a40e-b2e13189f97f]
 padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
@@ -244,7 +248,7 @@ TitlebarDoubleClickCommand=Maximize
 WindowSnapZone=10
 
 [Xwayland]
-Scale=1
+Scale=1.45
 
 [org.kde.kdecoration2]
 BorderSize=None

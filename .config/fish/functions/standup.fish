@@ -2,15 +2,20 @@
 function standup
     pkill projectM-jack
 
-    if grep -qEi "(DisplayPort-0)" (kscreen-doctor -o | psub)
-        kscreen-doctor output.DVI-D-0.enable output.DVI-D-0.rotation.right output.DVI-D-0.mode.1920x1080@60
-        kscreen-doctor output.DisplayPort-0.disable output.HDMI-A-0.disable
-    else
-        kscreen-doctor output.DVI-D-0.enable output.DVI-D-0.rotation.right output.DVI-D-0.mode.1920x1080@50
-        kscreen-doctor output.DP-1.disable output.HDMI-1.disable
+    set -l dvi (_kscreen_output 'DVI-D-[0-9]+')
+    if test -z "$dvi"
+        echo "No DVI output found." >&2
+        return 1
     end
+    set -l changes output.$dvi.enable output.$dvi.rotation.right output.$dvi.mode.1920x1080@60
+    for output in (_kscreen_outputs)
+        if test "$output" != "$dvi"
+            set -a changes output.$output.disable
+        end
+    end
+    kscreen-doctor $changes
     krohnkite.off
-    #bash -c 'kquitapp5 plasmashell || killall plasmashell; kstart5 plasmashell'
+    #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen.blank && xset +dpms
     #breaktimer disable
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
