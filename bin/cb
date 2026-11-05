@@ -55,6 +55,9 @@ function _cb_self_client
 end
 
 function _cb_remote_terminal
+    # The reverse SSH callback must read this host's clipboard rather than
+    # trying to follow the SSH connection back to the original terminal.
+    set -q CB_LOCAL_ONLY; and return 1
     _cb_client_ip >/dev/null; or return 1
     not _cb_self_client
 end
@@ -92,7 +95,7 @@ if test -t 0; or test $get = 1
                 echo 'cb: cannot tell which host this terminal came from' >&2
                 exit 1
             end
-            set -l text (ssh -T -o BatchMode=yes -o ConnectTimeout=5 $host 'cb -r' 2>/dev/null)
+            set -l text (ssh -T -o BatchMode=yes -o ConnectTimeout=5 $host 'env CB_LOCAL_ONLY=1 cb -r' 2>/dev/null)
             if test $status -ne 0
                 echo "cb: could not read the clipboard from $host" >&2
                 exit 1
