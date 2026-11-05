@@ -1,2 +1,2 @@
 [ScreenReader]
-Enabled=false
+SystemdManaged=true

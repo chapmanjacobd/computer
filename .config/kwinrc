@@ -244,7 +244,7 @@ TitlebarDoubleClickCommand=Maximize
 WindowSnapZone=10
 
 [Xwayland]
-Scale=1.25
+Scale=1
 
 [org.kde.kdecoration2]
 BorderSize=None
