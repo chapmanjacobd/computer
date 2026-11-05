@@ -373,3 +373,4 @@
 /.ansible_async
 /.ansible
 /R
+/.local/LICENSE
