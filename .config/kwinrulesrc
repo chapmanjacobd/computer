@@ -2,51 +2,58 @@
 update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-virtual-desktop-ids
 
 [1]
-Description=ignore mpv alt-tab
+Description=phat_max
 above=true
 aboverule=2
 fsplevel=3
 fsplevelrule=2
+fullscreenrule=3
+maximizehorizrule=3
+maximizevert=true
+maximizevertrule=3
+minimizerule=3
+position=700,0
+positionrule=3
+size=1918,1405
+sizerule=3
 skiptaskbar=true
 skiptaskbarrule=3
+types=1
 wmclass=mpv
 wmclassmatch=2
 
 [2]
-Description=Settings for nxplayer.bin
+Description=ignore mpv alt-tab
 below=true
 fpplevel=3
 fpplevelrule=2
 skiptaskbar=true
-wmclass=nxplayer.bin
+skiptaskbarrule=3
+wmclass=mpv
 wmclasscomplete=true
-wmclassmatch=1
+wmclassmatch=2
 
 [3]
-Description=Settings for projectM-pulseaudio
+Description=New window settings
 below=true
 belowrule=2
 fpplevel=3
-skiptaskbar=true
-skiptaskbarrule=2
-wmclass=projectM-pulseaudio
-wmclassmatch=1
-
-[9c9d98f3-e9cc-4d91-84e4-75dd0eab2699]
-Description=New window settings
 maximizehoriz=true
 maximizehorizrule=3
 maximizevert=true
 maximizevertrule=3
+skiptaskbar=true
+skiptaskbarrule=2
 types=1
+wmclass=projectM-pulseaudio
+wmclassmatch=1
 
 [General]
 ColorScheme[$d]
-count=4
+Order=1,2,3
 fixed[$d]
 font[$d]
 menuFont[$d]
-rules=1,2,3,cde039a7-9ff0-4298-acb3-0e0849aa037b
 smallestReadableFont[$d]
 toolBarFont[$d]
 widgetStyle[$d]
@@ -57,34 +64,3 @@ Theme[$d]
 [KDE]
 ColorScheme[$d]
 widgetStyle[$d]
-
-[b2bf892e-248c-412c-891f-468f811a908e]
-Description=Settings for projectm-jack
-minimize=true
-minimizerule=3
-wmclass=projectm-jack
-wmclassmatch=1
-
-[cde039a7-9ff0-4298-acb3-0e0849aa037b]
-Description=Disable KeepBelow
-belowrule=2
-wmclass=*
-
-[cdea28e4-de1c-43f4-b161-4086aa4c7437]
-Description=phat_max
-fullscreenrule=3
-maximizehorizrule=3
-maximizevert=true
-maximizevertrule=3
-minimizerule=3
-position=700,0
-positionrule=3
-size=1918,1405
-sizerule=3
-types=1
-
-[dc1741ed-08e9-4294-b088-9f9038774a8b]
-Description=ignore mpv alt-tab
-skiptaskbarrule=3
-wmclass=mpv
-wmclassmatch=2
