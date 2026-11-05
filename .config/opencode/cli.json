@@ -34,7 +34,9 @@
     "thinking": "hide",
     "tools": "show",
     "shell_output": "show",
-    "turn_summary": "hide",
-    "footer": "show"
+    "turn_summary": "show",
+    "footer": "show",
+    "mono": true,
+    "splash": "hide"
   }
 }

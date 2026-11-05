@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+# Run every file in ./plans through a coding agent, one fresh session per plan,
+# then commit the result with the plan filename as the commit message.
+#
+# Changes are committed locally only; this script never pushes.
+
+set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage: ${0##*/} [--keep-going] -- <agent command...>
+
+Runs every file in ./plans through the given agent command, starting a new
+session for each plan. After a plan finishes successfully, the resulting
+changes are committed with the plan filename as the commit message.
+Nothing is pushed.
+
+The script supplies the prompt: it appends it to the agent command, using
+\`-p <prompt>\` when the command is copilot.
+
+Options:
+  --keep-going   Continue after a plan fails without leaving changes behind
+  -h, --help     Show this help
+
+Examples:
+  ${0##*/} -- copilot --max-ai-credits=400 --allow-all --model gpt-5.6-luna --effort xhigh
+  ${0##*/} --keep-going -- opencode run --auto
+EOF
+}
+
+die() {
+    echo "${0##*/}: $*" >&2
+    exit 1
+}
+
+keep_going=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --keep-going)
+            keep_going=1
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            die "options must come before -- (try --help)"
+            ;;
+    esac
+done
+
+[ $# -gt 0 ] || die "missing agent command after -- (try --help)"
+
+agent_cmd=("$@")
+agent_name=$(basename "${agent_cmd[0]}")
+
+command -v "${agent_cmd[0]}" >/dev/null 2>&1 ||
+    die "agent command not found: ${agent_cmd[0]}"
+
+[ -d "$PWD/plans" ] || die "no plans directory: $PWD/plans"
+
+git -C "$PWD" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
+    die "not inside a git work tree: $PWD"
+
+repo=$(git -C "$PWD" rev-parse --show-toplevel)
+plans_dir="$PWD/plans"
+
+case "$plans_dir" in
+    "$repo"/*) ;;
+    *) die "plans directory must be inside the repository: $repo" ;;
+esac
+plans_rel=${plans_dir#"$repo"/}
+
+mapfile -d '' -t plans < <(
+    find "$plans_dir" -mindepth 1 -maxdepth 1 -type f ! -name '.*' -print0 |
+        LC_ALL=C sort -z
+)
+
+if [ ${#plans[@]} -eq 0 ]; then
+    echo "No plan files found in $plans_dir"
+    exit 0
+fi
+
+if ! git -C "$repo" diff --cached --quiet; then
+    die "the git index already has staged changes; commit or unstage them first"
+fi
+
+dirty=$(git -C "$repo" status --porcelain --untracked-files=normal -- . \
+    ":(exclude,literal)$plans_rel")
+if [ -n "$dirty" ]; then
+    {
+        echo "Uncommitted changes outside the plans directory:"
+        printf '%s\n' "$dirty"
+        echo
+        echo "Commit or stash them first."
+    } >&2
+    exit 1
+fi
+
+echo "Repository: $repo"
+echo "Plans:      $plans_dir (${#plans[@]} file(s))"
+echo "Agent:      ${agent_cmd[*]}"
+echo
+
+processed=0
+committed=0
+failed=0
+
+for plan in "${plans[@]}"; do
+    plan_name=$(basename "$plan")
+    plan_rel=${plan#"$repo"/}
+    processed=$((processed + 1))
+
+    echo "==> [$processed/${#plans[@]}] $plan_name"
+
+    prompt="You are implementing a plan file in the repository at $repo.
+
+Read and follow the plan at $plan (absolute path).
+Carry the plan out completely and autonomously, making all code and
+documentation changes it calls for. Run the relevant tests or checks.
+Do not run git commit or git push; the calling script handles commits.
+When the plan is complete, give a short summary of the changes."
+
+    agent_status=0
+    if [ "$agent_name" = copilot ]; then
+        "${agent_cmd[@]}" -p "$prompt" || agent_status=$?
+    else
+        "${agent_cmd[@]}" "$prompt" || agent_status=$?
+    fi
+
+    if [ "$agent_status" -ne 0 ]; then
+        echo "!! Agent failed for $plan_name (exit $agent_status); not committing." >&2
+        failed=$((failed + 1))
+
+        leftover=$(
+            {
+                git -C "$repo" status --porcelain --untracked-files=normal -- . \
+                    ":(exclude,literal)$plans_rel"
+                git -C "$repo" status --porcelain --untracked-files=normal -- "$plan_rel"
+            } | LC_ALL=C sort -u
+        )
+        if [ -n "$leftover" ]; then
+            {
+                echo "The failed plan left changes in the working tree:"
+                printf '%s\n' "$leftover"
+                echo "Stopping so they are not mixed into the next plan's commit."
+            } >&2
+            break
+        fi
+
+        if [ "$keep_going" -eq 0 ]; then
+            echo "Stopping. Use --keep-going to continue past failures." >&2
+            break
+        fi
+        continue
+    fi
+
+    # Stage the plan's work without pulling in plan files that have not been
+    # processed yet; the current plan file itself is included.
+    git -C "$repo" add -A -- . ":(exclude,literal)$plans_rel"
+    git -C "$repo" add -- "$plan_rel"
+
+    if git -C "$repo" diff --cached --quiet; then
+        echo "-- No changes after $plan_name; nothing to commit."
+        continue
+    fi
+
+    if git -C "$repo" commit --message="$plan_name"; then
+        committed=$((committed + 1))
+    else
+        echo "!! Commit failed for $plan_name; stopping." >&2
+        failed=$((failed + 1))
+        break
+    fi
+
+    echo
+done
+
+echo
+echo "Summary: $processed plan(s) processed, $committed commit(s), $failed failure(s)"
+
+[ "$failed" -eq 0 ]
