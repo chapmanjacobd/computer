@@ -42,3 +42,9 @@ cd ~ && sudo restorecon -vR .
 R --slave -e 'update.packages()'
 
 # sudo podman-compose systemd -a create-unit
+
+systemctl --user daemon-reload
+sudo systemctl enable --now syncthing@xk.service
+systemctl --user enable --now autostart.service jobs.service
+echo systemctl --user enable --now duckdns.service
+echo 'systemctl --user enable --now ~/.config/systemd/user/*.timer'
