@@ -40,6 +40,7 @@ function isIgnored(window) {
     }
 
     return window.keepAbove || window.keepBelow ||
+        window.skipTaskbar || window.skipPager ||
         window.dialog || window.splash || window.utility ||
         window.transient || window.modal || window.resizeable === false;
 }
@@ -141,6 +142,12 @@ function watchWindow(window) {
     }
     if (window.keepBelowChanged) {
         window.keepBelowChanged.connect(scheduleArrange);
+    }
+    if (window.skipTaskbarChanged) {
+        window.skipTaskbarChanged.connect(scheduleArrange);
+    }
+    if (window.skipPagerChanged) {
+        window.skipPagerChanged.connect(scheduleArrange);
     }
 }
 
