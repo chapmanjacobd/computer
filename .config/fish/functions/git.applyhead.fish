@@ -15,7 +15,7 @@ function git.applyhead --description 'Apply a patch directly to HEAD ignoring di
     set -gx GIT_INDEX_FILE .git/temp-index
     git read-tree HEAD
 
-    if git apply $patch_file
+    if git apply --index $patch_file
         set -l tree_hash (git write-tree)
         set -l commit_msg "Apply patch: (basename $patch_file)"
         set -l commit_hash (git commit-tree $tree_hash -p HEAD -m "$commit_msg")
