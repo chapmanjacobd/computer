@@ -35,5 +35,5 @@ function sitdown
     sudo pkill -f wheel.py
     ~/bin/autostart.sh &
 
-    system.dpi.small
+    system.dpi.125
 end
