@@ -138,7 +138,12 @@ else
     if _cb_remote_terminal
         _cb_osc52 $tmp
     else if test -n "$WAYLAND_DISPLAY"
-        wl-copy < $tmp
+        if test -n "$mime_type"
+            wl-copy --type $mime_type < $tmp
+        else
+            # Do not let wl-copy classify source code from its contents.
+            wl-copy --type text/plain < $tmp
+        end
     else
         xsel --clipboard --input < $tmp
     end
