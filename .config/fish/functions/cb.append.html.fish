@@ -6,7 +6,7 @@ function cb.append.html
     while true
         text.preview (cb.file) >&2
 
-        cb -t text/html >>"$temp_file"
+        cb --type text/html >>"$temp_file"
         echo "" >>"$temp_file"
 
         echo '' >&2 # This prevents the shell's default 'read>' prompt from overwriting our output in stderr

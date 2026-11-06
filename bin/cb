@@ -87,8 +87,21 @@ if test (count $argv) -gt 0
     set argv (string match -v -r '^(-r|--get)$' -- $argv)
 end
 
+set -l mime_type
+if test (count $argv) -gt 0
+    switch $argv[1]
+        case -t --type
+            if test (count $argv) -lt 2
+                echo 'cb: --type requires a MIME type' >&2
+                exit 2
+            end
+            set mime_type $argv[2]
+            set -e argv[1..2]
+    end
+end
+
 if test -t 0; or test $get = 1
-    if test -z "$argv"
+    if test -z "$argv"; and test -z "$mime_type"
         if _cb_remote_terminal
             set -l host (_cb_client_host)
             test -n "$host"; or begin
@@ -106,8 +119,18 @@ if test -t 0; or test $get = 1
         else
             xsel --clipboard --output
         end
-    else  # allow cb -t text/html usage, etc
-        xclip -sel c -o $argv
+    else  # allow cb --type text/html usage, etc
+        if test -n "$WAYLAND_DISPLAY"
+            if test -n "$mime_type"
+                wl-paste --no-newline --type $mime_type $argv
+            else
+                wl-paste --no-newline $argv
+            end
+        else if test -n "$mime_type"
+            xclip -sel c -o -t $mime_type $argv
+        else
+            xclip -sel c -o $argv
+        end
     end
 else
     set tmp (mktemp)
