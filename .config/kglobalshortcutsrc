@@ -388,11 +388,8 @@ _launch=Alt+Shift+P
 [services][catt.desktop]
 _launch=Alt+Shift+W
 
-[services][fish-10.desktop]
-_launch=Alt+K
-
 [services][fish-11.desktop]
-_launch=Alt+Shift+K
+_launch=Alt+K
 
 [services][fish-19.desktop]
 _launch=Alt+J
