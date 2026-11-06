@@ -21,8 +21,7 @@ function sitdown
     kscreen-doctor $changes
 
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
-    kwriteconfig6 --file kwinrc --group Script-krohnkite enableTileLayout false
-    krohnkite.on
+    ultrawideMonocle.on
     if test "$XDG_SESSION_TYPE" = x11
         kwin_x11 --replace & disown
     else

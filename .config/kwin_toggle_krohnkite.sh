@@ -1,11 +1,11 @@
 #!/bin/bash
 
-current=`kreadconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled`
+current=$(kreadconfig6 --file kwinrc --group Plugins --key monocle_ultrawideEnabled)
 
-if [ $current = "true" ]; then
-  kwriteconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled false
-elif [ $current = "false" ]; then
-  kwriteconfig5 --file kwinrc --group Plugins --key krohnkiteEnabled true
+if [ "$current" = "true" ]; then
+  kwriteconfig6 --file kwinrc --group Plugins --key monocle_ultrawideEnabled false
+elif [ "$current" = "false" ]; then
+  kwriteconfig6 --file kwinrc --group Plugins --key monocle_ultrawideEnabled true
 fi
 
-qdbus-qt5 org.kde.KWin /KWin reconfigure
+qdbus org.kde.KWin /KWin reconfigure

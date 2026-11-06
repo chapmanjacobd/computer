@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Description": "Monocle layout for DP-1 with 700px side gaps",
+        "Id": "monocle_ultrawide",
+        "License": "MIT",
+        "Name": "Monocle Ultrawide",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript"
+}
