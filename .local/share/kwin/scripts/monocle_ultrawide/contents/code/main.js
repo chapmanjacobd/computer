@@ -2,6 +2,7 @@
 
 const OUTPUT_NAME = "dp-1";
 const SIDE_GAP = 700;
+const ARRANGE_DELAY = 50;
 const IGNORED_CLASSES = new Set([
     "krunner",
     "yakuake",
@@ -38,7 +39,8 @@ function isIgnored(window) {
         return true;
     }
 
-    return window.dialog || window.splash || window.utility ||
+    return window.keepAbove || window.keepBelow ||
+        window.dialog || window.splash || window.utility ||
         window.transient || window.modal || window.resizeable === false;
 }
 
@@ -62,11 +64,30 @@ function isManaged(window) {
         isOnCurrentActivity(window);
 }
 
+const managedWindows = new Set();
+
 function arrange() {
     for (const window of workspace.windowList()) {
         if (!isManaged(window)) {
+            if (!managedWindows.has(window)) {
+                continue;
+            }
+
+            if (!window.output || text(window.output.name) === OUTPUT_NAME) {
+                if (isIgnored(window)) {
+                    managedWindows.delete(window);
+                }
+                continue;
+            }
+
+            if (!isIgnored(window) && window.maximizable && !window.fullScreen) {
+                window.setMaximize(true, true);
+            }
+            managedWindows.delete(window);
             continue;
         }
+
+        managedWindows.add(window);
 
         if (window.maximizeMode > 0) {
             window.setMaximize(false, false);
@@ -87,30 +108,57 @@ function arrange() {
     }
 }
 
+let arrangePending = false;
+const arrangeTimer = new QTimer();
+arrangeTimer.interval = ARRANGE_DELAY;
+arrangeTimer.timeout.connect(() => {
+    arrangeTimer.stop();
+    arrangePending = false;
+    arrange();
+});
+
+function scheduleArrange() {
+    if (arrangePending) {
+        return;
+    }
+
+    arrangePending = true;
+    arrangeTimer.start();
+}
+
 function watchWindow(window) {
     if (!window || window.deleted) {
         return;
     }
 
-    window.outputChanged.connect(arrange);
-    window.desktopsChanged.connect(arrange);
-    window.activitiesChanged.connect(arrange);
-    window.minimizedChanged.connect(arrange);
-    window.fullScreenChanged.connect(arrange);
+    window.outputChanged.connect(scheduleArrange);
+    window.desktopsChanged.connect(scheduleArrange);
+    window.activitiesChanged.connect(scheduleArrange);
+    window.minimizedChanged.connect(scheduleArrange);
+    window.fullScreenChanged.connect(scheduleArrange);
+    if (window.keepAboveChanged) {
+        window.keepAboveChanged.connect(scheduleArrange);
+    }
+    if (window.keepBelowChanged) {
+        window.keepBelowChanged.connect(scheduleArrange);
+    }
 }
 
 function main() {
     workspace.windowList().forEach(watchWindow);
     workspace.windowAdded.connect((window) => {
         watchWindow(window);
-        arrange();
+        scheduleArrange();
     });
-    workspace.windowRemoved.connect(arrange);
-    workspace.currentDesktopChanged.connect(arrange);
-    workspace.currentActivityChanged.connect(arrange);
-    workspace.screensChanged.connect(arrange);
-    workspace.virtualScreenGeometryChanged.connect(arrange);
-    arrange();
+    workspace.windowRemoved.connect((window) => {
+        managedWindows.delete(window);
+        scheduleArrange();
+    });
+    workspace.currentDesktopChanged.connect(scheduleArrange);
+    workspace.currentActivityChanged.connect(scheduleArrange);
+    workspace.screensChanged.connect(scheduleArrange);
+    workspace.virtualScreenGeometryChanged.connect(scheduleArrange);
+    scheduleArrange();
 }
 
 main();
