@@ -13,7 +13,7 @@ function display.enable --argument target
     end
     set -a changes output.$target.enable output.$target.mode.1920x1080@60
     kscreen-doctor $changes
-    ultrawideMonocle.off
+    # ultrawideMonocle.off
     screen.blank.no && xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     ~/bin/autostart.sh &

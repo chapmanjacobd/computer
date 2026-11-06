@@ -14,7 +14,7 @@ function standup
         end
     end
     kscreen-doctor $changes
-    ultrawideMonocle.off
+    # ultrawideMonocle.off
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen.blank && xset +dpms
     #breaktimer disable

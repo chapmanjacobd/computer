@@ -12,8 +12,8 @@ function windows.minimize.all
 
     set is_enabled (kreadconfig6 --file kwinrc --group Plugins --key monocle_ultrawideEnabled)
     if test "$is_enabled" = true
-        ultrawideMonocle.off
+        # ultrawideMonocle.off
         sleep 0.5
-        ultrawideMonocle.on
+        # ultrawideMonocle.on
     end
 end

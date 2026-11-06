@@ -25,7 +25,7 @@ function tv
 
     sudo pkill -f wheel.py
     run sudo python ~/bin/wheel.py --remap-sides (realpath /dev/input/by-id/usb-Compx_2.4G_Receiver-if01-event-mouse)
-    ultrawideMonocle.off
+    # ultrawideMonocle.off
     windows.maximize.all
     # projectM-pulseaudio &
 

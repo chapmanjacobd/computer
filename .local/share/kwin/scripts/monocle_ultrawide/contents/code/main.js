@@ -71,8 +71,24 @@ function isManaged(window) {
 }
 
 const managedWindows = new Set();
+const initializedWindows = new Set();
 const manualSlots = new Map();
 const activeMoves = new Set();
+
+function initializeWindow(window) {
+    if (!window || initializedWindows.has(window) ||
+        !window.output || window.minimized || isIgnored(window)) {
+        return;
+    }
+
+    initializedWindows.add(window);
+    if (text(window.output.name) === OUTPUT_NAME ||
+        !window.maximizable || window.maximizeMode > 0) {
+        return;
+    }
+
+    window.setMaximize(true, true);
+}
 
 function isEdgeSnapped(geometry, area) {
     return Math.abs(geometry.x - area.x) <= EDGE_SNAP_TOLERANCE ||
@@ -153,6 +169,8 @@ function arrange() {
         if (activeMoves.has(window)) {
             continue;
         }
+
+        initializeWindow(window);
 
         if (!isManaged(window)) {
             if (!managedWindows.has(window)) {
@@ -269,6 +287,7 @@ function main() {
     });
     workspace.windowRemoved.connect((window) => {
         activeMoves.delete(window);
+        initializedWindows.delete(window);
         manualSlots.delete(window);
         managedWindows.delete(window);
         scheduleArrange();
