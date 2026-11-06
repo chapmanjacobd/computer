@@ -44,7 +44,7 @@ function isIgnored(window) {
         return true;
     }
 
-    return window.keepAbove || window.keepBelow ||
+    return window.keepAbove ||
         window.skipTaskbar || window.skipPager ||
         window.dialog || window.splash || window.utility ||
         window.transient || window.modal || window.resizeable === false;
@@ -77,11 +77,17 @@ const activeMoves = new Set();
 
 function initializeWindow(window) {
     if (!window || initializedWindows.has(window) ||
-        !window.output || window.minimized || isIgnored(window)) {
+        !window.output || window.minimized || !window.normalWindow) {
         return;
     }
 
     initializedWindows.add(window);
+    window.keepAbove = false;
+    window.keepBelow = false;
+    if (isIgnored(window)) {
+        return;
+    }
+
     if (text(window.output.name) === OUTPUT_NAME ||
         !window.maximizable || window.maximizeMode > 0) {
         return;
