@@ -2,7 +2,7 @@
 update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-virtual-desktop-ids
 
 [1]
-Description=phat_max
+Description=mpv_lower_right
 above=true
 aboverule=2
 fsplevel=3
@@ -33,24 +33,9 @@ wmclass=mpv
 wmclasscomplete=true
 wmclassmatch=2
 
-[3]
-Description=New window settings
-below=true
-belowrule=2
-fpplevel=3
-maximizehoriz=true
-maximizehorizrule=3
-maximizevert=true
-maximizevertrule=3
-skiptaskbar=true
-skiptaskbarrule=2
-types=1
-wmclass=projectM-pulseaudio
-wmclassmatch=1
-
 [General]
 ColorScheme[$d]
-Order=1,2,3
+Order=1,2
 fixed[$d]
 font[$d]
 menuFont[$d]
