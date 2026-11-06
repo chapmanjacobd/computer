@@ -27,4 +27,6 @@ function system.dpi.big
     end
 
     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'panels().forEach(function(panel) { if (panel.location === "bottom" && panel.screen >= 0) panel.height = 64; });'
+
+    kwin.restart
 end

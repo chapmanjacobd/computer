@@ -19,14 +19,7 @@ function sitdown
         end
     end
     kscreen-doctor $changes
-
-    #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     # ultrawideMonocle.on
-    if test "$XDG_SESSION_TYPE" = x11
-        kwin_x11 --replace & disown
-    else
-        qdbus org.kde.KWin /KWin reconfigure
-    end
 
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
     vol 60
