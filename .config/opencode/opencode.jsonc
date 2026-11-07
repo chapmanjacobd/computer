@@ -1,19 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "providers": {
-    "ollama": {
-      "package": "aisdk:@ai-sdk/openai-compatible",
-      "name": "Ollama Remote",
-      "settings": {
-        "baseURL": "http://192.168.1.228:11434/v1"
-      },
-      "models": {
-        "hf.co/unsloth/Qwen3.6-27B-MTP-GGUF:Q8_0": {
-          "name": "hf.co/unsloth/Qwen3.6-27B-MTP-GGUF:Q8_0"
-        }
-      }
-    }
-  },
   "model": "opencode-go/deepseek-v4.1-flash",
   "skills": ["~/.config/opencode/egm/skills"]
 }

@@ -9,7 +9,7 @@
     "blinking": false
   },
   "animations": false,
-  "mouse": false,
+  "mouse": true,
   "terminal": {
     "copy": "manual"
   },
