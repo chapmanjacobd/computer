@@ -3,6 +3,7 @@
 const OUTPUT_NAME = "dp-1";
 const SIDE_GAP = 700;
 const ARRANGE_DELAY = 50;
+const EDGE_ZONE = 100;
 const GRID_LEFT = 0;
 const GRID_CENTER_TOP = 1;
 const GRID_CENTER_BOTTOM = 2;
@@ -105,7 +106,8 @@ function getLayoutArea(area) {
 }
 
 // Drop zones (by cursor position): the side gaps are the left/right slots;
-// the center column splits into top/bottom halves.
+// in the center column, dropping near the top/bottom screen edge picks that
+// half; anywhere else is monocle.
 function getDropSlot(point, area) {
     const layout = getLayoutArea(area);
     if (point.x < layout.x) {
@@ -114,9 +116,13 @@ function getDropSlot(point, area) {
     if (point.x >= layout.x + layout.width) {
         return GRID_RIGHT;
     }
-    return point.y < layout.y + layout.height / 2
-        ? GRID_CENTER_TOP
-        : GRID_CENTER_BOTTOM;
+    if (point.y < layout.y + EDGE_ZONE) {
+        return GRID_CENTER_TOP;
+    }
+    if (point.y >= layout.y + layout.height - EDGE_ZONE) {
+        return GRID_CENTER_BOTTOM;
+    }
+    return undefined;
 }
 
 function getGridGeometry(area, slot) {
@@ -143,20 +149,6 @@ function getGridGeometry(area, slot) {
                 height: area.height,
             };
     }
-}
-
-// A center half-slot only applies when the opposite half is occupied.
-function isCenterSplit(window, slot) {
-    if (slot !== GRID_CENTER_TOP && slot !== GRID_CENTER_BOTTOM) {
-        return true;
-    }
-    const other = slot === GRID_CENTER_TOP ? GRID_CENTER_BOTTOM : GRID_CENTER_TOP;
-    for (const [otherWindow, otherSlot] of manualSlots) {
-        if (otherWindow !== window && otherSlot === other && isManaged(otherWindow)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 function updateManualSlot(window, wasResize) {
@@ -228,7 +220,7 @@ function arrange() {
 
         const geometry = workspace.clientArea(KWin.MaximizeArea, window);
         const manualSlot = manualSlots.get(window);
-        if (manualSlot !== undefined && isCenterSplit(window, manualSlot)) {
+        if (manualSlot !== undefined) {
             window.frameGeometry = getGridGeometry(geometry, manualSlot);
             continue;
         }
