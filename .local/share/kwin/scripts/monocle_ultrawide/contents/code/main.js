@@ -3,7 +3,6 @@
 const OUTPUT_NAME = "dp-1";
 const SIDE_GAP = 700;
 const ARRANGE_DELAY = 50;
-const EDGE_SNAP_TOLERANCE = 32;
 const GRID_LEFT = 0;
 const GRID_CENTER_TOP = 1;
 const GRID_CENTER_BOTTOM = 2;
@@ -96,71 +95,89 @@ function initializeWindow(window) {
     window.setMaximize(true, true);
 }
 
-function isEdgeSnapped(geometry, area) {
-    return Math.abs(geometry.x - area.x) <= EDGE_SNAP_TOLERANCE ||
-        Math.abs(geometry.x + geometry.width - area.x - area.width) <= EDGE_SNAP_TOLERANCE ||
-        Math.abs(geometry.y - area.y) <= EDGE_SNAP_TOLERANCE ||
-        Math.abs(geometry.y + geometry.height - area.y - area.height) <= EDGE_SNAP_TOLERANCE;
+function getLayoutArea(area) {
+    return {
+        x: area.x + SIDE_GAP,
+        y: area.y,
+        width: area.width - SIDE_GAP * 2,
+        height: area.height,
+    };
 }
 
-function getManualSlot(geometry, area) {
-    const centerX = geometry.x + geometry.width / 2;
-    const centerY = geometry.y + geometry.height / 2;
-
-    if (centerX <= area.x + area.width / 3) {
+// Drop zones (by cursor position): the side gaps are the left/right slots;
+// the center column splits into top/bottom halves.
+function getDropSlot(point, area) {
+    const layout = getLayoutArea(area);
+    if (point.x < layout.x) {
         return GRID_LEFT;
     }
-    if (centerX >= area.x + area.width * 2 / 3) {
+    if (point.x >= layout.x + layout.width) {
         return GRID_RIGHT;
     }
-    return centerY <= area.y + area.height / 2
+    return point.y < layout.y + layout.height / 2
         ? GRID_CENTER_TOP
         : GRID_CENTER_BOTTOM;
 }
 
 function getGridGeometry(area, slot) {
-    const x = area.x + SIDE_GAP;
-    const width = area.width - SIDE_GAP * 2;
-    const leftWidth = Math.floor(width / 4);
-    const centerWidth = Math.floor(width / 2);
-    const rightWidth = width - leftWidth - centerWidth;
-    const centerX = x + leftWidth;
-    const rightX = centerX + centerWidth;
-    const centerHeight = Math.floor(area.height / 2);
+    const layout = getLayoutArea(area);
+    const centerHeight = Math.floor(layout.height / 2);
 
     switch (slot) {
         case GRID_LEFT:
-            return { x: x, y: area.y, width: leftWidth, height: area.height };
+            return { x: area.x, y: area.y, width: SIDE_GAP, height: area.height };
         case GRID_CENTER_TOP:
-            return { x: centerX, y: area.y, width: centerWidth, height: centerHeight };
+            return { x: layout.x, y: layout.y, width: layout.width, height: centerHeight };
         case GRID_CENTER_BOTTOM:
             return {
-                x: centerX,
-                y: area.y + centerHeight,
-                width: centerWidth,
-                height: area.height - centerHeight,
+                x: layout.x,
+                y: layout.y + centerHeight,
+                width: layout.width,
+                height: layout.height - centerHeight,
             };
         case GRID_RIGHT:
-            return { x: rightX, y: area.y, width: rightWidth, height: area.height };
+            return {
+                x: layout.x + layout.width,
+                y: area.y,
+                width: area.x + area.width - layout.x - layout.width,
+                height: area.height,
+            };
     }
 }
 
-function updateManualSlot(window) {
+// A center half-slot only applies when the opposite half is occupied.
+function isCenterSplit(window, slot) {
+    if (slot !== GRID_CENTER_TOP && slot !== GRID_CENTER_BOTTOM) {
+        return true;
+    }
+    const other = slot === GRID_CENTER_TOP ? GRID_CENTER_BOTTOM : GRID_CENTER_TOP;
+    for (const [otherWindow, otherSlot] of manualSlots) {
+        if (otherWindow !== window && otherSlot === other && isManaged(otherWindow)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function updateManualSlot(window, wasResize) {
     if (!isManaged(window)) {
         manualSlots.delete(window);
         scheduleArrange();
         return;
     }
+    if (wasResize) {
+        scheduleArrange();
+        return;
+    }
 
-    const area = workspace.clientArea(KWin.FullArea, window);
-    const geometry = window.frameGeometry;
-    if (!isEdgeSnapped(geometry, area)) {
+    const area = workspace.clientArea(KWin.MaximizeArea, window);
+    const slot = getDropSlot(workspace.cursorPos, area);
+    if (slot === undefined) {
         manualSlots.delete(window);
         scheduleArrange();
         return;
     }
 
-    const slot = getManualSlot(geometry, area);
     for (const [otherWindow, otherSlot] of manualSlots) {
         if (otherWindow === window || otherSlot === slot) {
             manualSlots.delete(otherWindow);
@@ -205,9 +222,13 @@ function arrange() {
             window.setMaximize(false, false);
         }
 
-        const geometry = workspace.clientArea(KWin.FullArea, window);
+        if (window.tile) {
+            window.tile = null;
+        }
+
+        const geometry = workspace.clientArea(KWin.MaximizeArea, window);
         const manualSlot = manualSlots.get(window);
-        if (manualSlot !== undefined) {
+        if (manualSlot !== undefined && isCenterSplit(window, manualSlot)) {
             window.frameGeometry = getGridGeometry(geometry, manualSlot);
             continue;
         }
@@ -266,23 +287,15 @@ function watchWindow(window) {
     if (window.skipPagerChanged) {
         window.skipPagerChanged.connect(scheduleArrange);
     }
-    if (window.moveResizedChanged) {
-        let wasMoving = false;
-        window.moveResizedChanged.connect(() => {
-            const isMoving = window.move || window.resize;
-            if (isMoving) {
-                wasMoving = true;
-                activeMoves.add(window);
-                return;
-            }
-            if (!wasMoving) {
-                return;
-            }
-            wasMoving = false;
-            activeMoves.delete(window);
-            updateManualSlot(window);
-        });
-    }
+    let wasResize = false;
+    window.interactiveMoveResizeStarted.connect(() => {
+        wasResize = !!window.resize;
+        activeMoves.add(window);
+    });
+    window.interactiveMoveResizeFinished.connect(() => {
+        activeMoves.delete(window);
+        updateManualSlot(window, wasResize);
+    });
 }
 
 function main() {
@@ -302,6 +315,9 @@ function main() {
     workspace.currentActivityChanged.connect(scheduleArrange);
     workspace.screensChanged.connect(scheduleArrange);
     workspace.virtualScreenGeometryChanged.connect(scheduleArrange);
+    if (workspace.clientAreaChanged) {
+        workspace.clientAreaChanged.connect(scheduleArrange);
+    }
     scheduleArrange();
 }
 
