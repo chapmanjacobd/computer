@@ -11,6 +11,7 @@
 /Slack/
 /VSCode/
 /kwinrc
+/kwinoutputconfig.json
 /gcloud/logs/
 /plasmaConfSaver/
 /systemd/user/*wants/
