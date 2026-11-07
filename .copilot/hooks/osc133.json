@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "{ printf '\\033]133;C\\007' > /dev/tty; } 2>/dev/null || true"
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "{ printf '\\033]133;D\\007' > /dev/tty; } 2>/dev/null || true"
+      }
+    ]
+  }
+}
