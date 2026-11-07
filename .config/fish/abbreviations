@@ -1258,4 +1258,4 @@ abbr -a -- rgopen rg.open
 abbr -a -- gls git log -p
 abbr -a -- gla git log --oneline --decorate --all --graph --stat
 abbr -a -- gl git log --oneline --decorate --stat --first-parent
-abbr -a -- g copilot --max-ai-credits=400 --allow-all --model gpt-5.6-luna --effort xhigh
+abbr -a -- g copilot --max-ai-credits=400 --allow-all --model gpt-5.6-luna --effort high
