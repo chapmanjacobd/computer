@@ -17,8 +17,6 @@ function tv
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen.blank.no && xset s off
     #breaktimer disable && pkill breaktimer
-    pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
-    vol 45
 
     ~/bin/autostart.sh &
     pkill -9 projectM-pulseau
@@ -30,4 +28,13 @@ function tv
     # projectM-pulseaudio &
 
     system.dpi.125
+
+    set -l sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
+    while true
+        if pactl set-default-sink $sink; and test (pactl get-default-sink) = "$sink"
+            break
+        end
+        sleep 2
+    end
+    pactl set-sink-volume $sink 45%
 end
