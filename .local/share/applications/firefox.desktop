@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=/home/xk/.local/bin/firefox/firefox-bin %U
+Name=Firefox
+Icon=/home/xk/.local/bin/firefox/browser/chrome/icons/default/default128.png
+Comment=Custom definition for Firefox
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
