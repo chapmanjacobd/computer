@@ -1,0 +1,4 @@
+[[collections]]
+type = "zim"
+name = "library"
+path = "/home/xk/.local/share/zimantic/zims"
