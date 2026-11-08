@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=ZSnoW
+Exec=/home/xk/.local/bin/zsnow --nFlakes 150 --scale 1 --speed 0.6 --color CCDDFF
+TryExec=/home/xk/.local/bin/zsnow
+Terminal=false
+OnlyShowIn=KDE;
