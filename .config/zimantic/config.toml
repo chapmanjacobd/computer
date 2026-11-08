@@ -2,3 +2,13 @@
 type = "zim"
 name = "library"
 path = "/home/xk/.local/share/zimantic/zims"
+
+[[collections]]
+type = "files"
+name = "modules"
+path = "/home/xk/github/o/zimantic/modules"
+label = "Modules"
+granularity = "collection"       # "collection" or "children"
+include = ["**/*.html", "**/*.htm", "**/*.xhtml",
+           "**/*.txt", "**/*.md", "**/*.pdf"]
+exclude = ["**/node_modules/**", "**/.git/**", "**/__pycache__/**"]
