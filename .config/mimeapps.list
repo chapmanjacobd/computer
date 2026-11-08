@@ -31,6 +31,8 @@ video/x-msvideo=mpv.desktop;
 x-scheme-handler/chrome=userapp-Firefox-EYOQO3.desktop;firefox.desktop;userapp-Firefox-AWU3D2.desktop;
 x-scheme-handler/http=userapp-Firefox-EYOQO3.desktop;firefox.desktop;userapp-Firefox-AWU3D2.desktop;
 x-scheme-handler/https=userapp-Firefox-EYOQO3.desktop;firefox.desktop;userapp-Firefox-AWU3D2.desktop;
+x-scheme-handler/sgnl=signal.desktop;
+x-scheme-handler/signalcaptcha=signal.desktop;
 
 [Default Applications]
 application/epub+zip=okularApplication_epub.desktop;
@@ -80,6 +82,8 @@ x-scheme-handler/slack=slack.desktop
 x-scheme-handler/x-github-client=github-desktop.desktop
 x-scheme-handler/x-github-desktop-auth=github-desktop.desktop
 x-scheme-handler/rpi-imager=com.raspberrypi.rpi-imager-uri-handler.desktop
+x-scheme-handler/sgnl=signal.desktop
+x-scheme-handler/signalcaptcha=signal.desktop
 
 [Removed Associations]
 application/epub+zip=calibre-gui.desktop;
