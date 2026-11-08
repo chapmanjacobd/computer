@@ -8,7 +8,7 @@ type = "files"
 name = "modules"
 path = "/home/xk/github/o/zimantic/modules"
 label = "Modules"
-granularity = "collection"       # "collection" or "children"
+granularity = "children"
 include = ["**/*.html", "**/*.htm", "**/*.xhtml",
            "**/*.txt", "**/*.md", "**/*.pdf"]
 exclude = ["**/node_modules/**", "**/.git/**", "**/__pycache__/**"]
