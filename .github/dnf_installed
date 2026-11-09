@@ -18,6 +18,7 @@ bpftool
 bpftrace
 btrfs-progs
 btrfsmaintenance
+bwrap
 cairo-devel
 cargo
 chafa-devel
