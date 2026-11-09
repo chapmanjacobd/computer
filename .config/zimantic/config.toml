@@ -12,3 +12,9 @@ granularity = "children"
 include = ["**/*.html", "**/*.htm", "**/*.xhtml",
            "**/*.txt", "**/*.md", "**/*.pdf"]
 exclude = ["**/node_modules/**", "**/.git/**", "**/__pycache__/**"]
+
+[[collections]]
+type = "kolibri"
+name = "kolibri"
+path = "/home/xk/.local/share/kolibri/home"
+granularity = "children"
