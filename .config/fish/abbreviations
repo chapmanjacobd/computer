@@ -1260,3 +1260,4 @@ abbr -a -- gla git log --oneline --decorate --all --graph --stat
 abbr -a -- gl git log --oneline --decorate --stat --first-parent
 abbr -a -- g copilot --max-ai-credits=400 --allow-all --model auto
 abbr -a -- snow zsnow --nFlakes 150 --scale 4 --speed 0.4 --color CCDDFF
+abbr -a -- git.show git show -m HEAD
