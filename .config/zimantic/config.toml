@@ -17,4 +17,5 @@ exclude = ["**/node_modules/**", "**/.git/**", "**/__pycache__/**"]
 type = "kolibri"
 name = "kolibri"
 path = "/home/xk/.local/share/kolibri/home"
+server_url = "http://localhost:8085"
 granularity = "children"
