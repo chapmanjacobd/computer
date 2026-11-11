@@ -33,9 +33,9 @@
   "mini": {
     "work_spinner": "block-soft-sweep",
     "thinking": "hide",
-    "tools": "show",
+    "tools": "hide",
     "shell_output": "show",
-    "turn_summary": "show",
+    "turn_summary": "hide",
     "footer": "show",
     "mono": true,
     "splash": "hide"
