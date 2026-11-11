@@ -16,3 +16,10 @@ local({
   r["CRAN"] = "https://cran.rstudio.com/"
   options(repos = r)
 })
+
+if (interactive()) {
+  suppressPackageStartupMessages({
+    # library(tidyverse)
+    library(data.table)
+  })
+}
