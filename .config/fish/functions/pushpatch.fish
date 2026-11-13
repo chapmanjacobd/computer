@@ -1,5 +1,5 @@
 function pushpatch --description 'Commit staged changes, push to a random branch, print a git am -3 command'
-    argparse 'm/message=+' 'r/remote=' 'p/prefix=' 'h/help' -- $argv
+    argparse 'm/message=+' 'r/remote=' 'p/prefix=' h/help -- $argv
     or return 1
 
     if set -q _flag_help
