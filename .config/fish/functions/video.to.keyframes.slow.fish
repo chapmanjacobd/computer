@@ -3,7 +3,7 @@ function video.to.keyframes.slow
     set -l tmpfile (mktemp --suffix .mkv --dry-run)
     mkfifo $tmpfile
 
-    b ffmpeg -nostdin -f matroska -i $tmpfile -vf "setpts=N/FRAME_RATE/TB*8" (path change-extension .keys.mkv "$argv")
+    b ffmpeg -nostdin -f matroska -i $tmpfile -vf "setpts=N/FRAME_RATE/TB*8" (path.withsuffix "$argv" .keys mkv)
     ffmpeg -nostdin -i "$argv" -c copy -bsf:v 'noise=drop=not(key)' -an -sn -f matroska pipe:1 >$tmpfile
     wait
     rm $tmpfile

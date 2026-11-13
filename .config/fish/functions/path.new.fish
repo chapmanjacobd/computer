@@ -1,6 +1,3 @@
-# Defined interactively
-function path.new
-    set f (path change-extension '' "$argv")
-    set ext (path extension "$argv")
-    mktemp --dry-run $f.XXXXX --suffix=$ext
+function path.new --description 'Print a random temporary path that keeps the extension of INPUT' --argument-names input
+    mktemp --dry-run (path.withsuffix "$input" .XXXXX)
 end
