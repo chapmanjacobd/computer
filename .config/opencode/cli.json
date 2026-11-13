@@ -32,7 +32,7 @@
   },
   "mini": {
     "work_spinner": "block-soft-sweep",
-    "thinking": "hide",
+    "thinking": "show",
     "tools": "hide",
     "shell_output": "show",
     "turn_summary": "hide",
