@@ -10,6 +10,34 @@ browser[type=content-primary],browser[type=content] > html {
     background: #c8b4a0 !important
 }
 
+/* Firefox 160 sets an inline `padding-inline-start: var(--space-small)` on
+ * #sidebar-box (space for the sidebar launcher). With the launcher hidden it
+ * is just a stripe of --sidebar-background-color down the left side of the
+ * panel, i.e. the "border" that appears on restart. This is browser chrome,
+ * not Sidebery. */
+#sidebar-box {
+  padding: 0 !important;
+}
+
+/* Also flatten any border/outline/separator the sidebar chrome may draw:
+ * #sidebar and #sidebar-box (revamp outlines), the splitters, and the
+ * .browserContainer separator that faces the sidebar. */
+#sidebar,
+#sidebar-box,
+#sidebar-container,
+#sidebar-splitter,
+#sidebar-launcher-splitter {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+#tabbrowser-tabbox .browserContainer,
+#tabbrowser-tabpanels .browserContainer {
+  border-inline-start-width: 0 !important;
+  border-inline-end-width: 0 !important;
+}
+
 /* Keep the legacy layout square after Firefox 157. */
 #main-window,
 #browser,
