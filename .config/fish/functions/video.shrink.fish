@@ -4,5 +4,5 @@ function video.shrink
     #    sleep (random.float 0 5000)
     # end
 
-    ffmpeg -nostdin -hide_banner -dn -y -i "$argv[1]" $argv[2..-1] -vf "scale=-2:min(ih\,1440)" -vcodec libx265 -preset 4 -acodec libopus (path.withsuffix "$argv[1]" .small mkv)
+    ffmpeg -nostdin -hide_banner -dn -y -i "$argv[1]" $argv[2..-1] -vf "scale=-2:min(ih\,1440)" -vcodec libx265 -preset 4 -acodec libopus (path.withsuffix .small -e mkv "$argv[1]")
 end
