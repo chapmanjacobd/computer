@@ -2,9 +2,14 @@
 
 const PLACEMENT_INTERVAL_MS = 50;
 const PLACEMENT_ATTEMPTS = 6;
+const ACTIVE_HISTORY_LIMIT = 8;
 
 const placedInitially = new Set();
 const placementScheduled = new Set();
+const stackPlacementHandled = new Set();
+const newWindows = new Set();
+const activeHistory = [];
+const constrainedBelow = new Map();
 
 function isMpv(window) {
     return window &&
@@ -12,6 +17,108 @@ function isMpv(window) {
         window.normalWindow &&
         String(window.resourceClass).toLowerCase() === "mpv" &&
         String(window.resourceName).toLowerCase() === "mpv";
+}
+
+function isFullscreenMpv(window) {
+    return isMpv(window) && window.fullScreen;
+}
+
+function sameOutput(a, b) {
+    return !a.output || !b.output || a.output === b.output;
+}
+
+function rememberActive(window) {
+    if (!window || window.deleted || !window.normalWindow) {
+        return;
+    }
+
+    const index = activeHistory.indexOf(window);
+    if (index !== -1) {
+        activeHistory.splice(index, 1);
+    }
+    activeHistory.push(window);
+    if (activeHistory.length > ACTIVE_HISTORY_LIMIT) {
+        activeHistory.shift();
+    }
+}
+
+function previousActiveWindow(exclude) {
+    for (let i = activeHistory.length - 1; i >= 0; i--) {
+        const candidate = activeHistory[i];
+        if (candidate !== exclude && !candidate.deleted && candidate.normalWindow) {
+            return candidate;
+        }
+    }
+    return null;
+}
+
+function addConstraint(below, above) {
+    if (below === above || typeof workspace.constrain !== "function") {
+        return;
+    }
+
+    let aboveWindows = constrainedBelow.get(below);
+    if (!aboveWindows) {
+        aboveWindows = new Set();
+        constrainedBelow.set(below, aboveWindows);
+    }
+    if (aboveWindows.has(above)) {
+        return;
+    }
+
+    aboveWindows.add(above);
+    workspace.constrain(below, above);
+}
+
+function releaseConstraints(below) {
+    const aboveWindows = constrainedBelow.get(below);
+    if (!aboveWindows) {
+        return;
+    }
+
+    if (typeof workspace.unconstrain === "function") {
+        for (const above of aboveWindows) {
+            if (!above.deleted) {
+                workspace.unconstrain(below, above);
+            }
+        }
+    }
+    constrainedBelow.delete(below);
+}
+
+// On Wayland, KWin activates new windows more aggressively than on X11, so a
+// new fullscreen mpv window would cover the video that is already on screen.
+// Constrain it under the existing fullscreen mpv windows and give focus back
+// to whatever was active before. When the user activates it, the constraints
+// are released so it can be raised normally.
+function keepNewWindowBehindStack(window) {
+    if (!newWindows.has(window) || !isFullscreenMpv(window) || stackPlacementHandled.has(window)) {
+        return;
+    }
+    stackPlacementHandled.add(window);
+
+    const existing = [];
+    for (const other of workspace.windowList()) {
+        if (other !== window && other.onCurrentDesktop && isFullscreenMpv(other) && sameOutput(other, window)) {
+            existing.push(other);
+        }
+    }
+
+    // The first window of a stack should behave normally.
+    if (existing.length === 0) {
+        return;
+    }
+
+    for (const other of existing) {
+        addConstraint(window, other);
+    }
+
+    if (workspace.activeWindow === window) {
+        const previousActive = previousActiveWindow(window);
+        if (previousActive) {
+            workspace.activeWindow = previousActive;
+        }
+    }
 }
 
 // Fullscreen mpv: visible in the taskbar and Alt+Tab, and not kept above
@@ -98,9 +205,12 @@ function placeBottomRight(window) {
     window._mpvPlacementTimer = timer;
 }
 
-function setupWindow(window) {
+function setupWindow(window, newlyAdded) {
     if (!isMpv(window)) {
         return;
+    }
+    if (newlyAdded) {
+        newWindows.add(window);
     }
 
     syncWindowState(window);
@@ -117,6 +227,9 @@ function setupWindow(window) {
         // If mpv started fullscreen, place it bottom-right the first time it
         // leaves fullscreen.
         placeBottomRight(window);
+        if (window.fullScreen) {
+            keepNewWindowBehindStack(window);
+        }
     });
     window.skipTaskbarChanged.connect(() => syncWindowState(window));
     window.skipSwitcherChanged.connect(() => syncWindowState(window));
@@ -126,11 +239,35 @@ function setupWindow(window) {
     // placement for a short period so late size changes and KWin's restore
     // after unmaximizing are handled.
     placeBottomRight(window);
+    if (window.fullScreen) {
+        keepNewWindowBehindStack(window);
+    }
 }
 
-workspace.windowList().forEach(setupWindow);
-workspace.windowAdded.connect(setupWindow);
+rememberActive(workspace.activeWindow);
+
+workspace.windowList().forEach((window) => setupWindow(window, false));
+workspace.windowAdded.connect((window) => setupWindow(window, true));
+workspace.windowActivated.connect((window) => {
+    rememberActive(window);
+    // The user picked this window; let it rise above the stack it was kept under.
+    releaseConstraints(window);
+});
 workspace.windowRemoved.connect((window) => {
     placedInitially.delete(window);
     placementScheduled.delete(window);
+    stackPlacementHandled.delete(window);
+    newWindows.delete(window);
+    const activeIndex = activeHistory.indexOf(window);
+    if (activeIndex !== -1) {
+        activeHistory.splice(activeIndex, 1);
+    }
+    releaseConstraints(window);
+
+    for (const [below, aboveWindows] of constrainedBelow) {
+        aboveWindows.delete(window);
+        if (aboveWindows.size === 0) {
+            constrainedBelow.delete(below);
+        }
+    }
 });
