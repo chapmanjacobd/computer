@@ -1,6 +1,5 @@
 local pause_delay = 0.5
 local pause_timer = nil
-local paused_by_focus = false
 local seen_focus = false
 
 local function eligible()
@@ -13,10 +12,7 @@ local function pause_if_still_unfocused()
     if not eligible() or mp.get_property_native("focused") then
         return
     end
-    if not mp.get_property_native("pause") then
-        paused_by_focus = true
-        mp.set_property_bool("pause", true)
-    end
+    mp.set_property_bool("pause", true)
 end
 
 local function on_focus_change(name, focused)
@@ -31,8 +27,7 @@ local function on_focus_change(name, focused)
 
     if focused then
         seen_focus = true
-        if paused_by_focus then
-            paused_by_focus = false
+        if eligible() then
             mp.set_property_bool("pause", false)
         end
     elseif seen_focus and eligible() then
