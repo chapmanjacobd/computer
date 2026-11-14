@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Description": "mpv: hide windowed windows from the taskbar and Alt+Tab, keep them on top, and place them bottom-right; fullscreen windows stay visible in window lists",
+        "Id": "mpv_behavior",
+        "License": "MIT",
+        "Name": "mpv Window Behavior",
+        "Version": "1.0"
+    },
+    "X-Plasma-API": "javascript"
+}
