@@ -1,8 +1,6 @@
 "use strict";
 
-const INITIAL_WIDTH = 600;
-const INITIAL_HEIGHT = 500;
-const INITIAL_GEOMETRY_DELAY_MS = 200;
+const INITIAL_PLACEMENT_DELAY_MS = 250;
 
 const placedInitially = new Set();
 
@@ -35,23 +33,22 @@ function syncWindowState(window) {
     }
 }
 
-function placeInitialGeometry(window) {
+function placeBottomRight(window) {
     if (!isMpv(window) || window.deleted || window.fullScreen ||
         placedInitially.has(window)) {
         return;
     }
     placedInitially.add(window);
 
-    // MaximizeArea is the window's output minus panels/taskbars.
+    // Keep mpv's aspect-correct size (autofit/geometry); only move the
+    // window to the bottom-right of its output's work area.
     const area = workspace.clientArea(KWin.MaximizeArea, window);
-    const width = Math.min(INITIAL_WIDTH, area.width);
-    const height = Math.min(INITIAL_HEIGHT, area.height);
-
+    const size = window.frameGeometry;
     window.frameGeometry = {
-        x: Math.round(area.x + area.width - width),
-        y: Math.round(area.y + area.height - height),
-        width: Math.round(width),
-        height: Math.round(height),
+        x: Math.round(area.x + area.width - size.width),
+        y: Math.round(area.y + area.height - size.height),
+        width: size.width,
+        height: size.height,
     };
 }
 
@@ -64,22 +61,22 @@ function setupWindow(window) {
 
     window.fullScreenChanged.connect(() => {
         syncWindowState(window);
-        // If mpv started fullscreen, give it the intended windowed geometry
-        // the first time it leaves fullscreen.
-        placeInitialGeometry(window);
+        // If mpv started fullscreen, place it bottom-right the first time it
+        // leaves fullscreen.
+        placeBottomRight(window);
     });
     window.skipTaskbarChanged.connect(() => syncWindowState(window));
     window.skipSwitcherChanged.connect(() => syncWindowState(window));
     window.keepAboveChanged.connect(() => syncWindowState(window));
 
-    // mpv commits its own initial size after the window is added. Apply the
-    // placement once after that, then stop managing the geometry so manual
-    // moves and resizes are preserved.
+    // mpv commits its own initial size after the window is added. Move it
+    // once after that, then stop managing the geometry so manual moves and
+    // resizes are preserved.
     const timer = new QTimer();
     timer.singleShot = true;
-    timer.interval = INITIAL_GEOMETRY_DELAY_MS;
+    timer.interval = INITIAL_PLACEMENT_DELAY_MS;
     timer.timeout.connect(() => {
-        placeInitialGeometry(window);
+        placeBottomRight(window);
         syncWindowState(window);
     });
     timer.start();
