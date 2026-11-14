@@ -2,23 +2,11 @@
 update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-virtual-desktop-ids
 
 [1]
-Description=mpv_lower_right
-above=true
-aboverule=2
+Description=mpv focus levels
 fpplevel=3
 fpplevelrule=2
 fsplevel=3
 fsplevelrule=2
-fullscreenrule=3
-maximizehorizrule=3
-maximizevertrule=3
-minimizerule=3
-position=936,371
-positionrule=3
-size=600,500
-sizerule=3
-skiptaskbar=true
-skiptaskbarrule=3
 types=1
 wmclass=mpv mpv
 wmclasscomplete=true
