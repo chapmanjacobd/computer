@@ -1,8 +1,10 @@
 "use strict";
 
-const INITIAL_PLACEMENT_DELAY_MS = 250;
+const PLACEMENT_INTERVAL_MS = 50;
+const PLACEMENT_ATTEMPTS = 6;
 
 const placedInitially = new Set();
+const placementScheduled = new Set();
 
 function isMpv(window) {
     return window &&
@@ -50,28 +52,50 @@ function moveBottomRight(window) {
     };
 }
 
-function placeBottomRight(window) {
-    if (!isMpv(window) || window.deleted || window.fullScreen ||
-        placedInitially.has(window)) {
-        return;
+function attemptPlacement(window) {
+    if (!isMpv(window) || window.deleted || window.fullScreen) {
+        // If mpv entered fullscreen while this placement loop was running,
+        // forget the placement so the unfullscreen handler runs it again.
+        if (window && window.fullScreen) {
+            placedInitially.delete(window);
+        }
+        return false;
     }
-    placedInitially.add(window);
 
     // KWin's "Maximizing" placement policy can leave mpv marked as maximized
-    // even when its actual size is small. Clear that state first, then move
-    // it after KWin has restored its pre-maximized geometry.
+    // even when its actual size is small. Clear that state first; a later
+    // attempt in the loop moves the window after KWin restores its size.
     if (window.maximizeMode !== 0) {
         window.setMaximize(false, false);
-        const timer = new QTimer();
-        timer.singleShot = true;
-        timer.interval = 100;
-        timer.timeout.connect(() => moveBottomRight(window));
-        timer.start();
-        window._mpvPlacementTimer = timer;
-        return;
+        return false;
     }
 
     moveBottomRight(window);
+    placedInitially.add(window);
+    return true;
+}
+
+function placeBottomRight(window) {
+    if (!isMpv(window) || window.deleted || window.fullScreen ||
+        placedInitially.has(window) || placementScheduled.has(window)) {
+        return;
+    }
+    placementScheduled.add(window);
+
+    let attempts = 0;
+    const timer = new QTimer();
+    timer.interval = PLACEMENT_INTERVAL_MS;
+    timer.timeout.connect(() => {
+        attempts++;
+        attemptPlacement(window);
+
+        if (attempts >= PLACEMENT_ATTEMPTS) {
+            timer.stop();
+            placementScheduled.delete(window);
+        }
+    });
+    timer.start();
+    window._mpvPlacementTimer = timer;
 }
 
 function setupWindow(window) {
@@ -98,22 +122,15 @@ function setupWindow(window) {
     window.skipSwitcherChanged.connect(() => syncWindowState(window));
     window.keepAboveChanged.connect(() => syncWindowState(window));
 
-    // mpv commits its own initial size after the window is added. Move it
-    // once after that, then stop managing the geometry so manual moves and
-    // resizes are preserved.
-    const timer = new QTimer();
-    timer.singleShot = true;
-    timer.interval = INITIAL_PLACEMENT_DELAY_MS;
-    timer.timeout.connect(() => {
-        placeBottomRight(window);
-        syncWindowState(window);
-    });
-    timer.start();
-    window._mpvBehaviorTimer = timer;
+    // mpv commits its own initial size after the window is added. Retry the
+    // placement for a short period so late size changes and KWin's restore
+    // after unmaximizing are handled.
+    placeBottomRight(window);
 }
 
 workspace.windowList().forEach(setupWindow);
 workspace.windowAdded.connect(setupWindow);
 workspace.windowRemoved.connect((window) => {
     placedInitially.delete(window);
+    placementScheduled.delete(window);
 });
