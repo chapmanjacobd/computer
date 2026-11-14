@@ -33,12 +33,10 @@ function syncWindowState(window) {
     }
 }
 
-function placeBottomRight(window) {
-    if (!isMpv(window) || window.deleted || window.fullScreen ||
-        placedInitially.has(window)) {
+function moveBottomRight(window) {
+    if (!isMpv(window) || window.deleted || window.fullScreen) {
         return;
     }
-    placedInitially.add(window);
 
     // Keep mpv's aspect-correct size (autofit/geometry); only move the
     // window to the bottom-right of its output's work area.
@@ -52,12 +50,43 @@ function placeBottomRight(window) {
     };
 }
 
+function placeBottomRight(window) {
+    if (!isMpv(window) || window.deleted || window.fullScreen ||
+        placedInitially.has(window)) {
+        return;
+    }
+    placedInitially.add(window);
+
+    // KWin's "Maximizing" placement policy can leave mpv marked as maximized
+    // even when its actual size is small. Clear that state first, then move
+    // it after KWin has restored its pre-maximized geometry.
+    if (window.maximizeMode !== 0) {
+        window.setMaximize(false, false);
+        const timer = new QTimer();
+        timer.singleShot = true;
+        timer.interval = 100;
+        timer.timeout.connect(() => moveBottomRight(window));
+        timer.start();
+        window._mpvPlacementTimer = timer;
+        return;
+    }
+
+    moveBottomRight(window);
+}
+
 function setupWindow(window) {
     if (!isMpv(window)) {
         return;
     }
 
     syncWindowState(window);
+
+    // KWin's "Maximizing" placement policy marks new windows as maximized.
+    // Clear that immediately while mpv is still windowed; leaving it set can
+    // make mpv restore to a full-screen-sized window after fullscreen.
+    if (!window.fullScreen && window.maximizeMode !== 0) {
+        window.setMaximize(false, false);
+    }
 
     window.fullScreenChanged.connect(() => {
         syncWindowState(window);

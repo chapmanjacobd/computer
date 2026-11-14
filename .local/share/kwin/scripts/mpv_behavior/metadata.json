@@ -1,7 +1,7 @@
 {
     "KPackageStructure": "KWin/Script",
     "KPlugin": {
-        "Description": "mpv: hide windowed windows from the taskbar and Alt+Tab, keep them on top, and move them bottom-right at mpv's own size; fullscreen windows stay visible in window lists",
+        "Description": "mpv: hide windowed windows from the taskbar and Alt+Tab, keep them on top, unmaximize, and move them bottom-right at mpv's own size; fullscreen windows stay visible in window lists",
         "Id": "mpv_behavior",
         "License": "MIT",
         "Name": "mpv Window Behavior",
