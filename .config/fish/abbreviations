@@ -905,7 +905,6 @@ abbr -a -- git.deleted git log --all --full-history --diff-filter=D --name-statu
 abbr -a -- relink ln -s --no-dereference --force link_target lnk
 abbr -a -- logout qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 abbr -a -- git.squashed git log --first-parent --oneline
-abbr -a -- gs 'git status --short --untracked; echo Why not try Ctrl+S?'
 abbr -a -- aria2c.throttled aria2c -x16 -j16 -s32 --lowest-speed-limit=100K --max-overall-download-limit=32M
 abbr -a -- pip.download pip download --no-binary :all: --no-deps
 abbr -a -- mvt mv -T
@@ -1261,3 +1260,4 @@ abbr -a -- gl git log --oneline --decorate --stat --first-parent
 abbr -a -- snow zsnow --nFlakes 150 --scale 4 --speed 0.4 --color CCDDFF
 abbr -a -- git.show git show -m HEAD
 abbr -a -- g opencode mini
+abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --untracked; echo Why not try Ctrl+S?'
