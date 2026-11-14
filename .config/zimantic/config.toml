@@ -19,3 +19,23 @@ name = "kolibri"
 path = "/home/xk/.local/share/kolibri/home"
 server_url = "http://localhost:8085"
 granularity = "children"
+[[collections]]
+type = "zim"
+name = "wikipedia_en_medicine_maxi_2026-04"
+path = "../../github/o/zimantic/evaluation.zims/wikipedia_en_medicine_maxi_2026-04.zim"
+[[collections]]
+type = "zim"
+name = "cooking.stackexchange.com_en_all_2026-07"
+path = "../../github/o/zimantic/evaluation.zims/cooking.stackexchange.com_en_all_2026-07.zim"
+[[collections]]
+type = "zim"
+name = "ted_mul_ocean_2026-09"
+path = "../../github/o/zimantic/evaluation.zims/ted_mul_ocean_2026-09.zim"
+[[collections]]
+type = "zim"
+name = "wikipedia_en_astronomy_maxi_2025-11"
+path = "../../github/o/zimantic/evaluation.zims/wikipedia_en_astronomy_maxi_2025-11.zim"
+[[collections]]
+type = "zim"
+name = "wikibooks_en_all_nopic_2026-01"
+path = "../../github/o/zimantic/evaluation.zims/wikibooks_en_all_nopic_2026-01.zim"

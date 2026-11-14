@@ -6,7 +6,7 @@
 # scratch worktree, and use the rebase if that applies cleanly. If both
 # conflict, the merge is run so the user resolves conflicts in the usual place.
 function git.merge.or.rebase --description 'Sync with a branch: merge if clean, otherwise rebase if that is clean'
-    argparse --name='git merge-or-rebase' 'n/no-fetch' 'h/help' -- $argv
+    argparse --name='git merge-or-rebase' n/no-fetch h/help -- $argv
     or return 2
 
     if set -q _flag_h
