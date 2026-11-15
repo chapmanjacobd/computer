@@ -34,7 +34,7 @@ COMPONENT_IFACE = "org.kde.kglobalaccel.Component"
 
 DEFAULT_COMPONENT = "fish-shortcuts"
 DEFAULT_COMPONENT_NAME = "Fish shortcuts"
-DEFAULT_REPEAT_MS = 100
+DEFAULT_REPEAT_MS = 200
 DEFAULT_MAX_HOLD_SECONDS = 30
 
 # setShortcut flags: NoAutoloading (4) applies the keys we pass instead of the
