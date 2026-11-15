@@ -21,5 +21,9 @@ function _xcalib.dim_apply --argument-names mode
         return 1
     end
 
-    kscreen-doctor $changes
+    kscreen-doctor $changes; or return 1
+
+    set -l throttle 0.2
+    set -q XCALIB_DIM_THROTTLE; and set throttle $XCALIB_DIM_THROTTLE
+    sleep $throttle
 end

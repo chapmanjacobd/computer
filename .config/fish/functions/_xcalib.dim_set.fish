@@ -3,14 +3,12 @@ function _xcalib.dim_set --argument-names mode
     test -d "$lockdir"; or set lockdir /tmp
     set -l lockfile $lockdir/xcalib.dimming.lock
 
-    # Serialize rapid shortcut presses. If a press is already running, drop
-    # this one rather than queueing a backlog of steps.
+    # Serialize dim steps. Presses arriving while a step is in flight are
+    # dropped; the delay after each step throttles key repeat.
     if command -q flock
-        flock -w 1 -E 75 $lockfile fish -c "_xcalib.dim_apply $mode"
+        flock -n -E 75 $lockfile fish -c "_xcalib.dim_apply $mode"
         set -l result $status
-        if test $result -eq 75
-            echo "xcalib: busy; skipping this press" >&2
-        end
+        test $result -eq 75; and return 0
         return $result
     end
 

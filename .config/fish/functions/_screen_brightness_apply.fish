@@ -22,5 +22,9 @@ function _screen_brightness_apply --argument-names delta target
         return 1
     end
 
-    kscreen-doctor $changes
+    kscreen-doctor $changes; or return 1
+
+    set -l throttle 0.2
+    set -q BRIGHTNESS_THROTTLE; and set throttle $BRIGHTNESS_THROTTLE
+    sleep $throttle
 end
