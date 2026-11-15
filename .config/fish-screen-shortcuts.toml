@@ -1,0 +1,122 @@
+# Fish screen/window shortcuts.
+#
+# Reload after editing:
+#   systemctl --user reload fish-screen-shortcuts.service
+#
+# keys: modifiers are Shift, Ctrl, Alt, Meta. A key is one character,
+# F1-F35, or a name such as Space, PgUp, PgDown, VolumeUp.
+# repeat = true repeats the command while the key is held.
+# id pins the identity KGlobalAccel uses; keep it stable across edits.
+
+component = 'fish-shortcuts'
+component_name = 'Fish shortcuts'
+repeat_ms = 200
+max_hold_seconds = 30
+
+[[shortcut]]
+id = 'catt-2'
+key = 'Alt+Shift+F'
+command = 'catt volumeup 5'
+
+[[shortcut]]
+id = 'catt-3'
+key = 'Alt+Shift+P'
+command = 'catt stop'
+
+[[shortcut]]
+id = 'catt'
+key = 'Alt+Shift+W'
+command = 'catt volumedown 5'
+
+[[shortcut]]
+id = 'fish-11'
+key = 'Alt+K'
+command = 'fish -c sitdown'
+
+[[shortcut]]
+id = 'fish-19'
+key = 'Alt+J'
+command = 'fish -c "vnc pakon"'
+
+[[shortcut]]
+id = 'fish-21'
+key = 'Alt+B'
+command = 'fish -c "vnc backup"'
+
+[[shortcut]]
+id = 'fish-6'
+key = 'Ctrl+Alt+Shift+P'
+command = 'fish -c "wt -d+9"'
+
+[[shortcut]]
+id = 'fish-9'
+key = 'Alt+H'
+command = 'fish -c tv'
+
+[[shortcut]]
+id = 'lb-2'
+key = 'Alt+G'
+command = 'lb pause'
+
+[[shortcut]]
+id = 'lb'
+key = 'Alt+Shift+T'
+command = 'lb next'
+
+[[shortcut]]
+id = 'net.local.fish-3'
+key = 'Alt+F'
+command = 'fish -c "catt.volume.up"'
+
+[[shortcut]]
+id = 'net.local.fish-4'
+key = 'Alt+C'
+command = 'fish -c brightness.down'
+repeat = true
+
+[[shortcut]]
+id = 'net.local.fish-5'
+key = 'Alt+D'
+command = 'fish -c brightness.up'
+repeat = true
+
+[[shortcut]]
+id = 'net.local.fish-6'
+key = 'Alt+P'
+command = 'fish -c lt.toggle'
+
+[[shortcut]]
+id = 'net.local.fish-7'
+key = 'Ctrl+Shift+Space'
+command = 'fish -c windows.maximize.all'
+
+[[shortcut]]
+id = 'net.local.fish-8'
+key = 'Alt+T'
+command = 'fish -c next.delete'
+
+[[shortcut]]
+id = 'net.local.fish-9'
+key = 'Alt+0'
+command = 'fish -c kde.reset'
+
+[[shortcut]]
+id = 'net.local.pkill'
+key = 'Alt+9'
+command = 'pkill -f xdotool'
+
+[[shortcut]]
+id = 'wmctrl'
+key = 'Meta+V'
+command = 'wmctrl -r :ACTIVE: -e 0,560,700,920,88'
+
+[[shortcut]]
+id = 'xcalib-2'
+key = 'Alt+PgDown'
+command = 'fish -c xcalib.dim'
+repeat = true
+
+[[shortcut]]
+id = 'xcalib'
+key = 'Alt+PgUp'
+command = 'fish -c xcalib.reset'

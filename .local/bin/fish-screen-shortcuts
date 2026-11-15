@@ -1,22 +1,27 @@
 #!/usr/bin/env python3
-"""KGlobalAccel daemon for fish screen/window shortcuts.
+"""Global shortcut daemon for fish screen/window shortcuts.
 
-KDE's desktop-file command shortcuts only fire once per key press, so holding
-a key does not repeat. This daemon registers the actions directly with
-KGlobalAccel, which reports press/release, and repeats actions marked
-"repeat" while the key is held.
+KGlobalAccel reports key press/release, so actions marked "repeat" keep firing
+while the key is held. KGlobalAccel is also the only backend here: Wayland has
+no portable global-hotkey API.
 
-Actions are read from ~/.config/fish-screen-shortcuts.json. Old command
-shortcuts listed in "migrated_from" are unbound so they cannot conflict.
+Shortcuts come from a TOML file (default
+$XDG_CONFIG_HOME/fish-screen-shortcuts.toml). The file is the source of truth:
+registering always applies its keys, overriding shortcuts saved in System
+Settings, and actions removed from the file are unregistered.
+
+Reload after editing:  systemctl --user reload fish-screen-shortcuts.service
 """
-import json
+import argparse
 import os
+import re
 import shlex
 import signal
 import subprocess
 import sys
 import threading
 import time
+import tomllib
 
 import dbus
 import dbus.mainloop.glib
@@ -26,9 +31,16 @@ SERVICE = "org.kde.kglobalaccel"
 ROOT = "/kglobalaccel"
 IFACE = "org.kde.KGlobalAccel"
 COMPONENT_IFACE = "org.kde.kglobalaccel.Component"
-CONFIG_PATH = os.path.expanduser("~/.config/fish-screen-shortcuts.json")
-REPEAT_MS = 200
-MAX_HOLD_SECONDS = 30
+
+DEFAULT_COMPONENT = "fish-shortcuts"
+DEFAULT_COMPONENT_NAME = "Fish shortcuts"
+DEFAULT_REPEAT_MS = 100
+DEFAULT_MAX_HOLD_SECONDS = 30
+
+# setShortcut flags: NoAutoloading (4) applies the keys we pass instead of the
+# saved ones, IsDefault (2) makes them the value used by "reset to default".
+# NoAutoloading is what makes the file win over System Settings.
+SHORTCUT_FLAGS = 6
 
 HOME = os.path.expanduser("~")
 ENV = os.environ.copy()
@@ -39,42 +51,345 @@ ENV["PATH"] = os.pathsep.join(
 ENV["XCALIB_DIM_THROTTLE"] = "0"
 ENV["BRIGHTNESS_THROTTLE"] = "0"
 
+# Modifier bits in the combined QKeySequence integer (Qt modifier value >> 24).
+MODIFIERS = {
+    "shift": 0x02,
+    "ctrl": 0x04,
+    "control": 0x04,
+    "alt": 0x08,
+    "meta": 0x10,
+    "super": 0x10,
+    "win": 0x10,
+}
 
-def command_argv(command):
+# Qt key codes for named keys. The integer shortcut format is
+# (modifiers << 24) | Qt::Key, which is what KGlobalAccel stores.
+KEY_NAMES = {
+    "space": 0x00000020,
+    "escape": 0x01000000,
+    "tab": 0x01000001,
+    "backtab": 0x01000002,
+    "backspace": 0x01000003,
+    "return": 0x01000004,
+    "enter": 0x01000005,
+    "insert": 0x01000006,
+    "delete": 0x01000007,
+    "pause": 0x01000008,
+    "print": 0x01000009,
+    "sysreq": 0x0100000A,
+    "clear": 0x0100000B,
+    "home": 0x01000010,
+    "end": 0x01000011,
+    "left": 0x01000012,
+    "up": 0x01000013,
+    "right": 0x01000014,
+    "down": 0x01000015,
+    "pageup": 0x01000016,
+    "pagedown": 0x01000017,
+    "capslock": 0x01000024,
+    "numlock": 0x01000025,
+    "scrolllock": 0x01000026,
+    "menu": 0x01000055,
+    "back": 0x01000061,
+    "forward": 0x01000062,
+    "stop": 0x01000063,
+    "refresh": 0x01000064,
+    "search": 0x01000092,
+    "favorites": 0x01000091,
+    "homepage": 0x01000090,
+    "openurl": 0x01000094,
+    "launchmail": 0x010000A0,
+    "launchmedia": 0x010000A1,
+    "volumeup": 0x01000072,
+    "volumedown": 0x01000070,
+    "volumemute": 0x01000071,
+    "mediaplay": 0x01000080,
+    "mediastop": 0x01000081,
+    "mediaprevious": 0x01000082,
+    "medianext": 0x01000083,
+    "mediarecord": 0x01000084,
+    "monbrightnessup": 0x010000B2,
+    "monbrightnessdown": 0x010000B3,
+    "keyboardbrightnessup": 0x010000B5,
+    "keyboardbrightnessdown": 0x010000B6,
+    "poweroff": 0x010000B7,
+    "sleep": 0x01020004,
+    "suspend": 0x0100010C,
+    "hibernate": 0x01000108,
+    "wakeup": 0x010000B8,
+    "screensaver": 0x010000BA,
+    "calculator": 0x010000CB,
+    "explorer": 0x010000D5,
+}
+
+# Human spellings that differ from the canonical names above.
+KEY_ALIASES = {
+    "esc": "escape",
+    "del": "delete",
+    "ins": "insert",
+    "pgup": "pageup",
+    "pgdown": "pagedown",
+    "prtsc": "print",
+    "plus": "+",
+    "minus": "-",
+    "xf86audioraisevolume": "volumeup",
+    "xf86audiolowervolume": "volumedown",
+    "xf86audiomute": "volumemute",
+    "xf86audioplay": "mediaplay",
+    "xf86audiostop": "mediastop",
+    "xf86audioprev": "mediaprevious",
+    "xf86audionext": "medianext",
+    "xf86monbrightnessup": "monbrightnessup",
+    "xf86monbrightnessdown": "monbrightnessdown",
+    "xf86kbdbrightnessup": "keyboardbrightnessup",
+    "xf86kbdbrightnessdown": "keyboardbrightnessdown",
+    "xf86kbd_brightnessup": "keyboardbrightnessup",
+    "xf86kbd_brightnessdown": "keyboardbrightnessdown",
+}
+
+TOP_LEVEL_FIELDS = {"component", "component_name", "repeat_ms", "max_hold_seconds", "shortcut"}
+SHORTCUT_FIELDS = {"id", "name", "command", "key", "keys", "repeat"}
+
+
+class ConfigError(Exception):
+    pass
+
+
+def default_config_path():
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return os.environ.get("FISH_SCREEN_SHORTCUTS_CONFIG") or os.path.join(
+        base, "fish-screen-shortcuts.toml"
+    )
+
+
+def parse_key(value, where):
+    """Convert "Ctrl+Alt+K" (or an integer) to a KGlobalAccel key code."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        if 0 <= value <= 0xFFFFFFFF:
+            return value
+        raise ConfigError(f"{where}: key code {value} is out of range")
+    if not isinstance(value, str) or not value.strip():
+        raise ConfigError(f"{where}: keys must be names like 'Ctrl+Alt+K' or integers")
+
+    parts = value.split("+")
+    if len(parts) >= 3 and parts[-1] == "" and parts[-2] == "":
+        # "Ctrl++" means Ctrl plus the plus key; drop the empty middle piece.
+        parts = parts[:-2] + ["+"]
+
+    modifiers = 0
+    key = None
+    for index, raw in enumerate(parts):
+        part = raw.strip()
+        name = part.lower()
+        last = index == len(parts) - 1
+        if name in MODIFIERS:
+            if last:
+                raise ConfigError(f"{where}: {value!r} ends with a modifier")
+            modifiers |= MODIFIERS[name]
+            continue
+        if key is not None:
+            raise ConfigError(f"{where}: {value!r} has more than one non-modifier key")
+        key = lookup_key(part, where, value)
+
+    return (modifiers << 24) | key
+
+
+def lookup_key(part, where, expression):
+    name = KEY_ALIASES.get(part.lower(), part.lower())
+    if name in KEY_NAMES:
+        return KEY_NAMES[name]
+    if len(name) == 1:
+        codepoint = ord(name.upper() if name.isalpha() else name)
+        if 0 < codepoint <= 0x10FFFF:
+            return codepoint
+    match = re.fullmatch(r"f([1-9]|[12][0-9]|3[0-5])", name)
+    if match:
+        return 0x01000030 + int(match.group(1)) - 1
+    raise ConfigError(
+        f"{where}: unknown key {part!r} in {expression!r} "
+        "(use a single character, F1-F35, a modifier, or a name like PgDown)"
+    )
+
+
+def action_id_default(command):
+    slug = re.sub(r"[^a-z0-9]+", "-", command.lower()).strip("-")
+    return slug[:48] or "action"
+
+
+def load_config(path):
+    """Read and validate the TOML file. Raises ConfigError with a line number."""
     try:
-        return shlex.split(command)
-    except ValueError:
-        return ["/bin/sh", "-c", command]
+        with open(path, "rb") as file:
+            data = tomllib.load(file)
+    except FileNotFoundError:
+        raise ConfigError(f"{path}: file not found") from None
+    except tomllib.TOMLDecodeError as error:
+        raise ConfigError(f"{path}: {error}") from None
+    except OSError as error:
+        raise ConfigError(f"{path}: {error}") from None
+    except UnicodeDecodeError as error:
+        raise ConfigError(f"{path}: not valid UTF-8: {error}") from None
+
+    unknown = set(data) - TOP_LEVEL_FIELDS
+    if unknown:
+        raise ConfigError(
+            f"{path}: unknown setting(s) {', '.join(sorted(unknown))}; "
+            f"valid settings are {', '.join(sorted(TOP_LEVEL_FIELDS))}"
+        )
+
+    component = data.get("component", DEFAULT_COMPONENT)
+    if not isinstance(component, str) or not component:
+        raise ConfigError(f"{path}: component must be a non-empty string")
+
+    component_name = data.get("component_name", DEFAULT_COMPONENT_NAME)
+    if not isinstance(component_name, str) or not component_name:
+        raise ConfigError(f"{path}: component_name must be a non-empty string")
+
+    repeat_ms = positive_int(data, "repeat_ms", DEFAULT_REPEAT_MS, path)
+    max_hold_seconds = positive_int(
+        data, "max_hold_seconds", DEFAULT_MAX_HOLD_SECONDS, path
+    )
+
+    raw_shortcuts = data.get("shortcut", [])
+    if not isinstance(raw_shortcuts, list):
+        raise ConfigError(f"{path}: shortcut must be an array of tables ([[shortcut]])")
+
+    actions = []
+    seen_ids = set()
+    for index, entry in enumerate(raw_shortcuts, 1):
+        where = f"{path}: shortcut {index}"
+        if not isinstance(entry, dict):
+            raise ConfigError(f"{where}: expected a [[shortcut]] table")
+        unknown = set(entry) - SHORTCUT_FIELDS
+        if unknown:
+            raise ConfigError(
+                f"{where}: unknown field(s) {', '.join(sorted(unknown))}; "
+                f"valid fields are {', '.join(sorted(SHORTCUT_FIELDS))}"
+            )
+
+        command, argv = parse_command(entry.get("command"), where)
+
+        explicit_id = entry.get("id")
+        if explicit_id is None:
+            shortcut_id = action_id_default(command)
+        elif isinstance(explicit_id, str) and explicit_id:
+            shortcut_id = explicit_id
+        else:
+            raise ConfigError(f"{where}: id must be a non-empty string")
+
+        if shortcut_id in seen_ids:
+            if explicit_id is None:
+                base = shortcut_id
+                suffix = 2
+                while shortcut_id in seen_ids:
+                    shortcut_id = f"{base}-{suffix}"
+                    suffix += 1
+            else:
+                raise ConfigError(f"{where}: duplicate id {shortcut_id!r}")
+        seen_ids.add(shortcut_id)
+
+        name = entry.get("name", command)
+        if not isinstance(name, str) or not name:
+            raise ConfigError(f"{where}: name must be a non-empty string")
+
+        repeat = entry.get("repeat", False)
+        if not isinstance(repeat, bool):
+            raise ConfigError(f"{where}: repeat must be true or false")
+
+        key_values = entry.get("keys", entry.get("key"))
+        if "key" in entry and "keys" in entry:
+            raise ConfigError(f"{where}: use either key or keys, not both")
+        if key_values is None:
+            raise ConfigError(f"{where}: missing key or keys")
+        if not isinstance(key_values, list):
+            key_values = [key_values]
+        if not key_values:
+            raise ConfigError(f"{where}: keys must not be empty")
+
+        keys = []
+        key_texts = []
+        for key_value in key_values:
+            keys.append(parse_key(key_value, where))
+            key_texts.append(key_value if isinstance(key_value, str) else str(key_value))
+
+        actions.append(
+            {
+                "id": shortcut_id,
+                "name": name,
+                "command": command,
+                "argv": argv,
+                "keys": keys,
+                "key_texts": key_texts,
+                "repeat": repeat,
+            }
+        )
+
+    return {
+        "component": component,
+        "component_name": component_name,
+        "repeat_ms": repeat_ms,
+        "max_hold_seconds": max_hold_seconds,
+        "actions": actions,
+    }
+
+
+def positive_int(data, field, default, path):
+    value = data.get(field, default)
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ConfigError(f"{path}: {field} must be a positive integer")
+    return value
+
+
+def parse_command(value, where):
+    if isinstance(value, str):
+        try:
+            argv = shlex.split(value)
+        except ValueError as error:
+            raise ConfigError(
+                f"{where}: cannot split command ({error}); use an array of arguments"
+            ) from None
+        command = value
+    elif isinstance(value, list) and value and all(isinstance(arg, str) for arg in value):
+        argv = list(value)
+        command = shlex.join(argv)
+    else:
+        raise ConfigError(f"{where}: command must be a string or a non-empty array of strings")
+    if not argv:
+        raise ConfigError(f"{where}: command must not be empty")
+    return command, argv
 
 
 class ShortcutDaemon:
-    def __init__(self):
-        self.config = self.load_config()
-        self.actions = {action["id"]: action for action in self.config["actions"]}
+    def __init__(self, config_path):
+        self.config_path = config_path
+        self.config = None
+        self.actions = {}
+        self.component = DEFAULT_COMPONENT
+        self.component_name = DEFAULT_COMPONENT_NAME
+        self.repeat_ms = DEFAULT_REPEAT_MS
+        self.max_hold_seconds = DEFAULT_MAX_HOLD_SECONDS
+        self.config_error = None
         self.bus = None
         self.kg = None
         self.timers = {}
         self.expiry_sources = {}
         self.active = {}
         self.connected = False
+        try:
+            self.load()
+        except ConfigError as error:
+            # Stay alive: SIGHUP can recover once the file is fixed.
+            self.config_error = str(error)
 
-    @staticmethod
-    def load_config():
-        with open(CONFIG_PATH, encoding="utf-8") as file:
-            return json.load(file)
-
-    @property
-    def component(self):
-        return self.config["component"]
-
-    @property
-    def component_name(self):
-        return self.config.get("component_name", self.component)
-
-    @property
-    def component_path(self):
-        safe = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in self.component)
-        return f"/component/{safe}"
+    def load(self):
+        config = load_config(self.config_path)
+        self.config = config
+        self.actions = {action["id"]: action for action in config["actions"]}
+        self.component = config["component"]
+        self.component_name = config["component_name"]
+        self.repeat_ms = config["repeat_ms"]
+        self.max_hold_seconds = config["max_hold_seconds"]
+        self.config_error = None
 
     def action_id(self, action):
         return [self.component, action["id"], self.component_name, action["name"]]
@@ -84,17 +399,17 @@ class ShortcutDaemon:
             return
         self.bus = dbus.SessionBus()
         self.kg = dbus.Interface(self.bus.get_object(SERVICE, ROOT), IFACE)
+        # No path filter: handlers compare the component, so changing component
+        # in the config does not require reconnecting.
         self.bus.add_signal_receiver(
             self.on_pressed,
             signal_name="globalShortcutPressed",
             dbus_interface=COMPONENT_IFACE,
-            path=self.component_path,
         )
         self.bus.add_signal_receiver(
             self.on_released,
             signal_name="globalShortcutReleased",
             dbus_interface=COMPONENT_IFACE,
-            path=self.component_path,
         )
         self.bus.add_signal_receiver(
             self.on_name_owner_changed,
@@ -112,42 +427,35 @@ class ShortcutDaemon:
         except dbus.exceptions.DBusException:
             return set()
 
-    def clear_migrated(self):
-        for action in self.actions.values():
-            component = action.get("migrated_from")
-            if not component:
-                continue
-            try:
-                self.kg.setForeignShortcut([component, "_launch", "", ""], dbus.Array([], signature="i"))
-            except dbus.exceptions.DBusException:
-                pass
-
     def register(self):
+        if self.config is None:
+            return False
         try:
-            self.clear_migrated()
-            existing = self.existing_actions()
+            for shortcut_id in self.existing_actions() - set(self.actions):
+                try:
+                    self.kg.unregister(self.component, shortcut_id)
+                except dbus.exceptions.DBusException:
+                    pass
             for action in self.actions.values():
                 action_id = self.action_id(action)
                 self.kg.doRegister(action_id)
-                if action["id"] in existing:
-                    # Keep whatever the user configured in System Settings.
-                    self.kg.setShortcut(action_id, dbus.Array([], signature="i"), 2)
-                else:
-                    # SetPresent | NoAutoloading
-                    self.kg.setShortcut(action_id, dbus.Array(action["keys"], signature="i"), 6)
-            print(f"registered {len(self.actions)} actions", flush=True)
+                self.kg.setShortcut(
+                    action_id, dbus.Array(action["keys"], signature="i"), SHORTCUT_FLAGS
+                )
+            print(
+                f"registered {len(self.actions)} actions from {self.config_path}",
+                flush=True,
+            )
             return True
         except dbus.exceptions.DBusException as error:
             print(f"register failed: {error}", file=sys.stderr, flush=True)
             return False
 
     def run(self, action):
-        argv = command_argv(action["command"])
-
         def worker():
             try:
                 subprocess.run(
-                    argv,
+                    action["argv"],
                     cwd=HOME,
                     env=ENV,
                     stdin=subprocess.DEVNULL,
@@ -171,7 +479,7 @@ class ShortcutDaemon:
 
     def tick(self, shortcut, action):
         started = self.active.get(shortcut)
-        if started is None or time.monotonic() - started > MAX_HOLD_SECONDS:
+        if started is None or time.monotonic() - started > self.max_hold_seconds:
             self.stop(shortcut)
             return False
         self.run(action)
@@ -190,16 +498,18 @@ class ShortcutDaemon:
             return
         self.active[shortcut] = time.monotonic()
         self.run(action)
-        if action.get("repeat"):
-            self.timers[shortcut] = GLib.timeout_add(REPEAT_MS, self.tick, shortcut, action)
-        self.expiry_sources[shortcut] = GLib.timeout_add_seconds(MAX_HOLD_SECONDS, self.expire, shortcut)
+        if action["repeat"]:
+            self.timers[shortcut] = GLib.timeout_add(self.repeat_ms, self.tick, shortcut, action)
+        self.expiry_sources[shortcut] = GLib.timeout_add_seconds(
+            self.max_hold_seconds, self.expire, shortcut
+        )
 
     def on_released(self, component, shortcut, timestamp):
         if component == self.component:
             self.stop(shortcut)
 
     def on_name_owner_changed(self, name, old_owner, new_owner):
-        if name == SERVICE and new_owner:
+        if name == SERVICE and new_owner and self.config is not None:
             GLib.timeout_add(500, lambda: not self.register())
 
     def reload(self, *_):
@@ -207,26 +517,60 @@ class ShortcutDaemon:
 
     def do_reload(self):
         try:
-            self.config = self.load_config()
-            self.actions = {action["id"]: action for action in self.config["actions"]}
-            for shortcut in list(self.active):
-                self.stop(shortcut)
-            if not self.register():
-                print("reload registered nothing; will retry on next KGlobalAccel restart", file=sys.stderr)
+            self.load()
         except Exception as error:
-            print(f"reload failed: {error}", file=sys.stderr, flush=True)
+            print(f"reload failed, keeping previous shortcuts: {error}", file=sys.stderr, flush=True)
+            return False
+        for shortcut in list(self.active):
+            self.stop(shortcut)
+        if not self.register():
+            print(
+                "reload registered nothing; will retry when KGlobalAccel restarts",
+                file=sys.stderr,
+                flush=True,
+            )
         return False
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "config",
+        nargs="?",
+        default=default_config_path(),
+        help="TOML config (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="validate the config and print the shortcuts"
+    )
+    args = parser.parse_args()
+
+    if args.check:
+        try:
+            config = load_config(args.config)
+        except ConfigError as error:
+            print(error, file=sys.stderr)
+            return 1
+        print(f"{len(config['actions'])} shortcuts in {args.config}")
+        for action in config["actions"]:
+            keys = ", ".join(
+                f"{text} ({value})"
+                for text, value in zip(action["key_texts"], action["keys"])
+            )
+            repeat = " (repeat)" if action["repeat"] else ""
+            print(f"  {action['id']}: {keys} -> {action['command']}{repeat}")
+        return 0
+
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    daemon = ShortcutDaemon()
+    daemon = ShortcutDaemon(args.config)
+    if daemon.config_error:
+        print(f"config error: {daemon.config_error}", file=sys.stderr, flush=True)
     try:
         daemon.connect()
     except dbus.exceptions.DBusException as error:
         print(f"cannot connect to KGlobalAccel: {error}", file=sys.stderr, flush=True)
         return 1
-    if not daemon.register():
+    if daemon.config is not None and not daemon.register():
         GLib.timeout_add_seconds(2, lambda: not daemon.register())
     signal.signal(signal.SIGHUP, daemon.reload)
     GLib.MainLoop().run()
