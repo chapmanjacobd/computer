@@ -1,7 +1,7 @@
-# Fish screen/window shortcuts.
+# Fish global shortcuts (KDE).
 #
 # Reload after editing:
-#   systemctl --user reload fish-screen-shortcuts.service
+#   systemctl --user reload fish-global-shortcuts-kde.service
 #
 # keys: modifiers are Shift, Ctrl, Alt, Meta. A key is one character,
 # F1-F35, or a name such as Space, PgUp, PgDown, VolumeUp.
@@ -10,7 +10,7 @@
 # id pins the identity KGlobalAccel uses; keep it stable across edits.
 
 component = 'fish-shortcuts'
-component_name = 'Fish shortcuts'
+component_name = 'Fish global shortcuts (KDE)'
 repeat_ms = 200
 max_hold_seconds = 30
 
@@ -74,14 +74,12 @@ id = 'net.local.fish-4'
 key = 'Alt+C'
 command = 'fish -c brightness.down'
 repeat = true
-repeat_ms = 50
 
 [[shortcut]]
 id = 'net.local.fish-5'
 key = 'Alt+D'
 command = 'fish -c brightness.up'
 repeat = true
-repeat_ms = 50
 
 [[shortcut]]
 id = 'net.local.fish-6'

@@ -21,7 +21,7 @@ _k_friendly_name=CopyQ
 ||Show the tray menu||=Ctrl+Alt+V,Ctrl+Alt+V,CopyQ - Show the tray menu
 
 [fish-shortcuts]
-_k_friendly_name=Fish shortcuts
+_k_friendly_name=Fish global shortcuts (KDE)
 catt=Alt+Shift+W,none,catt volumedown 5
 catt-2=Alt+Shift+F,none,catt volumeup 5
 catt-3=Alt+Shift+P,none,catt stop

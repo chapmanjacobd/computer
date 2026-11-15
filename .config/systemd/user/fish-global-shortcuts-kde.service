@@ -1,11 +1,11 @@
 [Unit]
-Description=Fish screen and command shortcuts
+Description=Fish global shortcuts (KDE)
 After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 %h/.local/bin/fish-screen-shortcuts
+ExecStart=/usr/bin/python3 %h/.local/bin/fish-global-shortcuts-kde
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=2

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Global shortcut daemon for fish screen/window shortcuts.
+"""KDE global shortcut daemon for fish commands.
 
 KGlobalAccel reports key press/release, so actions marked "repeat" keep firing
 while the key is held. KGlobalAccel is also the only backend here: Wayland has
 no portable global-hotkey API.
 
 Shortcuts come from a TOML file (default
-$XDG_CONFIG_HOME/fish-screen-shortcuts.toml). The file is the source of truth:
-registering always applies its keys, overriding shortcuts saved in System
-Settings, and actions removed from the file are unregistered.
+$XDG_CONFIG_HOME/fish-global-shortcuts-kde.toml). The file is the source of
+truth: registering always applies its keys, overriding shortcuts saved in
+System Settings, and actions removed from the file are unregistered.
 
-Reload after editing:  systemctl --user reload fish-screen-shortcuts.service
+Reload after editing:  systemctl --user reload fish-global-shortcuts-kde.service
 """
 import argparse
 import os
@@ -157,8 +157,8 @@ class ConfigError(Exception):
 
 def default_config_path():
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    return os.environ.get("FISH_SCREEN_SHORTCUTS_CONFIG") or os.path.join(
-        base, "fish-screen-shortcuts.toml"
+    return os.environ.get("FISH_GLOBAL_SHORTCUTS_KDE_CONFIG") or os.path.join(
+        base, "fish-global-shortcuts-kde.toml"
     )
 
 
