@@ -1,4 +1,4 @@
 # Defined interactively
 function sunrise
-    brightness.lg.set 1
+    brightness.lg set 1
 end

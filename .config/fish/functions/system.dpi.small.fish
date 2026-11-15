@@ -3,13 +3,7 @@ function system.dpi.small
         xrandr --dpi 128
     end
     echo 'Xft.dpi: 128' | xrdb -override
-    set -l changes
-    for output in (_kscreen_outputs)
-        set -a changes output.$output.scale.1
-    end
-    if test (count $changes) -gt 0
-        kscreen-doctor $changes
-    end
+    _screen.scale 1
     kwriteconfig6 --file kdeglobals --group KScreen --key ScaleFactor 1
     sed -i -E 's/^Gdk\/UnscaledDPI .*/Gdk\/UnscaledDPI 131072/' ~/.config/xsettingsd/xsettingsd.conf
 

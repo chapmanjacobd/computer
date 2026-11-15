@@ -4,7 +4,7 @@ function _xcalib.dim_apply --argument-names mode
     set -l minimum 10
     set -q XCALIB_DIM_MIN; and set minimum $XCALIB_DIM_MIN
 
-    set -l changes
+    set -l changed 0
     for entry in (_kscreen_dimmings)
         set -l fields (string split -m 1 \t -- $entry)
         set -l output $fields[1]
@@ -13,15 +13,15 @@ function _xcalib.dim_apply --argument-names mode
         if test "$mode" = dim
             set value (math "max($minimum, $current - $step)")
         end
-        set -a changes output.$output.dimming.$value
+        kscreenctl $output set-dimming "$value%"
+        or return 1
+        set changed 1
     end
 
-    if not set -q changes[1]
+    if test $changed -eq 0
         echo "xcalib: no enabled outputs found" >&2
         return 1
     end
-
-    kscreen-doctor $changes; or return 1
 
     set -l throttle 0.2
     set -q XCALIB_DIM_THROTTLE; and set throttle $XCALIB_DIM_THROTTLE

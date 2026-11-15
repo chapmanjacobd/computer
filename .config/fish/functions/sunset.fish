@@ -1,4 +1,4 @@
 # Defined interactively
 function sunset
-    brightness.lg.set 10
+    brightness.lg set 10
 end
