@@ -1,4 +1,3 @@
-# Defined interactively
 function brightness.down
     if test pakon = (hostname)
         _screen_brightness_adjust -3

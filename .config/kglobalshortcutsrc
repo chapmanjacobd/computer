@@ -20,6 +20,30 @@ _k_friendly_name=Keyboard Layout Switcher
 _k_friendly_name=CopyQ
 ||Show the tray menu||=Ctrl+Alt+V,Ctrl+Alt+V,CopyQ - Show the tray menu
 
+[fish-shortcuts]
+_k_friendly_name=Fish shortcuts
+catt=Alt+Shift+W,none,catt volumedown 5
+catt-2=Alt+Shift+F,none,catt volumeup 5
+catt-3=Alt+Shift+P,none,catt stop
+fish-11=Alt+K,none,fish -c sitdown
+fish-19=Alt+J,none,fish -c "vnc pakon"
+fish-21=Alt+B,none,fish -c "vnc backup"
+fish-6=Ctrl+Alt+Shift+P,none,fish -c "wt -d+9"
+fish-9=Alt+H,none,fish -c tv
+lb=Alt+Shift+T,none,lb next
+lb-2=Alt+G,none,lb pause
+net.local.fish-3=Alt+F,none,fish -c "catt.volume.up"
+net.local.fish-4=Alt+C,none,fish -c brightness.down
+net.local.fish-5=Alt+D,none,fish -c brightness.up
+net.local.fish-6=Alt+P,none,fish -c lt.toggle
+net.local.fish-7=Ctrl+Shift+Space,none,fish -c windows.maximize.all
+net.local.fish-8=Alt+T,none,fish -c next.delete
+net.local.fish-9=Alt+0,none,fish -c kde.reset
+net.local.pkill=Alt+9,none,pkill -f xdotool
+wmctrl=Meta+V,none,wmctrl -r :ACTIVE: -e 0\\,560\\,700\\,920\\,88
+xcalib=Alt+PgUp,none,fish -c xcalib.reset
+xcalib-2=Alt+PgDown,none,fish -c xcalib.dim
+
 [kalarm]
 _k_friendly_name=KAlarm
 newAudio=none,none,New Audio Alarm
@@ -379,62 +403,8 @@ switch to next activity=none,none,Switch to Next Activity
 switch to previous activity=none,none,Switch to Previous Activity
 toggle do not disturb=none,none,Toggle do not disturb
 
-[services][catt-2.desktop]
-_launch=Alt+Shift+F
-
-[services][catt-3.desktop]
-_launch=Alt+Shift+P
-
-[services][catt.desktop]
-_launch=Alt+Shift+W
-
-[services][fish-11.desktop]
-_launch=Alt+K
-
-[services][fish-19.desktop]
-_launch=Alt+J
-
-[services][fish-21.desktop]
-_launch=Alt+B
-
-[services][fish-6.desktop]
-_launch=Ctrl+Alt+Shift+P
-
-[services][fish-9.desktop]
-_launch=Alt+H
-
 [services][kitty.desktop]
 _launch=Alt+`\tMeta+`
-
-[services][lb-2.desktop]
-_launch=Alt+G
-
-[services][lb.desktop]
-_launch=Alt+Shift+T
-
-[services][net.local.fish-3.desktop]
-_launch=Alt+F
-
-[services][net.local.fish-4.desktop]
-_launch=Alt+C
-
-[services][net.local.fish-5.desktop]
-_launch=Alt+D
-
-[services][net.local.fish-6.desktop]
-_launch=Alt+P
-
-[services][net.local.fish-7.desktop]
-_launch=Ctrl+Shift+Space
-
-[services][net.local.fish-8.desktop]
-_launch=Alt+T
-
-[services][net.local.fish-9.desktop]
-_launch=Alt+0
-
-[services][net.local.pkill.desktop]
-_launch=Alt+9
 
 [services][org.kde.dolphin.desktop]
 _launch=none
@@ -450,15 +420,6 @@ RecordRegion=none
 
 [services][org.kde.touchpadshortcuts.desktop]
 ToggleTouchpad=Touchpad Toggle
-
-[services][wmctrl.desktop]
-_launch=Meta+V
-
-[services][xcalib-2.desktop]
-_launch=Alt+PgDown
-
-[services][xcalib.desktop]
-_launch=Alt+PgUp
 
 [wacomtablet]
 Map to fullscreen=Meta+Ctrl+F,Meta+Ctrl+F,Map to fullscreen

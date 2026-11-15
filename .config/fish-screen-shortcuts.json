@@ -1,0 +1,216 @@
+{
+  "component": "fish-shortcuts",
+  "component_name": "Fish shortcuts",
+  "actions": [
+    {
+      "id": "catt-2",
+      "name": "catt volumeup 5",
+      "command": "catt volumeup 5",
+      "keys": [
+        167772230
+      ],
+      "repeat": false,
+      "migrated_from": "catt-2.desktop"
+    },
+    {
+      "id": "catt-3",
+      "name": "catt stop",
+      "command": "catt stop",
+      "keys": [
+        167772240
+      ],
+      "repeat": false,
+      "migrated_from": "catt-3.desktop"
+    },
+    {
+      "id": "catt",
+      "name": "catt volumedown 5",
+      "command": "catt volumedown 5",
+      "keys": [
+        167772247
+      ],
+      "repeat": false,
+      "migrated_from": "catt.desktop"
+    },
+    {
+      "id": "fish-11",
+      "name": "fish -c sitdown",
+      "command": "fish -c sitdown",
+      "keys": [
+        134217803
+      ],
+      "repeat": false,
+      "migrated_from": "fish-11.desktop"
+    },
+    {
+      "id": "fish-19",
+      "name": "fish -c \"vnc pakon\"",
+      "command": "fish -c \"vnc pakon\"",
+      "keys": [
+        134217802
+      ],
+      "repeat": false,
+      "migrated_from": "fish-19.desktop"
+    },
+    {
+      "id": "fish-21",
+      "name": "fish -c \"vnc backup\"",
+      "command": "fish -c \"vnc backup\"",
+      "keys": [
+        134217794
+      ],
+      "repeat": false,
+      "migrated_from": "fish-21.desktop"
+    },
+    {
+      "id": "fish-6",
+      "name": "fish -c \"wt -d+9\"",
+      "command": "fish -c \"wt -d+9\"",
+      "keys": [
+        234881104
+      ],
+      "repeat": false,
+      "migrated_from": "fish-6.desktop"
+    },
+    {
+      "id": "fish-9",
+      "name": "fish -c tv",
+      "command": "fish -c tv",
+      "keys": [
+        134217800
+      ],
+      "repeat": false,
+      "migrated_from": "fish-9.desktop"
+    },
+    {
+      "id": "lb-2",
+      "name": "lb pause",
+      "command": "lb pause",
+      "keys": [
+        134217799
+      ],
+      "repeat": false,
+      "migrated_from": "lb-2.desktop"
+    },
+    {
+      "id": "lb",
+      "name": "lb next",
+      "command": "lb next",
+      "keys": [
+        167772244
+      ],
+      "repeat": false,
+      "migrated_from": "lb.desktop"
+    },
+    {
+      "id": "net.local.fish-3",
+      "name": "fish -c \"catt.volume.up\"",
+      "command": "fish -c \"catt.volume.up\"",
+      "keys": [
+        134217798
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.fish-3.desktop"
+    },
+    {
+      "id": "net.local.fish-4",
+      "name": "fish -c brightness.down",
+      "command": "fish -c brightness.down",
+      "keys": [
+        134217795
+      ],
+      "repeat": true,
+      "migrated_from": "net.local.fish-4.desktop"
+    },
+    {
+      "id": "net.local.fish-5",
+      "name": "fish -c brightness.up",
+      "command": "fish -c brightness.up",
+      "keys": [
+        134217796
+      ],
+      "repeat": true,
+      "migrated_from": "net.local.fish-5.desktop"
+    },
+    {
+      "id": "net.local.fish-6",
+      "name": "fish -c lt.toggle",
+      "command": "fish -c lt.toggle",
+      "keys": [
+        134217808
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.fish-6.desktop"
+    },
+    {
+      "id": "net.local.fish-7",
+      "name": "fish -c windows.maximize.all",
+      "command": "fish -c windows.maximize.all",
+      "keys": [
+        100663328
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.fish-7.desktop"
+    },
+    {
+      "id": "net.local.fish-8",
+      "name": "fish -c next.delete",
+      "command": "fish -c next.delete",
+      "keys": [
+        134217812
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.fish-8.desktop"
+    },
+    {
+      "id": "net.local.fish-9",
+      "name": "fish -c kde.reset",
+      "command": "fish -c kde.reset",
+      "keys": [
+        134217776
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.fish-9.desktop"
+    },
+    {
+      "id": "net.local.pkill",
+      "name": "pkill -f xdotool",
+      "command": "pkill -f xdotool",
+      "keys": [
+        134217785
+      ],
+      "repeat": false,
+      "migrated_from": "net.local.pkill.desktop"
+    },
+    {
+      "id": "wmctrl",
+      "name": "wmctrl -r :ACTIVE: -e 0,560,700,920,88",
+      "command": "wmctrl -r :ACTIVE: -e 0,560,700,920,88",
+      "keys": [
+        268435542
+      ],
+      "repeat": false,
+      "migrated_from": "wmctrl.desktop"
+    },
+    {
+      "id": "xcalib-2",
+      "name": "fish -c xcalib.dim",
+      "command": "fish -c xcalib.dim",
+      "keys": [
+        150994967
+      ],
+      "repeat": true,
+      "migrated_from": "xcalib-2.desktop"
+    },
+    {
+      "id": "xcalib",
+      "name": "fish -c xcalib.reset",
+      "command": "fish -c xcalib.reset",
+      "keys": [
+        150994966
+      ],
+      "repeat": false,
+      "migrated_from": "xcalib.desktop"
+    }
+  ]
+}

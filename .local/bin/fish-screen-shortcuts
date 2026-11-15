@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+"""KGlobalAccel daemon for fish screen/window shortcuts.
+
+KDE's desktop-file command shortcuts only fire once per key press, so holding
+a key does not repeat. This daemon registers the actions directly with
+KGlobalAccel, which reports press/release, and repeats actions marked
+"repeat" while the key is held.
+
+Actions are read from ~/.config/fish-screen-shortcuts.json. Old command
+shortcuts listed in "migrated_from" are unbound so they cannot conflict.
+"""
+import json
+import os
+import shlex
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+import dbus
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+SERVICE = "org.kde.kglobalaccel"
+ROOT = "/kglobalaccel"
+IFACE = "org.kde.KGlobalAccel"
+COMPONENT_IFACE = "org.kde.kglobalaccel.Component"
+CONFIG_PATH = os.path.expanduser("~/.config/fish-screen-shortcuts.json")
+REPEAT_MS = 200
+MAX_HOLD_SECONDS = 30
+
+HOME = os.path.expanduser("~")
+ENV = os.environ.copy()
+ENV["PATH"] = os.pathsep.join(
+    [os.path.join(HOME, ".local/bin"), os.path.join(HOME, "bin"), ENV.get("PATH", "/usr/bin:/bin")]
+)
+# The daemon's timer is the throttle for these; don't sleep inside the lock.
+ENV["XCALIB_DIM_THROTTLE"] = "0"
+ENV["BRIGHTNESS_THROTTLE"] = "0"
+
+
+def command_argv(command):
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return ["/bin/sh", "-c", command]
+
+
+class ShortcutDaemon:
+    def __init__(self):
+        self.config = self.load_config()
+        self.actions = {action["id"]: action for action in self.config["actions"]}
+        self.bus = None
+        self.kg = None
+        self.timers = {}
+        self.expiry_sources = {}
+        self.active = {}
+        self.connected = False
+
+    @staticmethod
+    def load_config():
+        with open(CONFIG_PATH, encoding="utf-8") as file:
+            return json.load(file)
+
+    @property
+    def component(self):
+        return self.config["component"]
+
+    @property
+    def component_name(self):
+        return self.config.get("component_name", self.component)
+
+    @property
+    def component_path(self):
+        safe = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in self.component)
+        return f"/component/{safe}"
+
+    def action_id(self, action):
+        return [self.component, action["id"], self.component_name, action["name"]]
+
+    def connect(self):
+        if self.connected:
+            return
+        self.bus = dbus.SessionBus()
+        self.kg = dbus.Interface(self.bus.get_object(SERVICE, ROOT), IFACE)
+        self.bus.add_signal_receiver(
+            self.on_pressed,
+            signal_name="globalShortcutPressed",
+            dbus_interface=COMPONENT_IFACE,
+            path=self.component_path,
+        )
+        self.bus.add_signal_receiver(
+            self.on_released,
+            signal_name="globalShortcutReleased",
+            dbus_interface=COMPONENT_IFACE,
+            path=self.component_path,
+        )
+        self.bus.add_signal_receiver(
+            self.on_name_owner_changed,
+            signal_name="NameOwnerChanged",
+            dbus_interface="org.freedesktop.DBus",
+            bus_name="org.freedesktop.DBus",
+            path="/org/freedesktop/DBus",
+        )
+        self.connected = True
+
+    def existing_actions(self):
+        try:
+            rows = self.kg.allActionsForComponent([self.component, "", "", ""])
+            return {row[1] for row in rows}
+        except dbus.exceptions.DBusException:
+            return set()
+
+    def clear_migrated(self):
+        for action in self.actions.values():
+            component = action.get("migrated_from")
+            if not component:
+                continue
+            try:
+                self.kg.setForeignShortcut([component, "_launch", "", ""], dbus.Array([], signature="i"))
+            except dbus.exceptions.DBusException:
+                pass
+
+    def register(self):
+        try:
+            self.clear_migrated()
+            existing = self.existing_actions()
+            for action in self.actions.values():
+                action_id = self.action_id(action)
+                self.kg.doRegister(action_id)
+                if action["id"] in existing:
+                    # Keep whatever the user configured in System Settings.
+                    self.kg.setShortcut(action_id, dbus.Array([], signature="i"), 2)
+                else:
+                    # SetPresent | NoAutoloading
+                    self.kg.setShortcut(action_id, dbus.Array(action["keys"], signature="i"), 6)
+            print(f"registered {len(self.actions)} actions", flush=True)
+            return True
+        except dbus.exceptions.DBusException as error:
+            print(f"register failed: {error}", file=sys.stderr, flush=True)
+            return False
+
+    def run(self, action):
+        argv = command_argv(action["command"])
+
+        def worker():
+            try:
+                subprocess.run(
+                    argv,
+                    cwd=HOME,
+                    env=ENV,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
+            except Exception as error:
+                print(f"{action['id']}: {error}", file=sys.stderr, flush=True)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def stop(self, shortcut):
+        source = self.timers.pop(shortcut, None)
+        if source is not None:
+            GLib.source_remove(source)
+        source = self.expiry_sources.pop(shortcut, None)
+        if source is not None:
+            GLib.source_remove(source)
+        self.active.pop(shortcut, None)
+
+    def tick(self, shortcut, action):
+        started = self.active.get(shortcut)
+        if started is None or time.monotonic() - started > MAX_HOLD_SECONDS:
+            self.stop(shortcut)
+            return False
+        self.run(action)
+        return True
+
+    def expire(self, shortcut):
+        self.expiry_sources.pop(shortcut, None)
+        self.stop(shortcut)
+        return False
+
+    def on_pressed(self, component, shortcut, timestamp):
+        if component != self.component:
+            return
+        action = self.actions.get(shortcut)
+        if action is None or shortcut in self.active:
+            return
+        self.active[shortcut] = time.monotonic()
+        self.run(action)
+        if action.get("repeat"):
+            self.timers[shortcut] = GLib.timeout_add(REPEAT_MS, self.tick, shortcut, action)
+        self.expiry_sources[shortcut] = GLib.timeout_add_seconds(MAX_HOLD_SECONDS, self.expire, shortcut)
+
+    def on_released(self, component, shortcut, timestamp):
+        if component == self.component:
+            self.stop(shortcut)
+
+    def on_name_owner_changed(self, name, old_owner, new_owner):
+        if name == SERVICE and new_owner:
+            GLib.timeout_add(500, lambda: not self.register())
+
+    def reload(self, *_):
+        GLib.idle_add(self.do_reload)
+
+    def do_reload(self):
+        try:
+            self.config = self.load_config()
+            self.actions = {action["id"]: action for action in self.config["actions"]}
+            for shortcut in list(self.active):
+                self.stop(shortcut)
+            if not self.register():
+                print("reload registered nothing; will retry on next KGlobalAccel restart", file=sys.stderr)
+        except Exception as error:
+            print(f"reload failed: {error}", file=sys.stderr, flush=True)
+        return False
+
+
+def main():
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    daemon = ShortcutDaemon()
+    try:
+        daemon.connect()
+    except dbus.exceptions.DBusException as error:
+        print(f"cannot connect to KGlobalAccel: {error}", file=sys.stderr, flush=True)
+        return 1
+    if not daemon.register():
+        GLib.timeout_add_seconds(2, lambda: not daemon.register())
+    signal.signal(signal.SIGHUP, daemon.reload)
+    GLib.MainLoop().run()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
