@@ -5,7 +5,8 @@
 #
 # keys: modifiers are Shift, Ctrl, Alt, Meta. A key is one character,
 # F1-F35, or a name such as Space, PgUp, PgDown, VolumeUp.
-# repeat = true repeats the command while the key is held.
+# repeat = true repeats the command while the key is held; repeat_ms sets the
+# per-shortcut interval (defaults to the top-level repeat_ms).
 # id pins the identity KGlobalAccel uses; keep it stable across edits.
 
 component = 'fish-shortcuts'
@@ -73,12 +74,14 @@ id = 'net.local.fish-4'
 key = 'Alt+C'
 command = 'fish -c brightness.down'
 repeat = true
+repeat_ms = 50
 
 [[shortcut]]
 id = 'net.local.fish-5'
 key = 'Alt+D'
 command = 'fish -c brightness.up'
 repeat = true
+repeat_ms = 50
 
 [[shortcut]]
 id = 'net.local.fish-6'

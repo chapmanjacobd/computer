@@ -148,7 +148,7 @@ KEY_ALIASES = {
 }
 
 TOP_LEVEL_FIELDS = {"component", "component_name", "repeat_ms", "max_hold_seconds", "shortcut"}
-SHORTCUT_FIELDS = {"id", "name", "command", "key", "keys", "repeat"}
+SHORTCUT_FIELDS = {"id", "name", "command", "key", "keys", "repeat", "repeat_ms"}
 
 
 class ConfigError(Exception):
@@ -296,6 +296,8 @@ def load_config(path):
         if not isinstance(repeat, bool):
             raise ConfigError(f"{where}: repeat must be true or false")
 
+        action_repeat_ms = positive_int(entry, "repeat_ms", repeat_ms, where)
+
         key_values = entry.get("keys", entry.get("key"))
         if "key" in entry and "keys" in entry:
             raise ConfigError(f"{where}: use either key or keys, not both")
@@ -321,6 +323,7 @@ def load_config(path):
                 "keys": keys,
                 "key_texts": key_texts,
                 "repeat": repeat,
+                "repeat_ms": action_repeat_ms,
             }
         )
 
@@ -374,6 +377,7 @@ class ShortcutDaemon:
         self.timers = {}
         self.expiry_sources = {}
         self.active = {}
+        self.running = set()
         self.connected = False
         try:
             self.load()
@@ -452,6 +456,13 @@ class ShortcutDaemon:
             return False
 
     def run(self, action):
+        # A repeat action that is still running must not queue up another copy:
+        # the worker below is the throttle when the command is slower than the
+        # repeat interval.
+        if action["repeat"] and action["id"] in self.running:
+            return
+        self.running.add(action["id"])
+
         def worker():
             try:
                 subprocess.run(
@@ -465,6 +476,8 @@ class ShortcutDaemon:
                 )
             except Exception as error:
                 print(f"{action['id']}: {error}", file=sys.stderr, flush=True)
+            finally:
+                self.running.discard(action["id"])
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -499,7 +512,9 @@ class ShortcutDaemon:
         self.active[shortcut] = time.monotonic()
         self.run(action)
         if action["repeat"]:
-            self.timers[shortcut] = GLib.timeout_add(self.repeat_ms, self.tick, shortcut, action)
+            self.timers[shortcut] = GLib.timeout_add(
+                action["repeat_ms"], self.tick, shortcut, action
+            )
         self.expiry_sources[shortcut] = GLib.timeout_add_seconds(
             self.max_hold_seconds, self.expire, shortcut
         )
@@ -557,7 +572,9 @@ def main():
                 f"{text} ({value})"
                 for text, value in zip(action["key_texts"], action["keys"])
             )
-            repeat = " (repeat)" if action["repeat"] else ""
+            repeat = (
+                f" (repeat every {action['repeat_ms']}ms)" if action["repeat"] else ""
+            )
             print(f"  {action['id']}: {keys} -> {action['command']}{repeat}")
         return 0
 
