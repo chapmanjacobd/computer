@@ -1,3 +1,5 @@
 function brightness.lg.down
-    _brightness.lg_lock '_brightness.lg_adjust -10'
+    set -l output (_brightness.lg_output)
+    test -n "$output"; or return 1
+    _screen_brightness_adjust -10 $output
 end

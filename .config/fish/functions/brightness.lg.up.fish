@@ -1,3 +1,5 @@
 function brightness.lg.up
-    _brightness.lg_lock '_brightness.lg_adjust +5'
+    set -l output (_brightness.lg_output)
+    test -n "$output"; or return 1
+    _screen_brightness_adjust +5 $output
 end

@@ -1,4 +1,5 @@
-# Defined interactively
 function brightness.lg.get
-    sudo ddcutil getvcp --mfg GSM 10 | awk -F "=|," '/current value/ {print $2}' | string trim
+    set -l output (_brightness.lg_output)
+    test -n "$output"; or return 1
+    _kscreen_brightness $output
 end
