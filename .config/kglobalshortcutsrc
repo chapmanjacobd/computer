@@ -412,9 +412,6 @@ _launch=Alt+G
 [services][lb.desktop]
 _launch=Alt+Shift+T
 
-[services][net.local.fish-2.desktop]
-_launch=Alt+PgUp
-
 [services][net.local.fish-3.desktop]
 _launch=Alt+F
 
@@ -435,9 +432,6 @@ _launch=Alt+T
 
 [services][net.local.fish-9.desktop]
 _launch=Alt+0
-
-[services][net.local.fish.desktop]
-_launch=Alt+PgDown
 
 [services][net.local.pkill.desktop]
 _launch=Alt+9
