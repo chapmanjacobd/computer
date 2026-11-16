@@ -3,7 +3,9 @@
 
 The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
-Rows with a direct /torrents/<id>/download link are downloaded without fetching the detail page;
+Listing tables (including Gazelle-style /torrents.php?id= pages and their
+activity_info cards) are detected from their contents rather than by URL.
+Rows with a direct download link are downloaded without fetching the detail page;
 other selected /torrent/ pages download their .torrent plus the newest
 downloadable English subtitle into --prefix (default: ~/Downloads).
 
@@ -24,7 +26,7 @@ import time
 from dataclasses import dataclass, field
 from functools import cmp_to_key
 from pathlib import Path
-from urllib.parse import unquote, urljoin, urlparse
+from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
@@ -179,27 +181,61 @@ def disable_429_retry(session):
 # ============================================================================
 
 
+def header_cells(table):
+    """Return the cells of the first header row, whichever markup the site uses."""
+    thead = table.find("thead")
+    if thead is not None:
+        header_row = thead.find("tr")
+        if header_row is not None:
+            return header_row.find_all(["td", "th"], recursive=False)
+
+    for row in table.find_all("tr"):
+        classes = [str(value).casefold() for value in row.get("class", [])]
+        if any("colhead" in value for value in classes) or row.select_one(".colhead, .colhead_dark"):
+            return row.find_all(["td", "th"], recursive=False)
+
+    for row in table.find_all("tr"):
+        if row.find("th", recursive=False):
+            return row.find_all(["td", "th"], recursive=False)
+
+    # Bare tables are common; treat the first link-free row of known labels as the header.
+    first_row = table.find("tr")
+    if first_row is not None and first_row.find("a", href=True) is None:
+        cells = first_row.find_all(["td", "th"], recursive=False)
+        labels = [cell.get_text(" ", strip=True).casefold() for cell in cells]
+        known = ("size", "seed", "leech", "snatch", "completed", "torrent")
+        if sum(any(word in label for word in known) for label in labels) >= 2:
+            return cells
+
+    return []
+
+
 def build_column_map(table):
     columns = dict(DEFAULT_COLUMNS)
-    for index, th in enumerate(table.select("thead th")):
-        title = (th.get("data-original-title") or th.get("title") or th.get_text() or "").strip().lower()
+    for index, cell in enumerate(header_cells(table)):
+        title = (cell.get("data-original-title") or cell.get("title") or cell.get_text() or "").strip().lower()
         if "size" in title:
             columns["size"] = index
         elif "seed" in title or title == "s":
             columns["seeders"] = index
         elif "leech" in title or title == "l":
             columns["leechers"] = index
-        elif "completed" in title or title in {"c", "dl"} or "downloads" in title:
+        elif "snatch" in title or "completed" in title or title in {"c", "dl"} or "downloads" in title:
             columns["completed"] = index
         elif "age" in title or "uploaded" in title or "date" in title or "created" in title:
             columns["age"] = index
         elif "comment" in title:
             columns["comments"] = index
-        elif "torrents-filename" in (th.get("class") or []):
+        elif "torrents-filename" in (cell.get("class") or []) or title in {
+            "file",
+            "name",
+            "title",
+            "torrent",
+            "torrents",
+            "release",
+        }:
             columns["filename"] = index
-        elif title in {"file", "name", "title"}:
-            columns["filename"] = index
-        elif th.select_one('a[href*="download"], .torrent-download-icon, i.fa-download'):
+        elif cell.select_one('a[href*="download"], .torrent-download-icon, i.fa-download'):
             columns["download"] = index
     return columns
 
@@ -325,16 +361,17 @@ def get_resolution_rank(row):
     return 7
 
 
-def get_qualitative_score(row, columns):
-    seeders = get_seeders(row, columns)
-    completed = get_completed(row, columns)
-    audio_count = get_audio_count(row)
-    subtitle_count = get_subtitle_count(row)
-    size_mb = get_size_mb(row, columns)
-    age_years = get_age_years(row, columns)
-    free = 1 if has_free_download(row) else 0
-    resolution_rank = get_resolution_rank(row)
-
+def qualitative_score(
+    *,
+    seeders,
+    completed,
+    size_mb,
+    age_years=0,
+    audio_count=0,
+    subtitle_count=0,
+    free=0,
+    resolution_rank=7,
+):
     return (
         WEIGHTS["completed"] * math.log2(completed + 1)
         + WEIGHTS["audio"] * math.log2(audio_count + 1)
@@ -344,6 +381,19 @@ def get_qualitative_score(row, columns):
         + WEIGHTS["resolution"] * (1 / (resolution_rank + 1))
         - WEIGHTS["seeders"] * math.log2(seeders + 1)
         - WEIGHTS["size"] * math.log2(size_mb + 1)
+    )
+
+
+def get_qualitative_score(row, columns):
+    return qualitative_score(
+        seeders=get_seeders(row, columns),
+        completed=get_completed(row, columns),
+        audio_count=get_audio_count(row),
+        subtitle_count=get_subtitle_count(row),
+        size_mb=get_size_mb(row, columns),
+        age_years=get_age_years(row, columns),
+        free=1 if has_free_download(row) else 0,
+        resolution_rank=get_resolution_rank(row),
     )
 
 
@@ -367,24 +417,53 @@ def sort_torrent_rows(rows, columns):
     return sorted(rows, key=cmp_to_key(lambda a, b: compare_rows(a, b, columns)))
 
 
+def url_query(href):
+    return parse_qs(urlparse(href or "").query)
+
+
+def is_action_download(href):
+    return url_query(href).get("action", [""])[0].casefold() == "download"
+
+
+def is_download_href(href):
+    path = urlparse(href or "").path
+    return path.endswith("/download") or "/download/" in path or is_action_download(href)
+
+
 def is_torrent_detail_link(href):
-    path = urlparse(href).path
-    if "/download" in path:
+    if is_download_href(href):
         return False
-    return bool(re.search(r"/(?:torrent|torrents)/\d", path))
+
+    path = urlparse(href or "").path
+    if re.search(r"/(?:torrent|torrents)/\d", path):
+        return True
+
+    # Gazelle: torrents.php?id=4937&torrentid=12345 (or ?torrentid=12345)
+    return bool(re.fullmatch(r"/?torrents\.php", path, re.IGNORECASE) and url_query(href).get("torrentid"))
+
+
+def element_classes(element):
+    classes = element.get("class") or []
+    if isinstance(classes, str):
+        classes = classes.split()
+    return {str(value).casefold() for value in classes}
 
 
 def find_torrent_tables(soup):
     tables = []
     for table in soup.find_all("table"):
+        rows = table.find_all("tr")
         has_torrent_rows = any(
-            row.select_one(".torrent-file") or row.select_one("a.torrent-filename") for row in table.find_all("tr")
+            "torrent_row" in element_classes(row)
+            or row.select_one(".torrent-file")
+            or row.select_one("a.torrent-filename, a.torrent-link")
+            for row in rows
         )
         if has_torrent_rows:
             tables.append(table)
             continue
 
-        headers = [th.get_text(" ", strip=True).lower() for th in table.select("thead th")]
+        headers = [cell.get_text(" ", strip=True).lower() for cell in header_cells(table)]
         has_size = any("size" in header for header in headers)
         has_peers = any(
             header in {"s", "l"} or "seed" in header or "leech" in header for header in headers
@@ -395,9 +474,31 @@ def find_torrent_tables(soup):
     return tables
 
 
+def is_details_row(row):
+    return "torrentdetails" in element_classes(row)
+
+
+def is_colhead_row(row):
+    return any("colhead" in value for value in element_classes(row))
+
+
 def table_rows(table):
     body = table.find("tbody") or table
-    return [row for row in body.find_all("tr") if row.find("td", recursive=False)]
+    rows = [
+        row
+        for row in body.find_all("tr")
+        if row.find("td", recursive=False) and not is_details_row(row) and not is_colhead_row(row)
+    ]
+    torrent_rows = [row for row in rows if "torrent_row" in element_classes(row)]
+    return torrent_rows or rows
+
+
+def associated_details_row(row):
+    """Return the .torrentdetails row that expands this torrent row, if any."""
+    sibling = row.find_next_sibling("tr")
+    if sibling is not None and is_details_row(sibling):
+        return sibling
+    return None
 
 
 def absolute_url(href, base_url=None):
@@ -417,9 +518,13 @@ def detail_url_from_row(row, base_url=None, columns=None):
 
     filename_cell = get_cell(row, (columns or {}).get("filename"))
     if filename_cell is not None:
-        anchor = filename_cell.find("a", href=True)
-        if anchor is not None:
-            return absolute_url(anchor["href"], base_url)
+        anchors = filename_cell.find_all("a", href=True)
+        for anchor in anchors:
+            if is_torrent_detail_link(anchor["href"]):
+                return absolute_url(anchor["href"], base_url)
+        for anchor in anchors:
+            if not is_download_href(anchor["href"]):
+                return absolute_url(anchor["href"], base_url)
 
     for anchor in row.find_all("a", href=True):
         if is_torrent_detail_link(anchor["href"]):
@@ -433,10 +538,12 @@ def row_download_url(row, columns=None, base_url=None):
     if download_cell is not None:
         anchors.extend(download_cell.find_all("a", href=True))
     anchors.extend(row.find_all("a", href=True))
+    details = associated_details_row(row)
+    if details is not None:
+        anchors.extend(details.find_all("a", href=True))
 
     for anchor in anchors:
-        path = urlparse(anchor["href"]).path
-        if path.endswith("/download") or "/download/" in path:
+        if is_download_href(anchor["href"]):
             return absolute_url(anchor["href"], base_url)
     return None
 
@@ -445,39 +552,134 @@ def row_title(row, columns=None):
     anchor = row.select_one("a.torrent-filename, a.torrent-link")
     if anchor is not None:
         return anchor.get_text(" ", strip=True)
+
     filename_cell = get_cell(row, (columns or {}).get("filename"))
     if filename_cell is not None:
-        return filename_cell.get_text(" ", strip=True)
+        anchors = filename_cell.find_all("a", href=True)
+        for anchor in anchors:
+            if is_torrent_detail_link(anchor["href"]) and anchor.get_text(" ", strip=True):
+                return anchor.get_text(" ", strip=True)
+        text = filename_cell.get_text(" ", strip=True)
+        if text:
+            return text
     return row.get_text(" ", strip=True)
+
+
+def torrent_id_from_url(url):
+    match = re.search(r"/(?:torrent|torrents)/(\d+)", urlparse(url or "").path)
+    if match:
+        return match.group(1)
+
+    query = url_query(url)
+    for key in ("torrentid", "id"):
+        values = query.get(key)
+        if values and values[0].isdigit():
+            return values[0]
+    return None
 
 
 def candidate_uses_direct_download(candidate):
     if not candidate.download_url:
         return False
+    if is_action_download(candidate.download_url):
+        return True
     detail_path = urlparse(candidate.url).path
     download_path = urlparse(candidate.download_url).path
     return bool(re.match(r"^/torrents/\d+", detail_path) and download_path.endswith("/download"))
 
 
 def direct_download_filename(candidate):
-    match = re.search(r"/torrents/(\d+)", urlparse(candidate.url).path)
-    prefix = f"{match.group(1)} - " if match else ""
+    torrent_id = (url_query(candidate.url).get("torrentid") or [None])[0]
+    if torrent_id is None:
+        match = re.search(r"/(?:torrent|torrents)/(\d+)", urlparse(candidate.url).path)
+        torrent_id = match.group(1) if match else None
+    torrent_id = torrent_id or torrent_id_from_url(candidate.download_url)
+    prefix = f"{torrent_id} - " if torrent_id else ""
     return path_utils.clean_path(f"{prefix}{candidate.title}.torrent".encode(), max_name_len=255)
 
 
-def best_torrent_from_soup(soup, base_url=None):
-    """Return the highest-ranked torrent row across every torrent table."""
+def action_download_filename(details, torrent_url):
+    """Name a Gazelle ?action=download response after its torrent, not torrents.php."""
+    if not is_action_download(details.download_url or ""):
+        return None
+
+    torrent_id = torrent_id_from_url(details.download_url) or torrent_id_from_url(torrent_url)
+    title = details.title.strip()
+    if not torrent_id and not title:
+        return None
+
+    prefix = f"{torrent_id} - " if torrent_id else ""
+    suffix = title or "torrent"
+    return path_utils.clean_path(f"{prefix}{suffix}.torrent".encode(), max_name_len=255)
+
+
+def activity_link(activity, predicate):
+    anchors = activity.find_all("a", href=True)
+    for anchor in anchors:
+        if predicate(anchor["href"]):
+            return anchor
+    return None
+
+
+def activity_info_candidates(soup, base_url=None):
+    """Parse the card layout used by some group pages (.activity_info rows)."""
     candidates = []
+    for activity in soup.select(".activity_info"):
+        anchor = activity_link(activity, is_torrent_detail_link)
+        card = activity.find_parent(class_="torrent_card")
+        if anchor is None and card is not None:
+            anchor = activity_link(card, is_torrent_detail_link)
+        if anchor is None:
+            continue
+
+        download_anchor = activity_link(activity, is_download_href)
+        if download_anchor is None and card is not None:
+            download_anchor = activity_link(card, is_download_href)
+
+        children = activity.find_all("div", recursive=False)
+        size_cell = children[1] if len(children) > 1 else activity.select_one("div:nth-child(2)")
+        size_mb = parse_size(size_cell.get_text(" ", strip=True)) / (1024**2) if size_cell is not None else 0
+
+        seed_element = activity.select_one(".torrent_seed b")
+        seeders = first_int(seed_element.get_text()) if seed_element is not None else 0
+        snatched_element = activity.select_one(".torrent_snatched b")
+        completed = first_int(snatched_element.get_text()) if snatched_element is not None else 0
+
+        title = anchor.get_text(" ", strip=True) or activity.get_text(" ", strip=True)
+        candidates.append(
+            TorrentCandidate(
+                url=absolute_url(anchor["href"], base_url),
+                title=title,
+                row=activity,
+                columns={},
+                score=qualitative_score(
+                    seeders=seeders,
+                    completed=completed,
+                    size_mb=size_mb,
+                    free=1 if has_free_download(activity) else 0,
+                    resolution_rank=get_resolution_rank(activity),
+                ),
+                seeders=seeders,
+                has_english_subtitles=has_english_subtitles(activity),
+                download_url=absolute_url(download_anchor["href"], base_url) if download_anchor is not None else None,
+            )
+        )
+    return candidates
+
+
+def best_torrent_from_soup(soup, base_url=None):
+    """Return the highest-ranked torrent across every detected listing layout."""
     tables = find_torrent_tables(soup)
     log.debug("Found %d torrent table(s)", len(tables))
 
+    table_candidates = []
     for table in tables:
         columns = build_column_map(table)
         for row in table_rows(table):
             url = detail_url_from_row(row, base_url, columns)
             if not url:
                 continue
-            candidates.append(
+            table_candidates.append(
                 TorrentCandidate(
                     url=url,
                     title=row_title(row, columns),
@@ -490,8 +692,20 @@ def best_torrent_from_soup(soup, base_url=None):
                 )
             )
 
+    card_candidates = activity_info_candidates(soup, base_url)
+    log.debug("Found %d activity_info torrent card(s)", len(card_candidates))
+
+    # Some themes render both layouts; keep one candidate per torrent.
+    by_url = {}
+    for candidate in table_candidates + card_candidates:
+        key = candidate.url.split("#", 1)[0]
+        existing = by_url.get(key)
+        if existing is None or (candidate.download_url and not existing.download_url):
+            by_url[key] = candidate
+    candidates = list(by_url.values())
+
     if not candidates:
-        log.debug("Found %d torrent row(s) without a usable detail URL", len(soup.select(".torrent-file")))
+        log.debug("Found %d torrent row(s) without a usable detail URL", len(soup.select(".torrent-file, .torrent_row")))
         return None
 
     return max(candidates, key=lambda c: (c.seeders > 0, c.has_english_subtitles, c.score))
@@ -522,11 +736,19 @@ def find_details_table(soup):
 
 
 def is_torrent_detail_page(soup):
-    return find_details_table(soup) is not None
+    if find_details_table(soup) is not None:
+        return True
+
+    # A group page can contain download links too; its listing content wins.
+    if find_torrent_tables(soup) or soup.select_one(".activity_info, .grouped_info, .torrent_card"):
+        return False
+
+    # Gazelle detail pages have no details table, but expose action=download.
+    return any(is_action_download(anchor["href"]) for anchor in soup.find_all("a", href=True))
 
 
 def is_torrent_url(url):
-    return url.startswith(("http://", "https://")) and bool(re.search(r"/torrent/\d", urlparse(url).path))
+    return url.startswith(("http://", "https://")) and is_torrent_detail_link(url)
 
 
 def is_torrents_url(url):
@@ -614,6 +836,24 @@ def subtitle_candidates(cell):
     return candidates
 
 
+def action_download_url(soup, base_url=None):
+    """Find a Gazelle-style ?action=download link, preferring the URL's torrent id."""
+    anchors = [
+        anchor
+        for anchor in soup.find_all("a", href=True)
+        if is_action_download(anchor["href"]) and "/download/subtitle/" not in anchor["href"]
+    ]
+    if not anchors:
+        return None
+
+    wanted = torrent_id_from_url(base_url)
+    if wanted:
+        for anchor in anchors:
+            if torrent_id_from_url(anchor["href"]) == wanted:
+                return anchor["href"]
+    return anchors[0]["href"]
+
+
 def parse_torrent_page(soup, base_url=None):
     table = find_details_table(soup)
     title_cell = details_value(table, "Title")
@@ -624,6 +864,8 @@ def parse_torrent_page(soup, base_url=None):
 
     download_cell = details_value(table, "Download")
     torrent_url = download_link(download_cell, "/download/torrent/")
+    if torrent_url is None:
+        torrent_url = action_download_url(soup, base_url)
     if torrent_url is None:
         # Be tolerant of sites that put the .torrent link outside the Download row
         anchor = soup.select_one('a[href*="/download/torrent/"]')
@@ -808,8 +1050,8 @@ def wait_for_selenium_content(args):
         WebDriverWait(args.driver, timeout).until(
             lambda driver: driver.find_elements(
                 By.CSS_SELECTOR,
-                '.torrent-file, a.torrent-filename, a.torrent-link,'
-                ' a[href*="/download/torrent/"], a[href$="/download"]',
+                '.torrent-file, a.torrent-filename, a.torrent-link, .torrent_row, .activity_info,'
+                ' a[href*="action=download"], a[href*="/download/torrent/"], a[href$="/download"]',
             )
         )
     except Exception as excinfo:
@@ -977,7 +1219,13 @@ def process_url(args, url, state=None):
             log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
             return False
         details = parse_torrent_page(soup, base_url)
-        return download_selected(args, torrent_url, details, state)
+        return download_selected(
+            args,
+            torrent_url,
+            details,
+            state,
+            output_name=action_download_filename(details, torrent_url),
+        )
 
     candidate = best_torrent_from_soup(soup, base_url)
     if candidate is None:
