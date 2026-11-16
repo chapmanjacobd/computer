@@ -3,9 +3,11 @@
 
 The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
-Listing tables (including Gazelle-style /torrents.php?id= pages and their
-activity_info cards) are detected from their contents rather than by URL.
-Torrents carrying a taglist=horror link are printed to stderr and skipped.
+Full disc images are ranked as DVDs, so WEB-DL releases are preferred over them.
+Listing tables (including Gazelle-style /torrents.php?id= pages, their
+activity_info cards, and grouped similar-torrents tables) are detected from
+their contents rather than by URL. Torrents carrying a taglist=horror link are
+printed to stderr and skipped.
 Rows with a direct download link are downloaded without fetching the detail page;
 other selected /torrent/ pages download their .torrent plus the newest
 downloadable English subtitle into --prefix (default: ~/Downloads).
@@ -31,7 +33,7 @@ from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
-from library.data.http_errors import HTTPTooManyRequestsError
+from library.data.http_errors import HTTPTooManyRequestsError, UnrecoverableError
 from library.utils import arggroups, argparse_utils, path_utils, shell_utils, web
 from library.utils.log_utils import log
 
@@ -52,6 +54,18 @@ TORRENT_LIST_ROOT = Path("~/.local/data/torrent.best")
 BLOCKED_STATUSES = {403, 429}
 
 DEFAULT_COLUMNS = {"age": 3, "size": 4, "seeders": 5, "leechers": 6, "completed": 7}
+
+# Grouped listings put the type in a row header and use actions with a colspan,
+# so their cells are found by class instead of by header index.
+GROUPED_COLUMNS = {
+    "filename": ".torrent-search--grouped__overview",
+    "download": ".torrent-search--grouped__download",
+    "size": ".torrent-search--grouped__size",
+    "seeders": ".torrent-search--grouped__seeders",
+    "leechers": ".torrent-search--grouped__leechers",
+    "completed": ".torrent-search--grouped__completed",
+    "age": ".torrent-search--grouped__age",
+}
 
 AGE_UNITS = [
     (r"(\d+(?:\.\d+)?)\s*years?", 365),
@@ -212,10 +226,22 @@ def header_cells(table):
     return []
 
 
+def header_label(cell):
+    """Return a header cell's label, preferring tooltips over icon-only text."""
+    return (cell.get("data-original-title") or cell.get("title") or cell.get_text() or "").strip().lower()
+
+
+def is_grouped_table(table):
+    return table.select_one('[class*="torrent-search--grouped__"]') is not None
+
+
 def build_column_map(table):
+    if is_grouped_table(table):
+        return dict(GROUPED_COLUMNS)
+
     columns = dict(DEFAULT_COLUMNS)
     for index, cell in enumerate(header_cells(table)):
-        title = (cell.get("data-original-title") or cell.get("title") or cell.get_text() or "").strip().lower()
+        title = header_label(cell)
         if "size" in title:
             columns["size"] = index
         elif "seed" in title or title == "s":
@@ -245,15 +271,17 @@ def build_column_map(table):
 def get_cell(row, column):
     if column is None:
         return None
+    if isinstance(column, str):
+        return row.select_one(column)
     cells = row.find_all("td")
     return cells[column] if 0 <= column < len(cells) else None
 
 
 def parse_size(size_string):
-    match = re.fullmatch(r"([\d.]+)\s*([KMGT]?B)", size_string.strip(), re.IGNORECASE)
+    match = re.fullmatch(r"([\d.]+)\s*([KMGT]?)i?B", size_string.strip(), re.IGNORECASE)
     if not match:
         return 0
-    return float(match.group(1)) * SIZE_UNITS.get(match.group(2).upper(), 1)
+    return float(match.group(1)) * SIZE_UNITS.get(match.group(2).upper() + "B", 1)
 
 
 def get_size_mb(row, columns):
@@ -332,8 +360,21 @@ def has_free_download(row):
     )
 
 
+def grouped_type_text(row):
+    """Return the type header shared by a grouped listing row (eg. 'Full Disc')."""
+    current = row
+    while current is not None:
+        header = current.find("th", recursive=False)
+        if header is not None and any("similar-torrents__type" in value for value in element_classes(header)):
+            return header.get_text(" ", strip=True)
+        current = current.find_previous_sibling("tr")
+    return ""
+
+
 def get_resolution_rank(row):
-    text = row.get_text(" ", strip=True).lower()
+    text = f"{grouped_type_text(row)} {row.get_text(' ', strip=True)}".lower()
+    if "full disc" in text or "full-disc" in text:
+        return 10  # a full disc image is sized like a DVD
     if re.search(r"\b720p\b", text):
         return 0.1
     if re.search(r"\b576p\b", text):
@@ -454,6 +495,10 @@ def element_classes(element):
 def find_torrent_tables(soup):
     tables = []
     for table in soup.find_all("table"):
+        if is_grouped_table(table):
+            tables.append(table)
+            continue
+
         rows = table.find_all("tr")
         has_torrent_rows = any(
             "torrent_row" in element_classes(row)
@@ -465,7 +510,7 @@ def find_torrent_tables(soup):
             tables.append(table)
             continue
 
-        headers = [cell.get_text(" ", strip=True).lower() for cell in header_cells(table)]
+        headers = [header_label(cell) for cell in header_cells(table)]
         has_size = any("size" in header for header in headers)
         has_peers = any(
             header in {"s", "l"} or "seed" in header or "leech" in header for header in headers
@@ -485,11 +530,17 @@ def is_colhead_row(row):
 
 
 def table_rows(table):
-    body = table.find("tbody") or table
+    # Grouped listings use one tbody per type, so read every tbody rather than
+    # just the first one.
+    bodies = table.find_all("tbody") or [table]
     rows = [
         row
+        for body in bodies
         for row in body.find_all("tr")
-        if row.find("td", recursive=False) and not is_details_row(row) and not is_colhead_row(row)
+        if row.find_parent("table") is table
+        and row.find("td", recursive=False)
+        and not is_details_row(row)
+        and not is_colhead_row(row)
     ]
     torrent_rows = [row for row in rows if "torrent_row" in element_classes(row)]
     return torrent_rows or rows
@@ -587,6 +638,8 @@ def candidate_uses_direct_download(candidate):
         return True
     detail_path = urlparse(candidate.url).path
     download_path = urlparse(candidate.download_url).path
+    if re.match(r"^/torrents/download/\d+", download_path):
+        return True
     return bool(re.match(r"^/torrents/\d+", detail_path) and download_path.endswith("/download"))
 
 
@@ -782,8 +835,19 @@ def is_torrents_url(url):
     return url.startswith(("http://", "https://")) and bool(re.fullmatch(r"/torrents/\d+/?", urlparse(url).path))
 
 
-def direct_torrents_download_url(url):
-    return url.rstrip("/") + "/download"
+def direct_torrents_download_urls(url):
+    """Return download links for a bare /torrents/<id> page, including the
+    reversed /torrents/download/<id> form used by some sites."""
+    base = url.rstrip("/")
+    urls = [base + "/download"]
+    torrent_id = torrent_id_from_url(base)
+    if torrent_id:
+        parsed = urlparse(base)
+        reversed_path = f"/torrents/download/{torrent_id}"
+        reversed_url = parsed._replace(path=reversed_path, query="", fragment="").geturl()
+        if reversed_url not in urls:
+            urls.append(reversed_url)
+    return urls
 
 
 def direct_torrents_filename(url):
@@ -1176,6 +1240,32 @@ def download_selected(args, torrent_url, details, state, output_name=None, has_s
     return True
 
 
+def download_direct_torrents(args, torrent_url, state):
+    """Download a bare /torrents/<id> page, trying each known download URL shape."""
+    for download_url in direct_torrents_download_urls(torrent_url):
+        details = TorrentPage(
+            title="",
+            download_url=download_url,
+            subtitle_url=None,
+            subtitle_age_years=None,
+            is_english_subtitle=False,
+        )
+        try:
+            return download_selected(
+                args,
+                torrent_url,
+                details,
+                state,
+                output_name=direct_torrents_filename(torrent_url),
+                has_subtitle_info=False,
+            )
+        except UnrecoverableError as excinfo:
+            if "HTTP404" not in str(excinfo):
+                raise
+            log.debug("No torrent at %s (%s); trying the next download URL shape", download_url, excinfo)
+    return False
+
+
 def process_url(args, url, state=None):
     """Process one URL; return False when it should stay queued (blocked or not downloaded)."""
     state = state or RunState()
@@ -1197,21 +1287,7 @@ def process_url(args, url, state=None):
             add_remaining(state, torrent_url)
             log.warning("Downloads disabled after HTTP 429/403; queued %s", torrent_url)
             return False
-        details = TorrentPage(
-            title="",
-            download_url=direct_torrents_download_url(torrent_url),
-            subtitle_url=None,
-            subtitle_age_years=None,
-            is_english_subtitle=False,
-        )
-        return download_selected(
-            args,
-            torrent_url,
-            details,
-            state,
-            output_name=direct_torrents_filename(torrent_url),
-            has_subtitle_info=False,
-        )
+        return download_direct_torrents(args, torrent_url, state)
 
     direct_torrent_url = is_torrent_url(url)
 
