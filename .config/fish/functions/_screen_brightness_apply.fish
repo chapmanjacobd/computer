@@ -19,7 +19,7 @@ function _screen_brightness_apply --argument-names delta target
                 set outputs (kscreenctl list-outputs --enabled --names)
             end
             if test (count $outputs) -eq 1
-                printf '%s %s\n' $now $outputs[1] > $pointer_file
+                printf '%s %s\n' $now $outputs[1] >$pointer_file
             end
         end
     end
@@ -35,7 +35,7 @@ function _screen_brightness_apply --argument-names delta target
         set -l value (math "min(100, max(1, $current + $delta))")
         kscreenctl $output set-brightness "$value%"
         or return 1
-        printf '%s %s\n' $now $value > $value_file
+        printf '%s %s\n' $now $value >$value_file
         set changed 1
     end
 

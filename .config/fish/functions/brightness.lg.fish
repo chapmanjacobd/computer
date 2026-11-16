@@ -23,7 +23,7 @@ function brightness.lg --argument-names action value
 
             set -l cache $XDG_RUNTIME_DIR
             test -d "$cache"; or set cache /tmp
-            printf '%s %s\n' (date +%s%N) $percent > $cache/fish-brightness.$output
+            printf '%s %s\n' (date +%s%N) $percent >$cache/fish-brightness.$output
         case up
             _screen_brightness_adjust +2 $output
         case down
