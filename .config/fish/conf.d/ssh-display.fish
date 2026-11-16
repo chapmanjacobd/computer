@@ -5,9 +5,14 @@
 # manager runs inside the graphical session and keeps its environment, so
 # `systemctl --user show-environment` reports the live values. Values already
 # present (ssh -X, a local shell, a manually set DISPLAY) are left alone.
+#
+# XAUTHORITY is included because X clients also need the session's cookie file
+# to connect; its name changes each login, so it cannot be hardcoded. The
+# session bus and desktop name are needed by notifications, portals, qdbus and
+# xdg-open rather than by clipboard helpers alone.
 
 if set -q SSH_CONNECTION
-    for var in DISPLAY WAYLAND_DISPLAY
+    for var in DISPLAY WAYLAND_DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS XDG_CURRENT_DESKTOP
         set -q $var; and continue
         set -l line (systemctl --user show-environment 2>/dev/null | string match "$var=*" | head -n1)
         set -q line[1]; or continue
