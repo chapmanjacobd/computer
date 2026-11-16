@@ -84,6 +84,8 @@ for dep in $(cat .github/go_installed); do
     /usr/local/go/bin/go install $dep
 done
 
+curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+
 # sudo wget -O /etc/yum.repos.d/xpra.repo https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/Fedora/xpra.repo
 # sudo dnf install -y xpra
 
