@@ -5,6 +5,7 @@ The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
 Listing tables (including Gazelle-style /torrents.php?id= pages and their
 activity_info cards) are detected from their contents rather than by URL.
+Torrents carrying a taglist=horror link are printed to stderr and skipped.
 Rows with a direct download link are downloaded without fetching the detail page;
 other selected /torrent/ pages download their .torrent plus the newest
 downloadable English subtitle into --prefix (default: ~/Downloads).
@@ -74,6 +75,7 @@ class TorrentCandidate:
     seeders: int
     has_english_subtitles: bool
     download_url: str | None = None
+    is_horror: bool = False
 
 
 @dataclass
@@ -613,6 +615,12 @@ def action_download_filename(details, torrent_url):
     return path_utils.clean_path(f"{prefix}{suffix}.torrent".encode(), max_name_len=255)
 
 
+def has_horror_tag(element):
+    if element is None:
+        return False
+    return any("taglist=horror" in (anchor.get("href") or "").casefold() for anchor in element.find_all("a", href=True))
+
+
 def activity_link(activity, predicate):
     anchors = activity.find_all("a", href=True)
     for anchor in anchors:
@@ -625,8 +633,8 @@ def activity_info_candidates(soup, base_url=None):
     """Parse the card layout used by some group pages (.activity_info rows)."""
     candidates = []
     for activity in soup.select(".activity_info"):
-        anchor = activity_link(activity, is_torrent_detail_link)
         card = activity.find_parent(class_="torrent_card")
+        anchor = activity_link(activity, is_torrent_detail_link)
         if anchor is None and card is not None:
             anchor = activity_link(card, is_torrent_detail_link)
         if anchor is None:
@@ -662,13 +670,14 @@ def activity_info_candidates(soup, base_url=None):
                 seeders=seeders,
                 has_english_subtitles=has_english_subtitles(activity),
                 download_url=absolute_url(download_anchor["href"], base_url) if download_anchor is not None else None,
+                is_horror=has_horror_tag(activity) or has_horror_tag(card),
             )
         )
     return candidates
 
 
-def best_torrent_from_soup(soup, base_url=None):
-    """Return the highest-ranked torrent across every detected listing layout."""
+def torrent_candidates(soup, base_url=None):
+    """Return every torrent candidate across detected listing layouts, including horror ones."""
     tables = find_torrent_tables(soup)
     log.debug("Found %d torrent table(s)", len(tables))
 
@@ -689,6 +698,7 @@ def best_torrent_from_soup(soup, base_url=None):
                     seeders=get_seeders(row, columns),
                     has_english_subtitles=has_english_subtitles(row),
                     download_url=row_download_url(row, columns, base_url),
+                    is_horror=has_horror_tag(row),
                 )
             )
 
@@ -702,13 +712,30 @@ def best_torrent_from_soup(soup, base_url=None):
         existing = by_url.get(key)
         if existing is None or (candidate.download_url and not existing.download_url):
             by_url[key] = candidate
-    candidates = list(by_url.values())
+    return list(by_url.values())
 
+
+def best_from_candidates(candidates):
+    candidates = [candidate for candidate in candidates if not candidate.is_horror]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda c: (c.seeders > 0, c.has_english_subtitles, c.score))
+
+
+def report_horror_torrents(candidates):
+    urls = list(dict.fromkeys(candidate.url for candidate in candidates if candidate.is_horror))
+    for url in urls:
+        print(f"Horror: {url}", file=sys.stderr)
+    return urls
+
+
+def best_torrent_from_soup(soup, base_url=None):
+    """Return the highest-ranked non-horror torrent across every detected listing layout."""
+    candidates = torrent_candidates(soup, base_url)
     if not candidates:
         log.debug("Found %d torrent row(s) without a usable detail URL", len(soup.select(".torrent-file, .torrent_row")))
         return None
-
-    return max(candidates, key=lambda c: (c.seeders > 0, c.has_english_subtitles, c.score))
+    return best_from_candidates(candidates)
 
 
 # ============================================================================
@@ -1227,8 +1254,13 @@ def process_url(args, url, state=None):
             output_name=action_download_filename(details, torrent_url),
         )
 
-    candidate = best_torrent_from_soup(soup, base_url)
+    candidates = torrent_candidates(soup, base_url)
+    horror_urls = report_horror_torrents(candidates)
+    candidate = best_from_candidates(candidates)
     if candidate is None:
+        if horror_urls:
+            log.warning("Skipped %d horror torrent(s) in %s; no non-horror torrent selected", len(horror_urls), url)
+            return True
         if find_torrent_tables(soup):
             log.warning("Found torrent table(s) in %s, but no rows had a usable detail link", url)
         else:
