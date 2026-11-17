@@ -2,8 +2,9 @@
 
 ## Commits
 
-- Make one commit per related change. Keep unrelated edits in separate commits.
-- Stage and commit the files that belong to each change.
+- Make a commit per related change as you go.
+- Stage and commit the files that belong to each change. Keep unrelated edits in separate commits.
+- Add !fixup commits if you test something and need to make a change related to an earlier commit.
 - Do not run broad repository-wide diffs to review changes. When checking code, diff individual files, and only for the specific thing being verified.
 
 ## Naming and documentation
