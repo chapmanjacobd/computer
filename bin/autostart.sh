@@ -1,5 +1,6 @@
 #!/bin/fish
 kde-inhibit --colorCorrect sleep 0.1
+xcalib.reset
 xset -r 108
 xset -r 135
 pkill xbindkeys && xbindkeys
