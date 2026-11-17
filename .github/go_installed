@@ -16,6 +16,7 @@ github.com/go-delve/delve/cmd/dlv@latest
 github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 github.com/mikefarah/yq/v4@latest
 github.com/ramonvermeulen/whosthere@latest
+github.com/rhysd/actionlint/cmd/actionlint@latest
 github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 github.com/sters/go-file-splitter@latest
 github.com/tdewolff/minify/v2/cmd/minify@latest
