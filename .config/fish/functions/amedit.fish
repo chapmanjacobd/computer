@@ -124,6 +124,15 @@ function amedit --description 'Interactively edit the hunks in a commit (default
         end
     end
 
+    set -l real_index (git rev-parse --git-path index)
+    if test -z "$real_index"
+        if test $rebasing -eq 1
+            git rebase --abort
+        end
+        echo "amedit: could not locate the index" >&2
+        return 1
+    end
+
     set -l tmpindex (mktemp)
     if test -z "$tmpindex"
         if test $rebasing -eq 1
@@ -163,44 +172,41 @@ function amedit --description 'Interactively edit the hunks in a commit (default
     # Keep skip-worktree paths at the target commit's content. They cannot be
     # hunk-selected because the working tree intentionally does not represent
     # them, and reverting them to the parent's content would corrupt the commit.
-    for path in $skip_paths
-        set -l tree_line (git ls-tree $target -- $path)
-        if test -z "$tree_line"
-            set -e GIT_INDEX_FILE
-            rm -f $tmpindex
-            if test $rebasing -eq 1
-                git rebase --abort
+    if test (count $skip_paths) -gt 0
+        # Read entries from the real index, but write them to the temporary one.
+        set -l total (count $skip_paths)
+        set -l start 1
+        set -l chunk_size 500
+        set -l batch_failed 0
+        while test $start -le $total
+            set -l end (math $start + $chunk_size - 1)
+            if test $end -gt $total
+                set end $total
             end
-            echo "amedit: could not read $path from the commit" >&2
-            return 1
+            env GIT_INDEX_FILE=$real_index git ls-files -s -z -- $skip_paths[$start..$end] |
+                env GIT_INDEX_FILE=$tmpindex git update-index -z --index-info
+            set -l pipe_status $pipestatus
+            if test $pipe_status[1] -ne 0 -o $pipe_status[2] -ne 0
+                set batch_failed 1
+                break
+            end
+            set start (math $end + 1)
         end
-        set -l tree_parts (string split \t -- $tree_line)
-        set -l meta (string split ' ' -- $tree_parts[1])
-        if test (count $meta) -lt 3
-            set -e GIT_INDEX_FILE
-            rm -f $tmpindex
-            if test $rebasing -eq 1
-                git rebase --abort
+        if test $batch_failed -eq 0
+            printf '%s\0' $skip_paths |
+                env GIT_INDEX_FILE=$tmpindex git update-index --skip-worktree -z --stdin
+            set -l pipe_status $pipestatus
+            if test $pipe_status[1] -ne 0 -o $pipe_status[2] -ne 0
+                set batch_failed 1
             end
-            echo "amedit: could not read $path from the commit" >&2
-            return 1
         end
-        if not git update-index --add --cacheinfo "$meta[1],$meta[3],$path"
+        if test $batch_failed -eq 1
             set -e GIT_INDEX_FILE
             rm -f $tmpindex
             if test $rebasing -eq 1
                 git rebase --abort
             end
-            echo "amedit: could not preserve skip-worktree path $path" >&2
-            return 1
-        end
-        if not git update-index --skip-worktree -- $path
-            set -e GIT_INDEX_FILE
-            rm -f $tmpindex
-            if test $rebasing -eq 1
-                git rebase --abort
-            end
-            echo "amedit: could not mark $path skip-worktree" >&2
+            echo "amedit: could not preserve skip-worktree paths" >&2
             return 1
         end
     end
