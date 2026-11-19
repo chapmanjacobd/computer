@@ -44,6 +44,7 @@ SETUVAR --export NUMEXPR_MAX_THREADS:12
 SETUVAR --export NUMEXPR_NUM_THREADS:4
 SETUVAR --export OMP_NUM_THREADS:16
 SETUVAR --export OPENSSL_CONF:/etc/ssl
+SETUVAR --export ORT_DISABLE_TELEMETRY:1
 SETUVAR --export PARALLEL_HOME:/home/xk/\x2econfig/parallel
 SETUVAR --export PASSWORD_STORE_GPG_OPTS:\x2d\x2dpinentry\x2dmode\x3dloopback
 SETUVAR --export PASTEL_COLOR_MODE:24bit
