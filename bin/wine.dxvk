@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# Install the DirectX layers needed on Mesa/RADV (tested: RX 570, Polaris):
+#
+#   DXVK 3.1.1          d3d8, d3d9, d3d10core, d3d11, dxgi
+#   vkd3d-proton 3.1    d3d12, d3d12core  (the DirectX 12 layer)
+#   vcrun2022           MSVC runtime used by Unreal Engine 5 titles
+#
+# Versions are pinned on purpose. Letting winetricks look up "latest" goes
+# through api.github.com with aria2c, which fails here ("Invalid range header")
+# and installs nothing, so games then report "DirectX 12 is not supported".
+#
+# Usage: wine.dxvk [options] [PREFIX]
+#
+#   PREFIX              wine prefix (default: $WINEPREFIX, else ~/.wine)
+#   -w, --wine PATH     wine binary (default: $WINE, else the
+#                       <prefix>/../wine/bin/wine of portable game installs,
+#                       else wine from $PATH)
+#   --no-vcrun          skip vcrun2022
+#   -h, --help          show this help
+#
+# Examples:
+#   wine.dxvk
+#   wine.dxvk ~/Games/linux/other/video/game/prefix
+
+set -euo pipefail
+
+DXVK_VERSION=3.1.1
+VKD3D_PROTON_VERSION=3.1
+
+die() {
+    echo "wine.dxvk: $*" >&2
+    exit 1
+}
+
+usage() {
+    awk 'NR == 1 { next } /^set -euo pipefail/ { exit } { sub(/^# ?/, ""); print }' "$0"
+}
+
+prefix=
+wine_bin=
+install_vcrun=yes
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -w|--wine)
+            [ $# -ge 2 ] || die "$1 needs a path"
+            wine_bin="$2"
+            shift 2
+            ;;
+        --wine=*)
+            wine_bin="${1#*=}"
+            shift
+            ;;
+        --no-vcrun)
+            install_vcrun=no
+            shift
+            ;;
+        -*)
+            die "unknown option: $1 (try --help)"
+            ;;
+        *)
+            [ -z "$prefix" ] || die "only one prefix may be given"
+            prefix="$1"
+            shift
+            ;;
+    esac
+done
+
+prefix="${prefix:-${WINEPREFIX:-$HOME/.wine}}"
+prefix="${prefix/#\~/$HOME}"
+prefix="$(readlink -f "$prefix")"
+
+# wine binary: explicit, $WINE, portable layout next to the prefix, $PATH
+if [ -z "$wine_bin" ] && [ -n "${WINE:-}" ]; then
+    wine_bin="$(command -v "$WINE" 2>/dev/null || true)"
+fi
+if [ -z "$wine_bin" ]; then
+    for candidate in "$prefix/../wine/bin/wine" "$prefix/../../wine/bin/wine"; do
+        if [ -x "$candidate" ]; then
+            wine_bin="$candidate"
+            break
+        fi
+    done
+fi
+if [ -z "$wine_bin" ]; then
+    wine_bin="$(command -v wine 2>/dev/null || true)"
+fi
+[ -n "$wine_bin" ] || die "no wine binary found; pass one with -w PATH"
+wine_bin="$(readlink -f "$wine_bin")"
+[ -x "$wine_bin" ] || die "wine binary is not executable: $wine_bin"
+
+export WINEPREFIX="$prefix"
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINE="$wine_bin"
+
+if [ ! -d "$prefix/drive_c" ]; then
+    echo "Creating prefix $prefix"
+    wineboot_bin="$(dirname "$wine_bin")/wineboot"
+    if [ -x "$wineboot_bin" ]; then
+        "$wineboot_bin" -u
+    else
+        "$wine_bin" wineboot -u
+    fi
+fi
+
+dll64="$prefix/drive_c/windows/system32"
+dll32="$prefix/drive_c/windows/syswow64"
+[ -d "$dll64" ] || die "not a wine prefix: $prefix"
+have_32=no
+[ -d "$dll32" ] && have_32=yes
+
+echo "prefix: $prefix"
+echo "wine:   $wine_bin ($("$wine_bin" --version 2>/dev/null || echo unknown))"
+if [ "$have_32" = yes ]; then
+    echo "arch:   wow64 (64-bit + 32-bit)"
+else
+    echo "arch:   64-bit only"
+fi
+echo
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/wine.dxvk"
+mkdir -p "$cache"
+
+download() {
+    local url="$1" dest="$2"
+    [ -s "$dest" ] && return 0
+    echo "Downloading $url"
+    curl -fsSL --retry 3 --connect-timeout 15 -o "$dest.part" "$url"
+    mv -f "$dest.part" "$dest"
+}
+
+set_override() {
+    "$wine_bin" reg add 'HKCU\Software\Wine\DllOverrides' \
+        /v "$1" /t REG_SZ /d native /f >/dev/null
+}
+
+install_dlls() {
+    local src="$1" dll dll32_src
+    shift
+    if [ -d "$src/x86" ]; then
+        dll32_src="$src/x86"
+    else
+        dll32_src="$src/x32"
+    fi
+    for dll in "$@"; do
+        if [ "$have_32" = yes ]; then
+            cp -f "$dll32_src/$dll.dll" "$dll32/"
+        fi
+        cp -f "$src/x64/$dll.dll" "$dll64/"
+        set_override "$dll"
+    done
+}
+
+tmp="$(mktemp -d "${TMPDIR:-/tmp}/wine.dxvk.XXXXXX")"
+trap 'rm -rf "$tmp"' EXIT
+
+dxvk_archive="dxvk-$DXVK_VERSION.tar.gz"
+download "https://github.com/doitsujin/dxvk/releases/download/v$DXVK_VERSION/$dxvk_archive" \
+    "$cache/$dxvk_archive"
+echo "Installing DXVK $DXVK_VERSION (D3D8-D3D11)"
+tar -C "$tmp" -zxf "$cache/$dxvk_archive"
+install_dlls "$tmp/dxvk-$DXVK_VERSION" dxgi d3d8 d3d9 d3d10core d3d11
+
+vkd3d_archive="vkd3d-proton-$VKD3D_PROTON_VERSION.tar.zst"
+download "https://github.com/HansKristian-Work/vkd3d-proton/releases/download/v$VKD3D_PROTON_VERSION/$vkd3d_archive" \
+    "$cache/$vkd3d_archive"
+echo "Installing vkd3d-proton $VKD3D_PROTON_VERSION (D3D12)"
+tar --use-compress-program=unzstd -C "$tmp" -xf "$cache/$vkd3d_archive"
+install_dlls "$tmp/vkd3d-proton-$VKD3D_PROTON_VERSION" d3d12 d3d12core
+
+if [ "$install_vcrun" = yes ]; then
+    winetricks_bin="$(dirname "$(dirname "$wine_bin")")/winetricks"
+    if [ ! -x "$winetricks_bin" ]; then
+        winetricks_bin="$(command -v winetricks 2>/dev/null || true)"
+    fi
+    if [ -n "$winetricks_bin" ]; then
+        echo "Installing vcrun2022 with $winetricks_bin"
+        WINETRICKS_DOWNLOADER=curl "$winetricks_bin" -q vcrun2022
+    else
+        echo "Installing vcrun2022 directly (winetricks not found)"
+        download "https://aka.ms/vs/17/release/vc_redist.x64.exe" "$cache/vc_redist.x64.exe"
+        "$wine_bin" "$cache/vc_redist.x64.exe" /install /quiet /norestart
+        if [ "$have_32" = yes ]; then
+            download "https://aka.ms/vs/17/release/vc_redist.x86.exe" "$cache/vc_redist.x86.exe"
+            "$wine_bin" "$cache/vc_redist.x86.exe" /install /quiet /norestart
+        fi
+    fi
+fi
+
+echo
+echo "Installed in $prefix"
+for dll in dxgi d3d8 d3d9 d3d10core d3d11 d3d12 d3d12core; do
+    [ -f "$dll64/$dll.dll" ] || continue
+    printf '  %-12s %8s KiB\n' "$dll.dll" "$(( $(stat -c%s "$dll64/$dll.dll") / 1024 ))"
+done

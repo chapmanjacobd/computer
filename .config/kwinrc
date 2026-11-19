@@ -105,7 +105,6 @@ CommandAllWheel=Nothing
 CommandInactiveTitlebar1=Activate and raise
 CommandInactiveTitlebar2=Activate and raise
 CommandInactiveTitlebar3=Operations menu
-CommandTitlebarWheel=Raise/Lower
 CommandWindow1=Activate, raise and pass click
 CommandWindow2=Activate
 CommandWindow3=Activate and pass click
@@ -120,7 +119,6 @@ cubeslideEnabled=false
 desktopchangeosdEnabled=false
 desktopgridEnabled=false
 diminactiveEnabled=true
-krohnkiteEnabled=false
 kwin4_effect_dialogparentEnabled=false
 kwin4_effect_fadedesktopEnabled=false
 kwin4_effect_fadingpopupsEnabled=false
@@ -128,13 +126,14 @@ kwin4_effect_maximizeEnabled=false
 kwin4_effect_scaleEnabled=false
 kwin4_effect_squashEnabled=false
 kwin4_effect_windowapertureEnabled=false
+monocle_ultrawideEnabled=true
+mpv_behaviorEnabled=true
 mudeer-ultrawideEnabled=false
 presentwindowsEnabled=false
 resizeEnabled=true
 screenedgeEnabled=false
 slideEnabled=false
 slidingpopupsEnabled=false
-synchronizeskipswitcherEnabled=true
 ultrawidewindowsEnabled=false
 windowgeometryEnabled=false
 wobblywindowsEnabled=true
@@ -143,15 +142,6 @@ zoomEnabled=false
 [Script-desktopchangeosd]
 PopupHideDelay=1000
 TextOnly=false
-
-[Script-krohnkite]
-directionalKeyDwm=false
-directionalKeyFocus=true
-enableFloatingLayout=true
-ignoreTitle=mpv
-monocleMaximize=false
-screenGapLeft=700
-screenGapRight=700
 
 [TabBox]
 ActivitiesMode=0
@@ -188,6 +178,10 @@ tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"wi
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][7db63634-f471-55c4-bdc4-eeee60320bab]
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][8583a7c4-76d8-48b0-b7a4-d62e9a781503][]
+padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
 
 [Tiling][8583a7c4-76d8-48b0-b7a4-d62e9a781503][49f9bcde-b04d-4625-94bd-b00d7d887651]
@@ -248,8 +242,13 @@ SnapOnlyWhenOverlapping=false
 TitlebarDoubleClickCommand=Maximize
 WindowSnapZone=10
 
+[Windows_HDR]
+MaxLuminance=2000
+Reference=600
+
 [Xwayland]
-Scale=1
+Scale=1.25
+XwaylandEisNoPromptApps=xdotool
 
 [org.kde.kdecoration2]
 BorderSize=None
