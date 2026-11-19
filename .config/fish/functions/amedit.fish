@@ -7,7 +7,8 @@ function amedit --description 'Interactively edit the hunks in a commit (default
             echo "The commit message is preserved. Unselected hunks are left as unstaged"
             echo "changes. When editing an older commit, unselected changes are stashed"
             echo "and restored after the rewritten history has been replayed. Binary"
-            echo "changes cannot be hunk-selected and are kept automatically."
+            echo "changes cannot be hunk-selected and are kept automatically. Skip-worktree"
+            echo "paths are kept as-is and cannot be hunk-selected."
             return 0
         end
     end
@@ -111,6 +112,18 @@ function amedit --description 'Interactively edit the hunks in a commit (default
         return 1
     end
 
+    # HEAD is now the target commit, so the real index carries that commit's
+    # skip-worktree bits. Those paths are intentionally not represented in the
+    # working tree (sparse checkout or a manual skip-worktree), so preserve
+    # them instead of letting add -p treat them as deletions.
+    set -l skip_paths
+    for entry in (git -c advice.sparseIndexExpanded=false ls-files -t -z | string split0)
+        set -l fields (string split -m1 ' ' -- $entry)
+        if test (count $fields) -ge 2 -a "$fields[1]" = "S"
+            set -a skip_paths $fields[2]
+        end
+    end
+
     set -l tmpindex (mktemp)
     if test -z "$tmpindex"
         if test $rebasing -eq 1
@@ -132,7 +145,10 @@ function amedit --description 'Interactively edit the hunks in a commit (default
 
     # Teach the temporary index about files the commit added, so add -p
     # can show their hunks instead of treating them as untracked.
-    for path in (git diff --no-renames --name-only --diff-filter=A $parent $target)
+    for path in (git diff --no-renames --name-only -z --diff-filter=A $parent $target | string split0)
+        if contains -- $path $skip_paths
+            continue
+        end
         if not git add -N -f -- $path
             set -e GIT_INDEX_FILE
             rm -f $tmpindex
@@ -144,13 +160,96 @@ function amedit --description 'Interactively edit the hunks in a commit (default
         end
     end
 
+    # Keep skip-worktree paths at the target commit's content. They cannot be
+    # hunk-selected because the working tree intentionally does not represent
+    # them, and reverting them to the parent's content would corrupt the commit.
+    for path in $skip_paths
+        set -l tree_line (git ls-tree $target -- $path)
+        if test -z "$tree_line"
+            set -e GIT_INDEX_FILE
+            rm -f $tmpindex
+            if test $rebasing -eq 1
+                git rebase --abort
+            end
+            echo "amedit: could not read $path from the commit" >&2
+            return 1
+        end
+        set -l tree_parts (string split \t -- $tree_line)
+        set -l meta (string split ' ' -- $tree_parts[1])
+        if test (count $meta) -lt 3
+            set -e GIT_INDEX_FILE
+            rm -f $tmpindex
+            if test $rebasing -eq 1
+                git rebase --abort
+            end
+            echo "amedit: could not read $path from the commit" >&2
+            return 1
+        end
+        if not git update-index --add --cacheinfo "$meta[1],$meta[3],$path"
+            set -e GIT_INDEX_FILE
+            rm -f $tmpindex
+            if test $rebasing -eq 1
+                git rebase --abort
+            end
+            echo "amedit: could not preserve skip-worktree path $path" >&2
+            return 1
+        end
+        if not git update-index --skip-worktree -- $path
+            set -e GIT_INDEX_FILE
+            rm -f $tmpindex
+            if test $rebasing -eq 1
+                git rebase --abort
+            end
+            echo "amedit: could not mark $path skip-worktree" >&2
+            return 1
+        end
+    end
+
+    # A path deleted by the commit has no skip-worktree bit left to inspect.
+    # If sparse checkout would have excluded it, keep the deletion rather than
+    # offering it as a hunk that cannot be represented in the working tree.
+    set -l deleted_paths (git diff --no-renames --name-only -z --diff-filter=D $parent $target | string split0)
+    set -l removed_paths
+    if test (count $deleted_paths) -gt 0
+        set -l sparse_checkout (git config --bool core.sparseCheckout 2>/dev/null)
+        if test "$sparse_checkout" = true
+            set -l rules_file (mktemp)
+            if test -n "$rules_file"
+                printf '%s\0' $deleted_paths | git sparse-checkout check-rules -z > $rules_file
+                set -l rules_status $status
+                set -l in_cone (string split0 < $rules_file)
+                rm -f $rules_file
+                if test $rules_status -eq 0
+                    for path in $deleted_paths
+                        if not contains -- $path $in_cone
+                            if not git update-index --force-remove -- $path
+                                set -e GIT_INDEX_FILE
+                                rm -f $tmpindex
+                                if test $rebasing -eq 1
+                                    git rebase --abort
+                                end
+                                echo "amedit: could not remove skipped path $path" >&2
+                                return 1
+                            end
+                            set -a removed_paths $path
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     # Binary changes have no hunks to select, so keep them in the commit
     # rather than silently dropping them.
     set -l binary_paths
-    for line in (git diff --numstat --no-renames $parent $target)
-        set -l fields (string split \t -- $line)
+    for entry in (git diff --numstat -z --no-renames $parent $target | string split0)
+        set -l fields (string split -m2 \t -- $entry)
         if test (count $fields) -ge 3 -a "$fields[1]" = "-" -a "$fields[2]" = "-"
-            set -a binary_paths $fields[3]
+            if not contains -- $fields[3] $skip_paths
+                if not contains -- $fields[3] $removed_paths
+                    set -a binary_paths $fields[3]
+                end
+            end
         end
     end
     if test (count $binary_paths) -gt 0
@@ -201,7 +300,7 @@ function amedit --description 'Interactively edit the hunks in a commit (default
         return 0
     end
 
-    set -l affected (git diff --name-only $newhead $target)
+    set -l affected (git diff --name-only -z $newhead $target | string split0)
     set -l stash_sha ""
     if test (count $affected) -gt 0
         set -l short_target (string sub -l 12 -- $target)
