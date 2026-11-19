@@ -1,0 +1,573 @@
+#!/usr/bin/env python3
+"""Interactive, per-conflict merge resolver.
+
+Shows one conflict at a time and replaces it with the side you pick, like
+`git add -p` does for hunks. Nothing is resolved unless you choose a side.
+
+    git conflicts                  # every unmerged file
+    git conflicts path ...         # specific files
+    git conflicts --no-stage ...   # leave files unstaged after resolving
+
+Keys:
+    o / t   take ours / theirs
+    b / B   take both (ours then theirs / theirs then ours)
+    n / a   take neither or the base version
+    e       edit the file in $EDITOR
+    d       toggle diff-from-base view
+    v       toggle full/base/unchanged context
+    s       skip this conflict, S skip the rest of this file
+    u       undo the previous resolution
+    q       quit (progress so far is saved)
+"""
+
+from __future__ import annotations
+
+import argparse
+import difflib
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+
+
+# ---------------------------------------------------------------- file access
+
+
+def split_lines(text):
+    """Split on newlines only, keeping line endings (including CRLF)."""
+    parts = text.split("\n")
+    lines = [p + "\n" for p in parts[:-1]]
+    if parts[-1]:
+        lines.append(parts[-1])
+    return lines
+
+
+def bare(line):
+    if line.endswith("\r\n"):
+        return line[:-2]
+    if line.endswith("\n"):
+        return line[:-1]
+    return line
+
+
+def read_text(path):
+    with open(path, "r", encoding="utf-8", errors="surrogateescape", newline="") as f:
+        return f.read()
+
+
+def write_text(path, text):
+    with open(path, "w", encoding="utf-8", errors="surrogateescape", newline="") as f:
+        f.write(text)
+
+
+# ------------------------------------------------------------ conflict parsing
+
+
+class Conflict:
+    def __init__(self, start, end, ours, base, theirs, labels):
+        self.start = start  # index of <<<<<<< line
+        self.end = end  # index of >>>>>>> line
+        self.ours = ours  # lists of raw lines (with endings)
+        self.base = base  # None when the file uses the 2-way conflict style
+        self.theirs = theirs
+        self.labels = labels
+
+    def __repr__(self):
+        return f"<Conflict {self.start}-{self.end}>"
+
+
+def marker_pattern(char, width):
+    return re.compile("^" + re.escape(char) * width + r"(?: (.*))?$")
+
+
+def parse_conflicts(lines):
+    conflicts = []
+    i = 0
+    n = len(lines)
+    while i < n:
+        line = bare(lines[i])
+        width = len(line) - len(line.lstrip("<"))
+        if width < 7:
+            i += 1
+            continue
+        ours_re = marker_pattern("<", width)
+        base_re = marker_pattern("|", width)
+        sep_re = marker_pattern("=", width)
+        theirs_re = marker_pattern(">", width)
+        m = ours_re.match(line)
+        if not m:
+            i += 1
+            continue
+
+        labels = {"ours": m.group(1) or "", "base": "", "theirs": ""}
+        start = i
+        j = i + 1
+        ours = []
+        base = None
+        theirs = []
+        while j < n and not base_re.match(bare(lines[j])) and not sep_re.match(bare(lines[j])):
+            ours.append(lines[j])
+            j += 1
+        if j < n and base_re.match(bare(lines[j])):
+            labels["base"] = base_re.match(bare(lines[j])).group(1) or ""
+            base = []
+            j += 1
+            while j < n and not sep_re.match(bare(lines[j])):
+                base.append(lines[j])
+                j += 1
+        if j >= n or not sep_re.match(bare(lines[j])):
+            i += 1  # not a real conflict, keep scanning
+            continue
+        j += 1
+        while j < n and not theirs_re.match(bare(lines[j])):
+            theirs.append(lines[j])
+            j += 1
+        if j >= n:
+            i += 1
+            continue
+        labels["theirs"] = theirs_re.match(bare(lines[j])).group(1) or ""
+        conflicts.append(Conflict(start, j, ours, base, theirs, labels))
+        i = j + 1
+    return conflicts
+
+
+def suggestion(conf):
+    """git-mediate's trivial cases: name the side that is a no-op."""
+    if conf.ours == conf.theirs:
+        return "o", "both sides are identical"
+    if conf.base is not None:
+        if conf.ours == conf.base:
+            return "t", "only theirs changed"
+        if conf.theirs == conf.base:
+            return "o", "only ours changed"
+    if not conf.base and conf.ours and conf.theirs:
+        if len(conf.ours) < len(conf.theirs) and conf.theirs[: len(conf.ours)] == conf.ours:
+            return "t", "theirs only adds lines to ours"
+        if len(conf.theirs) < len(conf.ours) and conf.ours[: len(conf.theirs)] == conf.theirs:
+            return "o", "ours only adds lines to theirs"
+    if not conf.ours and not conf.theirs:
+        return "n", "both sides removed the lines"
+    if not conf.ours and conf.base:
+        return "t", "only ours removed the lines"
+    if not conf.theirs and conf.base:
+        return "o", "only theirs removed the lines"
+    return None, ""
+
+
+def resolution(conf, key):
+    if key == "o":
+        return list(conf.ours)
+    if key == "t":
+        return list(conf.theirs)
+    if key == "b":
+        return list(conf.ours) + list(conf.theirs)
+    if key == "B":
+        return list(conf.theirs) + list(conf.ours)
+    if key == "a":
+        return list(conf.base or [])
+    if key == "n":
+        return []
+    raise KeyError(key)
+
+
+# ------------------------------------------------------------------ rendering
+
+
+class Style:
+    def __init__(self, enabled):
+        self.enabled = enabled
+
+    def __call__(self, code, text):
+        if not self.enabled:
+            return text
+        return f"\033[{code}m{text}\033[0m"
+
+    def ours(self, t):
+        return self("36", t)
+
+    def theirs(self, t):
+        return self("35", t)
+
+    def base(self, t):
+        return self("2", t)
+
+    def marker(self, t):
+        return self("1;33", t)
+
+    def dim(self, t):
+        return self("2", t)
+
+    def bold(self, t):
+        return self("1", t)
+
+    def add(self, t):
+        return self("32", t)
+
+    def delete(self, t):
+        return self("31", t)
+
+    def hunk(self, t):
+        return self("36", t)
+
+
+def width():
+    return shutil.get_terminal_size((80, 24)).columns
+
+
+def show(conf, display_path, index, total, full, diff_view, style):
+    w = min(width(), 100)
+    print(style.dim("─" * w))
+    first = conf.start + 1
+    last = conf.end + 1
+    print(
+        f"{style.bold(f'conflict {index}/{total}')}  "
+        f"{display_path}:{first}-{last}"
+        f"  {style.dim(f'{last - first + 1} lines')}"
+    )
+
+    def labelled(side):
+        label = conf.labels[side]
+        return f" ({label})" if label and label.lower() != side else ""
+
+    ours_label = labelled("ours")
+    theirs_label = labelled("theirs")
+    base_label = labelled("base")
+    parts = [
+        style.ours(f"ours{ours_label}: {len(conf.ours)}"),
+        style.theirs(f"theirs{theirs_label}: {len(conf.theirs)}"),
+    ]
+    if conf.base is not None:
+        parts.insert(1, style.base(f"base{base_label}: {len(conf.base)}"))
+    print("  ".join(parts))
+
+    if diff_view:
+        show_diffs(conf, style)
+        return
+
+    # Fold identical context. An empty side (common with stash/diff3 bases)
+    # does not take part in the comparison.
+    bodies = [b for b in (conf.ours, conf.base, conf.theirs) if b]
+    pre = suf = 0
+    if len(bodies) >= 2:
+        while all(len(b) > pre for b in bodies) and len({bare(b[pre]) for b in bodies}) == 1:
+            pre += 1
+        while (
+            all(len(b) > pre + suf for b in bodies)
+            and len({bare(b[-1 - suf]) for b in bodies}) == 1
+        ):
+            suf += 1
+    hidden = 0 if full else pre + suf
+    if hidden:
+        print(style.dim(f"… {hidden} line(s) identical in every version (v to show)"))
+
+    def body(lines, style_fn):
+        shown = lines if not hidden else lines[pre : len(lines) - suf if suf else len(lines)]
+        for line in shown:
+            print(style_fn("│ ") + bare(line))
+
+    print(style.marker(f"<<<<<<< ours{ours_label}"))
+    body(conf.ours, style.ours)
+    if conf.base is not None:
+        print(style.marker(f"||||||| base{base_label}"))
+        body(conf.base, style.base)
+    print(style.marker("======="))
+    body(conf.theirs, style.theirs)
+    print(style.marker(f">>>>>>> theirs{theirs_label}"))
+
+
+def show_diffs(conf, style):
+    base = [bare(x) for x in (conf.base or [])]
+    for name, side_lines in (("ours", conf.ours), ("theirs", conf.theirs)):
+        print(style.bold(f"--- base → {name} ---"))
+        diff = difflib.unified_diff(
+            base, [bare(x) for x in side_lines], fromfile="base", tofile=name, lineterm="", n=2
+        )
+        any_lines = False
+        for line in diff:
+            any_lines = True
+            if line.startswith("+++") or line.startswith("---"):
+                print(style.bold(line))
+            elif line.startswith("@@"):
+                print(style.hunk(line))
+            elif line.startswith("+"):
+                print(style.add(line))
+            elif line.startswith("-"):
+                print(style.delete(line))
+            else:
+                print(style.dim(line))
+        if not any_lines:
+            print(style.dim("(no changes)"))
+
+
+# ---------------------------------------------------------------------- git io
+
+
+def git(args, cwd):
+    return subprocess.run(
+        ["git", *args],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        errors="surrogateescape",
+    )
+
+
+def repo_root():
+    r = git(["rev-parse", "--show-toplevel"], os.getcwd())
+    if r.returncode != 0:
+        sys.exit("git-conflicts: not inside a git repository")
+    return r.stdout.strip()
+
+
+def unmerged_paths(root):
+    r = git(["diff", "--name-only", "--diff-filter=U", "-z"], root)
+    return [p for p in r.stdout.split("\0") if p]
+
+
+def is_unmerged(root, rel):
+    r = git(["ls-files", "-u", "-z", "--", rel], root)
+    return bool(r.stdout)
+
+
+def stage(root, rel):
+    r = git(["add", "--", rel], root)
+    if r.returncode != 0:
+        sys.stderr.write(r.stderr)
+        return False
+    return True
+
+
+def edit_file(path, line_no):
+    editor = os.environ.get("VISUAL") or os.environ.get("EDITOR") or "vi"
+    cmd = shlex.split(editor)
+    if os.path.basename(cmd[0]) in {
+        "nano", "vim", "nvim", "vi", "emacs", "micro", "hx", "helix", "kak", "kakoune",
+    }:
+        cmd.append(f"+{line_no}")
+    cmd.append(path)
+    subprocess.call(cmd)
+
+
+# ------------------------------------------------------------------ interaction
+
+
+KEYS = (
+    " o ours   t theirs   b both   B both-reversed   n neither   a base\n"
+    " e edit   d diff-from-base   v full view   s skip   S skip file   u undo\n"
+    " ? help   q quit"
+)
+
+
+def read_key(prompt):
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    if not sys.stdin.isatty():
+        line = sys.stdin.readline()
+        if not line:
+            return None
+        key = line.strip()[:1]
+        sys.stdout.write(key + "\n")
+        return key
+    import termios
+    import tty
+
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        key = os.read(fd, 1).decode("utf-8", "ignore")
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    sys.stdout.write("\n")
+    if key == "":
+        return None
+    if key in ("\x03", "\x04"):
+        return "q"
+    if key in ("\r", "\n"):
+        return ""
+    return key
+
+
+class Options:
+    def __init__(self, stage, full, diff):
+        self.stage = stage
+        self.full = full
+        self.diff = diff
+
+
+def resolve_file(root, abs_path, rel, display, opts, style):
+    """Returns (resolved_count, quit_requested, conflicts_left, staged)."""
+    text = read_text(abs_path)
+    lines = split_lines(text)
+    undo = []
+    cursor = 0
+    resolved = 0
+    initial = parse_conflicts(lines)
+    total_conflicts = len(initial)
+    had_conflicts = bool(initial)
+
+    while True:
+        conflicts = parse_conflicts(lines)
+        pending = [c for c in conflicts if c.start >= cursor]
+        if not pending:
+            if not undo or not sys.stdin.isatty():
+                break
+            print(
+                f"{style.dim(f'{resolved} resolution(s) applied')}  "
+                "Enter finishes, u undoes the last one, e edits the file"
+            )
+            key = read_key("\n > ")
+            if key is None or key in ("", "q", "Q"):
+                break
+            if key == "u":
+                lines, cursor = undo.pop()
+                write_text(abs_path, "".join(lines))
+            elif key == "e":
+                edit_file(abs_path, 1)
+                lines = split_lines(read_text(abs_path))
+                cursor = 0
+            continue
+        conf = pending[0]
+        position = total_conflicts - len(conflicts) + conflicts.index(conf) + 1
+        show(conf, display, position, total_conflicts, opts.full, opts.diff, style)
+        hint, why = suggestion(conf)
+        prompt = "\n" + style.dim(KEYS) + "\n"
+        if hint:
+            prompt += f" suggested: {style.bold(hint)} ({why}) — Enter accepts"
+        key = read_key(prompt + "\n > ")
+
+        if key is None:
+            return resolved, True, len(parse_conflicts(lines)), False
+        if key == "":
+            if hint:
+                key = hint
+            else:
+                continue
+        if key in "otbBna":
+            if key == "a" and conf.base is None:
+                print(style.dim("no base version in this conflict (diff3 adds one)"))
+                continue
+            undo.append((list(lines), cursor))
+            new_lines = resolution(conf, key)
+            lines[conf.start : conf.end + 1] = new_lines
+            write_text(abs_path, "".join(lines))
+            cursor = conf.start + len(new_lines)
+            resolved += 1
+        elif key == "e":
+            undo.append((list(lines), cursor))
+            edit_file(abs_path, conf.start + 1)
+            new_text = read_text(abs_path)
+            if new_text != "".join(lines):
+                lines = split_lines(new_text)
+            cursor = 0
+        elif key == "d":
+            opts.diff = not opts.diff
+        elif key == "v":
+            opts.full = not opts.full
+        elif key == "u":
+            if undo:
+                lines, cursor = undo.pop()
+                write_text(abs_path, "".join(lines))
+            else:
+                print(style.dim("nothing to undo"))
+        elif key == "s":
+            cursor = conf.end + 1
+        elif key == "S":
+            cursor = len(lines) + 1
+        elif key == "?":
+            print("\n" + KEYS + "\n")
+        elif key == "q":
+            return resolved, True, len(parse_conflicts(lines)), False
+        else:
+            print(style.dim(f"unknown key: {key!r}"))
+
+    remaining = parse_conflicts(lines)
+    if remaining:
+        print(f"{style.bold(display)}: {len(remaining)} conflict(s) left in this file")
+        return resolved, False, len(remaining), False
+    if not had_conflicts:
+        if opts.stage and is_unmerged(root, rel) and stage(root, rel):
+            print(f"{style.bold(display)}: no conflict markers, staged")
+            return resolved, False, 0, True
+        print(f"{style.bold(display)}: no conflict markers")
+        return resolved, False, 0, False
+    if opts.stage and is_unmerged(root, rel):
+        if stage(root, rel):
+            print(f"{style.bold(display)}: resolved and staged")
+            return resolved, False, 0, True
+        return resolved, False, 0, False
+    print(f"{style.bold(display)}: resolved{' (not staged)' if not opts.stage else ''}")
+    return resolved, False, 0, False
+
+
+def main(argv):
+    parser = argparse.ArgumentParser(
+        prog="git conflicts",
+        description="Interactively resolve merge conflicts one at a time.",
+        epilog=KEYS,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("paths", nargs="*", help="files to resolve (default: all unmerged)")
+    parser.add_argument("--no-stage", action="store_true", help="do not git add resolved files")
+    parser.add_argument("--diff", action="store_true", help="start in diff-from-base view")
+    parser.add_argument("--full", action="store_true", help="start with full conflict bodies")
+    parser.add_argument("--no-color", action="store_true", help="disable colors")
+    opts = parser.parse_args(argv)
+
+    root = repo_root()
+    if opts.paths:
+        rels = []
+        for p in opts.paths:
+            rel = os.path.relpath(os.path.abspath(p), root)
+            if not os.path.isfile(os.path.join(root, rel)):
+                sys.exit(f"git conflicts: not a file: {p}")
+            if rel not in rels:
+                rels.append(rel)
+    else:
+        rels = unmerged_paths(root)
+        if not rels:
+            print("No unmerged files.")
+            return 0
+
+    style = Style(not opts.no_color and sys.stdout.isatty() and not os.environ.get("NO_COLOR"))
+    settings = Options(not opts.no_stage, opts.full, opts.diff)
+
+    resolved = staged = skipped = 0
+    for rel in rels:
+        abs_path = os.path.join(root, rel)
+        display = os.path.relpath(abs_path, os.getcwd())
+        try:
+            with open(abs_path, "rb") as f:
+                binary = b"\0" in f.read(8192)
+        except OSError as exc:
+            sys.stderr.write(f"{display}: {exc}\n")
+            skipped += 1
+            continue
+        if binary:
+            print(f"{display}: binary file, use 'git mergetool' instead")
+            skipped += 1
+            continue
+        got, quit_now, left, did_stage = resolve_file(
+            root, abs_path, rel, display, settings, style
+        )
+        resolved += got
+        skipped += left
+        staged += int(did_stage)
+        if quit_now:
+            break
+
+    if resolved or skipped:
+        print(
+            f"\n{resolved} conflict(s) resolved, "
+            f"{staged} file(s) staged, {skipped} conflict(s) left"
+        )
+    return 1 if skipped else 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except KeyboardInterrupt:
+        sys.exit(130)

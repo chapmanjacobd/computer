@@ -125,7 +125,7 @@
     cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
     autoStash = true
-	conflictStyle = diff3
+	conflictstyle = zdiff3
     summary = true
     diffstat = true
     log = 50
