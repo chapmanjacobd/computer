@@ -4,6 +4,10 @@
 Usage:
     wine.game [options] <game.exe> [game arguments...]
 
+An executable path may be abbreviated to a bare executable name or a substring
+of the game title/store/path (for example "sleeper") as long as exactly one
+installed game matches; otherwise the candidates are listed.
+
 The launcher environment is inferred from the executable path:
 
   * Heroic Games Launcher (Epic/GOG/Amazon/Zoom/sideload) - prefix, Proton or
@@ -723,16 +727,38 @@ def resolve_executable(raw: str, launches: list[Launch]) -> str:
             return str(local.resolve())
 
     # Accept a bare executable name when it uniquely identifies a known game.
-    name = candidate.name.lower()
-    matches = []
+    name = candidate.name.casefold()
+
+    def pick(matches: list[str]) -> str | None:
+        unique = sorted(set(matches))
+        if len(unique) > 1:
+            die("ambiguous executable name; use a full path:\n  " + "\n  ".join(unique))
+        return unique[0] if unique else None
+
+    exact = pick([
+        launch.game_exe
+        for launch in launches
+        if launch.game_exe and Path(launch.game_exe).name.casefold() == name
+    ])
+    if exact:
+        return exact
+
+    # Fall back to a substring of the title/store/path when it uniquely
+    # identifies a game, so "wine.game sleeper" works for "Citizen Sleeper".
+    needles = {name}
+    if str(candidate).casefold() != name:
+        needles.add(str(candidate).casefold())
+    fuzzy: dict[str, str] = {}
     for launch in launches:
-        if launch.game_exe and Path(launch.game_exe).name.lower() == name:
-            matches.append(launch.game_exe)
-    unique = sorted(set(matches))
-    if len(unique) == 1:
-        return unique[0]
-    if len(unique) > 1:
-        die("ambiguous executable name; use a full path:\n  " + "\n  ".join(unique))
+        if not launch.game_exe:
+            continue
+        fields = (launch.title, launch.store, launch.game_exe, launch.label)
+        if any(needle in (value or "").casefold() for needle in needles for value in fields):
+            fuzzy.setdefault(os.path.realpath(launch.game_exe), launch.game_exe)
+    if len(fuzzy) == 1:
+        return next(iter(fuzzy.values()))
+    if len(fuzzy) > 1:
+        die(f"ambiguous game name {raw!r}; use a full path or --list:\n  " + "\n  ".join(sorted(fuzzy.values())))
     die(f"executable not found: {raw}")
 
 
@@ -794,6 +820,7 @@ def main(argv: list[str] | None = None) -> int:
             "  wine.game --dry-run 'Citizen Sleeper.exe'\n"
             "  wine.game --list\n"
             "  wine.game --list sleeper\n"
+            "  wine.game sleeper\n"
             "  wine.game --no-gamemode /games/foo/game.exe --windowed\n"
         ),
     )
@@ -804,7 +831,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--prefix", metavar="PATH", help="force the Wine prefix")
     parser.add_argument("--wine", metavar="PATH", help="force a Wine binary")
     parser.add_argument("--proton", metavar="PATH", help="force a Proton script")
-    parser.add_argument("exe", nargs="?", help="game executable (or a filter with --list)")
+    parser.add_argument("exe", nargs="?", help="game executable or unique name/title substring (or a filter with --list)")
     parser.add_argument("game_args", nargs=argparse.REMAINDER, help="arguments passed to the game")
     options = parser.parse_args(argv)
 
