@@ -10,9 +10,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-PROG = "amedit"
+PROG = "git amend-hunks"
+USAGE = f"usage: {PROG} [<commit>]"
 
-HELP = """usage: amedit [<commit>]
+HELP = f"""{USAGE}
 
 Interactively choose which hunks of <commit> (default: HEAD) to keep.
 The commit message is preserved. Unselected hunks are left as unstaged
@@ -139,12 +140,12 @@ def main(argv):
         return 0
 
     if len(argv) > 1:
-        print("usage: amedit [<commit>]", file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 2
 
     commit = argv[0] if argv else "HEAD"
     if commit.startswith("-"):
-        print("usage: amedit [<commit>]", file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 2
 
     real_env = os.environ.copy()
@@ -295,7 +296,7 @@ def main(argv):
                 raise AmeditError("rebase did not stop at the requested commit")
 
         try:
-            fd, tmp_index = tempfile.mkstemp(prefix="amedit-index-")
+            fd, tmp_index = tempfile.mkstemp(prefix="amend-hunks-index-")
             os.close(fd)
             os.unlink(tmp_index)
         except OSError as exc:
@@ -455,7 +456,7 @@ def main(argv):
             old_stash = rev_parse_optional("refs/stash", real_env)
             try:
                 with tempfile.NamedTemporaryFile(
-                    prefix="amedit-pathspec-", delete=False
+                    prefix="amend-hunks-pathspec-", delete=False
                 ) as handle:
                     handle.write(join_z(affected))
                     pathspec_file = handle.name
@@ -465,7 +466,7 @@ def main(argv):
                         "push",
                         "-u",
                         "-m",
-                        f"amedit: unselected changes from {target[:12]}",
+                        f"{PROG}: unselected changes from {target[:12]}",
                         f"--pathspec-from-file={pathspec_file}",
                         "--pathspec-file-nul",
                     ],
@@ -503,7 +504,7 @@ def main(argv):
                 file=sys.stderr,
             )
             if stash_sha:
-                print(f"{PROG}: amedit's stash is {stash_sha}", file=sys.stderr)
+                print(f"{PROG}: stash is {stash_sha}", file=sys.stderr)
             return 1
 
         keep_rebase = True
