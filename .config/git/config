@@ -96,7 +96,7 @@
 [tag]
     sort = -taggerdate
 [commit]
-    template = /home/xk/.gitmessage
+    template = ~/.config/git/message
     verbose = true
 	gpgSign = true
 [receive "fsck"]
