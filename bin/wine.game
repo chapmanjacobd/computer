@@ -1,0 +1,797 @@
+#!/usr/bin/env python3
+"""wine.game - run a Windows game with the environment its launcher would use.
+
+Usage:
+    wine.game [options] <game.exe> [game arguments...]
+
+The launcher environment is inferred from the executable path:
+
+  * Heroic Games Launcher (Epic/GOG/Amazon/Zoom/sideload) - prefix, Proton or
+    Wine runner, environment variables, fps/HDR/Wayland/esync settings and
+    wrapper commands from GamesConfig/<app>.json.
+  * Lutris - prefix, Wine runner version, WINEDLLOVERRIDES, system.env and
+    prefix_command from the per-game YAML in ~/.config/lutris/games.
+  * Neither - system Wine, with the prefix inferred from a /drive_c/ path when
+    possible (otherwise Wine's own default).
+
+In every case the program is started under gamemoderun (disable with
+--no-gamemode).  Extra arguments after the executable are passed to the game.
+
+Options:
+    -n, --dry-run       print the environment and command instead of running
+    -q, --quiet         do not print the inferred launcher/prefix
+        --no-gamemode   do not wrap the command in gamemoderun
+        --prefix PATH   force WINEPREFIX / STEAM_COMPAT_DATA_PATH
+        --wine PATH     use this wine binary instead of the inferred runner
+        --proton PATH   use this proton script instead of the inferred runner
+    -h, --help          show this help
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shlex
+import shutil
+import sqlite3
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from string import Template
+from typing import NoReturn
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - Fedora python3-pyyaml is normally present
+    yaml = None
+
+HOME = Path.home()
+HEROIC_DIR = Path(os.environ.get("HEROIC_CONFIG_HOME", HOME / ".config" / "heroic"))
+LUTRIS_CONFIG = Path(os.environ.get("LUTRIS_CONFIG_HOME", HOME / ".config" / "lutris"))
+LUTRIS_DATA = Path(os.environ.get("LUTRIS_DATA_HOME", HOME / ".local" / "share" / "lutris"))
+GAMEMODERUN = shutil.which("gamemoderun")
+
+
+def die(message: str) -> NoReturn:
+    print(f"wine.game: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def load_json(path: Path):
+    try:
+        with path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return None
+
+
+def load_yaml(path: Path):
+    if yaml is None or not path.is_file():
+        return None
+    try:
+        with path.open(encoding="utf-8") as handle:
+            data = yaml.safe_load(handle)
+    except (OSError, yaml.YAMLError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def env_set(env: dict[str, str], key: str, value) -> None:
+    """Set a variable, replacing any differently-cased spelling."""
+    for existing in [k for k in env if k.upper() == key.upper()]:
+        del env[existing]
+    env[key] = str(value)
+
+
+def env_get(env: dict[str, str], key: str, default=None):
+    for existing, value in env.items():
+        if existing.upper() == key.upper():
+            return value
+    return default
+
+
+def expand(value, extra: dict[str, str] | None = None) -> str:
+    """Expand ~ and $VAR / ${VAR} the way Lutris and Heroic do for settings."""
+    mapping = dict(os.environ)
+    mapping.setdefault("USER", os.environ.get("LOGNAME", ""))
+    mapping.setdefault("HOME", str(HOME))
+    if extra:
+        mapping.update(extra)
+    text = Template(str(value)).safe_substitute(mapping)
+    return os.path.expanduser(text)
+
+
+def under(path: str | None, root: str | None) -> bool:
+    if not path or not root:
+        return False
+    try:
+        return os.path.commonpath(
+            [os.path.realpath(path), os.path.realpath(root)]
+        ) == os.path.realpath(root)
+    except ValueError:
+        return False
+
+
+def same_path(left: str | None, right: str | None) -> bool:
+    if not left or not right:
+        return False
+    return os.path.realpath(left) == os.path.realpath(right)
+
+
+def normalize_exe(exe, base: str | None) -> str | None:
+    """Turn a launcher's executable field into an absolute Linux path."""
+    if not exe:
+        return None
+    text = str(exe).replace("\\", "/")
+    # Several Heroic entries store paths like "/Binaries/Win64/Game.exe";
+    # only treat it as absolute when it really exists.
+    if text.startswith("/") and not os.path.exists(text):
+        text = text.lstrip("/")
+    candidate = Path(text)
+    if candidate.is_absolute():
+        return str(candidate)
+    if base:
+        return str(Path(base) / candidate)
+    return str(candidate)
+
+
+def normalized_abs(value: str | None, base: str | None = None) -> str | None:
+    if not value:
+        return None
+    path = Path(expand(value, {"GAMEDIR": base or ""}))
+    if not path.is_absolute() and base:
+        path = Path(base) / path
+    return str(path)
+
+
+# --------------------------------------------------------------------------
+# Launch description
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class Launch:
+    source: str
+    label: str
+    kind: str  # proton | wine | native
+    runner: str
+    prefix: str | None
+    workdir: str
+    env: dict[str, str] = field(default_factory=dict)
+    wrappers: list[list[str]] = field(default_factory=list)
+    args: list[str] = field(default_factory=list)
+    score: tuple[int, int] = (0, 0)
+    notes: list[str] = field(default_factory=list)
+
+    def command(self, exe: str, passthrough: list[str], gamemode: bool) -> list[str]:
+        cmd: list[str] = []
+        wrapper_names = {os.path.basename(wrapper[0]) for wrapper in self.wrappers if wrapper}
+        if gamemode and GAMEMODERUN and "gamemoderun" not in wrapper_names:
+            cmd.append(GAMEMODERUN)
+        for wrapper in self.wrappers:
+            cmd.extend(wrapper)
+        if self.kind == "proton":
+            cmd.extend([self.runner, "run", exe])
+        elif self.kind == "native":
+            cmd.append(exe)
+        else:
+            cmd.extend([self.runner, exe])
+        cmd.extend(self.args)
+        cmd.extend(passthrough)
+        return cmd
+
+    def full_env(self) -> dict[str, str]:
+        env = dict(os.environ)
+        for key, value in self.env.items():
+            env_set(env, key, value)
+        return env
+
+
+def system_wine() -> str | None:
+    return shutil.which("wine")
+
+
+def steam_install_path() -> str:
+    settings = heroic_settings()
+    return (
+        settings.get("defaultSteamPath")
+        or str(HOME / ".local" / "share" / ".steam" / "steam")
+    )
+
+
+def proton_data_path(prefix: str) -> str:
+    """Proton wants the directory containing pfx, not the prefix itself."""
+    path = Path(prefix)
+    return str(path.parent) if path.name == "pfx" else str(path)
+
+
+def wine_prefix_path(prefix: str) -> str:
+    """Plain Wine wants the prefix itself, not the Heroic/Proton data dir."""
+    path = Path(prefix)
+    nested = path / "pfx"
+    return str(nested) if nested.is_dir() else str(path)
+
+
+def usable_runner(wine) -> bool:
+    if not isinstance(wine, dict) or not wine.get("bin"):
+        return False
+    binary = str(wine["bin"])
+    return os.path.isfile(binary) or shutil.which(binary) is not None
+
+
+def runner_bin_from_version(version: str | None) -> str | None:
+    if not version:
+        return None
+    root = LUTRIS_DATA / "runners" / "wine" / version
+    for rel in ("bin/wine", "files/bin/wine", "bin-wow64/wine"):
+        candidate = root / rel
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
+def heroic_settings() -> dict:
+    data = load_json(HEROIC_DIR / "store" / "config.json") or {}
+    settings = data.get("settings") if isinstance(data, dict) else None
+    return settings if isinstance(settings, dict) else {}
+
+
+# --------------------------------------------------------------------------
+# Heroic
+# --------------------------------------------------------------------------
+
+
+def heroic_entries():
+    """Yield (store, app_name, game_info) for installed Heroic games."""
+    stores = (
+        ("epic", HEROIC_DIR / "legendaryConfig" / "legendary" / "installed.json"),
+        ("gog", HEROIC_DIR / "gog_store" / "installed.json"),
+        ("amazon", HEROIC_DIR / "nile_store" / "installed.json"),
+        ("zoom", HEROIC_DIR / "zoom_store" / "installed.json"),
+    )
+    for store, path in stores:
+        data = load_json(path)
+        if isinstance(data, dict):
+            pairs = data.items()
+        elif isinstance(data, list):
+            pairs = (
+                (item.get("app_name") or item.get("appName"), item)
+                for item in data
+                if isinstance(item, dict)
+            )
+        else:
+            continue
+        for app_name, info in pairs:
+            if app_name and isinstance(info, dict):
+                yield store, str(app_name), info
+
+    sideload = load_json(HEROIC_DIR / "sideload_apps" / "library.json")
+    if isinstance(sideload, list):
+        pairs = (
+            (item.get("app_name") or item.get("appName"), item)
+            for item in sideload
+            if isinstance(item, dict)
+        )
+    elif isinstance(sideload, dict):
+        pairs = sideload.items()
+    else:
+        pairs = ()
+    for app_name, info in pairs:
+        if app_name and isinstance(info, dict):
+            yield "sideload", str(app_name), info
+
+
+def heroic_install_info(info: dict, settings: dict):
+    """Return (install_dir, absolute_exe) for a Heroic game info record."""
+    install = info.get("install") if isinstance(info.get("install"), dict) else {}
+    install_dir = info.get("install_path") or install.get("install_path")
+    default_install = settings.get("defaultInstallPath")
+
+    if not install_dir:
+        folder = info.get("folder_name")
+        if folder:
+            folder = str(folder)
+            install_dir = folder if os.path.isabs(folder) else os.path.join(default_install or "", folder)
+
+    exe = info.get("executable") or install.get("executable")
+    if not exe and not install_dir:
+        return None, None
+
+    return (
+        normalized_abs(install_dir, default_install),
+        normalize_exe(exe, normalized_abs(install_dir, default_install)),
+    )
+
+
+def heroic_candidates() -> list[Launch]:
+    settings = heroic_settings()
+    launches: list[Launch] = []
+
+    for store, app_name, info in heroic_entries():
+        install_dir, game_exe = heroic_install_info(info, settings)
+        if not install_dir and not game_exe:
+            continue
+        # Entries with no executable are DLCs/stubs unless Heroic has per-game
+        # settings for them (which also gives us a usable prefix).
+        if not game_exe and not (HEROIC_DIR / "GamesConfig" / f"{app_name}.json").is_file():
+            continue
+
+        config_document = load_json(HEROIC_DIR / "GamesConfig" / f"{app_name}.json") or {}
+        config = config_document.get(app_name) if isinstance(config_document, dict) else None
+        config = config if isinstance(config, dict) else {}
+
+        notes: list[str] = []
+        env: dict[str, str] = {}
+        wrappers: list[list[str]] = []
+
+        wine = config.get("wineVersion") or settings.get("wineVersion") or {}
+        if not usable_runner(wine):
+            fallback = settings.get("wineVersion") or {}
+            if usable_runner(fallback):
+                notes.append(
+                    "per-game runner "
+                    f"{wine.get('name') or wine.get('bin') or '(none)'} is missing; "
+                    f"using global {fallback.get('name') or fallback.get('bin')}"
+                )
+                wine = fallback
+        wine_type = wine.get("type") if isinstance(wine, dict) else None
+        wine_bin = wine.get("bin") if isinstance(wine, dict) else None
+        wine_name = wine.get("name") if isinstance(wine, dict) else None
+        prefix = normalized_abs(config.get("winePrefix") or settings.get("winePrefix"))
+
+        def setting(key, default=None):
+            value = config.get(key)
+            return settings.get(key, default) if value is None else value
+
+        # User environment variables first, so prefix/runner settings win.
+        for item in config.get("enviromentOptions") or settings.get("enviromentOptions") or []:
+            if isinstance(item, dict):
+                key, value = item.get("key"), item.get("value")
+            elif isinstance(item, str) and "=" in item:
+                key, value = item.split("=", 1)
+            else:
+                continue
+            if key:
+                env_set(env, str(key).strip(), expand(value, {"GAMEDIR": install_dir or ""}))
+
+        if wine_type == "proton" and wine_bin and not prefix:
+            notes.append("Proton runner has no prefix configured; using system Wine")
+            kind = "wine"
+            runner = system_wine() or "wine"
+        elif wine_type == "proton" and wine_bin:
+            kind = "proton"
+            runner = str(wine_bin)
+            env_set(env, "STEAM_COMPAT_CLIENT_INSTALL_PATH", steam_install_path())
+            if prefix:
+                env_set(env, "WINEPREFIX", prefix)
+                env_set(env, "STEAM_COMPAT_DATA_PATH", prefix)
+            env_set(env, "PROTONPATH", str(Path(wine_bin).parent))
+        elif wine_type == "wine" and wine_bin:
+            kind = "wine"
+            runner = str(wine_bin)
+            if prefix:
+                env_set(env, "WINEPREFIX", prefix)
+            overrides = env_get(env, "WINEDLLOVERRIDES")
+            env_set(
+                env,
+                "WINEDLLOVERRIDES",
+                f"{overrides};winemenubuilder.exe=d" if overrides else "winemenubuilder.exe=d",
+            )
+        else:
+            kind = "wine"
+            runner = system_wine() or "wine"
+            notes.append(
+                f"Heroic runner {wine_name or wine_bin or '(none)'} is not usable; using system Wine"
+            )
+            if prefix:
+                env_set(env, "WINEPREFIX", prefix)
+
+        # Heroic's wine/proton toggles.
+        esync, fsync = setting("enableEsync"), setting("enableFsync")
+        if esync and kind != "proton":
+            env_set(env, "WINEESYNC", "1")
+        elif not esync and kind == "proton":
+            env_set(env, "PROTON_NO_ESYNC", "1")
+        if fsync and kind != "proton":
+            env_set(env, "WINEFSYNC", "1")
+        elif not fsync and kind == "proton":
+            env_set(env, "PROTON_NO_FSYNC", "1")
+        if setting("enableMsync"):
+            env_set(env, "WINEMSYNC", "1")
+        if setting("enableWineWayland"):
+            if kind == "proton":
+                env_set(env, "PROTON_ENABLE_WAYLAND", "1")
+                if setting("enableHDR"):
+                    env_set(env, "PROTON_ENABLE_HDR", "1")
+            else:
+                env_set(env, "DISPLAY", "")
+                if setting("enableHDR"):
+                    env_set(env, "DXVK_HDR", "1")
+        if setting("enableWoW64") and kind == "proton":
+            env_set(env, "PROTON_USE_WOW64", "1")
+        if setting("showFps"):
+            env_set(env, "DXVK_HUD", "fps")
+        if setting("enableDXVKFpsLimit") and setting("DXVKFpsCap"):
+            env_set(env, "DXVK_FRAME_RATE", setting("DXVKFpsCap"))
+
+        if setting("showMangohud") and shutil.which("mangohud"):
+            wrappers.append(["mangohud"])
+
+        for item in config.get("wrapperOptions") or settings.get("wrapperOptions") or []:
+            if isinstance(item, dict):
+                exe = item.get("exe")
+                args = item.get("args") or ""
+                if exe:
+                    wrappers.append([str(exe), *shlex.split(str(args))])
+            elif isinstance(item, str) and item.strip():
+                wrappers.append(shlex.split(item))
+
+        params = str(info.get("launch_parameters") or "")
+        args = shlex.split(params) if params else []
+        workdir = install_dir if install_dir and os.path.isdir(install_dir) else (
+            str(Path(game_exe).parent) if game_exe else str(HOME)
+        )
+
+        label = f'Heroic ({store}) "{info.get("title") or app_name}"'
+        if wine_name:
+            label += f" [{wine_name}]"
+
+        launch = Launch(
+            source="heroic",
+            label=label,
+            kind=kind,
+            runner=runner,
+            prefix=prefix,
+            workdir=workdir,
+            env=env,
+            wrappers=wrappers,
+            args=args,
+            notes=notes,
+        )
+        launch.app_name = app_name  # type: ignore[attr-defined]
+        launch.install_dir = install_dir  # type: ignore[attr-defined]
+        launch.game_exe = game_exe  # type: ignore[attr-defined]
+        launches.append(launch)
+
+    return launches
+
+
+# --------------------------------------------------------------------------
+# Lutris
+# --------------------------------------------------------------------------
+
+
+def lutris_rows():
+    database = LUTRIS_DATA / "pga.db"
+    if not database.is_file():
+        return []
+    try:
+        connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
+        connection.row_factory = sqlite3.Row
+        rows = connection.execute(
+            "select id, name, slug, runner, directory, configpath, executable "
+            "from games where installed = 1"
+        ).fetchall()
+        connection.close()
+        return rows
+    except sqlite3.Error:
+        return []
+
+
+def lutris_config_path(configpath: str | None) -> Path | None:
+    if not configpath:
+        return None
+    base = LUTRIS_CONFIG / "games" / configpath
+    for candidate in (base, base.with_suffix(".yml"), Path(f"{base}.yml")):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def lutris_candidates() -> list[Launch]:
+    launches: list[Launch] = []
+
+    for row in lutris_rows():
+        game = dict(row)
+        config = load_yaml(lutris_config_path(game.get("configpath"))) or {}
+        game_cfg = config.get("game") if isinstance(config.get("game"), dict) else {}
+        system_cfg = config.get("system") if isinstance(config.get("system"), dict) else {}
+        wine_cfg = config.get("wine") if isinstance(config.get("wine"), dict) else {}
+
+        directory = game.get("directory") or ""
+        prefix = normalized_abs(game_cfg.get("prefix"), directory) or directory or None
+        game_exe = normalized_abs(game_cfg.get("exe") or game.get("executable"), prefix or directory)
+        if not game_exe and not directory:
+            continue
+
+        runner_name = (game.get("runner") or "").lower()
+        env: dict[str, str] = {}
+        notes: list[str] = []
+        wrappers: list[list[str]] = []
+
+        extra = {
+            "GAMEDIR": directory or prefix or "",
+            "USER": os.environ.get("USER", ""),
+        }
+        for key, value in (system_cfg.get("env") or {}).items():
+            if key:
+                env_set(env, str(key), expand(value, extra))
+        for key, value in (game_cfg.get("env") or {}).items():
+            if key:
+                env_set(env, str(key), expand(value, extra))
+
+        if runner_name == "linux":
+            kind = "native"
+            runner = game_exe or ""
+            prefix = None
+        else:
+            kind = "wine"
+            version = wine_cfg.get("version")
+            runner = runner_bin_from_version(version) or system_wine() or "wine"
+            if version and not runner_bin_from_version(version):
+                notes.append(f"Lutris Wine runner {version} not found; using system Wine")
+
+            normalized_prefix = normalized_abs(prefix, directory) if prefix else None
+            if normalized_prefix:
+                env_set(env, "WINEPREFIX", normalized_prefix)
+            arch = game_cfg.get("arch") or wine_cfg.get("arch")
+            if arch:
+                env_set(env, "WINEARCH", arch)
+            overrides = wine_cfg.get("overrides")
+            if isinstance(overrides, dict) and overrides:
+                env_set(
+                    env,
+                    "WINEDLLOVERRIDES",
+                    ";".join(f"{dll}={str(val).replace(' ', '')}" for dll, val in overrides.items()),
+                )
+            if "esync" in wine_cfg:
+                env_set(env, "WINEESYNC", "1" if wine_cfg.get("esync") else "0")
+            if "fsync" in wine_cfg:
+                env_set(env, "WINEFSYNC", "1" if wine_cfg.get("fsync") else "0")
+
+            if wine_cfg.get("dxvk"):
+                env_set(env, "WINE_USE_DXVK", "1")
+
+        prefix_command = system_cfg.get("prefix_command")
+        if isinstance(prefix_command, str) and prefix_command.strip():
+            wrappers.append([expand(part, extra) for part in shlex.split(prefix_command)])
+
+        raw_args = game_cfg.get("args")
+        args = [expand(part, extra) for part in shlex.split(str(raw_args))] if raw_args else []
+
+        label = f'Lutris "{game.get("name") or game.get("slug") or game.get("id")}"'
+        if wine_cfg.get("version"):
+            label += f" [{wine_cfg.get('version')}]"
+
+        launch = Launch(
+            source="lutris",
+            label=label,
+            kind=kind,
+            runner=runner,
+            prefix=prefix,
+            workdir=directory if directory and os.path.isdir(directory) else (
+                str(Path(game_exe).parent) if game_exe else str(HOME)
+            ),
+            env=env,
+            wrappers=wrappers,
+            args=args,
+            notes=notes,
+        )
+        launch.game_exe = game_exe  # type: ignore[attr-defined]
+        launch.install_dir = directory or prefix  # type: ignore[attr-defined]
+        launches.append(launch)
+
+    return launches
+
+
+# --------------------------------------------------------------------------
+# Selection and execution
+# --------------------------------------------------------------------------
+
+
+def score_launch(launch: Launch, exe: str) -> tuple[int, int] | None:
+    game_exe = getattr(launch, "game_exe", None)
+    install_dir = getattr(launch, "install_dir", None)
+    if same_path(game_exe, exe):
+        return (3, len(os.path.realpath(install_dir or "")))
+    if under(exe, install_dir):
+        return (2, len(os.path.realpath(install_dir)))
+    return None
+
+
+def default_launch(exe: str) -> Launch:
+    notes: list[str] = []
+    prefix = os.environ.get("WINEPREFIX")
+    if prefix:
+        notes.append("using WINEPREFIX from the environment")
+    else:
+        marker = "/drive_c/"
+        posix = exe.replace("\\", "/")
+        if marker in posix:
+            prefix = posix.split(marker, 1)[0]
+            notes.append(f"prefix inferred from {marker} path")
+
+    env: dict[str, str] = {}
+    if prefix:
+        env_set(env, "WINEPREFIX", prefix)
+
+    return Launch(
+        source="default",
+        label="no launcher config found",
+        kind="wine",
+        runner=system_wine() or "wine",
+        prefix=prefix,
+        workdir=str(Path(exe).parent),
+        env=env,
+        notes=notes,
+        score=(0, 0),
+    )
+
+
+def collect_launches() -> list[Launch]:
+    launches = heroic_candidates() + lutris_candidates()
+    return launches
+
+
+def find_launch(launches: list[Launch], exe: str) -> Launch:
+    best: Launch | None = None
+    best_score = (0, 0)
+    for launch in launches:
+        score = score_launch(launch, exe)
+        if score is None:
+            continue
+        # Prefer exact executable matches and the most specific install dir.
+        if score > best_score:
+            best, best_score = launch, score
+        elif score == best_score and best is not None:
+            # Deterministic tie-break: Heroic before Lutris.
+            if launch.source == "heroic" and best.source != "heroic":
+                best = launch
+    if best is None:
+        best = default_launch(exe)
+    best.score = best_score
+    return best
+
+
+def resolve_executable(raw: str, launches: list[Launch]) -> str:
+    candidate = Path(expand(raw)).expanduser()
+    if candidate.is_file():
+        return str(candidate.resolve())
+    if not candidate.is_absolute():
+        local = Path.cwd() / candidate
+        if local.is_file():
+            return str(local.resolve())
+
+    # Accept a bare executable name when it uniquely identifies a known game.
+    name = candidate.name.lower()
+    matches = []
+    for launch in launches:
+        game_exe = getattr(launch, "game_exe", None)
+        if game_exe and Path(game_exe).name.lower() == name:
+            matches.append(game_exe)
+    unique = sorted(set(matches))
+    if len(unique) == 1:
+        return unique[0]
+    if len(unique) > 1:
+        die("ambiguous executable name; use a full path:\n  " + "\n  ".join(unique))
+    die(f"executable not found: {raw}")
+
+
+def print_detection(launch: Launch, exe: str, stream=sys.stderr) -> None:
+    print(f"wine.game: {launch.label}", file=stream)
+    print(f"  executable: {exe}", file=stream)
+    print(f"  runner:     {launch.kind} - {launch.runner}", file=stream)
+    if launch.prefix:
+        print(f"  prefix:     {launch.prefix}", file=stream)
+    print(f"  workdir:    {launch.workdir}", file=stream)
+    for note in launch.notes:
+        print(f"  note:       {note}", file=stream)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="wine.game",
+        description="Run a Windows game with its Heroic/Lutris Wine or Proton environment.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  wine.game ~/Games/Heroic/CitizenSleeperXbYLR/'Citizen Sleeper.exe'\n"
+            "  wine.game --dry-run 'Citizen Sleeper.exe'\n"
+            "  wine.game --no-gamemode /games/foo/game.exe --windowed\n"
+        ),
+    )
+    parser.add_argument("-n", "--dry-run", action="store_true", help="print command instead of running")
+    parser.add_argument("-q", "--quiet", action="store_true", help="suppress detection output")
+    parser.add_argument("--no-gamemode", action="store_true", help="do not use gamemoderun")
+    parser.add_argument("--prefix", metavar="PATH", help="force the Wine prefix")
+    parser.add_argument("--wine", metavar="PATH", help="force a Wine binary")
+    parser.add_argument("--proton", metavar="PATH", help="force a Proton script")
+    parser.add_argument("exe", help="game executable")
+    parser.add_argument("game_args", nargs=argparse.REMAINDER, help="arguments passed to the game")
+    options = parser.parse_args(argv)
+
+    launches = collect_launches()
+    exe = resolve_executable(options.exe, launches)
+    launch = find_launch(launches, exe)
+
+    if options.prefix:
+        launch.prefix = str(Path(expand(options.prefix)).expanduser())
+        data_path = proton_data_path(launch.prefix)
+        if launch.kind == "proton":
+            env_set(launch.env, "STEAM_COMPAT_DATA_PATH", data_path)
+            env_set(launch.env, "WINEPREFIX", data_path)
+        else:
+            env_set(launch.env, "WINEPREFIX", launch.prefix)
+    if options.proton:
+        if not launch.prefix:
+            die("--proton needs --prefix pointing at a Proton compatdata directory")
+        launch.kind = "proton"
+        launch.runner = str(Path(expand(options.proton)).expanduser())
+        env_set(
+            launch.env,
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH",
+            env_get(launch.env, "STEAM_COMPAT_CLIENT_INSTALL_PATH", steam_install_path()),
+        )
+        env_set(launch.env, "PROTONPATH", str(Path(launch.runner).parent))
+        env_set(launch.env, "STEAM_COMPAT_DATA_PATH", proton_data_path(launch.prefix))
+        env_set(launch.env, "WINEPREFIX", launch.prefix)
+    if options.wine:
+        launch.kind = "wine"
+        launch.runner = str(Path(expand(options.wine)).expanduser())
+        if launch.prefix:
+            env_set(launch.env, "WINEPREFIX", wine_prefix_path(launch.prefix))
+
+    if not os.path.isfile(launch.runner):
+        # A runner may be a bare command name (system wine fallback).
+        resolved = shutil.which(launch.runner)
+        if resolved:
+            launch.runner = resolved
+        else:
+            die(f"runner not found: {launch.runner}")
+
+    game_args = list(options.game_args)
+    if game_args and game_args[0] == "--":
+        game_args = game_args[1:]
+
+    use_gamemode = not options.no_gamemode
+    if use_gamemode and not GAMEMODERUN:
+        print("wine.game: gamemoderun not found; continuing without it", file=sys.stderr)
+        use_gamemode = False
+
+    command = launch.command(exe, game_args, use_gamemode)
+    env = launch.full_env()
+
+    if not options.quiet:
+        print_detection(launch, exe)
+
+    if options.dry_run:
+        print("wine.game: dry run", file=sys.stderr)
+        changed = {
+            key: value
+            for key, value in env.items()
+            if os.environ.get(key) != value
+        }
+        for key in sorted(changed):
+            print(f"  env {key}={shlex.quote(changed[key])}")
+        print(f"  cd {shlex.quote(launch.workdir)}")
+        print("  " + " ".join(shlex.quote(part) for part in command))
+        return 0
+
+    try:
+        os.chdir(launch.workdir)
+    except OSError as error:
+        die(f"cannot enter working directory {launch.workdir}: {error}")
+
+    try:
+        os.execvpe(command[0], command, env)
+    except OSError as error:
+        die(f"failed to run {command[0]}: {error}")
+    return 1  # unreachable
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        raise SystemExit(130)
