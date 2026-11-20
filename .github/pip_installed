@@ -21,6 +21,7 @@ gdal
 geopandas
 ghostscript
 git-filter-repo
+git-imerge
 google-cloud-batch
 google-cloud-bigquery
 google-cloud-secret-manager
