@@ -4,29 +4,32 @@
 # rewrites history. A merge is cheaper to reason about, so it wins whenever it
 # applies cleanly. Only when the merge conflicts do we test a rebase in a
 # scratch worktree, and use the rebase if that applies cleanly. If both
-# conflict, the merge is run so the user resolves conflicts in the usual place.
+# conflict, an incremental merge (git-imerge) breaks the resolution into
+# pairwise conflicts; a plain merge is the fallback.
 function git.merge.or.rebase --description 'Sync with a branch: merge if clean, otherwise rebase if that is clean'
-    argparse --name='git merge-or-rebase' n/no-fetch h/help -- $argv
+    argparse --name='git merge-or-rebase' n/no-fetch h/help no-imerge -- $argv
     or return 2
 
     if set -q _flag_h
-        echo 'Usage: git merge-or-rebase <target-branch> [--no-fetch]'
+        echo 'Usage: git merge-or-rebase <target-branch> [--no-fetch] [--no-imerge]'
         echo
         echo 'Decides between merge and rebase for syncing the current branch with'
         echo '<target-branch> (for example iiab/master), then applies the winner.'
         echo
         echo '  - Merge wins whenever it applies cleanly (no history rewrite).'
         echo '  - If the merge conflicts, a rebase is tried in a scratch worktree.'
-        echo '  - If both conflict, the merge is run so conflicts can be resolved.'
+        echo '  - If both conflict, an incremental merge with git-imerge resolves'
+        echo '    the conflicts one pair of commits at a time.'
         echo
         echo 'Options:'
         echo '  -n, --no-fetch   do not fetch <remote>/<branch> from its remote first'
+        echo '      --no-imerge  if both conflict, run a plain merge instead of git-imerge'
         echo '  -h, --help       show this help'
         return 0
     end
 
     if test (count $argv) -ne 1
-        echo >&2 'Usage: git merge-or-rebase <target-branch> [--no-fetch]'
+        echo >&2 'Usage: git merge-or-rebase <target-branch> [--no-fetch] [--no-imerge]'
         return 2
     end
 
@@ -118,6 +121,28 @@ function git.merge.or.rebase --description 'Sync with a branch: merge if clean, 
             echo "  git push --force-with-lease"
         end
         return $rc
+    end
+
+    # Neither path is conflict-free. An incremental merge presents one pairwise
+    # conflict at a time and keeps the merge-shaped, history-preserving result.
+    if not set -q _flag_no_imerge; and command -q git-imerge
+        echo "Both merge and rebase conflict; starting an incremental merge onto $target." >&2
+
+        # git-imerge names the merge after the target, which must be a valid
+        # refname component. Fall back to a fixed name for commits/expressions.
+        set -l imerge_args merge $target
+        if not git check-ref-format "refs/imerge/$target" >/dev/null 2>&1
+            set imerge_args merge --name=merge-or-rebase $target
+        end
+
+        git-imerge $imerge_args
+        or begin
+            echo >&2 'git-imerge could not start; rerun with --no-imerge to do a plain merge.'
+            return 1
+        end
+        echo >&2 'Resolve conflicts one at a time, then run: git.continue'
+        echo >&2 'The final git.continue finishes the incremental merge.'
+        return 0
     end
 
     echo "Both merge and rebase conflict; running merge so conflicts can be resolved in place." >&2
