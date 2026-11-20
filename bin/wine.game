@@ -33,9 +33,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import shlex
 import shutil
 import sqlite3
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -217,6 +219,39 @@ def wine_prefix_path(prefix: str) -> str:
     path = Path(prefix)
     nested = path / "pfx"
     return str(nested) if nested.is_dir() else str(path)
+
+
+def proton_template_dir(runner: str) -> Path:
+    """Template directory a Proton runner uses for new prefixes."""
+    root = Path(runner).parent
+    if platform.machine() == "aarch64" and os.environ.get("PROTON_USE_ARM64", "1") == "1":
+        arm = root / "files" / "share" / "default_pfx_arm64"
+        if arm.is_dir():
+            return arm
+    return root / "files" / "share" / "default_pfx"
+
+
+def repair_proton_template(runner: str) -> None:
+    """Rebuild an incomplete Proton prefix template, or stop with a reason."""
+    template = proton_template_dir(runner)
+    sentinel = template / "drive_c/windows/system32/nvcuda.dll"
+    if sentinel.is_file():
+        return
+
+    helper = shutil.which("proton.repair")
+    if not helper:
+        sibling = Path(__file__).resolve().with_name("proton.repair")
+        helper = str(sibling) if os.access(sibling, os.X_OK) else None
+    if not helper:
+        die(f"{sentinel} is missing and proton.repair was not found; reinstall the Proton build")
+
+    print(f"wine.game: {sentinel} is missing; repairing {Path(runner).parent}", file=sys.stderr)
+    try:
+        subprocess.run([helper, str(Path(runner).parent)], check=True)
+    except (OSError, subprocess.CalledProcessError) as error:
+        die(f"proton.repair failed: {error}")
+    if not sentinel.is_file():
+        die(f"{sentinel} is still missing; reinstall the Proton build")
 
 
 def usable_runner(wine) -> bool:
@@ -834,6 +869,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if not options.quiet:
         print_detection(launch, exe)
+
+    if launch.kind == "proton" and not options.dry_run:
+        repair_proton_template(launch.runner)
 
     if options.dry_run:
         print("wine.game: dry run", file=sys.stderr)
