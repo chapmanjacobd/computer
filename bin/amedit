@@ -1,0 +1,574 @@
+#!/usr/bin/env python3
+"""Interactively edit the hunks in a commit (default: HEAD)."""
+
+from __future__ import annotations
+
+import os
+import shlex
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+PROG = "amedit"
+
+HELP = """usage: amedit [<commit>]
+
+Interactively choose which hunks of <commit> (default: HEAD) to keep.
+The commit message is preserved. Unselected hunks are left as unstaged
+changes. When editing an older commit, unselected changes are stashed
+and restored after the rewritten history has been replayed. Binary
+changes cannot be hunk-selected and are kept automatically. Skip-worktree
+paths are kept as-is and cannot be hunk-selected."""
+
+
+class AmeditError(Exception):
+    pass
+
+
+def _git(args, *, env=None, input=None, capture=False, check=True):
+    proc = subprocess.run(
+        ["git", *args],
+        env=env,
+        input=input,
+        stdout=subprocess.PIPE if capture else None,
+        stderr=subprocess.PIPE if capture else None,
+        check=False,
+    )
+    if check and proc.returncode != 0:
+        detail = ""
+        if capture and proc.stderr:
+            detail = proc.stderr.decode("utf-8", "replace").strip()
+        raise AmeditError(detail or f"git {shlex.join(args)} failed")
+    return proc
+
+
+def git_out(args, *, env=None, input=None):
+    return _git(args, env=env, input=input, capture=True).stdout
+
+
+def git_run(args, *, env=None, input=None):
+    _git(args, env=env, input=input)
+
+
+def git_ok(args, *, env=None):
+    return _git(args, env=env, capture=True, check=False).returncode == 0
+
+
+def split_z(data):
+    return [os.fsdecode(part) for part in data.split(b"\0") if part]
+
+
+def join_z(paths):
+    if not paths:
+        return b""
+    return b"\0".join(os.fsencode(path) for path in paths) + b"\0"
+
+
+def chunks(items, size=500):
+    for start in range(0, len(items), size):
+        yield items[start : start + size]
+
+
+def git_path(marker, env):
+    path = git_out(["rev-parse", "--git-path", marker], env=env).strip()
+    return os.fsdecode(path) if path else ""
+
+
+def abort_rebase(env):
+    for marker in ("rebase-merge", "rebase-apply"):
+        try:
+            path = git_path(marker, env)
+        except AmeditError:
+            continue
+        if path and os.path.exists(path):
+            try:
+                git_run(["rebase", "--abort"], env=env)
+            except AmeditError:
+                pass
+            return
+
+
+def rev_parse_optional(ref, env):
+    proc = _git(
+        ["rev-parse", "--verify", "--quiet", ref],
+        env=env,
+        capture=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    value = proc.stdout.strip()
+    return value.decode() if value else None
+
+
+def diff_has_changes(args, env):
+    proc = _git(["diff", *args], env=env, capture=True, check=False)
+    if proc.returncode == 0:
+        return False
+    if proc.returncode == 1:
+        return True
+    detail = proc.stderr.decode("utf-8", "replace").strip()
+    raise AmeditError(detail or "could not inspect the working tree")
+
+
+def edit_todo(path):
+    todo = Path(path)
+    text = todo.read_text(encoding="utf-8", errors="surrogateescape")
+    lines = text.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        if line.startswith("pick "):
+            lines[index] = "edit " + line[len("pick ") :]
+            break
+    else:
+        raise AmeditError("could not find a pick line in the rebase todo")
+    todo.write_text("".join(lines), encoding="utf-8", errors="surrogateescape")
+
+
+def main(argv):
+    if len(argv) == 2 and argv[0] == "--sequence-editor":
+        try:
+            edit_todo(argv[1])
+        except (OSError, AmeditError) as exc:
+            print(f"{PROG}: {exc}", file=sys.stderr)
+            return 1
+        return 0
+
+    if len(argv) == 1 and argv[0] in ("-h", "--help"):
+        print(HELP)
+        return 0
+
+    if len(argv) > 1:
+        print("usage: amedit [<commit>]", file=sys.stderr)
+        return 2
+
+    commit = argv[0] if argv else "HEAD"
+    if commit.startswith("-"):
+        print("usage: amedit [<commit>]", file=sys.stderr)
+        return 2
+
+    real_env = os.environ.copy()
+    rebasing = False
+    keep_rebase = False
+    tmp_index = None
+    pathspec_file = None
+
+    try:
+        if (
+            git_out(["rev-parse", "--is-inside-work-tree"], env=real_env).strip()
+            != b"true"
+        ):
+            raise AmeditError("not inside a git work tree")
+
+        for marker in (
+            "rebase-merge",
+            "rebase-apply",
+            "MERGE_HEAD",
+            "CHERRY_PICK_HEAD",
+            "REVERT_HEAD",
+        ):
+            path = git_path(marker, real_env)
+            if path and os.path.exists(path):
+                raise AmeditError(f"another git operation is in progress ({marker})")
+
+        if diff_has_changes(["--quiet", "--ignore-submodules", "--"], real_env):
+            raise AmeditError("working tree and index must be clean")
+        if diff_has_changes(
+            ["--cached", "--quiet", "--ignore-submodules", "--"], real_env
+        ):
+            raise AmeditError("working tree and index must be clean")
+
+        try:
+            target = (
+                git_out(
+                    ["rev-parse", "--verify", "--quiet", f"{commit}^{{commit}}"],
+                    env=real_env,
+                )
+                .strip()
+                .decode()
+            )
+        except AmeditError:
+            target = ""
+        if not target:
+            raise AmeditError(f"not a commit: {commit}")
+
+        head = git_out(["rev-parse", "HEAD"], env=real_env).strip().decode()
+
+        parent_proc = _git(
+            ["rev-parse", "--verify", "--quiet", f"{target}^"],
+            env=real_env,
+            capture=True,
+            check=False,
+        )
+        if parent_proc.returncode == 0:
+            parent = parent_proc.stdout.strip().decode()
+            is_root = False
+        else:
+            is_root = True
+            parent = (
+                git_out(["hash-object", "-t", "tree", "/dev/null"], env=real_env)
+                .strip()
+                .decode()
+            )
+
+        parent_line = git_out(
+            ["rev-list", "--parents", "-n", "1", target], env=real_env
+        ).split()
+        if len(parent_line) > 2:
+            raise AmeditError("merge commits are not supported")
+
+        if target != head:
+            if not git_ok(
+                ["merge-base", "--is-ancestor", target, "HEAD"], env=real_env
+            ):
+                raise AmeditError(f"{commit} is not an ancestor of HEAD")
+            first_parent = set(
+                git_out(["rev-list", "--first-parent", "HEAD"], env=real_env)
+                .decode()
+                .splitlines()
+            )
+            if target not in first_parent:
+                raise AmeditError(
+                    f"{commit} is not on the first-parent history of HEAD"
+                )
+            merges = (
+                git_out(
+                    ["rev-list", "--min-parents=2", f"{target}..HEAD"], env=real_env
+                )
+                .strip()
+                .decode()
+            )
+            if merges:
+                raise AmeditError(
+                    f"history between {commit} and HEAD contains merge commits"
+                )
+            rebasing = True
+
+        real_index = (
+            git_out(["rev-parse", "--git-path", "index"], env=real_env).strip().decode()
+        )
+        if not real_index:
+            raise AmeditError("could not locate the index")
+        real_index_env = real_env.copy()
+        real_index_env["GIT_INDEX_FILE"] = real_index
+
+        skip_paths = []
+        skip_output = git_out(
+            [
+                "-c",
+                "advice.sparseIndexExpanded=false",
+                "ls-files",
+                "-t",
+                "-z",
+            ],
+            env=real_env,
+        )
+        for entry in skip_output.split(b"\0"):
+            if not entry:
+                continue
+            tag, _, path = entry.partition(b" ")
+            if tag == b"S":
+                skip_paths.append(os.fsdecode(path))
+        skip_set = set(skip_paths)
+
+        if rebasing:
+            editor = (
+                f"{shlex.quote(sys.executable)} "
+                f"{shlex.quote(str(Path(__file__).resolve()))} --sequence-editor"
+            )
+            rebase_env = real_env.copy()
+            rebase_env["GIT_SEQUENCE_EDITOR"] = editor
+            rebase_args = [
+                "-c",
+                "rebase.abbreviateCommands=false",
+                "rebase",
+                "-i",
+            ]
+            rebase_args += ["--root"] if is_root else [parent]
+            proc = _git(rebase_args, env=rebase_env, capture=False, check=False)
+            if proc.returncode != 0:
+                abort_rebase(real_env)
+                raise AmeditError("could not start the rebase")
+            current = git_out(["rev-parse", "HEAD"], env=real_env).strip().decode()
+            if current != target:
+                abort_rebase(real_env)
+                raise AmeditError("rebase did not stop at the requested commit")
+
+        try:
+            fd, tmp_index = tempfile.mkstemp(prefix="amedit-index-")
+            os.close(fd)
+            os.unlink(tmp_index)
+        except OSError as exc:
+            raise AmeditError(f"could not create a temporary index: {exc}")
+
+        temp_env = real_env.copy()
+        temp_env["GIT_INDEX_FILE"] = tmp_index
+
+        git_run(["read-tree", parent], env=temp_env)
+
+        added = split_z(
+            git_out(
+                [
+                    "diff",
+                    "--no-renames",
+                    "--name-only",
+                    "-z",
+                    "--diff-filter=A",
+                    parent,
+                    target,
+                ],
+                env=real_env,
+            )
+        )
+        to_add = [path for path in added if path not in skip_set]
+        for chunk in chunks(to_add):
+            git_run(["add", "-N", "-f", "--", *chunk], env=temp_env)
+
+        if skip_paths:
+            for chunk in chunks(skip_paths):
+                entries = git_out(
+                    ["ls-files", "-s", "-z", "--", *chunk], env=real_index_env
+                )
+                if entries:
+                    git_run(
+                        ["update-index", "-z", "--index-info"],
+                        env=temp_env,
+                        input=entries,
+                    )
+            git_run(
+                ["update-index", "--skip-worktree", "-z", "--stdin"],
+                env=temp_env,
+                input=join_z(skip_paths),
+            )
+
+        deleted = split_z(
+            git_out(
+                [
+                    "diff",
+                    "--no-renames",
+                    "--name-only",
+                    "-z",
+                    "--diff-filter=D",
+                    parent,
+                    target,
+                ],
+                env=real_env,
+            )
+        )
+        removed = set()
+        if deleted:
+            sparse_proc = _git(
+                ["config", "--bool", "core.sparseCheckout"],
+                env=real_env,
+                capture=True,
+                check=False,
+            )
+            if sparse_proc.returncode == 0 and sparse_proc.stdout.strip() == b"true":
+                try:
+                    rules = git_out(
+                        ["sparse-checkout", "check-rules", "-z"],
+                        env=real_env,
+                        input=join_z(deleted),
+                    )
+                except AmeditError:
+                    rules = None
+                if rules is not None:
+                    in_cone = set(split_z(rules))
+                    outside = [path for path in deleted if path not in in_cone]
+                    if outside:
+                        git_run(
+                            ["update-index", "--force-remove", "-z", "--stdin"],
+                            env=temp_env,
+                            input=join_z(outside),
+                        )
+                        removed.update(outside)
+
+        binary = []
+        numstat = git_out(
+            ["diff", "--numstat", "-z", "--no-renames", parent, target],
+            env=real_env,
+        )
+        for entry in numstat.split(b"\0"):
+            if not entry:
+                continue
+            fields = entry.split(b"\t", 2)
+            if len(fields) == 3 and fields[0] == b"-" and fields[1] == b"-":
+                path = os.fsdecode(fields[2])
+                if path not in skip_set and path not in removed:
+                    binary.append(path)
+        if binary:
+            print(
+                f"{PROG}: keeping binary changes (not hunk-selectable):",
+                file=sys.stderr,
+            )
+            for path in binary:
+                print(f"  {path}", file=sys.stderr)
+            for chunk in chunks(binary):
+                git_run(["add", "-f", "--", *chunk], env=temp_env)
+
+        subprocess.run(["git", "add", "-p"], env=temp_env, check=False)
+
+        selection = _git(
+            ["diff", "--cached", "--quiet", parent],
+            env=temp_env,
+            capture=True,
+            check=False,
+        )
+        if selection.returncode == 0:
+            if rebasing:
+                abort_rebase(real_env)
+                rebasing = False
+            print(f"{PROG}: no hunks selected; commit unchanged", file=sys.stderr)
+            return 0
+        if selection.returncode > 1:
+            raise AmeditError("could not inspect the selected changes")
+
+        try:
+            git_run(["commit", "--amend", "-C", "HEAD"], env=temp_env)
+        except AmeditError:
+            if rebasing:
+                abort_rebase(real_env)
+                rebasing = False
+            raise
+
+        if rebasing:
+            keep_rebase = True
+        try:
+            git_run(["reset", "--quiet", "--mixed", "HEAD"], env=real_env)
+        except AmeditError as exc:
+            if rebasing:
+                raise AmeditError(
+                    "amended the commit but could not sync the index; "
+                    "the rebase is still in progress"
+                ) from exc
+            raise
+
+        if not rebasing:
+            return 0
+
+        newhead = git_out(["rev-parse", "HEAD"], env=real_env).strip().decode()
+        affected = split_z(
+            git_out(["diff", "--name-only", "-z", newhead, target], env=real_env)
+        )
+        stash_sha = None
+        if affected:
+            old_stash = rev_parse_optional("refs/stash", real_env)
+            try:
+                with tempfile.NamedTemporaryFile(
+                    prefix="amedit-pathspec-", delete=False
+                ) as handle:
+                    handle.write(join_z(affected))
+                    pathspec_file = handle.name
+                git_run(
+                    [
+                        "stash",
+                        "push",
+                        "-u",
+                        "-m",
+                        f"amedit: unselected changes from {target[:12]}",
+                        f"--pathspec-from-file={pathspec_file}",
+                        "--pathspec-file-nul",
+                    ],
+                    env=real_env,
+                )
+            except AmeditError as exc:
+                raise AmeditError(
+                    "could not stash unselected changes; "
+                    "the rebase is still in progress"
+                ) from exc
+            finally:
+                if pathspec_file:
+                    try:
+                        os.unlink(pathspec_file)
+                    except FileNotFoundError:
+                        pass
+                    pathspec_file = None
+            new_stash = rev_parse_optional("refs/stash", real_env)
+            if new_stash and new_stash != old_stash:
+                stash_sha = new_stash
+
+        dirty = (
+            git_out(["status", "--porcelain", "--untracked-files=no"], env=real_env)
+            .strip()
+            .decode()
+        )
+        if dirty:
+            keep_rebase = True
+            print(
+                f"{PROG}: uncommitted changes remain; rebase cannot continue",
+                file=sys.stderr,
+            )
+            print(
+                f"{PROG}: stash or commit them, then run 'git rebase --continue'",
+                file=sys.stderr,
+            )
+            if stash_sha:
+                print(f"{PROG}: amedit's stash is {stash_sha}", file=sys.stderr)
+            return 1
+
+        keep_rebase = True
+        try:
+            git_run(["rebase", "--continue"], env=real_env)
+        except AmeditError:
+            print(
+                f"{PROG}: rebase stopped; resolve it and run 'git rebase --continue'",
+                file=sys.stderr,
+            )
+            if stash_sha:
+                print(
+                    f"{PROG}: then restore unselected changes with: "
+                    f"git stash apply {stash_sha}",
+                    file=sys.stderr,
+                )
+            return 1
+        keep_rebase = False
+
+        if stash_sha:
+            try:
+                git_run(["stash", "apply", stash_sha], env=real_env)
+            except AmeditError:
+                print(
+                    f"{PROG}: rebase finished, but the unselected changes "
+                    "did not apply cleanly",
+                    file=sys.stderr,
+                )
+                print(
+                    f"{PROG}: resolve the conflicts; the stash is still "
+                    f"available as {stash_sha}",
+                    file=sys.stderr,
+                )
+                return 1
+            if rev_parse_optional("refs/stash", real_env) == stash_sha:
+                git_run(["stash", "drop", "--quiet", "stash@{0}"], env=real_env)
+            else:
+                print(
+                    f"{PROG}: applied stash {stash_sha} (left in the stash list)",
+                    file=sys.stderr,
+                )
+
+        return 0
+    except AmeditError as exc:
+        if rebasing and not keep_rebase:
+            abort_rebase(real_env)
+        print(f"{PROG}: {exc}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        if rebasing and not keep_rebase:
+            abort_rebase(real_env)
+        raise
+    finally:
+        if tmp_index:
+            for suffix in ("", ".lock"):
+                try:
+                    os.unlink(tmp_index + suffix)
+                except FileNotFoundError:
+                    pass
+        if pathspec_file:
+            try:
+                os.unlink(pathspec_file)
+            except FileNotFoundError:
+                pass
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
