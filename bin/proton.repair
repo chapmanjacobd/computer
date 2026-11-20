@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""proton.repair - restore files missing from a Proton prefix template.
+
+Proton creates new game prefixes from files/share/default_pfx.  If that
+directory is missing, the proton script recreates it with wineboot alone,
+which omits files the Proton build normally ships (nvcuda.dll, lsteamclient.dll,
+steam.exe, winealsa.drv, winepulse.drv, icu.dll, the VC runtimes, ...).  The
+next launch then dies in setup_prefix() with FileNotFoundError on the first
+DLL it needs.
+
+This script builds a clean prefix with the same Proton build in a temporary
+directory, then copies only the files the template lacks.  Existing files are
+left alone.
+
+Usage:
+    proton.repair [options] [PROTON_DIR]
+
+    PROTON_DIR          Proton install directory (default: $PROTONPATH)
+
+Options:
+    -n, --dry-run       list missing files without changing the template
+    -f, --force         repair even if the template looks complete
+    -h, --help          show this help
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from typing import NoReturn
+
+# A stock Wine prefix contains this, while the wineboot-only rebuild of
+# default_pfx in the proton script does not.  It is also the first file
+# setup_prefix() requires, so it is a reliable completeness check.
+SENTINEL = "drive_c/windows/system32/nvcuda.dll"
+
+
+def die(message: str) -> NoReturn:
+    print(f"proton.repair: {message}", file=sys.stderr)
+    raise SystemExit(1)
+
+
+def proton_layout(proton_dir: Path) -> tuple[Path, Path, Path]:
+    """Return (bin_dir, lib_dir, template_dir) for the host architecture."""
+    files = proton_dir / "files"
+    bin_dir = files / "bin"
+    template = files / "share" / "default_pfx"
+    if platform.machine() == "aarch64" and os.environ.get("PROTON_USE_ARM64", "1") == "1":
+        arm_bin = files / "bin-arm64"
+        arm_template = files / "share" / "default_pfx_arm64"
+        if arm_bin.is_dir() and arm_template.is_dir():
+            bin_dir, template = arm_bin, arm_template
+    return bin_dir, files / "lib", template
+
+
+def make_prefix(bin_dir: Path, lib_dir: Path, prefix: Path) -> None:
+    """Create a fresh Wine prefix with the Proton build's own wineboot."""
+    wine = bin_dir / "wine"
+    wineserver = bin_dir / "wineserver"
+    if not wine.is_file():
+        die(f"not a Proton directory: {wine} is missing")
+
+    env = dict(os.environ)
+    env["WINEPREFIX"] = str(prefix)
+    env["WINEDEBUG"] = "-all"
+    lib_paths = [str(path) for path in sorted(lib_dir.glob("*-linux-gnu")) if path.is_dir()]
+    if lib_paths:
+        env["LD_LIBRARY_PATH"] = ":".join(lib_paths)
+    vkd3d = lib_dir / "vkd3d"
+    if vkd3d.is_dir():
+        env["WINEDLLPATH"] = str(vkd3d)
+
+    try:
+        subprocess.run([str(wine), "wineboot"], env=env, check=True)
+        if wineserver.is_file():
+            subprocess.run([str(wineserver), "-w"], env=env, check=True)
+    except (OSError, subprocess.CalledProcessError) as error:
+        die(f"wineboot failed in {prefix}: {error}")
+
+
+def exists(path: Path) -> bool:
+    return os.path.lexists(path)
+
+
+def copy_entry(source: Path, target: Path) -> None:
+    if source.is_symlink():
+        os.symlink(os.readlink(source), target)
+    else:
+        shutil.copyfile(source, target)
+        shutil.copymode(source, target)
+
+
+def merge_missing(source_root: Path, target_root: Path, dry_run: bool) -> list[Path]:
+    """Copy entries that exist in source_root but not in target_root."""
+    copied: list[Path] = []
+    for root, dirs, files in os.walk(source_root):
+        relative = Path(root).relative_to(source_root)
+        target_dir = target_root / relative
+        # wineboot writes throwaway MSI cache entries with random names here.
+        if relative == Path("drive_c/windows"):
+            dirs[:] = [name for name in dirs if name != "Installer"]
+        if not exists(target_dir) and not dry_run:
+            target_dir.mkdir(parents=True)
+        for name in dirs:
+            source = Path(root) / name
+            if not source.is_symlink():
+                continue
+            target = target_dir / name
+            if exists(target):
+                continue
+            if not dry_run:
+                copy_entry(source, target)
+            copied.append(target)
+        for name in files:
+            source = Path(root) / name
+            target = target_dir / name
+            if exists(target):
+                continue
+            if not dry_run:
+                copy_entry(source, target)
+            copied.append(target)
+    return copied
+
+
+def report(paths: list[Path], template: Path, dry_run: bool, missing_template: bool) -> None:
+    unique = sorted(set(paths))
+    verb = "would restore" if dry_run else "restored"
+    print(f"proton.repair: {verb} {len(unique)} files in {template}")
+    for path in unique[:20]:
+        print(f"  {path.relative_to(template)}")
+    if len(unique) > 20:
+        print(f"  ... and {len(unique) - 20} more")
+    if missing_template:
+        print(
+            "proton.repair: warning: the template was missing entirely, so extras "
+            "bundled with this Proton build (DXVK, MFC runtimes, ...) could not be "
+            "restored; reinstall the Proton build if a game needs them",
+            file=sys.stderr,
+        )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="proton.repair",
+        description="Restore files missing from a Proton default_pfx template.",
+    )
+    parser.add_argument(
+        "-n", "--dry-run", action="store_true", help="list missing files without writing"
+    )
+    parser.add_argument(
+        "-f", "--force", action="store_true", help="repair even if the template looks complete"
+    )
+    parser.add_argument(
+        "proton_dir",
+        nargs="?",
+        metavar="PROTON_DIR",
+        help="Proton install directory (default: $PROTONPATH)",
+    )
+    options = parser.parse_args(argv)
+
+    raw = options.proton_dir or os.environ.get("PROTONPATH")
+    if not raw:
+        parser.error("PROTON_DIR is required (or set PROTONPATH)")
+    proton_dir = Path(raw).expanduser().resolve()
+    bin_dir, lib_dir, template = proton_layout(proton_dir)
+
+    sentinel = template / SENTINEL
+    if sentinel.is_file() and not options.force:
+        print(f"proton.repair: nothing to repair, {sentinel} exists")
+        return 0
+
+    missing_template = not template.is_dir()
+    if missing_template:
+        print(f"proton.repair: {template} is missing", file=sys.stderr)
+
+    if not (bin_dir / "wine").is_file():
+        die(f"not a Proton directory: {bin_dir / 'wine'} is missing")
+
+    template.parent.mkdir(parents=True, exist_ok=True)
+    temp_dir = Path(tempfile.mkdtemp(prefix=".default_pfx.repair.", dir=template.parent))
+    try:
+        fresh = temp_dir / "fresh"
+        make_prefix(bin_dir, lib_dir, fresh)
+        fresh_sentinel = fresh / SENTINEL
+        if not fresh_sentinel.is_file():
+            die(
+                f"wineboot did not create {fresh_sentinel}; "
+                "cannot rebuild the template, reinstall the Proton build"
+            )
+        copied = merge_missing(fresh, template, options.dry_run)
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+    report(copied, template, options.dry_run, missing_template)
+
+    if not options.dry_run and not sentinel.is_file():
+        die(f"{sentinel} is still missing after the repair")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        raise SystemExit(130)
