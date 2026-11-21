@@ -14,7 +14,8 @@ The launcher environment is inferred from the executable path:
     Wine runner, environment variables, fps/HDR/Wayland/esync settings and
     wrapper commands from GamesConfig/<app>.json.
   * Lutris - prefix, Wine runner version, WINEDLLOVERRIDES, system.env and
-    prefix_command from the per-game YAML in ~/.config/lutris/games.
+    prefix_command from the per-game YAML in ~/.config/lutris/games.  Proton
+    runner versions are started through umu-run when it is installed.
   * Neither - system Wine, with the prefix inferred from a /drive_c/ path when
     possible (otherwise Wine's own default).
 
@@ -26,6 +27,7 @@ Options:
     -n, --dry-run       print the environment and command instead of running
     -q, --quiet         do not print the inferred launcher/prefix
         --no-gamemode   do not wrap the command in gamemoderun
+        --no-umu        use Proton's wine binary instead of umu-run for Lutris games
         --prefix PATH   force WINEPREFIX / STEAM_COMPAT_DATA_PATH
         --wine PATH     use this wine binary instead of the inferred runner
         --proton PATH   use this proton script instead of the inferred runner
@@ -58,6 +60,8 @@ HEROIC_DIR = Path(os.environ.get("HEROIC_CONFIG_HOME", HOME / ".config" / "heroi
 LUTRIS_CONFIG = Path(os.environ.get("LUTRIS_CONFIG_HOME", HOME / ".config" / "lutris"))
 LUTRIS_DATA = Path(os.environ.get("LUTRIS_DATA_HOME", HOME / ".local" / "share" / "lutris"))
 GAMEMODERUN = shutil.which("gamemoderun")
+UMU_RUN = shutil.which("umu-run")
+LUTRIS_UMU_GAMES = LUTRIS_DATA / "umu-games" / "umu-games.json"
 
 
 def die(message: str) -> NoReturn:
@@ -186,7 +190,7 @@ def normalized_abs(value: str | None, base: str | None = None) -> str | None:
 class Launch:
     source: str
     label: str
-    kind: str  # proton | wine | native
+    kind: str  # proton | umu | wine | native
     runner: str
     prefix: str | None
     workdir: str
@@ -200,6 +204,9 @@ class Launch:
     runner_label: str = ""
     game_exe: str | None = None
     install_dir: str | None = None
+    proton_dir: str | None = None
+    store_service: str = ""
+    service_id: str = ""
 
     def command(self, exe: str, passthrough: list[str], gamemode: bool) -> list[str]:
         cmd: list[str] = []
@@ -208,7 +215,7 @@ class Launch:
             cmd.append(GAMEMODERUN)
         for wrapper in self.wrappers:
             cmd.extend(wrapper)
-        if self.kind == "proton":
+        if self.kind in ("proton", "umu"):
             cmd.extend([self.runner, "waitforexitandrun", exe])
         elif self.kind == "native":
             cmd.append(exe)
@@ -290,15 +297,49 @@ def usable_runner(wine) -> bool:
     return os.path.isfile(binary) or shutil.which(binary) is not None
 
 
-def runner_bin_from_version(version: str | None) -> str | None:
+def lutris_runner_root(version: str | None) -> Path | None:
     if not version:
         return None
     root = LUTRIS_DATA / "runners" / "wine" / version
+    return root if root.is_dir() else None
+
+
+def lutris_proton_dir(version: str | None) -> str | None:
+    """Return the Proton build root for a Lutris wine version, if it is one."""
+    root = lutris_runner_root(version)
+    if root and (root / "proton").is_file():
+        return str(root)
+    return None
+
+
+def runner_bin_from_version(version: str | None) -> str | None:
+    root = lutris_runner_root(version)
+    if not root:
+        return None
     for rel in ("bin/wine", "files/bin/wine", "bin-wow64/wine"):
         candidate = root / rel
         if candidate.is_file():
             return str(candidate)
     return None
+
+
+def lutris_umu_id(service: str | None, appid: str | None) -> str:
+    """Mirror Lutris's GAMEID lookup in its umu-games database."""
+    data = load_json(LUTRIS_UMU_GAMES)
+    if not service or not appid or not isinstance(data, list):
+        return "umu-default"
+    service = str(service).lower()
+    if service == "humblebundle":
+        service = "humble"
+    for entry in data:
+        if not isinstance(entry, dict):
+            continue
+        if (
+            str(entry.get("store") or "").lower() == service
+            and str(entry.get("appid")) == str(appid)
+        ):
+            return str(entry.get("umu_id") or "umu-default")
+    return "umu-default"
 
 
 def heroic_settings() -> dict:
@@ -548,7 +589,8 @@ def lutris_rows():
         connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
         connection.row_factory = sqlite3.Row
         rows = connection.execute(
-            "select id, name, slug, runner, directory, configpath, executable "
+            "select id, name, slug, runner, directory, configpath, executable, "
+            "service, service_id "
             "from games where installed = 1"
         ).fetchall()
         connection.close()
@@ -604,10 +646,12 @@ def lutris_candidates() -> list[Launch]:
             runner = game_exe or ""
             runner_label = "native"
             prefix = None
+            proton_dir = None
         else:
             kind = "wine"
             version = wine_cfg.get("version")
             resolved_runner = runner_bin_from_version(version)
+            proton_dir = lutris_proton_dir(version)
             runner = resolved_runner or system_wine() or "wine"
             runner_label = version if resolved_runner else "system Wine"
             if version and not resolved_runner:
@@ -665,6 +709,9 @@ def lutris_candidates() -> list[Launch]:
                 runner_label=runner_label,
                 game_exe=game_exe,
                 install_dir=directory or prefix,
+                proton_dir=proton_dir,
+                store_service=str(game.get("service") or ""),
+                service_id=str(game.get("service_id") or ""),
             )
         )
 
@@ -835,6 +882,31 @@ def print_detection(launch: Launch, exe: str, stream=sys.stderr) -> None:
         print(f"  note:       {note}", file=stream)
 
 
+def use_umu(launch: Launch) -> None:
+    """Run a Lutris Proton game through umu-run instead of Proton's wine binary."""
+    if launch.kind != "wine" or not launch.proton_dir:
+        return
+    if not UMU_RUN:
+        launch.notes.append("umu-run not found; using Proton's wine binary (no protonfixes)")
+        return
+    if env_get(launch.env, "WINEARCH") == "win32":
+        die("umu/Proton is not compatible with 32-bit prefixes")
+    game_id = (
+        env_get(launch.env, "UMU_ID")
+        or env_get(launch.env, "GAMEID")
+        or lutris_umu_id(launch.store_service, launch.service_id)
+    )
+    launch.kind = "umu"
+    launch.runner = UMU_RUN
+    launch.runner_label = f"{launch.runner_label} via umu"
+    if not env_get(launch.env, "PROTONPATH"):
+        env_set(launch.env, "PROTONPATH", launch.proton_dir)
+    env_set(launch.env, "GAMEID", game_id)
+    if launch.prefix:
+        env_set(launch.env, "WINEPREFIX", launch.prefix)
+        launch.notes.append(f"umu uses {os.path.join(launch.prefix, 'pfx')} as the Wine prefix")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="wine.game",
@@ -854,6 +926,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-n", "--dry-run", action="store_true", help="print command instead of running")
     parser.add_argument("-q", "--quiet", action="store_true", help="suppress detection output")
     parser.add_argument("--no-gamemode", action="store_true", help="do not use gamemoderun")
+    parser.add_argument("--no-umu", action="store_true", help="use Proton's wine binary instead of umu-run for Lutris games")
     parser.add_argument("--prefix", metavar="PATH", help="force the Wine prefix")
     parser.add_argument("--wine", metavar="PATH", help="force a Wine binary")
     parser.add_argument("--proton", metavar="PATH", help="force a Proton script")
@@ -897,9 +970,16 @@ def main(argv: list[str] | None = None) -> int:
         set_proton_game_id(launch.env)
     if options.wine:
         launch.kind = "wine"
+        launch.proton_dir = None
         launch.runner = str(Path(expand(options.wine)).expanduser())
         if launch.prefix:
             env_set(launch.env, "WINEPREFIX", wine_prefix_path(launch.prefix))
+
+    if launch.kind == "wine" and launch.proton_dir:
+        if options.no_umu:
+            launch.notes.append("using Proton's wine binary directly (--no-umu)")
+        else:
+            use_umu(launch)
 
     if not os.path.isfile(launch.runner):
         # A runner may be a bare command name (system wine fallback).
@@ -924,8 +1004,11 @@ def main(argv: list[str] | None = None) -> int:
     if not options.quiet:
         print_detection(launch, exe)
 
-    if launch.kind == "proton" and not options.dry_run:
-        repair_proton_template(launch.runner)
+    if not options.dry_run:
+        if launch.kind == "proton":
+            repair_proton_template(launch.runner)
+        elif launch.kind == "umu" and launch.proton_dir:
+            repair_proton_template(os.path.join(launch.proton_dir, "proton"))
 
     if options.dry_run:
         print("wine.game: dry run", file=sys.stderr)
