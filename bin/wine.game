@@ -98,6 +98,31 @@ def env_get(env: dict[str, str], key: str, default=None):
     return default
 
 
+HEROIC_STORE_NAMES = {
+    "epic": "egs",
+    "gog": "gog",
+    "amazon": "amazon",
+    "zoom": "zoomplatform",
+    "sideload": "none",
+}
+
+
+def set_proton_game_id(
+    env: dict[str, str], store: str | None = None, steam_game_id: str = "0"
+) -> None:
+    """Give Proton the identifiers Heroic passes for non-Steam games.
+
+    Proton's protonfixes needs a game ID. Without one it assumes the launch is
+    a unit test and skips game fixes, and a digit-less prefix path makes it
+    raise IndexError.
+    """
+    env_set(env, "STEAM_COMPAT_APP_ID", env_get(env, "STEAM_COMPAT_APP_ID", "0"))
+    env_set(env, "SteamAppId", env_get(env, "SteamAppId", "0"))
+    env_set(env, "SteamGameId", env_get(env, "SteamGameId", steam_game_id))
+    if store:
+        env_set(env, "STORE", env_get(env, "STORE", HEROIC_STORE_NAMES.get(store, "none")))
+
+
 def expand(value, extra: dict[str, str] | None = None) -> str:
     """Expand ~ and $VAR / ${VAR} the way Lutris and Heroic do for settings."""
     mapping = dict(os.environ)
@@ -184,7 +209,7 @@ class Launch:
         for wrapper in self.wrappers:
             cmd.extend(wrapper)
         if self.kind == "proton":
-            cmd.extend([self.runner, "run", exe])
+            cmd.extend([self.runner, "waitforexitandrun", exe])
         elif self.kind == "native":
             cmd.append(exe)
         else:
@@ -414,6 +439,7 @@ def heroic_candidates() -> list[Launch]:
                 env_set(env, "WINEPREFIX", prefix)
                 env_set(env, "STEAM_COMPAT_DATA_PATH", prefix)
             env_set(env, "PROTONPATH", str(Path(wine_bin).parent))
+            set_proton_game_id(env, store, f"heroic-{app_name}")
         elif wine_type == "wine" and wine_bin:
             kind = "wine"
             runner = str(wine_bin)
@@ -868,6 +894,7 @@ def main(argv: list[str] | None = None) -> int:
         env_set(launch.env, "PROTONPATH", str(Path(launch.runner).parent))
         env_set(launch.env, "STEAM_COMPAT_DATA_PATH", proton_data_path(launch.prefix))
         env_set(launch.env, "WINEPREFIX", launch.prefix)
+        set_proton_game_id(launch.env)
     if options.wine:
         launch.kind = "wine"
         launch.runner = str(Path(expand(options.wine)).expanduser())
