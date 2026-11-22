@@ -22,7 +22,8 @@ The launcher environment is inferred from the executable path:
 In every case the program is started under gamemoderun (disable with
 --no-gamemode).  Extra arguments after the executable are passed to the game.
 With --rm the matched Heroic or Lutris game is uninstalled and hidden from its
-launcher instead of being started.
+launcher instead of being started.  The paths to remove are listed and confirmed
+first; --yes skips the prompt.
 
 Options:
     -l, --list [PATTERN] list known Heroic/Lutris games (optionally filtered)
@@ -31,6 +32,7 @@ Options:
         --rm            uninstall the matched Heroic/Lutris game and hide it
         --keep-prefix   with --rm, keep the game's Wine prefix
         --keep-settings with --rm, keep the game's launcher settings and logs
+    -y, --yes           with --rm, do not ask before deleting files
         --no-gamemode   do not wrap the command in gamemoderun
         --no-umu        use Proton's wine binary instead of umu-run for Lutris games
         --prefix PATH   force WINEPREFIX / STEAM_COMPAT_DATA_PATH
@@ -888,20 +890,13 @@ def removable_prefix(
     return real
 
 
-def remove_heroic_settings(app_name: str, store: str) -> list[str]:
-    failures: list[str] = []
-    paths = [
+def heroic_settings_paths(app_name: str, store: str) -> list[Path]:
+    return [
         HEROIC_DIR / "GamesConfig" / f"{app_name}.json",
         HEROIC_DIR / "GamesConfig" / f"{app_name}.log",
         HEROIC_DIR / "GamesConfig" / f"{app_name}-lastPlay.log",
         HEROIC_DIR / "fixes" / f"{app_name}-{store}.json",
     ]
-    for path in paths:
-        try:
-            path.unlink(missing_ok=True)
-        except OSError as error:
-            failures.append(f"{path}: {error}")
-    return failures
 
 
 def launcher_running(names: set[str]) -> bool:
@@ -944,6 +939,57 @@ def lutris_running() -> bool:
     return launcher_running({"lutris"})
 
 
+def remove_files(paths: list[Path]) -> list[str]:
+    failures: list[str] = []
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as error:
+            failures.append(f"{path}: {error}")
+    return failures
+
+
+def print_paths(heading: str, entries: list[tuple[str, Path]]) -> None:
+    if not entries:
+        return
+    print(f"{heading}:", file=sys.stderr)
+    for label, path in entries:
+        print(f"  {label:<12} {path}", file=sys.stderr)
+
+
+def print_removal_summary(
+    title: str,
+    remove: list[tuple[str, Path]],
+    update: list[tuple[str, Path]],
+    keep: list[tuple[str, Path]],
+) -> None:
+    print(f"wine.game: {title}", file=sys.stderr)
+    print_paths("Remove", remove)
+    print_paths("Update", update)
+    print_paths("Keep", keep)
+
+
+def confirm_removal(options) -> bool:
+    if options.yes:
+        return True
+    if not sys.stdin.isatty():
+        print(
+            "wine.game: refusing to remove without confirmation; use --yes",
+            file=sys.stderr,
+        )
+        return False
+    print("Proceed? [y/N] ", end="", file=sys.stderr, flush=True)
+    try:
+        answer = sys.stdin.readline()
+    except KeyboardInterrupt:
+        print(file=sys.stderr)
+        raise
+    if answer.strip().casefold() not in {"y", "yes"}:
+        print("wine.game: cancelled", file=sys.stderr)
+        return False
+    return True
+
+
 def remove_heroic_game(launch: Launch, launches: list[Launch], options) -> int:
     store = heroic_store_name(launch)
     if store is None:
@@ -956,38 +1002,46 @@ def remove_heroic_game(launch: Launch, launches: list[Launch], options) -> int:
     keep_install = options.keep_prefix and paths_overlap(launch.install_dir, launch.prefix)
     install_dir = None if keep_install else removable_install_dir(launch, launches, settings)
     prefix = removable_prefix(launch, launches, settings) if not options.keep_prefix else None
+    settings_paths = [
+        path for path in heroic_settings_paths(app_name, store) if path.exists()
+    ]
 
-    action = "would uninstall" if options.dry_run else "uninstalling"
-    print(f'wine.game: {action} {launch.store} "{launch.title}"', file=sys.stderr)
+    remove_entries: list[tuple[str, Path]] = []
+    update_entries = [
+        ("installed", HEROIC_STORE_INSTALLED[store]),
+        ("hidden", HEROIC_HIDDEN_CONFIG),
+    ]
+    keep_entries: list[tuple[str, Path]] = []
+
     if keep_install:
-        print(
-            f"  keep:     {launch.install_dir} (contains the preserved prefix)",
-            file=sys.stderr,
-        )
+        keep_entries.append(("directory", Path(launch.install_dir)))
     elif launch.install_dir:
         if install_dir:
-            print(f"  remove:   {install_dir}", file=sys.stderr)
+            remove_entries.append(("directory", Path(install_dir)))
         elif os.path.exists(launch.install_dir):
-            print(
-                f"  keep:     {launch.install_dir} (not safe to delete; remove it manually)",
-                file=sys.stderr,
-            )
-    if not options.keep_prefix:
-        if prefix:
-            print(f"  prefix:   remove {prefix}", file=sys.stderr)
-        elif prefix_removed_with_install(launch, install_dir):
-            print(f"  prefix:   remove with {install_dir}", file=sys.stderr)
-        elif launch.prefix:
-            print(f"  prefix:   keep {launch.prefix} (shared or not game-specific)", file=sys.stderr)
-    if not options.keep_settings:
-        print("  settings: remove Heroic GamesConfig entries and fixes file", file=sys.stderr)
-    print(
-        f"  installed: remove {app_name} from {HEROIC_STORE_INSTALLED[store]}",
-        file=sys.stderr,
-    )
-    print(
-        f"  hidden:   add {app_name} to {HEROIC_HIDDEN_CONFIG}",
-        file=sys.stderr,
+            keep_entries.append(("directory", Path(launch.install_dir)))
+
+    if options.keep_prefix:
+        if launch.prefix:
+            keep_entries.append(("prefix", Path(launch.prefix)))
+    elif prefix:
+        remove_entries.append(("prefix", Path(prefix)))
+    elif prefix_removed_with_install(launch, install_dir) and launch.prefix:
+        remove_entries.append(("prefix", Path(launch.prefix)))
+    elif launch.prefix:
+        keep_entries.append(("prefix", Path(launch.prefix)))
+
+    if options.keep_settings:
+        keep_entries.extend(("settings", path) for path in settings_paths)
+    else:
+        remove_entries.extend(("settings", path) for path in settings_paths)
+
+    action = "would uninstall" if options.dry_run else "uninstall"
+    print_removal_summary(
+        f'{action} {launch.store} "{launch.title}"',
+        remove_entries,
+        update_entries,
+        keep_entries,
     )
     if heroic_running() and not options.dry_run:
         print(
@@ -998,6 +1052,8 @@ def remove_heroic_game(launch: Launch, launches: list[Launch], options) -> int:
     if options.dry_run:
         print("wine.game: dry run; nothing removed", file=sys.stderr)
         return 0
+    if not confirm_removal(options):
+        return 1
 
     failures: list[str] = []
     if install_dir:
@@ -1020,7 +1076,7 @@ def remove_heroic_game(launch: Launch, launches: list[Launch], options) -> int:
         return 1
 
     if not options.keep_settings:
-        failures.extend(remove_heroic_settings(app_name, store))
+        failures.extend(remove_files(settings_paths))
     if not remove_heroic_installed(store, app_name):
         print(
             f"wine.game: no installed entry for {app_name} in {HEROIC_STORE_INSTALLED[store]}",
@@ -1067,22 +1123,21 @@ def lutris_shortcut_paths(launch: Launch) -> list[Path]:
     return [directory / name for directory in directories for name in names]
 
 
-def remove_lutris_shortcuts(launch: Launch) -> list[str]:
-    failures: list[str] = []
-    for path in lutris_shortcut_paths(launch):
-        try:
-            path.unlink(missing_ok=True)
-        except OSError as error:
-            failures.append(f"{path}: {error}")
-    return failures
-
-
-def remove_lutris_path_cache(game_id: int) -> str | None:
-    cache = (
+def lutris_path_cache_path() -> Path:
+    return (
         Path(os.environ.get("XDG_CACHE_HOME", HOME / ".cache"))
         / "lutris"
         / "game-paths.json"
     )
+
+
+def lutris_path_cache_has(game_id: int) -> bool:
+    data = load_json(lutris_path_cache_path())
+    return isinstance(data, dict) and str(game_id) in data
+
+
+def remove_lutris_path_cache(game_id: int) -> str | None:
+    cache = lutris_path_cache_path()
     data = load_json(cache)
     if not isinstance(data, dict):
         return None
@@ -1108,42 +1163,48 @@ def remove_lutris_game(launch: Launch, launches: list[Launch], options) -> int:
     settings_path = None
     if launch.lutris_configpath:
         settings_path = LUTRIS_CONFIG / "games" / f"{launch.lutris_configpath}.yml"
+    settings_exists = bool(settings_path and settings_path.exists())
+    shortcut_paths = [
+        path for path in lutris_shortcut_paths(launch) if path.exists()
+    ]
 
-    action = "would uninstall" if options.dry_run else "uninstalling"
-    print(f'wine.game: {action} lutris "{launch.title}"', file=sys.stderr)
+    remove_entries: list[tuple[str, Path]] = []
+    update_entries = [("database", LUTRIS_DATA / "pga.db")]
+    if lutris_path_cache_has(launch.lutris_id):
+        update_entries.append(("path cache", lutris_path_cache_path()))
+    keep_entries: list[tuple[str, Path]] = []
+
     if keep_install:
-        print(
-            f"  keep:     {launch.install_dir} (contains the preserved prefix)",
-            file=sys.stderr,
-        )
+        keep_entries.append(("directory", Path(launch.install_dir)))
     elif launch.install_dir:
         if install_dir:
-            print(f"  remove:   {install_dir}", file=sys.stderr)
+            remove_entries.append(("directory", Path(install_dir)))
         elif os.path.exists(launch.install_dir):
-            print(
-                f"  keep:     {launch.install_dir} (not safe to delete; remove it manually)",
-                file=sys.stderr,
-            )
-    if not options.keep_prefix:
-        if prefix:
-            print(f"  prefix:   remove {prefix}", file=sys.stderr)
-        elif prefix_removed_with_install(launch, install_dir):
-            print(f"  prefix:   remove with {install_dir}", file=sys.stderr)
-        elif launch.prefix:
-            print(
-                f"  prefix:   keep {launch.prefix} (shared or not game-specific)",
-                file=sys.stderr,
-            )
-    if not options.keep_settings and settings_path:
-        print(f"  settings: remove {settings_path}", file=sys.stderr)
-    print("  shortcuts: remove Lutris menu/desktop shortcuts", file=sys.stderr)
-    print(
-        f"  installed: mark game {launch.lutris_id} uninstalled in {LUTRIS_DATA / 'pga.db'}",
-        file=sys.stderr,
-    )
-    print(
-        f"  hidden:   add game {launch.lutris_id} to Lutris's .hidden category",
-        file=sys.stderr,
+            keep_entries.append(("directory", Path(launch.install_dir)))
+
+    if options.keep_prefix:
+        if launch.prefix:
+            keep_entries.append(("prefix", Path(launch.prefix)))
+    elif prefix:
+        remove_entries.append(("prefix", Path(prefix)))
+    elif prefix_removed_with_install(launch, install_dir) and launch.prefix:
+        remove_entries.append(("prefix", Path(launch.prefix)))
+    elif launch.prefix:
+        keep_entries.append(("prefix", Path(launch.prefix)))
+
+    if settings_exists:
+        if options.keep_settings:
+            keep_entries.append(("settings", settings_path))
+        else:
+            remove_entries.append(("settings", settings_path))
+    remove_entries.extend(("shortcut", path) for path in shortcut_paths)
+
+    action = "would uninstall" if options.dry_run else "uninstall"
+    print_removal_summary(
+        f'{action} lutris "{launch.title}"',
+        remove_entries,
+        update_entries,
+        keep_entries,
     )
     if lutris_running() and not options.dry_run:
         print(
@@ -1154,6 +1215,8 @@ def remove_lutris_game(launch: Launch, launches: list[Launch], options) -> int:
     if options.dry_run:
         print("wine.game: dry run; nothing removed", file=sys.stderr)
         return 0
+    if not confirm_removal(options):
+        return 1
 
     failures: list[str] = []
     if install_dir:
@@ -1216,12 +1279,9 @@ def remove_lutris_game(launch: Launch, launches: list[Launch], options) -> int:
     cache_failure = remove_lutris_path_cache(launch.lutris_id)
     if cache_failure:
         failures.append(cache_failure)
-    if not options.keep_settings and settings_path and settings_path.exists():
-        try:
-            settings_path.unlink()
-        except OSError as error:
-            failures.append(f"{settings_path}: {error}")
-    failures.extend(remove_lutris_shortcuts(launch))
+    if not options.keep_settings and settings_path:
+        failures.extend(remove_files([settings_path]))
+    failures.extend(remove_files(shortcut_paths))
 
     if failures:
         for failure in failures:
@@ -1579,6 +1639,7 @@ def main(argv: list[str] | None = None) -> int:
             "  wine.game --rm sleeper\n"
             "  wine.game --rm --dry-run sleeper\n"
             "  wine.game --rm --keep-prefix --keep-settings sleeper\n"
+            "  wine.game --rm --yes sleeper\n"
             "  wine.game --no-gamemode /games/foo/game.exe --windowed\n"
         ),
     )
@@ -1588,6 +1649,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rm", action="store_true", help="uninstall the matched Heroic/Lutris game and hide it")
     parser.add_argument("--keep-prefix", action="store_true", help="with --rm, keep the game's Wine prefix")
     parser.add_argument("--keep-settings", action="store_true", help="with --rm, keep the game's launcher settings and logs")
+    parser.add_argument("-y", "--yes", action="store_true", help="with --rm, do not ask before deleting files")
     parser.add_argument("--no-gamemode", action="store_true", help="do not use gamemoderun")
     parser.add_argument("--no-umu", action="store_true", help="use Proton's wine binary instead of umu-run for Lutris games")
     parser.add_argument("--prefix", metavar="PATH", help="force the Wine prefix")
@@ -1599,6 +1661,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if (options.keep_prefix or options.keep_settings) and not options.rm:
         parser.error("--keep-prefix and --keep-settings require --rm")
+    if options.yes and not options.rm:
+        parser.error("--yes requires --rm")
     if options.rm and options.list:
         parser.error("--rm cannot be combined with --list")
     if options.rm and any((options.prefix, options.wine, options.proton, options.no_umu)):
