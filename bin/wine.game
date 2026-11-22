@@ -111,18 +111,18 @@ HEROIC_STORE_NAMES = {
 }
 
 
-def set_proton_game_id(
-    env: dict[str, str], store: str | None = None, steam_game_id: str = "0"
-) -> None:
-    """Give Proton the identifiers Heroic passes for non-Steam games.
+def set_proton_game_id(env: dict[str, str], store: str | None = None) -> None:
+    """Give Proton the identifiers protonfixes needs for non-Steam games.
 
-    Proton's protonfixes needs a game ID. Without one it assumes the launch is
-    a unit test and skips game fixes, and a digit-less prefix path makes it
-    raise IndexError.
+    SteamAppId is enough: protonfixes' get_game_id uses it first, and a
+    digit-less prefix path would otherwise make it raise IndexError.
+
+    Do not set SteamGameId. Proton treats that as a Steam launch and loads
+    lsteamclient, which asserts when no Steam client is installed (Citizen
+    Sleeper from Epic exits with code 3 when it is set).
     """
     env_set(env, "STEAM_COMPAT_APP_ID", env_get(env, "STEAM_COMPAT_APP_ID", "0"))
     env_set(env, "SteamAppId", env_get(env, "SteamAppId", "0"))
-    env_set(env, "SteamGameId", env_get(env, "SteamGameId", steam_game_id))
     if store:
         env_set(env, "STORE", env_get(env, "STORE", HEROIC_STORE_NAMES.get(store, "none")))
 
@@ -480,7 +480,7 @@ def heroic_candidates() -> list[Launch]:
                 env_set(env, "WINEPREFIX", prefix)
                 env_set(env, "STEAM_COMPAT_DATA_PATH", prefix)
             env_set(env, "PROTONPATH", str(Path(wine_bin).parent))
-            set_proton_game_id(env, store, f"heroic-{app_name}")
+            set_proton_game_id(env, store)
         elif wine_type == "wine" and wine_bin:
             kind = "wine"
             runner = str(wine_bin)
