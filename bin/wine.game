@@ -21,11 +21,17 @@ The launcher environment is inferred from the executable path:
 
 In every case the program is started under gamemoderun (disable with
 --no-gamemode).  Extra arguments after the executable are passed to the game.
+With --rm the matched Heroic game is uninstalled and hidden from Heroic's
+library instead of being started.
 
 Options:
     -l, --list [PATTERN] list known Heroic/Lutris games (optionally filtered)
     -n, --dry-run       print the environment and command instead of running
     -q, --quiet         do not print the inferred launcher/prefix
+        --rm            uninstall the matched Heroic game and hide it in Heroic
+                        (keeps the Wine prefix and per-game settings)
+        --remove-prefix with --rm, also delete the game's Wine prefix
+        --remove-settings with --rm, also delete the game's Heroic settings and logs
         --no-gamemode   do not wrap the command in gamemoderun
         --no-umu        use Proton's wine binary instead of umu-run for Lutris games
         --prefix PATH   force WINEPREFIX / STEAM_COMPAT_DATA_PATH
@@ -63,6 +69,18 @@ GAMEMODERUN = shutil.which("gamemoderun")
 UMU_RUN = shutil.which("umu-run")
 LUTRIS_UMU_GAMES = LUTRIS_DATA / "umu-games" / "umu-games.json"
 
+HEROIC_STORE_INSTALLED = {
+    "epic": HEROIC_DIR / "legendaryConfig" / "legendary" / "installed.json",
+    "gog": HEROIC_DIR / "gog_store" / "installed.json",
+    "amazon": HEROIC_DIR / "nile_config" / "nile" / "installed.json",
+    "zoom": HEROIC_DIR / "zoom_store" / "installed.json",
+    "sideload": HEROIC_DIR / "sideload_apps" / "library.json",
+}
+HEROIC_STORE_LIBRARY = {
+    "amazon": HEROIC_DIR / "nile_config" / "nile" / "library.json",
+}
+HEROIC_HIDDEN_CONFIG = HEROIC_DIR / "store" / "config.json"
+
 
 def die(message: str) -> NoReturn:
     print(f"wine.game: {message}", file=sys.stderr)
@@ -86,6 +104,28 @@ def load_yaml(path: Path):
     except (OSError, yaml.YAMLError):
         return None
     return data if isinstance(data, dict) else None
+
+
+def save_json(path: Path, data) -> None:
+    """Write JSON in the style of the file being replaced."""
+    if path.is_symlink():
+        path = path.resolve()
+    try:
+        existing = path.read_text(encoding="utf-8")
+    except OSError:
+        existing = ""
+    indent = "\t" if existing.startswith(("{\n\t", "[\n\t")) else 2
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.wine.game.tmp")
+    try:
+        with temporary.open("w", encoding="utf-8") as handle:
+            json.dump(data, handle, indent=indent, ensure_ascii=False)
+            if existing.endswith("\n"):
+                handle.write("\n")
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 def env_set(env: dict[str, str], key: str, value) -> None:
@@ -207,6 +247,7 @@ class Launch:
     proton_dir: str | None = None
     store_service: str = ""
     service_id: str = ""
+    app_name: str = ""
 
     def command(self, exe: str, passthrough: list[str], gamemode: bool) -> list[str]:
         cmd: list[str] = []
@@ -353,44 +394,79 @@ def heroic_settings() -> dict:
 # --------------------------------------------------------------------------
 
 
+def heroic_app_name(record: dict) -> str | None:
+    value = record.get("app_name") or record.get("appName") or record.get("id")
+    return str(value) if value else None
+
+
+def heroic_records(data, key: str) -> list[dict]:
+    """Return game records from an electron-store file or its older layout."""
+    if isinstance(data, dict):
+        records = data.get(key)
+        if isinstance(records, list):
+            return [record for record in records if isinstance(record, dict)]
+        # Older Heroic versions stored app_name -> record directly.
+        return [
+            dict(record, app_name=record.get("app_name") or record.get("appName") or name)
+            for name, record in data.items()
+            if isinstance(record, dict)
+        ]
+    if isinstance(data, list):
+        return [record for record in data if isinstance(record, dict)]
+    return []
+
+
+def heroic_amazon_details() -> dict[str, dict]:
+    """Map Amazon app ids to the library records that carry their titles."""
+    library = load_json(HEROIC_STORE_LIBRARY["amazon"])
+    details: dict[str, dict] = {}
+    if isinstance(library, list):
+        for item in library:
+            if not isinstance(item, dict):
+                continue
+            product = item.get("product") if isinstance(item.get("product"), dict) else item
+            app_name = heroic_app_name(product)
+            if app_name:
+                details[app_name] = product
+    return details
+
+
 def heroic_entries():
     """Yield (store, app_name, game_info) for installed Heroic games."""
-    stores = (
-        ("epic", HEROIC_DIR / "legendaryConfig" / "legendary" / "installed.json"),
-        ("gog", HEROIC_DIR / "gog_store" / "installed.json"),
-        ("amazon", HEROIC_DIR / "nile_store" / "installed.json"),
-        ("zoom", HEROIC_DIR / "zoom_store" / "installed.json"),
-    )
-    for store, path in stores:
-        data = load_json(path)
-        if isinstance(data, dict):
-            pairs = data.items()
-        elif isinstance(data, list):
-            pairs = (
-                (item.get("app_name") or item.get("appName"), item)
-                for item in data
-                if isinstance(item, dict)
-            )
-        else:
-            continue
-        for app_name, info in pairs:
+    epic = load_json(HEROIC_STORE_INSTALLED["epic"])
+    if isinstance(epic, dict):
+        for app_name, info in epic.items():
             if app_name and isinstance(info, dict):
-                yield store, str(app_name), info
+                yield "epic", str(app_name), info
 
-    sideload = load_json(HEROIC_DIR / "sideload_apps" / "library.json")
-    if isinstance(sideload, list):
-        pairs = (
-            (item.get("app_name") or item.get("appName"), item)
-            for item in sideload
-            if isinstance(item, dict)
-        )
-    elif isinstance(sideload, dict):
-        pairs = sideload.items()
-    else:
-        pairs = ()
-    for app_name, info in pairs:
-        if app_name and isinstance(info, dict):
-            yield "sideload", str(app_name), info
+    for store in ("gog", "zoom"):
+        data = load_json(HEROIC_STORE_INSTALLED[store])
+        for record in heroic_records(data, "installed"):
+            app_name = heroic_app_name(record)
+            if app_name:
+                yield store, app_name, record
+
+    amazon = load_json(HEROIC_STORE_INSTALLED["amazon"])
+    amazon_details = heroic_amazon_details()
+    for record in heroic_records(amazon, "installed"):
+        app_name = heroic_app_name(record)
+        if not app_name:
+            continue
+        detail = amazon_details.get(app_name, {})
+        product = detail.get("productDetail") if isinstance(detail.get("productDetail"), dict) else {}
+        info = dict(record)
+        info["app_name"] = app_name
+        info["title"] = info.get("title") or detail.get("title") or product.get("title")
+        install = info.get("install") if isinstance(info.get("install"), dict) else {}
+        install.setdefault("install_path", record.get("path"))
+        info["install"] = install
+        yield "amazon", app_name, info
+
+    sideload = load_json(HEROIC_STORE_INSTALLED["sideload"])
+    for record in heroic_records(sideload, "games"):
+        app_name = heroic_app_name(record)
+        if app_name:
+            yield "sideload", app_name, record
 
 
 def heroic_install_info(info: dict, settings: dict):
@@ -570,10 +646,300 @@ def heroic_candidates() -> list[Launch]:
                 runner_label=runner_label,
                 game_exe=game_exe,
                 install_dir=install_dir,
+                app_name=app_name,
             )
         )
 
     return launches
+
+
+def heroic_store_name(launch: Launch) -> str | None:
+    prefix = "heroic/"
+    if launch.source == "heroic" and launch.store.startswith(prefix):
+        return launch.store[len(prefix):]
+    return None
+
+
+def remove_heroic_installed(store: str, app_name: str) -> bool:
+    """Remove an app from the installed-games file Heroic reads for a store."""
+    path = HEROIC_STORE_INSTALLED.get(store)
+    if path is None:
+        return False
+    data = load_json(path)
+    if data is None:
+        return False
+
+    def without(records: list) -> list:
+        return [
+            record
+            for record in records
+            if not (isinstance(record, dict) and heroic_app_name(record) == app_name)
+        ]
+
+    removed = False
+    if store == "epic":
+        if isinstance(data, dict) and app_name in data:
+            del data[app_name]
+            removed = True
+    elif isinstance(data, list):
+        kept = without(data)
+        if len(kept) != len(data):
+            data = kept
+            removed = True
+    elif isinstance(data, dict):
+        # GOG and Zoom keep their electron-store list under "installed";
+        # sideloaded games live under "games".
+        key = "games" if store == "sideload" else "installed"
+        records = data.get(key)
+        if isinstance(records, list):
+            kept = without(records)
+            if len(kept) != len(records):
+                data[key] = kept
+                removed = True
+        elif app_name in data:
+            del data[app_name]
+            removed = True
+
+    if removed:
+        save_json(path, data)
+    return removed
+
+
+def hide_heroic_game(app_name: str, title: str) -> None:
+    data = load_json(HEROIC_HIDDEN_CONFIG)
+    if data is None:
+        if HEROIC_HIDDEN_CONFIG.exists():
+            die(f"cannot read {HEROIC_HIDDEN_CONFIG}")
+        data = {}
+    if not isinstance(data, dict):
+        die(f"cannot update {HEROIC_HIDDEN_CONFIG}")
+
+    games = data.get("games")
+    if not isinstance(games, dict):
+        games = {}
+        data["games"] = games
+    hidden = games.get("hidden")
+    if not isinstance(hidden, list):
+        hidden = []
+        games["hidden"] = hidden
+    hidden[:] = [
+        entry
+        for entry in hidden
+        if not (isinstance(entry, dict) and str(entry.get("appName")) == app_name)
+    ]
+    hidden.append({"appName": app_name, "title": title})
+    save_json(HEROIC_HIDDEN_CONFIG, data)
+
+
+def removable_install_dir(
+    launch: Launch, launches: list[Launch], settings: dict
+) -> str | None:
+    """Return the game directory if deleting it cannot take unrelated data."""
+    install_dir = launch.install_dir
+    if not install_dir or not os.path.isdir(install_dir) or os.path.islink(install_dir):
+        return None
+    real = os.path.realpath(install_dir)
+    home = os.path.realpath(HOME)
+    if real == os.path.realpath("/") or real == home:
+        return None
+    try:
+        if os.path.commonpath([home, real]) == real:
+            return None  # The install directory contains the home directory.
+    except ValueError:
+        pass
+    default_install = settings.get("defaultInstallPath")
+    if default_install and same_path(real, default_install):
+        return None
+    for other in launches:
+        if other is launch or not other.install_dir:
+            continue
+        other_real = os.path.realpath(other.install_dir)
+        if other_real == real:
+            continue
+        if under(other_real, real):
+            return None  # Another installed game lives below this directory.
+    return real
+
+
+def removable_prefix(
+    launch: Launch, launches: list[Launch], settings: dict
+) -> str | None:
+    """Return the Wine prefix if it is game-specific and safe to delete."""
+    prefix = launch.prefix
+    if not prefix or not os.path.isdir(prefix) or os.path.islink(prefix):
+        return None
+    real = os.path.realpath(prefix)
+    home = os.path.realpath(HOME)
+    if real == os.path.realpath("/") or real == home:
+        return None
+    try:
+        if os.path.commonpath([home, real]) == real:
+            return None  # The prefix contains the home directory.
+    except ValueError:
+        pass
+
+    if (
+        launch.install_dir
+        and not same_path(launch.install_dir, real)
+        and under(launch.install_dir, real)
+    ):
+        return None  # The prefix contains the game itself.
+
+    for other in launches:
+        if other is launch:
+            continue
+        if other.prefix and same_path(other.prefix, real):
+            return None  # Shared with another game.
+        if other.install_dir and under(other.install_dir, real) and not same_path(other.install_dir, real):
+            return None
+
+    for key in ("defaultInstallPath", "defaultWinePrefix", "winePrefix", "sharedWinePrefix"):
+        value = settings.get(key)
+        if value and same_path(value, real):
+            return None
+
+    heroic_prefixes = HOME / "Games" / "Heroic" / "Prefixes"
+    for protected in (
+        heroic_prefixes / "default",
+        heroic_prefixes / "shared",
+    ):
+        if same_path(protected, real):
+            return None
+
+    roots = (
+        launch.install_dir,
+        settings.get("defaultInstallPath"),
+        settings.get("defaultWinePrefix"),
+        str(heroic_prefixes),
+    )
+    if not any(root and under(real, root) for root in roots):
+        return None  # Not inside a game or the Heroic prefix tree.
+
+    try:
+        entries = os.listdir(real)
+    except OSError:
+        return None
+    if entries and not (
+        os.path.isdir(real + "/drive_c") or os.path.isdir(real + "/pfx")
+    ):
+        return None
+    return real
+
+
+def remove_heroic_settings(app_name: str, store: str) -> list[str]:
+    failures: list[str] = []
+    paths = [
+        HEROIC_DIR / "GamesConfig" / f"{app_name}.json",
+        HEROIC_DIR / "GamesConfig" / f"{app_name}.log",
+        HEROIC_DIR / "GamesConfig" / f"{app_name}-lastPlay.log",
+        HEROIC_DIR / "fixes" / f"{app_name}-{store}.json",
+    ]
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as error:
+            failures.append(f"{path}: {error}")
+    return failures
+
+
+def heroic_running() -> bool:
+    try:
+        entries = Path("/proc").iterdir()
+    except OSError:
+        return False
+    for entry in entries:
+        if not entry.name.isdigit():
+            continue
+        try:
+            name = (entry / "comm").read_text(encoding="utf-8").strip().casefold()
+        except OSError:
+            continue
+        if name in {"heroic", "heroic-games-launcher"}:
+            return True
+    return False
+
+
+def remove_heroic_game(launch: Launch, launches: list[Launch], options) -> int:
+    store = heroic_store_name(launch)
+    if store is None:
+        die("--rm only supports Heroic games")
+    app_name = launch.app_name
+    if not app_name:
+        die("cannot determine the Heroic app name for this game")
+
+    settings = heroic_settings()
+    install_dir = removable_install_dir(launch, launches, settings)
+    prefix = removable_prefix(launch, launches, settings) if options.remove_prefix else None
+
+    action = "would uninstall" if options.dry_run else "uninstalling"
+    print(f'wine.game: {action} {launch.store} "{launch.title}"', file=sys.stderr)
+    if launch.install_dir:
+        if install_dir:
+            print(f"  remove:   {install_dir}", file=sys.stderr)
+        elif os.path.exists(launch.install_dir):
+            print(
+                f"  keep:     {launch.install_dir} (not safe to delete; remove it manually)",
+                file=sys.stderr,
+            )
+    if options.remove_prefix:
+        if prefix:
+            print(f"  prefix:   remove {prefix}", file=sys.stderr)
+        elif launch.prefix:
+            print(f"  prefix:   keep {launch.prefix} (shared or not game-specific)", file=sys.stderr)
+    if options.remove_settings:
+        print("  settings: remove Heroic GamesConfig entries and fixes file", file=sys.stderr)
+    print(
+        f"  installed: remove {app_name} from {HEROIC_STORE_INSTALLED[store]}",
+        file=sys.stderr,
+    )
+    print(
+        f"  hidden:   add {app_name} to {HEROIC_HIDDEN_CONFIG}",
+        file=sys.stderr,
+    )
+    if heroic_running() and not options.dry_run:
+        print(
+            "wine.game: Heroic is running; restart it to see the library changes",
+            file=sys.stderr,
+        )
+
+    if options.dry_run:
+        print("wine.game: dry run; nothing removed", file=sys.stderr)
+        return 0
+
+    failures: list[str] = []
+    if install_dir:
+        try:
+            shutil.rmtree(install_dir)
+        except OSError as error:
+            failures.append(f"{install_dir}: {error}")
+    if prefix and os.path.isdir(prefix):
+        try:
+            shutil.rmtree(prefix)
+        except OSError as error:
+            failures.append(f"{prefix}: {error}")
+    if failures:
+        for failure in failures:
+            print(f"wine.game: could not remove {failure}", file=sys.stderr)
+        print(
+            "wine.game: keeping the Heroic entry so the game can be retried",
+            file=sys.stderr,
+        )
+        return 1
+
+    if options.remove_settings:
+        failures.extend(remove_heroic_settings(app_name, store))
+    if not remove_heroic_installed(store, app_name):
+        print(
+            f"wine.game: no installed entry for {app_name} in {HEROIC_STORE_INSTALLED[store]}",
+            file=sys.stderr,
+        )
+    hide_heroic_game(app_name, launch.title)
+
+    if failures:
+        for failure in failures:
+            print(f"wine.game: could not remove {failure}", file=sys.stderr)
+        return 1
+    return 0
 
 
 # --------------------------------------------------------------------------
@@ -919,12 +1285,17 @@ def main(argv: list[str] | None = None) -> int:
             "  wine.game --list\n"
             "  wine.game --list sleeper\n"
             "  wine.game sleeper\n"
+            "  wine.game --rm sleeper\n"
+            "  wine.game --rm --dry-run sleeper\n"
             "  wine.game --no-gamemode /games/foo/game.exe --windowed\n"
         ),
     )
     parser.add_argument("-l", "--list", action="store_true", help="list known Heroic/Lutris games")
     parser.add_argument("-n", "--dry-run", action="store_true", help="print command instead of running")
     parser.add_argument("-q", "--quiet", action="store_true", help="suppress detection output")
+    parser.add_argument("--rm", action="store_true", help="uninstall the matched Heroic game and hide it in Heroic (keeps prefix and settings)")
+    parser.add_argument("--remove-prefix", action="store_true", help="with --rm, also delete the game's Wine prefix")
+    parser.add_argument("--remove-settings", action="store_true", help="with --rm, also delete the game's Heroic settings and logs")
     parser.add_argument("--no-gamemode", action="store_true", help="do not use gamemoderun")
     parser.add_argument("--no-umu", action="store_true", help="use Proton's wine binary instead of umu-run for Lutris games")
     parser.add_argument("--prefix", metavar="PATH", help="force the Wine prefix")
@@ -933,6 +1304,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("exe", nargs="?", help="game executable or unique name/title substring (or a filter with --list)")
     parser.add_argument("game_args", nargs=argparse.REMAINDER, help="arguments passed to the game")
     options = parser.parse_args(argv)
+
+    if (options.remove_prefix or options.remove_settings) and not options.rm:
+        parser.error("--remove-prefix and --remove-settings require --rm")
+    if options.rm and options.list:
+        parser.error("--rm cannot be combined with --list")
+    if options.rm and any((options.prefix, options.wine, options.proton, options.no_umu)):
+        parser.error("--rm does not use --prefix, --wine, --proton, or --no-umu")
 
     launches = collect_launches()
 
@@ -945,6 +1323,9 @@ def main(argv: list[str] | None = None) -> int:
 
     exe = resolve_executable(options.exe, launches)
     launch = find_launch(launches, exe)
+
+    if options.rm:
+        return remove_heroic_game(launch, launches, options)
 
     if options.prefix:
         launch.prefix = str(Path(expand(options.prefix)).expanduser())
