@@ -984,7 +984,7 @@ abbr -a -- url_files_web_titles.py files.urls.fill.web.titles
 abbr -a -- url_tool.py url.tool
 abbr -a -- urls.py chars.url
 abbr -a -- uniqueb unique.py
-abbr -a -- trackballscroll.sh scroll.sh
+abbr -a -- trackballscroll.sh input.trackball.scroll
 abbr -a -- trans-cached.sh translate.cached.sh
 abbr -a -- trash_bg.sh trash.background
 abbr -a -- trim_bytes.py trim.bytes

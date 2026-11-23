@@ -13,9 +13,9 @@ function session.reset
 
     if test "$XDG_SESSION_TYPE" = x11
         xinput set-prop 9 310 1
-        ~/bin/scroll.sh &
         xmodmap -e "clear Lock" >/dev/null
+        sudo setkeycodes 6e 97 # remap Copilot key to RCtrl
     end
 
-    sudo setkeycodes 6e 97 # remap Copilot key to RCtrl
+    input.trackball.scroll
 end
