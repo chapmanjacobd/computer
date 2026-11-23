@@ -570,8 +570,24 @@ def is_listing_page(page):
 
 
 def link_matches_words(link, words):
-    haystack = f"{link.label} {link.url}".casefold()
-    return any(word in haystack for word in words)
+    # Whole tokens only: "nano" must not match a different game such as
+    # "Nanoha" and send the crawler down the wrong page.
+    tokens = set(
+        re.findall(r"[a-z0-9]+", unquote(f"{link.label} {link.url}").casefold())
+    )
+    return bool(tokens & words)
+
+
+def same_site(first_url, second_url):
+    first_host = urlparse(first_url).hostname or ""
+    second_host = urlparse(second_url).hostname or ""
+    if not first_host or not second_host:
+        return False
+    return (
+        first_host == second_host
+        or first_host.endswith("." + second_host)
+        or second_host.endswith("." + first_host)
+    )
 
 
 def select_downloads(page):
@@ -939,23 +955,37 @@ def download_selected(args, page_url, page, state, depth=0, output_page_url=None
         if state.downloads_blocked:
             return False
 
-        if depth < getattr(args, "max_depth", 2) and is_download_page_url(link.url):
-            if getattr(args, "local_html", False):
-                log.info(
-                    "Not following remote nested page in --local-html mode: %s",
-                    link.url,
-                )
-                continue
-            log.info("Following nested download page %s", link.url)
-            process_url(
-                args,
-                link.url,
-                state,
-                depth=depth + 1,
-                match_terms=significant_words(page.title),
-                match_title=page.title,
-                root_page_url=destination_page,
-            )
+        if not is_file_url(link.url):
+            max_depth = getattr(args, "max_depth", 2)
+            if link.url.startswith(("http://", "https://")):
+                if depth >= max_depth:
+                    log.warning(
+                        "Not following page link at max depth %s: %s",
+                        max_depth,
+                        link.url,
+                    )
+                elif getattr(args, "local_html", False):
+                    log.info(
+                        "Not following remote nested page in --local-html mode: %s",
+                        link.url,
+                    )
+                elif same_site(link.url, page_url):
+                    log.info("Following nested download page %s", link.url)
+                    process_url(
+                        args,
+                        link.url,
+                        state,
+                        depth=depth + 1,
+                        match_terms=significant_words(page.title),
+                        match_title=page.title,
+                        root_page_url=destination_page,
+                    )
+                else:
+                    log.warning(
+                        "Skipping external page (not a direct file): %s", link.url
+                    )
+            else:
+                log.warning("Skipping non-file link: %s", link.url)
             continue
 
         output_name = output_name_for_link(link, page.title)
