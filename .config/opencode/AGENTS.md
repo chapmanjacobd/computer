@@ -6,6 +6,7 @@
 - Stage and commit the files that belong to each change. Keep unrelated edits in separate commits.
 - Add fixup! commits if you test something and need to make a change related to an earlier commit.
 - If another person helped review or provided ideas add them as a co-author
+- Keep changes local. Only transmit changes to remotes when explicitly instructed to
 
 ## Diffs
 
