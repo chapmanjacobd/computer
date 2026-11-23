@@ -21,6 +21,10 @@
 
 - Prefer self-describing labels, headings, and table columns over prose that defines an ambiguous term. If a term needs a paragraph to explain it, rename the term so the ambiguity disappears.
 
+## Web
+
+- Follow modern web practices like those defined in https://developer.chrome.com/docs/modern-web-guidance/guides.md
+
 ## Golang Tooling
 
 - Use t.Errorf instead of t.Failf
