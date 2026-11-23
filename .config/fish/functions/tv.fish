@@ -7,7 +7,7 @@ function tv
     screen blank no && xset s off
     #breaktimer disable && pkill breaktimer
 
-    ~/bin/autostart.sh &
+    session.reset &
     pkill -9 projectM-pulseau
 
     sudo pkill -f wheel.py

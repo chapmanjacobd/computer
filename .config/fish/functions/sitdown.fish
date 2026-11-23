@@ -11,7 +11,7 @@ function sitdown
     vol 60
 
     sudo pkill -f wheel.py
-    ~/bin/autostart.sh &
+    session.reset &
 
     system.dpi.125
 end

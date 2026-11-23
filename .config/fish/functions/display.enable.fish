@@ -5,5 +5,5 @@ function display.enable --argument target
     # ultrawideMonocle.off
     screen blank no && xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
-    ~/bin/autostart.sh &
+    session.reset &
 end

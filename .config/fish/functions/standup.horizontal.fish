@@ -7,5 +7,5 @@ function standup.horizontal
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen blank && xset +dpms
     #breaktimer disable
-    ~/bin/autostart.sh &
+    session.reset &
 end

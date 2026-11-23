@@ -1,0 +1,5 @@
+[Desktop Entry]
+Exec=/usr/bin/fish -c session.reset
+Icon=dialog-scripts
+Name=session.reset
+Type=Application
