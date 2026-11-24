@@ -21,6 +21,9 @@ class FakeSink:
     def write(self, type, code, value):
         self.events.append((type, code, value))
 
+    def syn(self):
+        self.events.append(("syn",))
+
 
 class FakeDevice:
     def __init__(self, name="Fake Mouse", phys="usb-fake/input0", path="/dev/input/event99", caps=None):
@@ -58,6 +61,19 @@ def test_right_click_without_action_is_click():
 
     assert keys(sink) == [
         (e.EV_KEY, e.BTN_RIGHT, 1),
+        (e.EV_KEY, e.BTN_RIGHT, 0),
+    ]
+
+
+def test_right_click_splits_press_and_release_across_frames():
+    # libinput drops a button click whose press and release share a frame.
+    remapper, sink = make()
+    remapper.feed(ev(e.EV_KEY, e.BTN_RIGHT, 1))
+    remapper.feed(ev(e.EV_KEY, e.BTN_RIGHT, 0))
+
+    assert sink.events == [
+        (e.EV_KEY, e.BTN_RIGHT, 1),
+        ("syn",),
         (e.EV_KEY, e.BTN_RIGHT, 0),
     ]
 

@@ -101,8 +101,10 @@ def create_uinput(dev):
 class WheelRemapper:
     """Turn a mouse event stream into remapped events on ``sink``.
 
-    ``EV_SYN`` frames from the device are forwarded as they arrive, so the sink
-    only needs ``write``; synthesized events are flushed by the following SYN.
+    ``EV_SYN`` frames from the device are forwarded as they arrive, so
+    synthesized events are flushed by the following SYN.  Clicks are the
+    exception: libinput drops a button press and release that arrive in the
+    same frame, so a click is split across two frames with ``sink.syn()``.
     """
 
     def __init__(self, sink, remap_sides=False, has_hi_res=False):
@@ -133,8 +135,9 @@ class WheelRemapper:
             elif value == 0:
                 if not self.pressed_action:
                     # Right button pressed and released without another action:
-                    # emit a plain right click.
+                    # emit a plain right click, in two frames.
                     self.sink.write(e.EV_KEY, e.BTN_RIGHT, 1)
+                    self.sink.syn()
                     self.sink.write(e.EV_KEY, e.BTN_RIGHT, 0)
                 self.right_pressed = False
                 self.hi_res_accum = 0
