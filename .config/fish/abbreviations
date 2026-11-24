@@ -1256,9 +1256,9 @@ abbr -a -- n nano
 abbr -a -- rgopen rg.open
 abbr -a -- gls git log -p
 abbr -a -- gla git log --oneline --decorate --all --graph --stat
-abbr -a -- gl git log --oneline --decorate --stat --first-parent
 abbr -a -- snow zsnow --nFlakes 150 --scale 4 --speed 0.4 --color CCDDFF
 abbr -a -- git.show git show -m HEAD
 abbr -a -- g opencode mini
 abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --untracked; echo Why not try Ctrl+S?'
 abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | open.browser'
+abbr -a -- gl git log --oneline --decorate --first-parent --stat
