@@ -12,6 +12,7 @@ function kde.reset
     systemctl --user restart pipewire-pulse.socket pipewire-pulse.service pipewire.service wireplumber.service
 
     sleep 3
+    kde.clock.isodate
     windows.maximize.all
     ps.resume.all
 end
