@@ -2,7 +2,11 @@
 
 if test -t 0
     set file (mktemp --suffix .png)
-    xclip -selection clipboard -target image/png -out > $file
+    if test -n "$WAYLAND_DISPLAY"
+        wl-paste --no-newline --type image/png > $file
+    else
+        xclip -selection clipboard -target image/png -out > $file
+    end
     if test -t 1
         kitty +kitten icat $file
     else
@@ -11,5 +15,9 @@ if test -t 0
 else
     set file (tempfile png)
     cat > $file
-    xclip -selection clipboard $file
+    if test -n "$WAYLAND_DISPLAY"
+        wl-copy --type image/png < $file
+    else
+        xclip -selection clipboard $file
+    end
 end

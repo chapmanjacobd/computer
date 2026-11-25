@@ -26,6 +26,9 @@ if is_mac; then
 elif is_win; then
   alias cbcopy=putclip
   alias cbpaste=getclip
+elif [ -n "${WAYLAND_DISPLAY-}" ] && command -v wl-copy >/dev/null 2>&1; then
+  alias cbcopy='wl-copy'
+  alias cbpaste='wl-paste --no-newline'
 else
   alias cbcopy='xsel --clipboard --input'
   alias cbpaste='xsel --clipboard --output'

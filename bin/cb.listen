@@ -5,6 +5,7 @@ Press Ctrl+D to stop monitoring and print all unique entries.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -55,8 +56,9 @@ def monitor_clipboard(stop_event, entries, seen, cmd):
 
 def main():
     parser = argparse.ArgumentParser(description='Monitor clipboard and track unique entries until Ctrl+D is pressed.')
+    default_cmd = 'wl-paste --no-newline' if os.environ.get('WAYLAND_DISPLAY') else 'xclip -sel c -o'
     parser.add_argument(
-        '--cmd', default='xclip -sel c -o', help='Command to get clipboard content (default: xclip -sel c -o)'
+        '--cmd', default=default_cmd, help=f'Command to get clipboard content (default: {default_cmd})'
     )
 
     args = parser.parse_args()

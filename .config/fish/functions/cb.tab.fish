@@ -1,4 +1,4 @@
 # Defined interactively
 function cb.tab
-    printf "\t" | xclip -selection clipboard
+    printf "\t" | cb
 end

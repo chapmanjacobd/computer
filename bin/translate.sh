@@ -1,14 +1,15 @@
 #!/bin/bash
 
-## you can change path of the output file, ~ is a shortcut to your home directory
-#you also can change languages, for maore information type "trans -T" in your terminal
+# Translate the clipboard with trans and open the result in an editor.
+# Output path and languages can be changed below; `trans -T` lists languages.
 
-xsel | trans -no-bidi -show-languages no   -show-alternatives no en:ar >~/.scripts/translation.txt &
-process_id=$!
-wait $process_id
+out="${HOME}/.scripts/translation.txt"
+mkdir -p "$(dirname "$out")"
 
-## uncomment your text editor
-xed /home/abode/.scripts/translation.txt
-# gedit
-# kate
-# kwrite
+cb -r | trans -no-bidi -show-languages no -show-alternatives no en:ar >"$out"
+
+if command -v kate >/dev/null 2>&1; then
+    kate "$out" >/dev/null 2>&1 &
+else
+    xdg-open "$out" >/dev/null 2>&1 &
+fi
