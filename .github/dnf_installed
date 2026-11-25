@@ -298,7 +298,6 @@ xcb-util-cursor
 xclip
 xdg-desktop-portal-kde
 xdg-user-dirs
-xdotool
 xinput
 xkill
 xmlstarlet
