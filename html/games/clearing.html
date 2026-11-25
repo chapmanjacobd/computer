@@ -287,9 +287,9 @@
     <span class="chip">BREATH <b id="s-breath">8</b></span>
     <span class="chip">INVENTION <b id="s-inv">5</b></span>
     <span class="chip" id="chip-sens">SENSIBILITY <b id="s-sens">100</b></span>
-    <span class="chip money">LEDGER <b id="s-liq">0</b></span>
+    <span class="chip money">LEDGER VALUE <b id="s-liq">0</b></span>
     <span class="chip" id="chip-heat">HEAT <b id="s-heat">0</b></span>
-    <span class="chip good" id="chip-clr">CLEARINGS <b id="s-clr">0 / 4</b></span>
+    <span class="chip good" id="chip-clr">LARGEST CLEARING <b id="s-clr">0 / 4</b></span>
     <span class="chip" id="chip-un">UNNAMED <b id="s-un">49</b></span>
     <span class="chip">TEMPO <b id="s-tempo">10</b></span>
   </div>
@@ -581,7 +581,7 @@ function tryName(i){
   if(t.state !== "dark" || S.actions <= 0) return;
   const cost = nameCost();
   if(S.provision < cost){
-    log("You cannot afford a name. Provision " + S.provision + ", the name costs " + cost + ". Exchange or sell something first.", "bad");
+    log("Not enough provision. The name costs " + cost + "; you have " + S.provision + ". Exchange names for provision, or wait for the next round.", "bad");
     return;
   }
   openSheet(`
@@ -631,7 +631,7 @@ function trySell(i){
     <h3>Selling the name</h3>
     <p class="lead">Sell “${escapeHtml(t.name)}”?</p>
     <p>The word survives. The thing it meant does not. The name goes into the ledger and is priced against other names, never again against anything.</p>
-    <p class="stat">+ MONEY · + HEAT · − SENSIBILITY${t.clearing ? " · THIS CLEARING FALLS" : ""}</p>
+    <p class="stat">+ LEDGER ENTRY · + 1 HEAT · − 4 SENSIBILITY${t.clearing ? " · CLEARING FALLS" : ""}</p>
     <div class="row">
       <button id="cancelSell">Keep it</button>
       <button id="okSell" class="money">Sell it</button>
@@ -648,7 +648,7 @@ function doSell(i){
   t.price = 4;
   if(t.clearing){
     t.clearing = false;
-    log("The clearing at " + t.name + " is sold off. It stops holding anything.", "bad");
+    log("The clearing at " + t.name + " falls. It no longer holds anything.", "bad");
   }
   S.ledger.push({ name: t.name, price: 4, tile: i });
   S.sensibility -= 4;
@@ -668,7 +668,7 @@ function doExchange(){
   S.liquidity += money;
   S.provision += food;
   S.heat += 4;
-  log("You trade names against names. +" + money.toFixed(1) + " money, +" + food + " provision, and nothing is made.", "bad");
+  log("You exchange sold names: +" + money.toFixed(1) + " money, +" + food + " provision. Nothing new is made.", "bad");
   render();
   checkEnd();
 }
@@ -679,7 +679,7 @@ function doRest(){
   S.breath = clamp(S.breath + 2, 0, S.breathMax);
   S.invention = clamp(S.invention + 1, 0, S.inventionMax);
   S.heat = Math.max(0, S.heat - 2);
-  log("You stop. Your breath comes back. The ledger keeps ticking without you.", "i");
+  log("You rest. Breath and invention return. The ledger grows without you.", "i");
   render();
   checkEnd();
 }
@@ -688,13 +688,13 @@ function doRest(){
 
 function tryCompose(){
   if(S.actions <= 0) return;
-  if(S.ledger.length < 2){ log("Nothing to compose from. Poetry needs names that have already been sold.", "i"); return; }
-  if(S.breath < 4){ log("Not enough breath.", "bad"); return; }
-  if(S.invention < 1){ log("Nothing left in you that hasn't been said before.", "bad"); return; }
+  if(S.ledger.length < 2){ log("Composition needs two sold names.", "i"); return; }
+  if(S.breath < 4){ log("Not enough breath. Composition costs 4.", "bad"); return; }
+  if(S.invention < 1){ log("Not enough invention. Composition costs 1.", "bad"); return; }
 
   openSheet(`
     <h3>Composition</h3>
-    <p class="lead">Take two sold names and say something that hasn't been said.</p>
+    <p class="lead">Take two sold names and say something that has not been said.</p>
     <p>Choose two names from the ledger, then finish the phrase.</p>
     <div class="signs" id="signPicker"></div>
     <p class="hint" id="compHint">0 / 2 chosen</p>
@@ -759,7 +759,7 @@ function doCompose(phrase, used){
   if(fresh.length === 0){
     S.sensibility -= 5;
     S.ledger.push({ name: phrase, price: 2 + ledgerValue()*0.05, tile: -1 });
-    log("“" + phrase + ".” Nothing new is said. The phrase turns into information and is given a price.", "bad");
+    log("“" + phrase + ".” Nothing new is said. The phrase becomes information and gets a price.", "bad");
     render();
     checkEnd();
     return;
@@ -771,12 +771,12 @@ function doCompose(phrase, used){
   S.compositions.push({ phrase, opened });
 
   log("“" + phrase + ".” It names nothing that is here, so a place opens.", "good");
-  if(opened.length) log("It was " + opened.map(o => tiles[o].ref).join("; ") + ".", "hi");
+  if(opened.length) log((opened.length === 1 ? "A place opened: " : "Places opened: ") + opened.map(o => tiles[o].ref).join("; ") + ".", "hi");
 
   render();
   if(opened.length){
     S.mode = "clear";
-    log("Hold one of these places. Click a named tile: keep it touching another clearing, and touching ground you have not named.", "i");
+    log("Hold one of these places. Click a named tile that is not already a clearing. A held tile that touches unnamed ground gives 1 invention.", "i");
     render();
     flash(opened);
   } else {
@@ -813,7 +813,7 @@ function holdClearing(i){
   const touchesFog = neighbours(i).some(n => tiles[n].state === "dark");
   if(touchesFog){
     S.invention = clamp(S.invention + 1, 0, S.inventionMax);
-    log("You hold " + t.name + ". It borders ground you have not named, and it gives something back.", "good");
+    log("You hold " + t.name + ". It touches unnamed ground, so you gain 1 invention.", "good");
   } else {
     log("You hold " + t.name + ". Inside, the rules are yours.", "good");
   }
@@ -823,7 +823,7 @@ function holdClearing(i){
 
 function skipClearing(){
   S.mode = null;
-  log("You let it stay open to the weather.", "i");
+  log("You leave it open to the weather.", "i");
   render();
   checkEnd();
 }
@@ -846,7 +846,7 @@ function endRound(){
     S.sensibility -= 8;
     S.heat = 0;
     S.round++;
-    log("PANIC. The pace outruns the body. You lose this round.", "bad");
+    log("PANIC. Heat is too high. You lose this round.", "bad");
     if(S.round > MAX_ROUND){ finish("limit"); return; }
     render();
     nextRound(true);
@@ -879,9 +879,9 @@ function nextRound(panicked){
   );
   if(!panicked) S.actions = actionsForTempo();
 
-  if(S.sensibility <= 33 && !S.warned.a){ S.warned.a = true; log("Your sensibility is going. There is less of you to think with.", "bad"); }
-  if(S.sensibility <= 18 && !S.warned.b){ S.warned.b = true; log("Almost nothing is left of the one who is playing.", "bad"); }
-  if(S.heat >= 8 && !S.warned.c){ S.warned.c = true; log("The pace is hot. One more exchange this round may pitch you into panic.", "i"); }
+  if(S.sensibility <= 33 && !S.warned.a){ S.warned.a = true; log("Your sensibility is falling. There is less of you to think with.", "bad"); }
+  if(S.sensibility <= 18 && !S.warned.b){ S.warned.b = true; log("Almost nothing is left of the one who plays.", "bad"); }
+  if(S.heat >= 8 && !S.warned.c){ S.warned.c = true; log("Heat is high. One more Exchange this round can cause panic.", "i"); }
 
   render();
   checkEnd();
@@ -948,31 +948,31 @@ function showReading(kind){
   }
 
   if(dark.length){
-    html += '<div class="never"><p>What you never named, and which was there the whole time</p>';
+    html += '<div class="never"><p>What you never named, though it was there all along</p>';
     html += '<div class="l">' + dark.map(t => escapeHtml(t.ref)).join(' · ') + '</div></div>';
   }
 
   const cluster = largestClearing();
   const verdicts = {
     clearing: { t: "the clearings hold", p:
-      "You kept " + cluster + " places that do not exchange, and " + dark.length +
+      "You held " + cluster + " touching clearings, and " + dark.length +
       " tiles are still unnamed. This is not a fortune. It is a commons: worlds that can sit beside each other without being traded." },
     desert: { t: "the desert", p:
-      "Every tile has a name on it. There is nowhere left that you cannot say. The ledger is elegant now. It is also the only thing here." },
+      "Every tile has a name on it. Nothing is left that you cannot name. The ledger is elegant now. It is also the only thing here." },
     collapse: { t: "collapse", p:
       "The sensibility ran out before the money did. The eye kept working after the body stopped." },
     limit: { t: "the limit", p:
       "Thirty rounds. " + (cluster >= CLEARINGS_TO_WIN
-        ? "The clearings held, but the fog had already been cleared away."
-        : "Not enough held together. The exchange outlasted the composing.") }
+        ? "The clearings held, but too little ground stayed unnamed."
+        : "Not enough clearings touch. Exchange outlasted composition.") }
   };
   const v = verdicts[kind] || verdicts.limit;
 
   html += '<div class="verdict"><div class="t">' + v.t + '</div><p>' + v.p + '</p></div>';
 
   const score = cluster * 100 + dark.length * 2 + S.compositions.length * 20 - (S.ironyUsed ? 50 : 0);
-  html += '<div class="score">WORLDS HELD ' + Math.max(0, score) +
-          '<br>HELD TOGETHER ' + cluster + ' · UNNAMED ' + dark.length +
+  html += '<div class="score">SCORE ' + Math.max(0, score) +
+          '<br>LARGEST CLEARING ' + cluster + ' · UNNAMED ' + dark.length +
           ' · SOLD ' + S.ledger.length + ' · COMPOSED ' + S.compositions.length + '</div>';
   html += '<button id="again">Begin again</button></div>';
 
@@ -1019,7 +1019,7 @@ function start(){
   render();
 
   log("A field of unnamed matter. You can smell it. You cannot say it.", "i");
-  log("Name what you can reach. Or sell the names and let them float.", "i");
+  log("Name what you can reach, or sell a name into the ledger.", "i");
 }
 
 /* ---------------- events ---------------- */
@@ -1032,6 +1032,7 @@ $("map").addEventListener("click", e => {
 
   if(S.mode === "clear"){
     if(t.state === "bound" && !t.clearing) holdClearing(i);
+    else if(t.state === "bound") log("That tile is already a clearing.", "i");
     else log("Choose a named tile to hold.", "i");
     return;
   }
@@ -1057,12 +1058,12 @@ $("btn-irony").addEventListener("click", () => {
   if(S.ironyUsed || !S.ledger.length) return;
   openSheet(`
     <h3>Insolvency</h3>
-    <p class="lead">Declare the debt unreal.</p>
-    <p>Every sold name goes back to the thing it named. The ledger is void. You cannot do this twice, and the reading will remember it.</p>
-    <p class="stat">LEDGER → 0 · EVERY SOLD NAME RESTORED · + SENSIBILITY · SCORED AS INSOLVENT</p>
+    <p class="lead">Declare insolvency.</p>
+    <p>Every sold name returns to the thing it named. The ledger is cleared. You can declare insolvency once, and the reading will record it.</p>
+    <p class="stat">LEDGER CLEARED · SOLD NAMES RESTORED · + 25 SENSIBILITY · SCORED AS INSOLVENT</p>
     <div class="row">
       <button id="cancelIro">Not yet</button>
-      <button id="okIro" class="money">Declare it</button>
+      <button id="okIro" class="money">Declare insolvency</button>
     </div>
   `, sheet => {
     sheet.querySelector("#cancelIro").addEventListener("click", closeSheet);
@@ -1079,7 +1080,7 @@ $("btn-irony").addEventListener("click", () => {
       S.liquidity = 0;
       S.heat = 0;
       S.sensibility = clamp(S.sensibility + 25, 0, 100);
-      log("You declare the whole ledger unreal. The names go back to their things. Nothing is owed.", "good");
+      log("You declare insolvency. Every sold name returns to its thing. Nothing is owed.", "good");
       render();
     });
   });
@@ -1101,12 +1102,12 @@ start();
 openSheet(`
   <h3>Clearing</h3>
   <p class="lead">A sign comes loose from the thing it means. Then it is worth something.</p>
-  <p><b>Name</b> an unnamed tile. The fog carries a smell or a sound you can almost read — that is all you get. You give it a word, and then you find out what it was. Named things feed you.</p>
-  <p><b>Sell</b> a name. It goes into the ledger, where it is priced against other names and never again against anything. The tile goes dark and the thing is gone.</p>
-  <p><b>Exchange</b> sold names for money and provision. The ledger also sets the pace: the faster it runs, the less you can do in a round.</p>
-  <p><b>Compose</b> two sold names into a phrase. If the phrase says something not yet on the map, a place opens — and you can hold it as a <em>clearing</em>, a small place where the rules are yours. If it only repeats what is already there, it is just more of the same, and it gets a price too.</p>
-  <p><b>Rest</b> to get breath and invention back. The ledger piles up whether you rest or not.</p>
-  <p class="stat">WIN — hold four clearings that touch, with a quarter of the map still unnamed. LOSE — your sensibility runs out.</p>
+  <p>Name an unnamed tile. Each one carries a smell or a sound, and little else. Give it a word, then learn what it was. A named tile that you keep gives provision.</p>
+  <p>Sell a name to add it to the ledger. The ledger prices names against other names, never against things. The tile goes dark and the thing is gone.</p>
+  <p>Exchange sold names for money and provision. Money and ledger size set the tempo. Higher tempo means fewer actions each round.</p>
+  <p>Compose two sold names into a phrase. If the phrase says something that has not been said, a place opens: hold it as a <em>clearing</em>, where the rules are yours. If the phrase says nothing new, it only gets a price.</p>
+  <p>Rest to recover breath and invention. The ledger grows while you rest.</p>
+  <p class="stat">WIN — hold four touching clearings with a quarter of the map still unnamed. LOSE — your sensibility reaches 0.</p>
   <div class="row"><button id="begin" class="primary">Begin</button></div>
 `, sheet => {
   sheet.querySelector("#begin").addEventListener("click", closeSheet);
