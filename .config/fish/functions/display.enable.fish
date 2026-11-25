@@ -3,7 +3,8 @@ function display.enable --argument target
     _screen.only $target 1920x1080@60
     or return 1
     # ultrawideMonocle.off
-    screen blank no && xset s off
+    screen blank no
+    test "$XDG_SESSION_TYPE" = x11; and xset s off
     pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo-extra3
     session.reset &
 end

@@ -3,7 +3,9 @@ function system.dpi.big
     if test "$XDG_SESSION_TYPE" = x11
         xrandr --dpi 192
     end
-    echo 'Xft.dpi: 192' | xrdb -override
+    if test -n "$DISPLAY"
+        echo 'Xft.dpi: 192' | xrdb -override
+    end
     _screen.scale 2
     kwriteconfig6 --file kdeglobals --group KScreen --key ScaleFactor 2
     sed -i -E 's/^Gdk\/UnscaledDPI .*/Gdk\/UnscaledDPI 196608/' ~/.config/xsettingsd/xsettingsd.conf

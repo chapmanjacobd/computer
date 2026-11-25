@@ -7,7 +7,8 @@ function standup
 
     # ultrawideMonocle.off
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
-    screen blank && xset +dpms
+    screen blank
+    test "$XDG_SESSION_TYPE" = x11; and xset +dpms
     #breaktimer disable
     pactl set-default-sink alsa_output.usb-Apple__Inc._USB-C_to_3.5mm_Headphone_Jack_Adapter_DWH152405TPJKLTA5-00.analog-stereo
     session.reset &
