@@ -3,6 +3,7 @@
 
 Usage:
     wine.game [options] <game.exe> [game arguments...]
+    wine.game [options] --run <program.exe> <game.exe> [program arguments...]
 
 An executable path may be abbreviated to a bare executable name or a substring
 of the game title/store/path (for example "sleeper") as long as exactly one
@@ -21,12 +22,19 @@ The launcher environment is inferred from the executable path:
 
 In every case the program is started under gamemoderun (disable with
 --no-gamemode).  Extra arguments after the executable are passed to the game.
+With --run, <game.exe> only selects the game whose prefix, runner and
+environment are used, and <program.exe> is started instead of the game (for
+example an update installer or an alternative game executable).  --run must
+come before <game.exe>; relative program paths are looked up in the current
+directory, the game directory and the prefix's drive_c.  The launcher's saved
+game arguments are not applied to the program.
 With --rm the matched Heroic or Lutris game is uninstalled and hidden from its
 launcher instead of being started.  The paths to remove are listed and confirmed
 first; --yes skips the prompt.
 
 Options:
     -l, --list [PATTERN] list known Heroic/Lutris games (optionally filtered)
+        --run PROGRAM   run PROGRAM in the matched game's prefix instead
     -n, --dry-run       print the environment and command instead of running
     -q, --quiet         do not print the inferred launcher/prefix
         --rm            uninstall the matched Heroic/Lutris game and hide it
@@ -280,7 +288,13 @@ class Launch:
     lutris_slug: str = ""
     lutris_configpath: str = ""
 
-    def command(self, exe: str, passthrough: list[str], gamemode: bool) -> list[str]:
+    def command(
+        self,
+        exe: str,
+        passthrough: list[str],
+        gamemode: bool,
+        include_args: bool = True,
+    ) -> list[str]:
         cmd: list[str] = []
         wrapper_names = {os.path.basename(wrapper[0]) for wrapper in self.wrappers if wrapper}
         if gamemode and GAMEMODERUN and "gamemoderun" not in wrapper_names:
@@ -293,7 +307,8 @@ class Launch:
             cmd.append(exe)
         else:
             cmd.extend([self.runner, exe])
-        cmd.extend(self.args)
+        if include_args:
+            cmd.extend(self.args)
         cmd.extend(passthrough)
         return cmd
 
@@ -1552,6 +1567,39 @@ def resolve_executable(raw: str, launches: list[Launch]) -> str:
     die(f"executable not found: {raw}")
 
 
+def resolve_run_program(raw: str, launch: Launch) -> str:
+    """Resolve the --run program relative to the current or game directory."""
+    text = expand(raw).replace("\\", "/")
+    candidate = Path(text).expanduser()
+    if candidate.is_absolute():
+        candidates = [candidate]
+    else:
+        candidates = [Path.cwd() / candidate]
+        if launch.install_dir:
+            candidates.append(Path(launch.install_dir) / candidate)
+        if launch.prefix:
+            for drive in (
+                Path(launch.prefix) / "drive_c",
+                Path(launch.prefix) / "pfx" / "drive_c",
+            ):
+                candidates.append(drive / candidate)
+
+    seen: set[str] = set()
+    checked: list[Path] = []
+    for item in candidates:
+        key = os.path.normpath(str(item))
+        if key in seen:
+            continue
+        seen.add(key)
+        checked.append(item)
+        if item.is_file():
+            return str(item.resolve())
+    die(
+        f"program not found: {raw}\n  tried:\n  "
+        + "\n  ".join(str(item) for item in checked)
+    )
+
+
 def list_games(launches: list[Launch], pattern: str | None = None) -> int:
     entries = [launch for launch in launches if launch.game_exe or launch.install_dir]
     if pattern:
@@ -1588,9 +1636,15 @@ def list_games(launches: list[Launch], pattern: str | None = None) -> int:
     return 0
 
 
-def print_detection(launch: Launch, exe: str, stream=sys.stderr) -> None:
+def print_detection(
+    launch: Launch, exe: str, stream=sys.stderr, program: str | None = None
+) -> None:
     print(f"wine.game: {launch.label}", file=stream)
-    print(f"  executable: {exe}", file=stream)
+    if program:
+        print(f"  program:    {program}", file=stream)
+        print(f"  game:       {exe}", file=stream)
+    else:
+        print(f"  executable: {exe}", file=stream)
     print(f"  runner:     {launch.kind} - {launch.runner}", file=stream)
     if launch.prefix:
         print(f"  prefix:     {launch.prefix}", file=stream)
@@ -1641,9 +1695,16 @@ def main(argv: list[str] | None = None) -> int:
             "  wine.game --rm --keep-prefix --keep-settings sleeper\n"
             "  wine.game --rm --yes sleeper\n"
             "  wine.game --no-gamemode /games/foo/game.exe --windowed\n"
+            "  wine.game --run ~/Downloads/update.exe sleeper\n"
+            "  wine.game --run 'Binaries/Win64/AltGame.exe' sleeper -windowed\n"
         ),
     )
     parser.add_argument("-l", "--list", action="store_true", help="list known Heroic/Lutris games")
+    parser.add_argument(
+        "--run",
+        metavar="PROGRAM",
+        help="run PROGRAM in the matched game's prefix instead of the game",
+    )
     parser.add_argument("-n", "--dry-run", action="store_true", help="print command instead of running")
     parser.add_argument("-q", "--quiet", action="store_true", help="suppress detection output")
     parser.add_argument("--rm", action="store_true", help="uninstall the matched Heroic/Lutris game and hide it")
@@ -1665,8 +1726,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--yes requires --rm")
     if options.rm and options.list:
         parser.error("--rm cannot be combined with --list")
+    if options.rm and options.run:
+        parser.error("--rm cannot be combined with --run")
     if options.rm and any((options.prefix, options.wine, options.proton, options.no_umu)):
         parser.error("--rm does not use --prefix, --wine, --proton, or --no-umu")
+    if options.run and options.list:
+        parser.error("--run cannot be combined with --list")
+    if options.run is None:
+        raw_args = list(sys.argv[1:] if argv is None else argv)
+        separator = raw_args.index("--") if "--" in raw_args else len(raw_args)
+        if any(
+            token == "--run" or token.startswith("--run=")
+            for token in raw_args[:separator]
+        ):
+            parser.error(
+                "--run must come before the game executable: wine.game --run PROGRAM GAME"
+            )
 
     launches = collect_launches()
 
@@ -1675,6 +1750,10 @@ def main(argv: list[str] | None = None) -> int:
         return list_games(launches, pattern)
 
     if not options.exe:
+        if options.run:
+            parser.error(
+                "--run needs a game executable or title: wine.game --run PROGRAM GAME"
+            )
         parser.error("an executable is required (or use --list)")
 
     exe = resolve_executable(options.exe, launches)
@@ -1730,6 +1809,14 @@ def main(argv: list[str] | None = None) -> int:
         else:
             die(f"runner not found: {launch.runner}")
 
+    program = exe
+    if options.run:
+        if launch.kind == "native":
+            die(f"{launch.title} is a native game; --run needs a Wine or Proton game")
+        if not launch.prefix:
+            die(f"no Wine prefix is configured for {launch.title}; use --prefix PATH")
+        program = resolve_run_program(options.run, launch)
+
     game_args = list(options.game_args)
     if game_args and game_args[0] == "--":
         game_args = game_args[1:]
@@ -1739,11 +1826,13 @@ def main(argv: list[str] | None = None) -> int:
         print("wine.game: gamemoderun not found; continuing without it", file=sys.stderr)
         use_gamemode = False
 
-    command = launch.command(exe, game_args, use_gamemode)
+    command = launch.command(
+        program, game_args, use_gamemode, include_args=not options.run
+    )
     env = launch.full_env()
 
     if not options.quiet:
-        print_detection(launch, exe)
+        print_detection(launch, exe, program=program if options.run else None)
 
     if not options.dry_run:
         if launch.kind == "proton":
