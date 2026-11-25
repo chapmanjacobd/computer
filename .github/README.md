@@ -15,3 +15,7 @@ if you wanna be my lover you gotta get with my friends:
     git restore .  # mi casa, su casa? sin casa: this will delete everything in your home folder
     bash .github/setup-server.sh
     bash .github/setup-fedora.sh
+
+To copy `~/.github/etc` to `/etc`, showing a diff before each overwrite:
+
+    fish -c 'etc.apply'  # or: etc.apply --dry-run
