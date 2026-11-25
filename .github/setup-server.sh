@@ -72,6 +72,8 @@ sudo systemctl mask systemd-oomd
 sudo systemctl enable --now earlyoom
 sudo systemctl disable --now /usr/lib/systemd/system/sysstat-*.timer
 
+fish -c 'etc.apply --reload'
+
 # rm -r ~/.local/share/kactivitymanagerd && touch ~/.local/share/kactivitymanagerd && sudo chmod -x /usr/libexec/kactivitymanagerd  # Plasma 6 does not like this...
 
 for dep in $(cat .github/cargo_installed); do
