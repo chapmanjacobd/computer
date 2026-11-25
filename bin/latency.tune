@@ -1,0 +1,2127 @@
+#!/usr/bin/env python3
+"""Diagnose and tune Linux input latency, throughput, and responsiveness.
+
+The default run is read-only: it samples scheduler wakeup latency, storage and
+network throughput, CPU/memory pressure, USB input devices, CPU power settings,
+block schedulers, and recent kernel complaints.  It then explains which settings
+are worth changing and why.
+
+Runtime changes are only made with ``-x/--execute``.  Persistent configuration
+is only written with ``--permanent``.  Kernel command line changes are printed
+but never written, because a bad cmdline can make a machine unbootable.
+
+Examples:
+    latency.tune                     # report only
+    latency.tune -x                  # apply the safe runtime changes
+    latency.tune -x --aggressive     # also disable deep C-states, etc.
+    latency.tune --permanent         # write /etc files (needs root)
+    latency.tune -x --permanent      # apply now and persist
+
+Safe runtime changes are reversible by rebooting.  Persistent files are named
+``90-latency-tune*`` and start with a ``Managed by latency.tune`` marker; delete
+them to undo.
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import json
+import logging
+import math
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import time
+from collections import Counter
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+
+LOG = logging.getLogger("latency.tune")
+
+SYS = Path("/sys")
+PROC = Path("/proc")
+MANAGED_MARKER = "Managed by latency.tune"
+SYSCTL_CONF = "90-latency-tune.conf"
+UDEV_RULES = "90-latency-tune.rules"
+MODPROBE_CONF = "90-latency-tune.conf"
+SERVICE_UNIT = "latency-tune.service"
+
+STATUS_RANK = {"crit": 0, "warn": 1, "info": 2, "ok": 3}
+STATUS_LABEL = {"crit": "CRIT", "warn": "WARN", "info": "INFO", "ok": " OK "}
+STATUS_COLOR = {"crit": "\033[31m", "warn": "\033[33m", "info": "\033[36m", "ok": "\033[32m"}
+RESET = "\033[0m"
+
+
+# ---------------------------------------------------------------------------
+# Small formatting and parsing helpers
+# ---------------------------------------------------------------------------
+
+
+def read_text(path: str | Path, default: str | None = None) -> str | None:
+    """Read a small text file, returning *default* if it is unavailable."""
+    try:
+        return Path(path).read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return default
+
+
+def read_int(path: str | Path, default: int | None = None) -> int | None:
+    """Read a single integer from a file, returning *default* on failure."""
+    text = read_text(path)
+    if text is None:
+        return default
+    try:
+        return int(text.split()[0])
+    except (ValueError, IndexError):
+        return default
+
+
+def bracket_value(text: str) -> str:
+    """Return the selected value from a bracketed sysfs list.
+
+    >>> bracket_value("always [madvise] never")
+    'madvise'
+    >>> bracket_value("none")
+    'none'
+    """
+    match = re.search(r"\[([^]]+)\]", text)
+    if match:
+        return match.group(1)
+    fields = text.split()
+    return fields[0] if fields else ""
+
+
+def human_bytes(value: float) -> str:
+    """Format a byte count with binary units.
+
+    >>> human_bytes(0)
+    '0 B'
+    >>> human_bytes(1536)
+    '1.5 KiB'
+    """
+    units = ("B", "KiB", "MiB", "GiB", "TiB", "PiB")
+    size = float(value)
+    for unit in units:
+        if abs(size) < 1024.0 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(size)} {unit}"
+            return f"{size:.1f} {unit}"
+        size /= 1024.0
+    return f"{size:.1f} PiB"
+
+
+def human_kib(value: float) -> str:
+    """Format a KiB value using binary units."""
+    return human_bytes(value * 1024)
+
+
+def percentile(values: Sequence[float], q: float) -> float:
+    """Return the linearly interpolated *q* percentile of *values*.
+
+    >>> percentile([1, 2, 3, 4], 50)
+    2.5
+    >>> percentile([], 99)
+    0.0
+    """
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return float(ordered[0])
+    rank = (len(ordered) - 1) * (q / 100.0)
+    lower = math.floor(rank)
+    upper = math.ceil(rank)
+    if lower == upper:
+        return float(ordered[lower])
+    weight = rank - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+def parse_psi(text: str) -> dict[str, dict[str, float]]:
+    """Parse a ``/proc/pressure/*`` file into a mapping of metric to values.
+
+    >>> psi = parse_psi("some avg10=1.50 avg60=2.00 avg300=3.00 total=9\\n")
+    >>> psi["some"]["avg10"]
+    1.5
+    """
+    result: dict[str, dict[str, float]] = {}
+    for line in text.splitlines():
+        fields = line.split()
+        if not fields:
+            continue
+        kind = fields[0]
+        values: dict[str, float] = {}
+        for field in fields[1:]:
+            if "=" not in field:
+                continue
+            key, raw = field.split("=", 1)
+            try:
+                values[key] = float(raw)
+            except ValueError:
+                continue
+        result[kind] = values
+    return result
+
+
+def parse_interrupts(text: str) -> dict[str, int]:
+    """Sum per-CPU interrupt counts by the last token on each line."""
+    skip = {"LOC", "RES", "CAL", "TLB", "NMI", "IWI", "PMI", "ERR", "MIS"}
+    totals: Counter[str] = Counter()
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        head, rest = line.split(":", 1)
+        if not head.strip().isdigit():
+            continue
+        fields = rest.split()
+        if not fields:
+            continue
+        label = fields[-1]
+        if not label or label in skip or label.isdigit():
+            continue
+        count = 0
+        for field in fields[:-1]:
+            if field.isdigit():
+                count += int(field)
+        if count:
+            totals[label] += count
+    return dict(totals)
+
+
+def parse_meminfo(text: str) -> dict[str, int]:
+    """Parse ``/proc/meminfo`` values (in KiB)."""
+    result: dict[str, int] = {}
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        key, raw = line.split(":", 1)
+        fields = raw.split()
+        if fields and fields[0].isdigit():
+            result[key] = int(fields[0])
+    return result
+
+
+def parse_diskstats(text: str, block_names: set[str]) -> dict[str, tuple[int, int, int, int]]:
+    """Return ``(reads, read_sectors, writes, write_sectors)`` per whole disk."""
+    result: dict[str, tuple[int, int, int, int]] = {}
+    for line in text.splitlines():
+        fields = line.split()
+        if len(fields) < 10 or fields[2] not in block_names:
+            continue
+        try:
+            result[fields[2]] = (
+                int(fields[3]),
+                int(fields[5]),
+                int(fields[7]),
+                int(fields[9]),
+            )
+        except ValueError:
+            continue
+    return result
+
+
+def parse_netdev(text: str) -> tuple[int, int]:
+    """Return total non-loopback RX and TX bytes from ``/proc/net/dev``."""
+    rx = tx = 0
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        iface, rest = line.split(":", 1)
+        if iface.strip() == "lo":
+            continue
+        fields = rest.split()
+        if len(fields) < 9:
+            continue
+        try:
+            rx += int(fields[0])
+            tx += int(fields[8])
+        except ValueError:
+            continue
+    return rx, tx
+
+
+def colorize(status: str, text: str) -> str:
+    """Colorize *text* for a terminal, respecting ``NO_COLOR``."""
+    if not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
+        return text
+    return f"{STATUS_COLOR.get(status, '')}{text}{RESET}"
+
+
+def wrap(text: str, width: int = 96, indent: str = "           ") -> list[str]:
+    """Wrap prose for the report without breaking the first line."""
+    import textwrap
+
+    return textwrap.wrap(text, width=width, initial_indent=indent, subsequent_indent=indent) or [indent]
+
+
+# ---------------------------------------------------------------------------
+# Data model
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Write:
+    """A value to write to a sysfs/procfs path."""
+
+    path: str
+    value: str
+
+
+@dataclass(frozen=True)
+class Finding:
+    """One diagnosis and, optionally, the tuning that addresses it."""
+
+    key: str
+    title: str
+    status: str
+    detail: str
+    current: str = ""
+    target: str = ""
+    writes: tuple[Write, ...] = ()
+    sysctl: tuple[tuple[str, str], ...] = ()
+    udev: tuple[str, ...] = ()
+    modprobe: tuple[tuple[str, str], ...] = ()
+    service: tuple[str, ...] = ()
+    cmdline: str = ""
+    apply_by_default: bool = True
+
+    @property
+    def has_actions(self) -> bool:
+        """Whether this finding changes any system configuration."""
+        return bool(self.writes or self.sysctl or self.udev or self.modprobe or self.service or self.cmdline)
+
+    @property
+    def scope(self) -> str:
+        """Human-readable list of the mechanisms this finding uses."""
+        parts: list[str] = []
+        if self.writes or self.sysctl or self.modprobe:
+            parts.append("runtime")
+        if self.sysctl:
+            parts.append("sysctl")
+        if self.udev:
+            parts.append("udev")
+        if self.modprobe:
+            parts.append("modprobe")
+        if self.service:
+            parts.append("service")
+        if self.cmdline:
+            parts.append("cmdline")
+        return ", ".join(dict.fromkeys(parts))
+
+
+@dataclass(frozen=True)
+class UsbInput:
+    """A USB device that exposes an input event node."""
+
+    name: str
+    vendor: str
+    product: str
+    control: str
+    delay_ms: int
+    sysfs: str
+
+
+@dataclass(frozen=True)
+class BlockDevice:
+    """A whole block device and its I/O scheduler."""
+
+    name: str
+    rotational: bool
+    scheduler: str
+
+
+@dataclass(frozen=True)
+class CpuIdleState:
+    """One CPU idle state (C-state) as reported by cpuidle."""
+
+    index: int
+    name: str
+    latency_us: int
+    disabled: bool
+
+
+@dataclass(frozen=True)
+class ProcGroup:
+    """Aggregated resource use for processes sharing a command name."""
+
+    name: str
+    count: int
+    cpu_pct: float
+    rss_kib: int
+
+
+@dataclass(frozen=True)
+class Latency:
+    """Scheduler wakeup latency samples, in microseconds."""
+
+    p50_us: float
+    p95_us: float
+    p99_us: float
+    max_us: float
+    samples: int
+
+
+@dataclass(frozen=True)
+class Sample:
+    """Counter deltas sampled over a short window."""
+
+    seconds: float
+    cpu_busy_pct: float
+    ctxt_per_s: float
+    disk_read_mib_s: float
+    disk_write_mib_s: float
+    iops: float
+    net_rx_mib_s: float
+    net_tx_mib_s: float
+    irq_rates: tuple[tuple[str, float], ...]
+
+
+@dataclass(frozen=True)
+class Counters:
+    """Raw counters used to derive a :class:`Sample`."""
+
+    timestamp: float
+    cpu_total: int
+    cpu_idle: int
+    ctxt: int
+    disks: dict[str, tuple[int, int, int, int]]
+    net_rx: int
+    net_tx: int
+    irqs: dict[str, int]
+
+
+@dataclass(frozen=True)
+class Bench:
+    """Optional microbenchmark results."""
+
+    mem_copy_mib_s: float
+    fsync_p50_ms: float
+    fsync_p99_ms: float
+    fsync_samples: int
+
+
+@dataclass(frozen=True)
+class Snapshot:
+    """Everything the report needs, with defaults so tests can build slices."""
+
+    host: str = ""
+    kernel: str = ""
+    distro: str = ""
+    cpu_model: str = ""
+    gpu: str = ""
+    ncpu: int = 1
+    load1: float = 0.0
+    load5: float = 0.0
+    load15: float = 0.0
+    cpu_busy_pct: float = 0.0
+    ctxt_per_s: float = 0.0
+    psi_cpu_some: float = 0.0
+    psi_io_some: float = 0.0
+    psi_io_full: float = 0.0
+    psi_mem_some: float = 0.0
+    psi_mem_full: float = 0.0
+    mem_total_kib: int = 0
+    mem_available_kib: int = 0
+    swap_total_kib: int = 0
+    swap_free_kib: int = 0
+    zram_disksize: int = 0
+    zram_data: int = 0
+    oom_count: int = 0
+    oom_victims: tuple[str, ...] = ()
+    latency: Latency | None = None
+    disk_read_mib_s: float = 0.0
+    disk_write_mib_s: float = 0.0
+    disk_iops: float = 0.0
+    net_rx_mib_s: float = 0.0
+    net_tx_mib_s: float = 0.0
+    irq_rates: tuple[tuple[str, float], ...] = ()
+    usb_inputs: tuple[UsbInput, ...] = ()
+    usbcore_autosuspend: int | None = None
+    usb_reconnects: tuple[tuple[str, int], ...] = ()
+    usb_resets: int = 0
+    block_devices: tuple[BlockDevice, ...] = ()
+    governors: tuple[tuple[str, int], ...] = ()
+    epps: tuple[tuple[int, str], ...] = ()
+    intel_pstate: bool = False
+    platform_profile: str = ""
+    cpuidle: tuple[CpuIdleState, ...] = ()
+    preempt: str = ""
+    thp: str = ""
+    swappiness: int = 0
+    dirty_bytes: int = 0
+    dirty_background_bytes: int = 0
+    page_cluster: int = 3
+    inotify_watches: int = 0
+    max_map_count: int = 0
+    nmi_watchdog: int = 0
+    autogroup: int = 1
+    perf_event_paranoid: int = 2
+    taint: int = 0
+    thermal_max_c: float | None = None
+    amdgpu_errors: tuple[str, ...] = ()
+    hard_warnings: tuple[str, ...] = ()
+    tuned_profile: str = ""
+    top_cpu: tuple[ProcGroup, ...] = ()
+    top_rss: tuple[ProcGroup, ...] = ()
+    bench: Bench | None = None
+
+
+# ---------------------------------------------------------------------------
+# Collectors
+# ---------------------------------------------------------------------------
+
+
+def _collect_block_names() -> set[str]:
+    names: set[str] = set()
+    for path in SYS.glob("block/*"):
+        name = path.name
+        if name.startswith(("loop", "ram", "zram", "dm-", "md", "sr")):
+            continue
+        names.add(name)
+    return names
+
+
+def collect_counters() -> Counters:
+    """Snapshot volatile kernel counters."""
+    stat = read_text(PROC / "stat", "") or ""
+    cpu_total = cpu_idle = ctxt = 0
+    for line in stat.splitlines():
+        if line.startswith("cpu "):
+            fields = [int(value) for value in line.split()[1:] if value.isdigit()]
+            cpu_idle = sum(fields[3:5])
+            cpu_total = sum(fields)
+        elif line.startswith("ctxt "):
+            ctxt = int(line.split()[1])
+
+    block_names = _collect_block_names()
+    disks = parse_diskstats(read_text(PROC / "diskstats", "") or "", block_names)
+    net_rx, net_tx = parse_netdev(read_text(PROC / "net" / "dev", "") or "")
+    irqs = parse_interrupts(read_text(PROC / "interrupts", "") or "")
+    return Counters(
+        timestamp=time.monotonic(),
+        cpu_total=cpu_total,
+        cpu_idle=cpu_idle,
+        ctxt=ctxt,
+        disks=disks,
+        net_rx=net_rx,
+        net_tx=net_tx,
+        irqs=irqs,
+    )
+
+
+def diff_counters(before: Counters, after: Counters) -> Sample:
+    """Derive rates from two counter snapshots."""
+    seconds = max(after.timestamp - before.timestamp, 0.001)
+    total = after.cpu_total - before.cpu_total
+    idle = after.cpu_idle - before.cpu_idle
+    busy = 100.0 * (total - idle) / total if total else 0.0
+
+    read_sectors = write_sectors = reads = writes = 0
+    for name in after.disks.keys() | before.disks.keys():
+        old = before.disks.get(name, (0, 0, 0, 0))
+        new = after.disks.get(name, (0, 0, 0, 0))
+        reads += max(0, new[0] - old[0])
+        read_sectors += max(0, new[1] - old[1])
+        writes += max(0, new[2] - old[2])
+        write_sectors += max(0, new[3] - old[3])
+
+    irq_deltas: Counter[str] = Counter()
+    for name in after.irqs.keys() | before.irqs.keys():
+        delta = after.irqs.get(name, 0) - before.irqs.get(name, 0)
+        if delta > 0:
+            irq_deltas[name] = delta
+
+    return Sample(
+        seconds=seconds,
+        cpu_busy_pct=busy,
+        ctxt_per_s=max(0, after.ctxt - before.ctxt) / seconds,
+        disk_read_mib_s=read_sectors * 512 / 1048576 / seconds,
+        disk_write_mib_s=write_sectors * 512 / 1048576 / seconds,
+        iops=(reads + writes) / seconds,
+        net_rx_mib_s=max(0, after.net_rx - before.net_rx) / 1048576 / seconds,
+        net_tx_mib_s=max(0, after.net_tx - before.net_tx) / 1048576 / seconds,
+        irq_rates=tuple(
+            (name, count / seconds)
+            for name, count in sorted(irq_deltas.items(), key=lambda item: item[1], reverse=True)[:8]
+        ),
+    )
+
+
+def measure_latency(duration_s: float, interval_s: float = 0.001) -> Latency | None:
+    """Measure scheduler wakeup overshoot with short sleeps."""
+    if duration_s <= 0:
+        return None
+    samples: list[float] = []
+    deadline = time.monotonic() + duration_s
+    while time.monotonic() < deadline and len(samples) < 20000:
+        start = time.monotonic()
+        time.sleep(interval_s)
+        elapsed = time.monotonic() - start
+        samples.append(max(0.0, (elapsed - interval_s) * 1_000_000))
+    if not samples:
+        return None
+    return Latency(
+        p50_us=percentile(samples, 50),
+        p95_us=percentile(samples, 95),
+        p99_us=percentile(samples, 99),
+        max_us=max(samples),
+        samples=len(samples),
+    )
+
+
+def measure_bench() -> Bench | None:
+    """Run a tiny memory-copy and fsync latency benchmark."""
+    mem_mib_s = 0.0
+    try:
+        source = bytearray(32 * 1024 * 1024)
+        destination = bytearray(len(source))
+        start = time.perf_counter()
+        for _ in range(4):
+            destination[:] = source
+        elapsed = time.perf_counter() - start
+        if elapsed > 0:
+            mem_mib_s = (len(source) * 4 * 2) / 1048576 / elapsed
+    except MemoryError:
+        LOG.debug("skipping memory benchmark: allocation failed")
+
+    fsync_times: list[float] = []
+    directory = Path.home() if os.access(Path.home(), os.W_OK) else Path(tempfile.gettempdir())
+    try:
+        fd, path = tempfile.mkstemp(prefix=".latency-tune-", dir=directory)
+        try:
+            payload = bytes(4096)
+            budget = time.monotonic() + 3.0
+            for _ in range(8):
+                os.lseek(fd, 0, os.SEEK_SET)
+                os.write(fd, payload)
+                start = time.perf_counter()
+                os.fsync(fd)
+                fsync_times.append((time.perf_counter() - start) * 1000)
+                if time.monotonic() > budget:
+                    break
+        finally:
+            os.close(fd)
+            Path(path).unlink(missing_ok=True)
+    except OSError as error:
+        LOG.debug("fsync benchmark failed: %s", error)
+
+    if not fsync_times and not mem_mib_s:
+        return None
+    return Bench(
+        mem_copy_mib_s=mem_mib_s,
+        fsync_p50_ms=percentile(fsync_times, 50),
+        fsync_p99_ms=percentile(fsync_times, 99),
+        fsync_samples=len(fsync_times),
+    )
+
+
+def _input_is_interactive(event: Path, name: str) -> bool:
+    """Whether an input event node is a keyboard/pointer rather than a button."""
+    if re.search(
+        r"led|headphone|audio|consumer control|system control|power button|sleep button|video bus|wmi",
+        name,
+        re.IGNORECASE,
+    ):
+        return False
+    for capability in ("rel", "abs"):
+        text = read_text(event / "device" / "capabilities" / capability)
+        if text:
+            try:
+                if int(text, 16):
+                    return True
+            except ValueError:
+                continue
+    return bool(
+        re.search(r"mouse|trackball|keyboard|kbd|receiver|touch|tablet|gamepad|joystick|wheel", name, re.IGNORECASE)
+    )
+
+
+def collect_usb_inputs() -> tuple[UsbInput, ...]:
+    """Find USB devices that expose keyboard or pointer input events."""
+    found: dict[str, UsbInput] = {}
+    for event in sorted(SYS.glob("class/input/event*"), key=lambda p: p.name):
+        try:
+            device = (event / "device").resolve()
+        except OSError:
+            continue
+        name = read_text(device / "name") or ""
+        if not _input_is_interactive(event, name):
+            continue
+        usb = None
+        for parent in (device, *device.parents):
+            if (parent / "idVendor").exists() and (parent / "idProduct").exists():
+                usb = parent
+                break
+        if usb is None or str(usb) in found:
+            continue
+        control = read_text(usb / "power" / "control", "unknown") or "unknown"
+        delay = read_int(usb / "power" / "autosuspend_delay_ms", 0) or 0
+        found[str(usb)] = UsbInput(
+            name=name or read_text(usb / "product") or usb.name,
+            vendor=read_text(usb / "idVendor", "") or "",
+            product=read_text(usb / "idProduct", "") or "",
+            control=control,
+            delay_ms=delay,
+            sysfs=str(usb),
+        )
+    return tuple(sorted(found.values(), key=lambda item: item.name.lower()))
+
+
+def collect_block_devices() -> tuple[BlockDevice, ...]:
+    """Collect whole-disk I/O schedulers."""
+    devices: list[BlockDevice] = []
+    for path in sorted(SYS.glob("block/*"), key=lambda p: p.name):
+        queue = path / "queue"
+        scheduler_text = read_text(queue / "scheduler")
+        rotational = read_int(queue / "rotational")
+        if scheduler_text is None or rotational is None:
+            continue
+        devices.append(
+            BlockDevice(
+                name=path.name,
+                rotational=bool(rotational),
+                scheduler=bracket_value(scheduler_text),
+            )
+        )
+    return tuple(devices)
+
+
+def collect_cpuidle() -> tuple[CpuIdleState, ...]:
+    """Collect CPU idle states, which are identical across CPUs."""
+    states: list[CpuIdleState] = []
+    for path in sorted(SYS.glob("devices/system/cpu/cpu0/cpuidle/state*")):
+        index = read_int(path.name.removeprefix("state"), -1)
+        name = read_text(path / "name")
+        latency = read_int(path / "latency")
+        disabled = read_int(path / "disable")
+        if index is None or index < 0 or name is None or latency is None or disabled is None:
+            continue
+        states.append(CpuIdleState(index=index, name=name, latency_us=latency, disabled=bool(disabled)))
+    return tuple(states)
+
+
+def collect_governors() -> tuple[tuple[str, int], ...]:
+    """Count CPU frequency governors across online CPUs."""
+    counter: Counter[str] = Counter()
+    for path in SYS.glob("devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor"):
+        value = read_text(path)
+        if value:
+            counter[value] += 1
+    return tuple(sorted(counter.items()))
+
+
+def collect_epps() -> tuple[tuple[int, str], ...]:
+    """Collect energy performance preference per CPU."""
+    result: list[tuple[int, str]] = []
+    for path in SYS.glob("devices/system/cpu/cpu[0-9]*/cpufreq/energy_performance_preference"):
+        try:
+            cpu = int(path.parent.parent.name.removeprefix("cpu"))
+        except ValueError:
+            continue
+        value = read_text(path)
+        if value:
+            result.append((cpu, value))
+    return tuple(sorted(result))
+
+
+def collect_processes(limit: int = 5) -> tuple[tuple[ProcGroup, ...], tuple[ProcGroup, ...]]:
+    """Group processes by command name and return top CPU and RSS groups."""
+    try:
+        completed = subprocess.run(
+            ["ps", "-eo", "pcpu=,rss=,comm="],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        LOG.debug("ps failed: %s", error)
+        return (), ()
+    if completed.returncode != 0:
+        return (), ()
+
+    grouped: dict[str, list[float]] = {}
+    for line in completed.stdout.splitlines():
+        fields = line.split(None, 2)
+        if len(fields) != 3:
+            continue
+        try:
+            cpu = float(fields[0])
+            rss = int(fields[1])
+        except ValueError:
+            continue
+        name = fields[2].strip() or "?"
+        entry = grouped.setdefault(name, [0.0, 0.0, 0.0])
+        entry[0] += 1
+        entry[1] += cpu
+        entry[2] += rss
+
+    groups = [
+        ProcGroup(name=name, count=int(values[0]), cpu_pct=values[1], rss_kib=int(values[2]))
+        for name, values in grouped.items()
+    ]
+    by_cpu = tuple(sorted(groups, key=lambda group: group.cpu_pct, reverse=True)[:limit])
+    by_rss = tuple(sorted(groups, key=lambda group: group.rss_kib, reverse=True)[:limit])
+    return by_cpu, by_rss
+
+
+def scan_kernel_log() -> tuple[int, tuple[str, ...], tuple[tuple[str, int], ...], int, tuple[str, ...], tuple[str, ...]]:
+    """Scan this boot's kernel log for OOM, USB resets, and driver errors."""
+    pattern = (
+        "Out of memory|oom-kill|Killed process|amdgpu|input: |"
+        "usb [0-9.-]+: reset|soft lockup|hung task|watchdog: BUG|mce:|thermal"
+    )
+    lines: list[str] = []
+    command = ["journalctl", "-k", "-b", "--no-pager", "-o", "cat", "-g", pattern]
+    try:
+        completed = subprocess.run(command, capture_output=True, text=True, timeout=20, check=False)
+        if completed.returncode == 0:
+            lines = completed.stdout.splitlines()
+        else:
+            LOG.debug("journalctl exited %s: %s", completed.returncode, completed.stderr.strip())
+    except (OSError, subprocess.TimeoutExpired) as error:
+        LOG.debug("journalctl failed: %s", error)
+
+    if not lines:
+        for command in (["dmesg", "--ctime"], ["dmesg"]):
+            try:
+                completed = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
+            except (OSError, subprocess.TimeoutExpired):
+                continue
+            if completed.returncode == 0:
+                lines = completed.stdout.splitlines()
+                break
+
+    oom_victims: list[str] = []
+    reconnects: Counter[str] = Counter()
+    usb_resets = 0
+    amdgpu_errors: list[str] = []
+    hard_warnings: list[str] = []
+
+    oom_re = re.compile(r"Killed process \d+ \(([^)]+)\)")
+    input_re = re.compile(r"input: (.+?) as /devices/virtual/input/input\d+")
+    reset_re = re.compile(r"usb [0-9.-]+: (?:reset|device not accepting address|device descriptor read)")
+
+    benign_amdgpu = (
+        "Unsupported screen format",
+        "Disabling VM faults because of PRT request",
+        "Failed to populate edc leakage registers",
+    )
+    for line in lines:
+        if match := oom_re.search(line):
+            oom_victims.append(match.group(1))
+        if match := input_re.search(line):
+            reconnects[match.group(1)] += 1
+        if reset_re.search(line):
+            usb_resets += 1
+        lowered = line.lower()
+        if (
+            "amdgpu" in lowered
+            and any(word in lowered for word in ("error", "timeout", "failed", "ring"))
+            and not any(benign.lower() in lowered for benign in benign_amdgpu)
+            and line.strip() not in amdgpu_errors
+        ):
+            amdgpu_errors.append(line.strip()[:240])
+        if any(
+            marker in lowered
+            for marker in (
+                "soft lockup",
+                "hung task",
+                "watchdog: bug",
+                "machine check",
+                "mce: ",
+                "thermal throttling",
+                "core temperature above threshold",
+            )
+        ) and line.strip() not in hard_warnings:
+            hard_warnings.append(line.strip()[:240])
+
+    return (
+        len(oom_victims),
+        tuple(dict.fromkeys(oom_victims)),
+        tuple(sorted(reconnects.items(), key=lambda item: item[1], reverse=True)),
+        usb_resets,
+        tuple(amdgpu_errors[:6]),
+        tuple(hard_warnings[:6]),
+    )
+
+
+def collect_gpu() -> str:
+    """Return a short description of the display controller."""
+    try:
+        completed = subprocess.run(["lspci", "-nn"], capture_output=True, text=True, timeout=3, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    for line in completed.stdout.splitlines():
+        if "VGA compatible controller" in line or "Display controller" in line:
+            return line.split(":", 2)[-1].strip()
+    return ""
+
+
+def collect_tuned_profile() -> str:
+    """Return the active tuned profile, if any."""
+    for path in (Path("/run/tuned/active_profile"), Path("/etc/tuned/active_profile")):
+        value = read_text(path)
+        if value:
+            return value
+    try:
+        completed = subprocess.run(["tuned-adm", "active"], capture_output=True, text=True, timeout=5, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    match = re.search(r"Current active profile:\s*(\S+)", completed.stdout)
+    return match.group(1) if match else ""
+
+
+def collect_thermal_max() -> float | None:
+    """Return the hottest thermal zone in Celsius, ignoring Wi-Fi zones."""
+    hottest: float | None = None
+    for path in SYS.glob("class/thermal/thermal_zone*"):
+        kind = (read_text(path / "type") or "").lower()
+        if "iwlwifi" in kind:
+            continue
+        value = read_int(path / "temp")
+        if value is None:
+            continue
+        celsius = value / 1000.0
+        if hottest is None or celsius > hottest:
+            hottest = celsius
+    return hottest
+
+
+def collect_snapshot(duration: float, bench: bool) -> Snapshot:
+    """Collect a full system snapshot."""
+    meminfo = parse_meminfo(read_text(PROC / "meminfo", "") or "")
+    psi_cpu = parse_psi(read_text(PROC / "pressure" / "cpu", "") or "")
+    psi_io = parse_psi(read_text(PROC / "pressure" / "io", "") or "")
+    psi_mem = parse_psi(read_text(PROC / "pressure" / "memory", "") or "")
+
+    before = collect_counters()
+    time.sleep(max(duration, 0.1))
+    after = collect_counters()
+    sample = diff_counters(before, after)
+    latency = measure_latency(duration)
+    bench_result = measure_bench() if bench else None
+
+    oom_count, oom_victims, reconnects, usb_resets, amdgpu_errors, hard_warnings = scan_kernel_log()
+    top_cpu, top_rss = collect_processes()
+    load1, load5, load15 = os.getloadavg()
+    uname = os.uname()
+
+    cpu_model = ""
+    for line in (read_text(PROC / "cpuinfo", "") or "").splitlines():
+        if line.lower().startswith("model name"):
+            cpu_model = line.split(":", 1)[1].strip()
+            break
+
+    distro = ""
+    for line in (read_text(Path("/etc/os-release"), "") or "").splitlines():
+        if line.startswith("PRETTY_NAME="):
+            distro = line.split("=", 1)[1].strip().strip('"')
+            break
+
+    preempt = read_text(SYS / "kernel" / "debug" / "sched" / "preempt", "")
+
+    return Snapshot(
+        host=uname.nodename,
+        kernel=uname.release,
+        distro=distro,
+        cpu_model=cpu_model,
+        gpu=collect_gpu(),
+        ncpu=os.cpu_count() or 1,
+        load1=load1,
+        load5=load5,
+        load15=load15,
+        cpu_busy_pct=sample.cpu_busy_pct,
+        ctxt_per_s=sample.ctxt_per_s,
+        psi_cpu_some=psi_cpu.get("some", {}).get("avg10", 0.0),
+        psi_io_some=psi_io.get("some", {}).get("avg10", 0.0),
+        psi_io_full=psi_io.get("full", {}).get("avg10", 0.0),
+        psi_mem_some=psi_mem.get("some", {}).get("avg10", 0.0),
+        psi_mem_full=psi_mem.get("full", {}).get("avg10", 0.0),
+        mem_total_kib=meminfo.get("MemTotal", 0),
+        mem_available_kib=meminfo.get("MemAvailable", 0),
+        swap_total_kib=meminfo.get("SwapTotal", 0),
+        swap_free_kib=meminfo.get("SwapFree", 0),
+        zram_disksize=read_int(SYS / "block" / "zram0" / "disksize", 0) or 0,
+        zram_data=read_int(SYS / "block" / "zram0" / "mm_stat", 0) or 0,
+        oom_count=oom_count,
+        oom_victims=oom_victims,
+        latency=latency,
+        disk_read_mib_s=sample.disk_read_mib_s,
+        disk_write_mib_s=sample.disk_write_mib_s,
+        disk_iops=sample.iops,
+        net_rx_mib_s=sample.net_rx_mib_s,
+        net_tx_mib_s=sample.net_tx_mib_s,
+        irq_rates=sample.irq_rates,
+        usb_inputs=collect_usb_inputs(),
+        usbcore_autosuspend=read_int(SYS / "module" / "usbcore" / "parameters" / "autosuspend"),
+        usb_reconnects=reconnects,
+        usb_resets=usb_resets,
+        block_devices=collect_block_devices(),
+        governors=collect_governors(),
+        epps=collect_epps(),
+        intel_pstate=(read_text(SYS / "devices" / "system" / "cpu" / "intel_pstate" / "status") == "active"),
+        platform_profile=read_text(SYS / "firmware" / "acpi" / "platform_profile", "") or "",
+        cpuidle=collect_cpuidle(),
+        preempt=preempt or "unknown",
+        thp=bracket_value(read_text(SYS / "kernel" / "mm" / "transparent_hugepage" / "enabled", "") or ""),
+        swappiness=read_int(PROC / "sys" / "vm" / "swappiness", 60) or 60,
+        dirty_bytes=read_int(PROC / "sys" / "vm" / "dirty_bytes", 0) or 0,
+        dirty_background_bytes=read_int(PROC / "sys" / "vm" / "dirty_background_bytes", 0) or 0,
+        page_cluster=read_int(PROC / "sys" / "vm" / "page-cluster", 3) or 3,
+        inotify_watches=read_int(PROC / "sys" / "fs" / "inotify" / "max_user_watches", 0) or 0,
+        max_map_count=read_int(PROC / "sys" / "vm" / "max_map_count", 0) or 0,
+        nmi_watchdog=read_int(PROC / "sys" / "kernel" / "nmi_watchdog", 0) or 0,
+        autogroup=read_int(PROC / "sys" / "kernel" / "sched_autogroup_enabled", 1) or 0,
+        perf_event_paranoid=read_int(PROC / "sys" / "kernel" / "perf_event_paranoid", 2) or 0,
+        taint=read_int(PROC / "sys" / "kernel" / "tainted", 0) or 0,
+        thermal_max_c=collect_thermal_max(),
+        amdgpu_errors=amdgpu_errors,
+        hard_warnings=hard_warnings,
+        tuned_profile=collect_tuned_profile(),
+        top_cpu=top_cpu,
+        top_rss=top_rss,
+        bench=bench_result,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Evaluation: turn a snapshot into findings and concrete writes
+# ---------------------------------------------------------------------------
+
+
+def _finding(
+    key: str,
+    status: str,
+    title: str,
+    detail: str,
+    *,
+    current: str = "",
+    target: str = "",
+    writes: tuple[Write, ...] = (),
+    sysctl: tuple[tuple[str, str], ...] = (),
+    udev: tuple[str, ...] = (),
+    modprobe: tuple[tuple[str, str], ...] = (),
+    service: tuple[str, ...] = (),
+    cmdline: str = "",
+    apply_by_default: bool = True,
+) -> Finding:
+    return Finding(
+        key=key,
+        status=status,
+        title=title,
+        detail=detail,
+        current=current,
+        target=target,
+        writes=writes,
+        sysctl=sysctl,
+        udev=udev,
+        modprobe=modprobe,
+        service=service,
+        cmdline=cmdline,
+        apply_by_default=apply_by_default,
+    )
+
+
+def evaluate_load(snapshot: Snapshot) -> list[Finding]:
+    """Judge CPU saturation and wakeup latency."""
+    findings: list[Finding] = []
+    load_ratio = snapshot.load1 / max(snapshot.ncpu, 1)
+    busy = snapshot.cpu_busy_pct
+    psi = snapshot.psi_cpu_some
+    saturation = busy >= 90 and (load_ratio >= 1.5 or psi >= 40)
+    busy_warning = busy >= 75 or load_ratio >= 1.0 or psi >= 20
+
+    detail = (
+        f"{busy:.1f}% CPU busy, load {snapshot.load1:.2f} on {snapshot.ncpu} threads, "
+        f"PSI CPU some={psi:.1f}%."
+    )
+    job = next((group for group in snapshot.top_cpu if group.count >= 2 and group.cpu_pct >= 100), None)
+    if job is not None:
+        detail += (
+            f" Biggest group: {job.name} ({job.count} processes, "
+            f"{job.cpu_pct:.0f}% of one CPU, {human_kib(job.rss_kib)} RSS)."
+        )
+    if saturation:
+        findings.append(
+            _finding(
+                "cpu-saturated",
+                "crit",
+                "CPU is saturated by runnable work",
+                detail + " Input threads wait behind batch jobs, which is enough to freeze a pointer.",
+                current=f"{busy:.0f}% busy, load {snapshot.load1:.1f}/{snapshot.ncpu} threads",
+                target="leave 2-4 CPUs free; cap batch jobs with CPUQuota or Nice",
+                apply_by_default=False,
+            )
+        )
+    elif busy_warning:
+        findings.append(
+            _finding(
+                "cpu-busy",
+                "warn",
+                "CPU is heavily loaded",
+                detail + " Some interactive work will queue behind CPU hogs.",
+                current=f"{busy:.0f}% busy, load {snapshot.load1:.1f}",
+                target="reduce background parallelism",
+                apply_by_default=False,
+            )
+        )
+    else:
+        findings.append(
+            _finding(
+                "cpu-busy",
+                "ok",
+                "CPU has spare capacity",
+                detail,
+                current=f"{busy:.0f}% busy, load {snapshot.load1:.1f}",
+            )
+        )
+
+    if snapshot.latency is not None:
+        latency = snapshot.latency
+        status = "ok"
+        if latency.p99_us >= 20_000:
+            status = "crit"
+        elif latency.p99_us >= 5_000:
+            status = "warn"
+        findings.append(
+            _finding(
+                "wakeup-latency",
+                status,
+                "Scheduler wakeup latency",
+                (
+                    f"{latency.samples} sleeps of 1 ms; overshoot p50={latency.p50_us / 1000:.2f} ms, "
+                    f"p95={latency.p95_us / 1000:.2f} ms, p99={latency.p99_us / 1000:.2f} ms, "
+                    f"max={latency.max_us / 1000:.2f} ms."
+                ),
+                current=f"p99 {latency.p99_us / 1000:.1f} ms",
+                target="p99 under 5 ms",
+                apply_by_default=False,
+            )
+        )
+
+    return findings
+
+
+def evaluate_memory(snapshot: Snapshot) -> list[Finding]:
+    """Judge memory pressure, swap exhaustion, and OOM kills."""
+    total = snapshot.mem_total_kib
+    available = snapshot.mem_available_kib
+    available_pct = 100.0 * available / total if total else 100.0
+    swap_total = snapshot.swap_total_kib
+    swap_used = max(0, swap_total - snapshot.swap_free_kib)
+    swap_pct = 100.0 * swap_used / swap_total if swap_total else 0.0
+
+    detail = (
+        f"{human_kib(total - available)} used of {human_kib(total)}, "
+        f"{human_kib(available)} available; swap {human_kib(swap_used)}/{human_kib(swap_total)}"
+    )
+    if snapshot.zram_disksize:
+        detail += f"; zram0 holds {human_bytes(snapshot.zram_data)} of data"
+    detail += f"; PSI memory some={snapshot.psi_mem_some:.1f}% full={snapshot.psi_mem_full:.1f}%."
+
+    critical = (
+        snapshot.oom_count > 0
+        or snapshot.psi_mem_full >= 5
+        or snapshot.psi_mem_some >= 50
+        or (total > 0 and available_pct < 5)
+    )
+    warning = (
+        swap_pct >= 80
+        or snapshot.psi_mem_some >= 10
+        or (total > 0 and available_pct < 15)
+    )
+
+    if snapshot.oom_count:
+        victims = ", ".join(f"{name}" for name in dict.fromkeys(snapshot.oom_victims))
+        detail += f" The kernel OOM killer fired {snapshot.oom_count} time(s): {victims}."
+
+    if critical:
+        status = "crit"
+        title = (
+            "The kernel OOM killer fired this boot"
+            if snapshot.oom_count
+            else "Memory pressure is causing stalls"
+        )
+        target = "cap batch memory with MemoryHigh/MemoryMax and reduce parallelism"
+    elif warning:
+        status = "warn"
+        title = "Memory or swap is nearly exhausted"
+        target = "free memory or add swap before the next batch"
+    else:
+        status = "ok"
+        title = "Memory pressure is low"
+        target = ""
+
+    return [
+        _finding(
+            "memory-pressure",
+            status,
+            title,
+            detail,
+            current=f"{available_pct:.0f}% available, swap {swap_pct:.0f}% used",
+            target=target,
+            apply_by_default=False,
+        )
+    ]
+
+
+def evaluate_usb(snapshot: Snapshot) -> list[Finding]:
+    """Judge USB runtime power management and device stability."""
+    findings: list[Finding] = []
+    auto_inputs = [device for device in snapshot.usb_inputs if device.control == "auto"]
+
+    if auto_inputs:
+        names = ", ".join(f"{device.name} ({device.vendor}:{device.product})" for device in auto_inputs)
+        writes = tuple(Write(f"{device.sysfs}/power/control", "on") for device in auto_inputs)
+        rules = tuple(
+            f'ACTION=="add|change", SUBSYSTEM=="usb", '
+            f'ATTR{{idVendor}}=="{device.vendor}", ATTR{{idProduct}}=="{device.product}", '
+            f'TEST=="power/control", ATTR{{power/control}}="on"'
+            for device in auto_inputs
+            if device.vendor and device.product
+        )
+        findings.append(
+            _finding(
+                "usb-input-power",
+                "warn",
+                "USB input devices allow runtime suspend",
+                f"{names} may enter USB autosuspend after {auto_inputs[0].delay_ms} ms idle. "
+                "That can lose the first events after a pause.",
+                current=", ".join(f"{device.name}=auto" for device in auto_inputs),
+                target="power/control=on for input devices",
+                writes=writes,
+                udev=rules,
+            )
+        )
+    else:
+        if snapshot.usb_inputs:
+            findings.append(
+                _finding(
+                    "usb-input-power",
+                    "ok",
+                    "USB input runtime suspend is disabled",
+                    f"{len(snapshot.usb_inputs)} USB input device(s) are kept powered on.",
+                    current="power/control=on",
+                )
+            )
+
+    reconnects = [(name, count) for name, count in snapshot.usb_reconnects if count >= 2]
+    resets = snapshot.usb_resets
+    if reconnects or resets:
+        detail = ""
+        if reconnects:
+            detail = "Input devices registered more than once this boot: " + ", ".join(
+                f"{name} x{count}" for name, count in reconnects[:5]
+            ) + " (expected only if you have that many identical devices)."
+        if resets:
+            detail += f" The USB stack logged {resets} reset/re-enumeration event(s)."
+        detail += " Re-registration of a mouse usually means a flaky 2.4 GHz link, cable, hub, or port."
+        findings.append(
+            _finding(
+                "usb-reconnect",
+                "warn",
+                "USB input devices are reconnecting",
+                detail,
+                current=f"{len(reconnects)} device(s) re-registered, {resets} resets",
+                target="move the receiver to a rear direct port; replace cable/hub; check 2.4 GHz interference",
+                apply_by_default=False,
+            )
+        )
+    else:
+        findings.append(
+            _finding(
+                "usb-reconnect",
+                "ok",
+                "No USB input reconnects this boot",
+                "Input device registration and USB reset counts look normal.",
+            )
+        )
+
+    return findings
+
+
+def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
+    """Judge CPU frequency, C-states, preemption, thermal, and watchdog settings."""
+    findings: list[Finding] = []
+    governors = dict(snapshot.governors)
+
+    if snapshot.intel_pstate:
+        if set(governors) == {"powersave"}:
+            status = "ok"
+            title = "intel_pstate is using its normal powersave governor"
+            detail = "With intel_pstate, powersave still scales up on demand; it is not a fixed low clock."
+        elif "performance" in governors:
+            status = "info"
+            title = "CPU governor is pinned to performance"
+            detail = "This lowers frequency ramp latency at the cost of idle power."
+        else:
+            status = "info"
+            title = "CPU governor is non-default"
+            detail = f"Governors in use: {governors}."
+        findings.append(_finding("cpu-governor", status, title, detail, current=str(governors)))
+
+    bad_epps = [(cpu, epp) for cpu, epp in snapshot.epps if epp not in ("balance_performance", "performance")]
+    if bad_epps:
+        writes = tuple(
+            Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpufreq/energy_performance_preference", "balance_performance")
+            for cpu, _ in bad_epps
+        )
+        epp_command = (
+            "for f in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/energy_performance_preference; "
+            'do echo balance_performance > "$f" 2>/dev/null || true; done'
+        )
+        service = (epp_command,)
+        findings.append(
+            _finding(
+                "cpu-epp",
+                "warn",
+                "Energy performance preference biases toward power saving",
+                f"{len(bad_epps)} CPU(s) use {sorted({epp for _, epp in bad_epps})}; "
+                "balance_performance wakes up more aggressively without pinning full frequency.",
+                current=", ".join(sorted({epp for _, epp in bad_epps})),
+                target="balance_performance",
+                writes=writes,
+                service=service,
+            )
+        )
+    elif snapshot.epps:
+        findings.append(
+            _finding(
+                "cpu-epp",
+                "ok",
+                "Energy performance preference is responsive",
+                "EPP is balance_performance or performance on every CPU.",
+                current=", ".join(sorted({epp for _, epp in snapshot.epps})),
+            )
+        )
+
+    if snapshot.platform_profile in ("low-power", "quiet"):
+        findings.append(
+            _finding(
+                "platform-profile",
+                "warn",
+                "Firmware platform profile prefers power saving",
+                f"platform_profile={snapshot.platform_profile} can add wakeup latency.",
+                current=snapshot.platform_profile,
+                target="performance",
+                writes=(Write(f"{SYS}/firmware/acpi/platform_profile", "performance"),),
+                service=("echo performance > /sys/firmware/acpi/platform_profile 2>/dev/null || true",),
+                apply_by_default=False,
+            )
+        )
+
+    deepest = max(snapshot.cpuidle, key=lambda state: state.latency_us, default=None)
+    if deepest is not None and deepest.latency_us >= 500 and not deepest.disabled:
+        status = "warn" if deepest.latency_us >= 5_000 else "info"
+        writes = tuple(
+            Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpuidle/state{deepest.index}/disable", "1")
+            for cpu in range(snapshot.ncpu)
+        )
+        cstate_command = (
+            f"for f in /sys/devices/system/cpu/cpu[0-9]*/cpuidle/state{deepest.index}/disable; "
+            'do echo 1 > "$f" 2>/dev/null || true; done'
+        )
+        service = (cstate_command,)
+        findings.append(
+            _finding(
+                "cpu-cstates",
+                status,
+                f"Deepest idle state {deepest.name} costs {deepest.latency_us} us to exit",
+                "Deep C-states save power but can add wakeup latency. Disable the deepest state "
+                "only if idle stutter remains after load is fixed.",
+                current=f"{deepest.name} latency {deepest.latency_us} us",
+                target=f"disable state{deepest.index}",
+                writes=writes,
+                service=service,
+                apply_by_default=False,
+            )
+        )
+
+    preempt = snapshot.preempt.lower()
+    if preempt and preempt not in ("unknown",) and not preempt.startswith("full"):
+        findings.append(
+            _finding(
+                "preempt-mode",
+                "info",
+                "Kernel preemption is not full",
+                f"Current preemption mode: {snapshot.preempt}. full allows desktop tasks to preempt "
+                "kernel work sooner; it may cost some throughput.",
+                current=snapshot.preempt,
+                target="full",
+                writes=(Write(f"{SYS}/kernel/debug/sched/preempt", "full"),),
+                service=("[ -w /sys/kernel/debug/sched/preempt ] && echo full > /sys/kernel/debug/sched/preempt || true",),
+                cmdline="preempt=full",
+                apply_by_default=False,
+            )
+        )
+    elif preempt.startswith("full"):
+        findings.append(
+            _finding(
+                "preempt-mode",
+                "ok",
+                "Kernel preemption is full",
+                f"Current preemption mode: {snapshot.preempt}.",
+                current=snapshot.preempt,
+            )
+        )
+
+    if snapshot.thermal_max_c is not None and snapshot.thermal_max_c >= 90:
+        status = "crit" if snapshot.thermal_max_c >= 100 else "warn"
+        findings.append(
+            _finding(
+                "cpu-thermal",
+                status,
+                "CPU package is running hot",
+                f"Hottest zone is {snapshot.thermal_max_c:.0f} C. Thermal throttling adds stalls, "
+                "and sustained heat reduces boost headroom. Check cooler mounting, fans, and dust.",
+                current=f"{snapshot.thermal_max_c:.0f} C",
+                target="below 90 C under load",
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.nmi_watchdog:
+        findings.append(
+            _finding(
+                "nmi-watchdog",
+                "info",
+                "NMI watchdog is enabled",
+                "The hard-lockup detector costs a little periodic work. Disable it only while "
+                "chasing latency, because it is also a useful crash diagnostic.",
+                current="enabled",
+                target="disabled",
+                writes=(Write(f"{PROC}/sys/kernel/nmi_watchdog", "0"),),
+                sysctl=(("kernel.nmi_watchdog", "0"),),
+                apply_by_default=False,
+            )
+        )
+
+    return findings
+
+
+def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
+    """Judge block schedulers, dirty writeback, swap layout, and THP."""
+    findings: list[Finding] = []
+    ssd_changes = [device for device in snapshot.block_devices if not device.rotational and device.scheduler != "none"]
+    hdd_changes = [device for device in snapshot.block_devices if device.rotational and device.scheduler != "bfq"]
+
+    if ssd_changes:
+        writes = tuple(Write(f"{SYS}/block/{device.name}/queue/scheduler", "none") for device in ssd_changes)
+        findings.append(
+            _finding(
+                "block-scheduler-ssd",
+                "info",
+                "Non-rotational disks are not using the passthrough scheduler",
+                "SSDs and NVMe need no I/O scheduler; none has the lowest overhead. "
+                + ", ".join(f"{device.name}={device.scheduler}" for device in ssd_changes),
+                current=", ".join(f"{device.name}={device.scheduler}" for device in ssd_changes),
+                target="none",
+                writes=writes,
+                udev=(
+                    'ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"',
+                    'ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"',
+                ),
+            )
+        )
+
+    if hdd_changes:
+        writes = tuple(Write(f"{SYS}/block/{device.name}/queue/scheduler", "bfq") for device in hdd_changes)
+        findings.append(
+            _finding(
+                "block-scheduler-hdd",
+                "info",
+                "Rotational disks could use BFQ for interactivity",
+                "BFQ favors low latency for interactive I/O. It trades some throughput on a busy HDD. "
+                + ", ".join(f"{device.name}={device.scheduler}" for device in hdd_changes),
+                current=", ".join(f"{device.name}={device.scheduler}" for device in hdd_changes),
+                target="bfq",
+                writes=writes,
+                udev=(
+                    'ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"',
+                ),
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.psi_io_some >= 25 or snapshot.psi_io_full >= 5:
+        findings.append(
+            _finding(
+                "io-pressure",
+                "warn",
+                "Processes are stalling on I/O",
+                f"PSI I/O some={snapshot.psi_io_some:.1f}% full={snapshot.psi_io_full:.1f}%. "
+                f"Sampled disk throughput was {snapshot.disk_read_mib_s:.1f} MiB/s read, "
+                f"{snapshot.disk_write_mib_s:.1f} MiB/s write, {snapshot.disk_iops:.0f} IOPS.",
+                current=f"PSI some {snapshot.psi_io_some:.1f}%",
+                target="move batch I/O to idle class and avoid saturating the root disk",
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.zram_disksize and snapshot.page_cluster != 0:
+        findings.append(
+            _finding(
+                "zram-page-cluster",
+                "info",
+                "Swap-in readahead is not tuned for zram",
+                f"zram is configured with {human_bytes(snapshot.zram_disksize)}; "
+                f"vm.page-cluster={snapshot.page_cluster} reads extra pages that zram does not need. "
+                "0 reduces swap-in latency, at some cost in bulk swap throughput.",
+                current=f"page-cluster={snapshot.page_cluster}",
+                target="page-cluster=0",
+                sysctl=(("vm.page-cluster", "0"),),
+            )
+        )
+
+    if snapshot.dirty_bytes and snapshot.dirty_bytes > 512 * 1024 * 1024:
+        findings.append(
+            _finding(
+                "dirty-writeback",
+                "info",
+                "Large dirty page limit can cause writeback stalls",
+                f"vm.dirty_bytes={human_bytes(snapshot.dirty_bytes)} and "
+                f"dirty_background_bytes={human_bytes(snapshot.dirty_background_bytes)}. "
+                "A smaller limit throttles writers earlier and shortens stalls, at some throughput cost.",
+                current=human_bytes(snapshot.dirty_bytes),
+                target="256 MiB dirty / 64 MiB background",
+                sysctl=(("vm.dirty_bytes", str(256 * 1024 * 1024)), ("vm.dirty_background_bytes", str(64 * 1024 * 1024))),
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.thp and snapshot.thp != "madvise":
+        findings.append(
+            _finding(
+                "thp",
+                "info",
+                "Transparent huge pages are not in madvise mode",
+                f"THP setting is {snapshot.thp}. madvise avoids background compaction stalls "
+                "for workloads that do not ask for huge pages.",
+                current=snapshot.thp,
+                target="madvise",
+                writes=(Write(f"{SYS}/kernel/mm/transparent_hugepage/enabled", "madvise"),),
+                service=("echo madvise > /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null || true",),
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.swappiness < 60 and snapshot.zram_disksize and snapshot.psi_mem_some >= 10:
+        findings.append(
+            _finding(
+                "swappiness",
+                "info",
+                "Low swappiness with zram and memory pressure",
+                f"vm.swappiness={snapshot.swappiness} keeps anonymous pages in RAM even though zram "
+                "swap is fast. Raising it can avoid OOM, but costs CPU to compress. Fix the workload first.",
+                current=str(snapshot.swappiness),
+                target="60-100 with zram",
+                sysctl=(("vm.swappiness", "100"),),
+                apply_by_default=False,
+            )
+        )
+
+    if not any(f.key.startswith("block-scheduler") for f in findings):
+        findings.append(
+            _finding(
+                "block-scheduler",
+                "ok",
+                "Block I/O schedulers look appropriate",
+                ", ".join(f"{device.name}={device.scheduler}" for device in snapshot.block_devices) or "no disks found",
+            )
+        )
+
+    return findings
+
+
+def evaluate_general(snapshot: Snapshot) -> list[Finding]:
+    """Judge general desktop sysctls that affect responsiveness and tooling."""
+    findings: list[Finding] = []
+
+    if snapshot.inotify_watches and snapshot.inotify_watches < 524_288:
+        findings.append(
+            _finding(
+                "inotify-watches",
+                "info",
+                "Inotify watch limit is low for a desktop",
+                f"fs.inotify.max_user_watches={snapshot.inotify_watches}; IDEs and file indexers "
+                "can exhaust this and log errors.",
+                current=str(snapshot.inotify_watches),
+                target="524288",
+                sysctl=(("fs.inotify.max_user_watches", "524288"),),
+            )
+        )
+
+    if snapshot.max_map_count and snapshot.max_map_count < 1_048_576:
+        findings.append(
+            _finding(
+                "max-map-count",
+                "info",
+                "vm.max_map_count is low for games and Wine",
+                f"vm.max_map_count={snapshot.max_map_count}; many game runtimes need at least 1048576.",
+                current=str(snapshot.max_map_count),
+                target="1048576",
+                sysctl=(("vm.max_map_count", "1048576"),),
+            )
+        )
+
+    if snapshot.autogroup == 0:
+        findings.append(
+            _finding(
+                "sched-autogroup",
+                "info",
+                "Scheduler autogrouping is disabled",
+                "Autogrouping keeps a shell's children from starving the desktop. It is normally on.",
+                current="0",
+                target="1",
+                sysctl=(("kernel.sched_autogroup_enabled", "1"),),
+            )
+        )
+
+    if snapshot.perf_event_paranoid > 1:
+        findings.append(
+            _finding(
+                "perf-paranoid",
+                "info",
+                "perf_event_paranoid blocks unprivileged profiling",
+                f"kernel.perf_event_paranoid={snapshot.perf_event_paranoid}; set it to 1 to let "
+                "perf record userspace stacks without root. This is a security tradeoff, not a latency fix.",
+                current=str(snapshot.perf_event_paranoid),
+                target="1",
+                sysctl=(("kernel.perf_event_paranoid", "1"),),
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.tuned_profile:
+        findings.append(
+            _finding(
+                "tuned-profile",
+                "info",
+                "TuneD is active",
+                f"Profile {snapshot.tuned_profile} is active. TuneD may overwrite sysctl and CPU settings "
+                "at boot; run `tuned-adm verify` if its values do not match the running system.",
+                current=snapshot.tuned_profile,
+                apply_by_default=False,
+            )
+        )
+
+    return findings
+
+
+def evaluate_kernel_log(snapshot: Snapshot) -> list[Finding]:
+    """Surface driver errors and hard kernel warnings."""
+    findings: list[Finding] = []
+
+    if snapshot.amdgpu_errors:
+        findings.append(
+            _finding(
+                "amdgpu-errors",
+                "warn",
+                "AMD GPU driver logged errors this boot",
+                " | ".join(snapshot.amdgpu_errors[:4]),
+                current=f"{len(snapshot.amdgpu_errors)} error line(s)",
+                target="update firmware/kernel or test without the GPU-specific feature",
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.hard_warnings:
+        findings.append(
+            _finding(
+                "kernel-warnings",
+                "crit",
+                "Kernel logged hard warnings",
+                " | ".join(snapshot.hard_warnings[:4]),
+                current=f"{len(snapshot.hard_warnings)} warning line(s)",
+                target="investigate the full `journalctl -k -b` output",
+                apply_by_default=False,
+            )
+        )
+
+    if snapshot.taint and not snapshot.hard_warnings:
+        findings.append(
+            _finding(
+                "kernel-tainted",
+                "info",
+                "Kernel is tainted",
+                f"Taint flags: {snapshot.taint}. A tainted kernel is usually fine, but it makes "
+                "upstream bug reports harder to triage.",
+                apply_by_default=False,
+            )
+        )
+
+    return findings
+
+
+def evaluate(snapshot: Snapshot) -> list[Finding]:
+    """Run every evaluator and sort findings by severity."""
+    findings: list[Finding] = []
+    findings.extend(evaluate_load(snapshot))
+    findings.extend(evaluate_memory(snapshot))
+    findings.extend(evaluate_usb(snapshot))
+    findings.extend(evaluate_cpu(snapshot))
+    findings.extend(evaluate_storage(snapshot))
+    findings.extend(evaluate_general(snapshot))
+    findings.extend(evaluate_kernel_log(snapshot))
+    return sorted(findings, key=lambda finding: (STATUS_RANK.get(finding.status, 9), finding.key))
+
+
+def verdict(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
+    """Return one sentence naming the most likely cause of input freezes."""
+    critical = {finding.key for finding in findings if finding.status == "crit"}
+    warnings = {finding.key for finding in findings if finding.status == "warn"}
+    if "cpu-saturated" in critical and "memory-pressure" in critical:
+        return (
+            "CPU is saturated and the kernel OOM killer has fired this boot. "
+            "Background work is overcommitting the machine; reduce concurrency and memory use before tuning anything else."
+        )
+    if "memory-pressure" in critical:
+        return "Memory exhaustion and OOM kills are the dominant problem. Reduce batch memory use before tuning anything else."
+    if "cpu-saturated" in critical:
+        return "CPU saturation is the dominant problem. Leave a few CPUs free for input and desktop work."
+    if "kernel-warnings" in critical:
+        return "The kernel logged hard warnings; investigate those before changing performance settings."
+    if "usb-reconnect" in warnings:
+        return "A USB input device is reconnecting. Treat that as a hardware/link problem, not a kernel tuning problem."
+    if snapshot.latency is not None and snapshot.latency.p99_us >= 20_000:
+        return "Scheduler wakeup latency is very high; the system is not scheduling interactive work promptly."
+    return "No single dominant cause found. The settings below reduce worst-case latency and a few throughput bottlenecks."
+
+
+# ---------------------------------------------------------------------------
+# Selecting actions and rendering configuration
+# ---------------------------------------------------------------------------
+
+
+def selected_findings(findings: Sequence[Finding], aggressive: bool) -> list[Finding]:
+    """Return findings whose tuning should be applied."""
+    return [
+        finding
+        for finding in findings
+        if finding.has_actions and (finding.apply_by_default or aggressive)
+    ]
+
+
+def runtime_writes(findings: Sequence[Finding]) -> list[Write]:
+    """Flatten findings into an ordered, de-duplicated list of runtime writes."""
+    writes: dict[str, str] = {}
+    for finding in findings:
+        for write in finding.writes:
+            writes[write.path] = write.value
+        for key, value in finding.sysctl:
+            writes[f"/proc/sys/{key.replace('.', '/')}"] = value
+        for module, options in finding.modprobe:
+            for option in options.split():
+                if "=" not in option:
+                    continue
+                name, value = option.split("=", 1)
+                writes[f"/sys/module/{module}/parameters/{name}"] = value
+    return [Write(path, value) for path, value in writes.items()]
+
+
+def _dedupe(values: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(value for value in values if value))
+
+
+def build_sysctl_conf(findings: Sequence[Finding]) -> str:
+    """Render the managed ``/etc/sysctl.d`` drop-in."""
+    pairs: dict[str, str] = {}
+    for finding in findings:
+        for key, value in finding.sysctl:
+            pairs[key] = value
+    if not pairs:
+        return ""
+    lines = [
+        f"# {MANAGED_MARKER}; remove this file to undo.",
+        "# Applied by systemd-sysctl at boot.",
+        "",
+    ]
+    lines.extend(f"{key} = {value}" for key, value in sorted(pairs.items()))
+    return "\n".join(lines) + "\n"
+
+
+def build_udev_rules(findings: Sequence[Finding]) -> str:
+    """Render the managed udev rules file."""
+    rules: list[str] = []
+    for finding in findings:
+        rules.extend(finding.udev)
+    rules = _dedupe(rules)
+    if not rules:
+        return ""
+    lines = [
+        f"# {MANAGED_MARKER}; remove this file to undo.",
+        "# Reapply with: udevadm control --reload-rules && udevadm trigger",
+        "",
+    ]
+    lines.extend(rules)
+    return "\n".join(lines) + "\n"
+
+
+def build_modprobe_conf(findings: Sequence[Finding]) -> str:
+    """Render the managed modprobe drop-in."""
+    modules: dict[str, list[str]] = {}
+    for finding in findings:
+        for module, options in finding.modprobe:
+            modules.setdefault(module, []).append(options)
+    if not modules:
+        return ""
+    lines = [
+        f"# {MANAGED_MARKER}; remove this file to undo.",
+        "# Applied at module load time (reboot or reload the module).",
+        "",
+    ]
+    for module in sorted(modules):
+        lines.append(f"options {module} {' '.join(modules[module])}")
+    return "\n".join(lines) + "\n"
+
+
+def build_service_unit(findings: Sequence[Finding]) -> str:
+    """Render the boot-time sysfs tuning unit."""
+    commands: list[str] = []
+    for finding in findings:
+        commands.extend(finding.service)
+    commands = _dedupe(commands)
+    if not commands:
+        return ""
+    lines = [
+        f"# {MANAGED_MARKER}; remove this file to undo.",
+        "[Unit]",
+        "Description=Apply latency.tune sysfs settings at boot",
+        "After=local-fs.target sys-kernel-debug.mount",
+        "ConditionPathExists=/sys/devices/system/cpu",
+        "",
+        "[Service]",
+        "Type=oneshot",
+        "RemainAfterExit=yes",
+    ]
+    lines.extend(f"ExecStart=/bin/sh -c '{command}'" for command in commands)
+    lines.extend(["", "[Install]", "WantedBy=multi-user.target"])
+    return "\n".join(lines) + "\n"
+
+
+def permanent_files(findings: Sequence[Finding], etc_root: Path = Path("/etc")) -> dict[Path, str]:
+    """Return managed config files and their contents."""
+    files = {
+        etc_root / "sysctl.d" / SYSCTL_CONF: build_sysctl_conf(findings),
+        etc_root / "udev" / "rules.d" / UDEV_RULES: build_udev_rules(findings),
+        etc_root / "modprobe.d" / MODPROBE_CONF: build_modprobe_conf(findings),
+        etc_root / "systemd" / "system" / SERVICE_UNIT: build_service_unit(findings),
+    }
+    return {path: content for path, content in files.items() if content}
+
+
+def write_managed(path: Path, content: str) -> str:
+    """Write a managed file atomically, refusing to clobber foreign files.
+
+    Returns ``wrote``, ``unchanged``, or ``removed``.
+    """
+    if not content:
+        if path.exists() and MANAGED_MARKER in (read_text(path) or ""):
+            path.unlink()
+            return "removed"
+        return "skipped"
+    if path.exists():
+        existing = read_text(path) or ""
+        if MANAGED_MARKER not in existing:
+            raise ValueError(f"refusing to overwrite unmanaged file: {path}")
+        if existing == content.rstrip("\n"):
+            return "unchanged"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(content, encoding="utf-8")
+    os.chmod(temporary, 0o644)
+    os.replace(temporary, path)
+    return "wrote"
+
+
+@dataclass(frozen=True)
+class ApplyResult:
+    """Outcome of one runtime write."""
+
+    write: Write
+    action: str
+    detail: str = ""
+
+
+def apply_runtime(writes: Sequence[Write], execute: bool) -> list[ApplyResult]:
+    """Apply runtime writes, or explain why they cannot be applied."""
+    results: list[ApplyResult] = []
+    for write in writes:
+        path = Path(write.path)
+        if not execute:
+            results.append(ApplyResult(write, "planned"))
+            continue
+        if not path.exists():
+            results.append(ApplyResult(write, "missing", "path does not exist"))
+            continue
+        if os.geteuid() != 0:
+            results.append(ApplyResult(write, "denied", "run with sudo"))
+            continue
+        try:
+            with path.open("w", encoding="ascii") as handle:
+                handle.write(write.value + "\n")
+            results.append(ApplyResult(write, "applied"))
+        except OSError as error:
+            results.append(ApplyResult(write, "failed", str(error)))
+    return results
+
+
+def apply_permanent(findings: Sequence[Finding], etc_root: Path = Path("/etc")) -> list[tuple[Path, str]]:
+    """Write managed configuration files and return their outcomes."""
+    results: list[tuple[Path, str]] = []
+
+    if etc_root == Path("/etc") and os.geteuid() != 0:
+        raise PermissionError("writing /etc requires root; run with sudo")
+
+    files = permanent_files(findings, etc_root)
+    managed_paths = (
+        etc_root / "sysctl.d" / SYSCTL_CONF,
+        etc_root / "udev" / "rules.d" / UDEV_RULES,
+        etc_root / "modprobe.d" / MODPROBE_CONF,
+        etc_root / "systemd" / "system" / SERVICE_UNIT,
+    )
+    for path in managed_paths:
+        action = write_managed(path, files.get(path, ""))
+        if action != "skipped":
+            results.append((path, action))
+
+    service_path = etc_root / "systemd" / "system" / SERVICE_UNIT
+    wants = etc_root / "systemd" / "system" / "multi-user.target.wants" / SERVICE_UNIT
+    if service_path.exists():
+        wants.parent.mkdir(parents=True, exist_ok=True)
+        if not (wants.is_symlink() and wants.resolve() == service_path.resolve()):
+            if wants.is_symlink() or wants.exists():
+                wants.unlink()
+            wants.symlink_to(f"../{SERVICE_UNIT}")
+            results.append((wants, "linked"))
+    elif wants.is_symlink() or wants.exists():
+        wants.unlink()
+        results.append((wants, "removed"))
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Report rendering and CLI
+# ---------------------------------------------------------------------------
+
+
+def format_report(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
+    """Render the human-readable report."""
+    lines: list[str] = []
+    lines.append(f"System responsiveness report - {snapshot.host}")
+    lines.append(f"  kernel   {snapshot.kernel} ({snapshot.distro or 'unknown distro'})")
+    lines.append(f"  cpu      {snapshot.cpu_model or 'unknown'}, {snapshot.ncpu} threads")
+    if snapshot.gpu:
+        lines.append(f"  gpu      {snapshot.gpu}")
+    used_kib = max(0, snapshot.mem_total_kib - snapshot.mem_available_kib)
+    swap_used_kib = max(0, snapshot.swap_total_kib - snapshot.swap_free_kib)
+    lines.append(
+        f"  memory   {human_kib(used_kib)} used, {human_kib(snapshot.mem_available_kib)} available, "
+        f"swap {human_kib(swap_used_kib)}/{human_kib(snapshot.swap_total_kib)}"
+    )
+    lines.append(
+        f"  load     {snapshot.load1:.2f} {snapshot.load5:.2f} {snapshot.load15:.2f}   "
+        f"cpu {snapshot.cpu_busy_pct:.1f}%   "
+        f"psi cpu {snapshot.psi_cpu_some:.1f}%   psi mem {snapshot.psi_mem_some:.1f}%/"
+        f"{snapshot.psi_mem_full:.1f}%   psi io {snapshot.psi_io_some:.1f}%"
+    )
+    if snapshot.tuned_profile:
+        lines.append(f"  tuned    {snapshot.tuned_profile}")
+    if snapshot.latency is not None:
+        latency = snapshot.latency
+        lines.append(
+            f"  wakeup   p50 {latency.p50_us / 1000:.2f} ms   p95 {latency.p95_us / 1000:.2f} ms   "
+            f"p99 {latency.p99_us / 1000:.2f} ms   max {latency.max_us / 1000:.2f} ms"
+        )
+    if snapshot.bench is not None:
+        bench = snapshot.bench
+        lines.append(
+            f"  bench    memory copy {bench.mem_copy_mib_s:.0f} MiB/s   "
+            f"fsync p50 {bench.fsync_p50_ms:.2f} ms p99 {bench.fsync_p99_ms:.2f} ms"
+        )
+    lines.append(
+        f"  sampled  disk r/w {snapshot.disk_read_mib_s:.1f}/{snapshot.disk_write_mib_s:.1f} MiB/s "
+        f"({snapshot.disk_iops:.0f} IOPS)   net rx/tx {snapshot.net_rx_mib_s:.2f}/{snapshot.net_tx_mib_s:.2f} MiB/s   "
+        f"ctxt {snapshot.ctxt_per_s / 1000:.1f}k/s"
+    )
+    if snapshot.irq_rates:
+        top = ", ".join(f"{name} {rate:.0f}/s" for name, rate in snapshot.irq_rates[:4])
+        lines.append(f"  irqs     {top}")
+    if snapshot.top_cpu:
+        top = ", ".join(
+            f"{group.name} {group.count}x {group.cpu_pct:.0f}%" for group in snapshot.top_cpu[:3]
+        )
+        lines.append(f"  top cpu  {top}")
+    if snapshot.thermal_max_c is not None:
+        lines.append(f"  thermal  {snapshot.thermal_max_c:.0f} C")
+
+    lines.append("")
+    lines.append("Findings")
+    for finding in findings:
+        label = STATUS_LABEL.get(finding.status, finding.status.upper())
+        title = colorize(finding.status, f"[{label}]")
+        lines.append(f"  {title} {finding.key}: {finding.title}")
+        if finding.current:
+            lines.append(f"           current: {finding.current}")
+        if finding.target:
+            lines.append(f"           target:  {finding.target}")
+        lines.extend(wrap(finding.detail))
+
+    actionable = [finding for finding in findings if finding.has_actions]
+    lines.append("")
+    if actionable:
+        lines.append("Tuning opportunities")
+        for finding in actionable:
+            suffix = "" if finding.apply_by_default else "  (needs --aggressive)"
+            lines.append(f"  - {finding.key:<22} {finding.target or finding.title}{suffix}")
+            lines.append(f"    {finding.scope}")
+    else:
+        lines.append("Tuning opportunities: none")
+
+    lines.append("")
+    lines.append(f"Verdict: {verdict(snapshot, findings)}")
+    return "\n".join(lines)
+
+
+def format_apply_results(results: Sequence[ApplyResult]) -> str:
+    """Render runtime write outcomes."""
+    counts = Counter(result.action for result in results)
+    lines = [
+        "Runtime changes (-x)",
+        "  " + ", ".join(f"{count} {action}" for action, count in sorted(counts.items())),
+    ]
+    for result in results:
+        detail = f" ({result.detail})" if result.detail else ""
+        lines.append(f"  {result.action:<8} {result.write.path} = {result.write.value}{detail}")
+    if counts.get("denied"):
+        lines.append("  Re-run with sudo to apply the permission-blocked settings.")
+    return "\n".join(lines)
+
+
+def format_permanent_results(results: Sequence[tuple[Path, str]]) -> str:
+    """Render permanent file outcomes."""
+    lines = ["Permanent configuration (--permanent)"]
+    if not results:
+        lines.append("  nothing to write")
+        return "\n".join(lines)
+    for path, action in results:
+        lines.append(f"  {action:<9} {path}")
+    has_udev = any(path.name == UDEV_RULES for path, _ in results)
+    has_service = any(path.name == SERVICE_UNIT for path, _ in results)
+    if has_udev or has_service:
+        lines.append("  Next: udevadm control --reload-rules && systemctl daemon-reload")
+    if has_service:
+        lines.append("  Enable the boot-time sysfs unit with: systemctl enable --now latency-tune.service")
+    return "\n".join(lines)
+
+
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        prog="latency.tune",
+        description="Diagnose input latency, throughput, and kernel/hardware tuning.",
+        epilog=(
+            "Safe runtime changes are reversible by rebooting. Persistent files are named "
+            "90-latency-tune* and carry a managed marker. Kernel cmdline changes are only printed."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("-x", "--execute", action="store_true", help="apply recommended runtime settings now")
+    parser.add_argument("--permanent", action="store_true", help="write managed config files under /etc")
+    parser.add_argument(
+        "--aggressive",
+        action="store_true",
+        help="also apply power-costly tweaks: deep C-states, BFQ on HDDs, preempt=full, dirty limits",
+    )
+    parser.add_argument("--bench", action="store_true", help="run memory-copy and fsync microbenchmarks")
+    parser.add_argument("--duration", type=float, default=2.0, help="counter and latency sampling window in seconds")
+    parser.add_argument("--etc", type=Path, default=Path("/etc"), help="configuration root (for testing)")
+    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    parser.add_argument("-q", "--quiet", action="store_true", help="only show warnings, critical findings, and actions")
+    parser.add_argument("-v", "--verbose", action="store_true", help="log diagnostic detail")
+    parser.add_argument("--version", action="version", version="latency.tune 1.0")
+    return parser.parse_args(argv)
+
+
+def setup_logging(verbose: bool) -> None:
+    """Configure logging for the CLI."""
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+
+
+def report_as_dict(
+    snapshot: Snapshot,
+    findings: Sequence[Finding],
+    applied: Sequence[ApplyResult] = (),
+    permanent: Sequence[tuple[Path, str]] = (),
+) -> dict[str, object]:
+    """Build a JSON-serializable result."""
+    return {
+        "snapshot": dataclasses.asdict(snapshot),
+        "findings": [dataclasses.asdict(finding) for finding in findings],
+        "verdict": verdict(snapshot, findings),
+        "applied": [dataclasses.asdict(result) for result in applied],
+        "permanent": [{"path": str(path), "action": action} for path, action in permanent],
+    }
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Entry point."""
+    args = parse_args(argv)
+    setup_logging(args.verbose)
+
+    snapshot = collect_snapshot(args.duration, args.bench)
+    findings = evaluate(snapshot)
+    shown = [finding for finding in findings if not args.quiet or finding.status in ("warn", "crit") or finding.has_actions]
+    actions = selected_findings(findings, args.aggressive)
+
+    applied: list[ApplyResult] = []
+    permanent: list[tuple[Path, str]] = []
+    exit_code = 0
+
+    if not args.json:
+        print(format_report(snapshot, shown))
+        print()
+
+    if args.execute:
+        writes = runtime_writes(actions)
+        applied = apply_runtime(writes, execute=True)
+        if not args.json:
+            print(format_apply_results(applied))
+            print()
+
+    if args.permanent:
+        try:
+            permanent = apply_permanent(actions, args.etc)
+        except (PermissionError, ValueError) as error:
+            LOG.error("%s", error)
+            if not args.json:
+                print(f"Permanent configuration failed: {error}")
+            exit_code = 1
+        else:
+            if not args.json:
+                print(format_permanent_results(permanent))
+                print()
+
+    if args.json:
+        print(
+            json.dumps(
+                report_as_dict(snapshot, shown, applied, permanent),
+                indent=2,
+                sort_keys=True,
+            )
+        )
+
+    return exit_code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
