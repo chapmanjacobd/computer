@@ -1262,3 +1262,4 @@ abbr -a -- g opencode mini
 abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --untracked; echo Why not try Ctrl+S?'
 abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | open.browser'
 abbr -a -- gl git log --oneline --decorate --first-parent --stat
+abbr -a -- git.clean git clean -fd --interactive
