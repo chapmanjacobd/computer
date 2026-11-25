@@ -268,7 +268,7 @@ function dirdiff --description 'Browse differences between two directory trees'
         return 0
     end
 
-    set -l header 'M differs   L only left   R only right     enter: view   ctrl-o: meld   esc: quit'
+    set -l header 'M diff L left R right  enter:view ^O:meld'
     if test $hidden -gt 0
         set header "$header   [$hidden large files hidden, --all to show]"
     end
