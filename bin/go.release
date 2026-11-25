@@ -1,0 +1,656 @@
+#!/usr/bin/env python3
+"""Tag and push a Go module release, bumping the latest git tag.
+
+Go module versions live in git tags, so unlike cargo-release this does not
+create a version-bump commit. It finds the highest semver tag reachable from
+HEAD, computes the next version, creates an annotated (or signed) tag, and
+pushes the branch and tag.
+
+Examples:
+    go.release                      # dry-run a patch bump
+    go.release -x                   # tag and push the next patch
+    go.release -x minor             # bump minor
+    go.release -x alpha             # v1.2.3 -> v1.2.4-alpha.1
+    go.release -x --tag-prefix sub/ patch
+    go.release -x v2.0.0
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import fnmatch
+import functools
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+from collections.abc import Sequence
+from dataclasses import dataclass, replace
+
+BUMP_LEVELS = ("release", "patch", "minor", "major", "alpha", "beta", "rc")
+PRERELEASE_LEVELS = ("alpha", "beta", "rc")
+
+SEMVER_RE = re.compile(
+    r"^(\d+)\.(\d+)\.(\d+)"
+    r"(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
+    r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
+)
+IDENTIFIER_RE = re.compile(r"^[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*$")
+PLACEHOLDER_RE = re.compile(r"\{\{([a-z_]+)\}\}")
+
+
+class ReleaseError(Exception):
+    """A user-facing release error."""
+
+
+@dataclass(frozen=True)
+class Version:
+    """A semantic version, without the leading ``v`` used by Go tags."""
+
+    major: int
+    minor: int
+    patch: int
+    prerelease: tuple[str, ...] = ()
+    metadata: tuple[str, ...] = ()
+
+    @classmethod
+    def parse(cls, value: str) -> Version:
+        """Parse a version such as ``v1.2.3-alpha.1+build.5``.
+
+        Raises:
+            ValueError: If *value* is not a valid semantic version.
+        """
+        raw = value.removeprefix("refs/tags/")
+        raw = raw.removeprefix("v")
+        match = SEMVER_RE.fullmatch(raw)
+        if match is None:
+            raise ValueError(f"invalid semver version: {value!r}")
+
+        major, minor, patch, pre, meta = match.groups()
+        for component in (major, minor, patch):
+            if len(component) > 1 and component.startswith("0"):
+                raise ValueError(f"invalid semver version: {value!r}")
+
+        prerelease = tuple(pre.split(".")) if pre else ()
+        for identifier in prerelease:
+            if (
+                identifier.isdigit()
+                and len(identifier) > 1
+                and identifier.startswith("0")
+            ):
+                raise ValueError(f"invalid semver version: {value!r}")
+
+        metadata = tuple(meta.split(".")) if meta else ()
+        return cls(int(major), int(minor), int(patch), prerelease, metadata)
+
+    def __str__(self) -> str:
+        result = f"{self.major}.{self.minor}.{self.patch}"
+        if self.prerelease:
+            result += "-" + ".".join(self.prerelease)
+        if self.metadata:
+            result += "+" + ".".join(self.metadata)
+        return result
+
+    @property
+    def is_prerelease(self) -> bool:
+        """Whether this version has a pre-release suffix."""
+        return bool(self.prerelease)
+
+
+def compare_versions(left: Version, right: Version) -> int:
+    """Compare two versions by semver precedence.
+
+    Build metadata is ignored, as required by the semver specification.
+
+    Returns:
+        -1 if *left* is lower, 0 if equal, and 1 if *left* is higher.
+    """
+    left_core = (left.major, left.minor, left.patch)
+    right_core = (right.major, right.minor, right.patch)
+    if left_core != right_core:
+        return (left_core > right_core) - (left_core < right_core)
+
+    return _compare_prerelease(left.prerelease, right.prerelease)
+
+
+def _compare_prerelease(left: tuple[str, ...], right: tuple[str, ...]) -> int:
+    if not left and not right:
+        return 0
+    if not left:
+        return 1  # A stable release is higher than any pre-release.
+    if not right:
+        return -1
+
+    for left_id, right_id in zip(left, right):
+        if left_id == right_id:
+            continue
+        if left_id.isdigit() and right_id.isdigit():
+            return (int(left_id) > int(right_id)) - (int(left_id) < int(right_id))
+        if left_id.isdigit():
+            return -1
+        if right_id.isdigit():
+            return 1
+        return (left_id > right_id) - (left_id < right_id)
+
+    return (len(left) > len(right)) - (len(left) < len(right))
+
+
+def bump(version: Version, level: str) -> Version:
+    """Return the version after applying a cargo-release-style bump level.
+
+    ``patch`` and ``release`` drop a pre-release suffix instead of bumping the
+    patch field. ``alpha``, ``beta``, and ``rc`` add or increment a pre-release.
+    """
+    major, minor, patch = version.major, version.minor, version.patch
+    prerelease = version.prerelease
+
+    if level == "major":
+        return Version(major + 1, 0, 0)
+    if level == "minor":
+        return Version(major, minor + 1, 0)
+    if level == "release":
+        return Version(major, minor, patch)
+    if level == "patch":
+        if prerelease:
+            return Version(major, minor, patch)
+        return Version(major, minor, patch + 1)
+    if level in PRERELEASE_LEVELS:
+        if not prerelease:
+            return Version(major, minor, patch + 1, (level, "1"))
+        if prerelease[0] == level:
+            number = 1
+            if len(prerelease) > 1 and prerelease[1].isdigit():
+                number = int(prerelease[1]) + 1
+            return Version(major, minor, patch, (level, str(number)))
+        return Version(major, minor, patch, (level, "1"))
+
+    raise ValueError(f"unknown bump level: {level!r}")
+
+
+def render_placeholders(template: str, values: dict[str, str]) -> str:
+    """Replace ``{{name}}`` placeholders in *template* once each."""
+    return PLACEHOLDER_RE.sub(
+        lambda match: values.get(match.group(1), match.group(0)),
+        template,
+    )
+
+
+def version_from_tag(
+    tag: str,
+    tag_prefix: str,
+    *,
+    require_prefix: bool = True,
+) -> Version | None:
+    """Return the version encoded in a tag, or ``None`` if it is not semver.
+
+    Args:
+        tag: Tag name, optionally including ``refs/tags/``.
+        tag_prefix: Prefix before the ``v``, such as ``sub/``.
+        require_prefix: Whether *tag* must start with *tag_prefix*.
+    """
+    raw = tag.removeprefix("refs/tags/")
+    if raw.startswith(tag_prefix):
+        raw = raw[len(tag_prefix) :]
+    elif require_prefix:
+        return None
+
+    try:
+        return Version.parse(raw)
+    except ValueError:
+        return None
+
+
+def _run(
+    cmd: Sequence[str],
+    *,
+    check: bool = True,
+    capture: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(cmd, check=False, text=True, capture_output=capture)
+    if check and result.returncode != 0:
+        if capture and result.stderr:
+            detail = result.stderr.strip()
+        else:
+            detail = f"exit status {result.returncode}"
+        raise ReleaseError(f"{shlex.join(cmd)} failed: {detail}")
+    return result
+
+
+def _git(
+    *args: str,
+    check: bool = True,
+    capture: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    return _run(["git", *args], check=check, capture=capture)
+
+
+def _git_output(*args: str) -> str:
+    return _git(*args).stdout.strip()
+
+
+def _ensure_repository() -> None:
+    if _git("rev-parse", "--git-dir", check=False).returncode != 0:
+        raise ReleaseError("not inside a git repository")
+    if _git("rev-parse", "--verify", "HEAD", check=False).returncode != 0:
+        raise ReleaseError("repository has no commits")
+
+
+def _current_branch() -> str:
+    result = _git("symbolic-ref", "--short", "-q", "HEAD", check=False)
+    branch = result.stdout.strip()
+    if result.returncode != 0 or not branch:
+        raise ReleaseError("refusing to release from a detached HEAD")
+    return branch
+
+
+def _check_allowed_branch(branch: str, specs: Sequence[str]) -> None:
+    patterns = [
+        pattern.strip()
+        for spec in specs
+        for pattern in spec.split(",")
+        if pattern.strip()
+    ]
+    if not patterns:
+        return
+
+    denied = any(
+        pattern.startswith("!") and fnmatch.fnmatchcase(branch, pattern[1:])
+        for pattern in patterns
+    )
+    if denied:
+        raise ReleaseError(f"branch {branch!r} is denied by --allow-branch")
+
+    positives = [pattern for pattern in patterns if not pattern.startswith("!")]
+    if positives and not any(
+        fnmatch.fnmatchcase(branch, pattern) for pattern in positives
+    ):
+        raise ReleaseError(f"branch {branch!r} does not match --allow-branch")
+
+
+def _check_dirty_worktree() -> None:
+    dirty = _git_output("status", "--porcelain", "--untracked-files=no")
+    if dirty:
+        raise ReleaseError(
+            "working tree has uncommitted changes (use --allow-dirty to ignore)\n"
+            + dirty
+        )
+
+
+def _tag_exists(tag: str) -> bool:
+    return (
+        _git("rev-parse", "-q", "--verify", f"refs/tags/{tag}", check=False).returncode
+        == 0
+    )
+
+
+def _current_version(args: argparse.Namespace) -> tuple[Version, str | None]:
+    if args.prev_tag_name:
+        prev_tag = args.prev_tag_name
+        if not _tag_exists(prev_tag):
+            raise ReleaseError(f"previous tag {prev_tag!r} not found")
+        version = version_from_tag(prev_tag, args.tag_prefix, require_prefix=False)
+        if version is None:
+            raise ReleaseError(f"previous tag {prev_tag!r} is not a semver version")
+        return version, prev_tag
+
+    pattern = f"{args.tag_prefix}v[0-9]*"
+    tags = _git_output("tag", "--merged", "HEAD", "--list", pattern).splitlines()
+    candidates: list[tuple[Version, str]] = []
+    for tag in tags:
+        version = version_from_tag(tag, args.tag_prefix)
+        if version is not None:
+            candidates.append((version, tag))
+
+    if not candidates:
+        return Version(0, 0, 0), None
+
+    return max(
+        candidates,
+        key=functools.cmp_to_key(
+            lambda left, right: compare_versions(left[0], right[0])
+        ),
+    )
+
+
+def _parse_metadata(metadata: str) -> tuple[str, ...]:
+    if not IDENTIFIER_RE.fullmatch(metadata):
+        raise ReleaseError(f"invalid metadata {metadata!r}")
+    return tuple(metadata.split("."))
+
+
+def _next_version(
+    current: Version,
+    level: str,
+    metadata: str | None,
+) -> Version:
+    if level in BUMP_LEVELS:
+        next_version = bump(current, level)
+        if metadata:
+            next_version = replace(next_version, metadata=_parse_metadata(metadata))
+        return next_version
+
+    try:
+        next_version = Version.parse(level)
+    except ValueError as exc:
+        raise ReleaseError(f"invalid version {level!r}") from exc
+
+    if metadata:
+        next_version = replace(next_version, metadata=_parse_metadata(metadata))
+
+    if compare_versions(next_version, current) <= 0:
+        raise ReleaseError(f"version {next_version} is not greater than {current}")
+    return next_version
+
+
+def _print_command(cmd: Sequence[str], verbosity: int) -> None:
+    if verbosity > 0:
+        print(shlex.join(cmd), file=sys.stderr)
+
+
+def _print_preview(
+    args: argparse.Namespace,
+    *,
+    prev_tag: str | None,
+    current: Version,
+    next_version: Version,
+    tag_name: str,
+    branch: str,
+) -> None:
+    if args.quiet:
+        return
+
+    print(f"{'Previous tag:':<17} {prev_tag or '<none>'}")
+    print(f"{'Current version:':<17} {current}")
+    print(f"{'New version:':<17} {next_version}")
+    print(f"{'New tag:':<17} {tag_name}")
+    print(f"{'Branch:':<17} {branch}")
+    if args.no_tag:
+        print(f"{'Tag:':<17} (disabled with --no-tag)")
+    if args.no_push:
+        print(f"{'Push:':<17} (disabled with --no-push)")
+
+    if prev_tag:
+        count = int(_git_output("rev-list", "--count", f"{prev_tag}..HEAD") or "0")
+        print()
+        print(f"Changes since {prev_tag} ({count} commits):")
+        if count:
+            print(
+                _git_output(
+                    "log",
+                    "--oneline",
+                    "--no-decorate",
+                    "--max-count=20",
+                    f"{prev_tag}..HEAD",
+                )
+            )
+            if count > 20:
+                print(f"... and {count - 20} more")
+
+
+def _confirm(tag_name: str) -> bool:
+    prompt = f"Release {tag_name}?"
+    gum = shutil.which("gum")
+    if gum:
+        return (
+            subprocess.run(
+                [gum, "confirm", "--default=no", prompt],
+                check=False,
+            ).returncode
+            == 0
+        )
+
+    try:
+        answer = input(f"{prompt} [y/N] ")
+    except EOFError:
+        return False
+    return answer.strip().lower() in {"y", "yes"}
+
+
+def release(args: argparse.Namespace) -> None:
+    """Run the release described by parsed *args*."""
+    _ensure_repository()
+    branch = _current_branch()
+    _check_allowed_branch(branch, args.allow_branch)
+
+    if not args.allow_dirty:
+        _check_dirty_worktree()
+
+    current, prev_tag = _current_version(args)
+    next_version = _next_version(current, args.level, args.metadata)
+
+    default_tag_name = f"{args.tag_prefix}v{next_version}"
+    tag_values = {
+        "prefix": args.tag_prefix,
+        "prev_version": str(current),
+        "version": str(next_version),
+    }
+    tag_name = (
+        render_placeholders(args.tag_name, tag_values)
+        if args.tag_name is not None
+        else default_tag_name
+    )
+    if not tag_name:
+        raise ReleaseError("tag name is empty")
+
+    message_values = {
+        **tag_values,
+        "tag_name": tag_name,
+        "date": dt.date.today().isoformat(),
+    }
+    tag_message = (
+        render_placeholders(args.tag_message, message_values)
+        if args.tag_message is not None
+        else f"Release {tag_name}"
+    )
+
+    if not args.no_tag and _tag_exists(tag_name):
+        raise ReleaseError(f"tag {tag_name!r} already exists")
+
+    _print_preview(
+        args,
+        prev_tag=prev_tag,
+        current=current,
+        next_version=next_version,
+        tag_name=tag_name,
+        branch=branch,
+    )
+
+    if not args.execute:
+        print()
+        print("Dry run: no tag was created and nothing was pushed.")
+        print("Run with -x/--execute to perform the release.")
+        return
+
+    if not args.no_confirm and not _confirm(tag_name):
+        raise ReleaseError("release cancelled")
+
+    if not args.no_tag:
+        tag_cmd = [
+            "git",
+            "tag",
+            "-s" if (args.sign or args.sign_tag) else "-a",
+            "-m",
+            tag_message,
+            "--",
+            tag_name,
+        ]
+        _print_command(tag_cmd, args.verbose)
+        _run(tag_cmd, capture=True)
+
+    if args.no_push:
+        if not args.quiet:
+            if args.no_tag:
+                print("Not pushing (--no-push).")
+            else:
+                print(f"Created {tag_name} locally; not pushing (--no-push).")
+        return
+
+    push_cmd = ["git", "push"]
+    if not args.no_tag:
+        push_cmd.append("--follow-tags")
+    if args.push_remote:
+        push_cmd.extend([args.push_remote, "HEAD"])
+
+    _print_command(push_cmd, args.verbose)
+    try:
+        _run(push_cmd, capture=False)
+    except ReleaseError as exc:
+        if args.no_tag:
+            raise ReleaseError(f"failed to push: {exc}") from exc
+        raise ReleaseError(
+            f"failed to push; tag {tag_name!r} was created locally: {exc}"
+        ) from exc
+
+    if not args.quiet:
+        print(f"Released {tag_name}.")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        prog="go.release",
+        description=(
+            "Tag and push a Go module release, bumping the highest semver tag "
+            "reachable from HEAD. Go versions live in git tags, so no "
+            "version-bump commit is created."
+        ),
+        epilog=(
+            "LEVEL is one of: patch (default), minor, major, release, alpha, "
+            "beta, rc.\n"
+            "A VERSION may be given instead, for example v1.2.3-rc.1.\n\n"
+            "Examples:\n"
+            "  go.release                    dry-run a patch bump\n"
+            "  go.release -x                 tag and push the next patch\n"
+            "  go.release -x minor           bump the minor version\n"
+            "  go.release -x alpha           v1.2.3 -> v1.2.4-alpha.1\n"
+            "  go.release -x --tag-prefix sub/ patch\n"
+            "  go.release -x v2.0.0\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "level",
+        nargs="?",
+        default="patch",
+        metavar="LEVEL|VERSION",
+        help="Bump level or an explicit version (default: patch)",
+    )
+
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "-x",
+        "--execute",
+        action="store_true",
+        help="Perform the release (default is a dry run)",
+    )
+    mode.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Show what would happen (default)",
+    )
+
+    parser.add_argument(
+        "--no-confirm",
+        action="store_true",
+        help="Do not ask for confirmation with --execute",
+    )
+    parser.add_argument(
+        "--no-tag",
+        action="store_true",
+        help="Do not create a tag",
+    )
+    parser.add_argument(
+        "--no-push",
+        action="store_true",
+        help="Do not push commits or tags",
+    )
+    parser.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="Allow uncommitted tracked changes",
+    )
+    parser.add_argument(
+        "--allow-branch",
+        action="append",
+        default=[],
+        metavar="GLOB",
+        help="Only release from branches matching GLOB (comma separated, repeatable)",
+    )
+    parser.add_argument(
+        "--prev-tag-name",
+        metavar="TAG",
+        help="Use TAG as the previous release tag",
+    )
+    parser.add_argument(
+        "--tag-prefix",
+        default="",
+        metavar="PREFIX",
+        help="Prefix before the v in the tag, e.g. sub/ for sub/v1.2.3",
+    )
+    parser.add_argument(
+        "--tag-name",
+        metavar="NAME",
+        help="Tag name template; supports {{prefix}}, {{prev_version}}, {{version}}",
+    )
+    parser.add_argument(
+        "--tag-message",
+        metavar="MSG",
+        help=(
+            "Annotated tag message; supports {{prefix}}, {{prev_version}}, "
+            "{{version}}, {{tag_name}}, {{date}}"
+        ),
+    )
+    parser.add_argument(
+        "--push-remote",
+        metavar="NAME",
+        help="Remote to push to",
+    )
+    parser.add_argument(
+        "--sign",
+        action="store_true",
+        help="Sign the tag",
+    )
+    parser.add_argument(
+        "--sign-tag",
+        action="store_true",
+        help="Sign the tag",
+    )
+    parser.add_argument(
+        "-m",
+        "--metadata",
+        metavar="META",
+        help="Append semver build metadata (+META)",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Show the git commands being run",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress the release preview",
+    )
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entry point."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        release(args)
+    except ReleaseError as exc:
+        print(f"go.release: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
