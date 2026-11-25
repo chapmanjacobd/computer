@@ -123,6 +123,33 @@ def test_version_from_tag_can_skip_prefix() -> None:
     assert str(version) == "1.2.3"
 
 
+def test_tag_pattern_and_regex_default() -> None:
+    pattern, regex = go_release.tag_pattern_and_regex("sub/", None)
+    assert pattern == "sub/v[0-9]*"
+    assert regex is None
+
+
+def test_tag_pattern_and_regex_custom() -> None:
+    pattern, regex = go_release.tag_pattern_and_regex(
+        "sub/",
+        "{{prefix}}release-{{version}}",
+    )
+    assert pattern == "sub/release-*"
+    assert regex is not None
+    match = regex.fullmatch("sub/release-1.2.3-rc.1")
+    assert match is not None
+    assert match.group("version") == "1.2.3-rc.1"
+
+
+@pytest.mark.parametrize(
+    "template",
+    ["release", "{{version}}-{{prev_version}}", ""],
+)
+def test_tag_pattern_requires_one_version_placeholder(template: str) -> None:
+    with pytest.raises(go_release.ReleaseError):
+        go_release.tag_pattern_and_regex("", template)
+
+
 def test_render_placeholders() -> None:
     assert (
         go_release.render_placeholders(
@@ -287,7 +314,7 @@ def test_tag_prefix(
     assert go_release.main(args) == 0
     assert run_git(repo, "tag", "--list").stdout.strip() == "sub/v0.0.1"
     assert go_release.main(args) == 0
-    assert run_git(repo, "tag", "--list").stdout.splitlines() == [
+    assert sorted(run_git(repo, "tag", "--list").stdout.splitlines()) == [
         "sub/v0.0.1",
         "sub/v0.0.2",
     ]
@@ -321,6 +348,23 @@ def test_tag_name_and_message(
         "release-0.0.1",
     ).stdout
     assert "release-0.0.1 on " in contents
+
+    assert (
+        go_release.main(
+            [
+                "-x",
+                "--no-confirm",
+                "-q",
+                "--tag-name",
+                "release-{{version}}",
+            ]
+        )
+        == 0
+    )
+    assert sorted(run_git(repo, "tag", "--list").stdout.splitlines()) == [
+        "release-0.0.1",
+        "release-0.0.2",
+    ]
 
 
 def test_no_tag_and_no_push(

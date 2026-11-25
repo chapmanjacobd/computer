@@ -39,6 +39,14 @@ SEMVER_RE = re.compile(
 )
 IDENTIFIER_RE = re.compile(r"^[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*$")
 PLACEHOLDER_RE = re.compile(r"\{\{([a-z_]+)\}\}")
+VERSION_PLACEHOLDER_RE = re.compile(r"(\{\{(?:version|prev_version)\}\})")
+VERSION_CAPTURE = (
+    r"(?P<version>"
+    r"[0-9]+\.[0-9]+\.[0-9]+"
+    r"(?:-[0-9A-Za-z.-]+)?"
+    r"(?:\+[0-9A-Za-z.-]+)?"
+    r")"
+)
 
 
 class ReleaseError(Exception):
@@ -202,6 +210,41 @@ def version_from_tag(
         return None
 
 
+def tag_pattern_and_regex(
+    tag_prefix: str,
+    tag_name_template: str | None,
+) -> tuple[str, re.Pattern[str] | None]:
+    """Return the pattern used to list tags and an optional version extractor.
+
+    The default tag format is ``{prefix}v{version}``. A custom ``--tag-name``
+    template must contain one ``{{version}}`` or ``{{prev_version}}``
+    placeholder so existing tags can still be discovered.
+
+    Args:
+        tag_prefix: Prefix before the ``v``, such as ``sub/``.
+        tag_name_template: Custom tag name template, or ``None`` for the default.
+
+    Raises:
+        ReleaseError: If the template has no version placeholder or more than one.
+    """
+    if tag_name_template is None:
+        return f"{tag_prefix}v[0-9]*", None
+
+    rendered = tag_name_template.replace("{{prefix}}", tag_prefix)
+    if len(VERSION_PLACEHOLDER_RE.findall(rendered)) != 1:
+        raise ReleaseError(
+            "--tag-name must contain exactly one {{version}} or "
+            "{{prev_version}} placeholder"
+        )
+
+    pattern = VERSION_PLACEHOLDER_RE.sub("*", rendered)
+    regex_parts = [
+        VERSION_CAPTURE if VERSION_PLACEHOLDER_RE.fullmatch(part) else re.escape(part)
+        for part in VERSION_PLACEHOLDER_RE.split(rendered)
+    ]
+    return pattern, re.compile("".join(regex_parts))
+
+
 def _run(
     cmd: Sequence[str],
     *,
@@ -285,7 +328,11 @@ def _tag_exists(tag: str) -> bool:
     )
 
 
-def _current_version(args: argparse.Namespace) -> tuple[Version, str | None]:
+def _current_version(
+    args: argparse.Namespace,
+    tag_pattern: str,
+    tag_regex: re.Pattern[str] | None,
+) -> tuple[Version, str | None]:
     if args.prev_tag_name:
         prev_tag = args.prev_tag_name
         if not _tag_exists(prev_tag):
@@ -295,11 +342,20 @@ def _current_version(args: argparse.Namespace) -> tuple[Version, str | None]:
             raise ReleaseError(f"previous tag {prev_tag!r} is not a semver version")
         return version, prev_tag
 
-    pattern = f"{args.tag_prefix}v[0-9]*"
-    tags = _git_output("tag", "--merged", "HEAD", "--list", pattern).splitlines()
+    tags = _git_output("tag", "--merged", "HEAD", "--list", tag_pattern).splitlines()
     candidates: list[tuple[Version, str]] = []
     for tag in tags:
-        version = version_from_tag(tag, args.tag_prefix)
+        if tag_regex is None:
+            version = version_from_tag(tag, args.tag_prefix)
+        else:
+            match = tag_regex.fullmatch(tag)
+            if match is None:
+                continue
+            try:
+                version = Version.parse(match.group("version"))
+            except ValueError:
+                continue
+
         if version is not None:
             candidates.append((version, tag))
 
@@ -417,7 +473,8 @@ def release(args: argparse.Namespace) -> None:
     if not args.allow_dirty:
         _check_dirty_worktree()
 
-    current, prev_tag = _current_version(args)
+    tag_pattern, tag_regex = tag_pattern_and_regex(args.tag_prefix, args.tag_name)
+    current, prev_tag = _current_version(args, tag_pattern, tag_regex)
     next_version = _next_version(current, args.level, args.metadata)
 
     default_tag_name = f"{args.tag_prefix}v{next_version}"
@@ -593,7 +650,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--tag-name",
         metavar="NAME",
-        help="Tag name template; supports {{prefix}}, {{prev_version}}, {{version}}",
+        help=(
+            "Tag name template; must contain {{version}} or {{prev_version}}; "
+            "supports {{prefix}}"
+        ),
     )
     parser.add_argument(
         "--tag-message",
