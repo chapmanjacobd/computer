@@ -138,7 +138,7 @@ BTRFS_TRIM_PERIOD="none"
 # (Colon separated paths)
 # The special word/mountpoint "auto" will evaluate all mounted btrfs
 # filesystems
-BTRFS_TRIM_MOUNTPOINTS="/"
+BTRFS_TRIM_MOUNTPOINTS="auto"
 
 ## Path:	System/File systems/btrfs
 ## Description:	Configuration to allow concurrent jobs
