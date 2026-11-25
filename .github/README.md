@@ -15,7 +15,7 @@ if you wanna be my lover you gotta get with my friends:
     rmdir computer
 
     # mi casa, su casa? sin casa: this will delete everything in your home folder
-    #git checkout --force
+    #git reset --hard HEAD
     #git clean -fd
     # or do this to keep your local versions of conflicts
     git reset
