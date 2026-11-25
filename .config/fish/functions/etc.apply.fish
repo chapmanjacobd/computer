@@ -25,7 +25,7 @@ function etc.apply --description 'Copy ~/.github/etc to /etc, showing a diff bef
         set -l rel (string replace -- "$src_root/" '' $src)
         set -l dest /etc/$rel
 
-        if test -e $dest; and cmp -s -- $src $dest
+        if sudo test -e $dest; and sudo cmp -s -- $src $dest
             set unchanged (math $unchanged + 1)
             if set -q _flag_verbose
                 printf '= %s\n' $dest
@@ -47,9 +47,9 @@ function etc.apply --description 'Copy ~/.github/etc to /etc, showing a diff bef
         set -l src $src_root/$rel
         set -l dest /etc/$rel
 
-        if test -e $dest
+        if sudo test -e $dest
             printf '\n~ %s\n' $dest
-            diff --unified --color=auto --label $dest --label $src -- $dest $src
+            sudo diff --unified --color=auto --label $dest --label $src -- $dest $src
         else
             printf '\n+ %s\n' $dest
             diff --unified --color=auto --label /dev/null --label $src -- /dev/null $src
