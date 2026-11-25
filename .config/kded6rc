@@ -1,2 +1,5 @@
+[Module-appmenu]
+autoload=false
+
 [PlasmaBrowserIntegration]
 shownCount=2

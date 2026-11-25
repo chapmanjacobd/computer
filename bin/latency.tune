@@ -465,6 +465,7 @@ class Snapshot:
     amdgpu_errors: tuple[str, ...] = ()
     hard_warnings: tuple[str, ...] = ()
     tuned_profile: str = ""
+    tuned_verified: bool | None = None
     top_cpu: tuple[ProcGroup, ...] = ()
     top_rss: tuple[ProcGroup, ...] = ()
     bench: Bench | None = None
@@ -876,6 +877,20 @@ def collect_tuned_profile() -> str:
     return match.group(1) if match else ""
 
 
+def collect_tuned_verify() -> bool | None:
+    """Return whether the active tuned profile matches the running system."""
+    try:
+        completed = subprocess.run(["tuned-adm", "verify"], capture_output=True, text=True, timeout=8, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if "verification failed" in output or "differ from the preset profile" in output:
+        return False
+    if "verification succeeded" in output or "settings match" in output:
+        return True
+    return None
+
+
 def collect_thermal_max() -> float | None:
     """Return the hottest thermal zone in Celsius, ignoring Wi-Fi zones."""
     hottest: float | None = None
@@ -924,6 +939,7 @@ def collect_snapshot(duration: float, bench: bool) -> Snapshot:
             break
 
     preempt = read_text(SYS / "kernel" / "debug" / "sched" / "preempt", "")
+    tuned_profile = collect_tuned_profile()
 
     return Snapshot(
         host=uname.nodename,
@@ -982,7 +998,8 @@ def collect_snapshot(duration: float, bench: bool) -> Snapshot:
         thermal_max_c=collect_thermal_max(),
         amdgpu_errors=amdgpu_errors,
         hard_warnings=hard_warnings,
-        tuned_profile=collect_tuned_profile(),
+        tuned_profile=tuned_profile,
+        tuned_verified=collect_tuned_verify() if tuned_profile else None,
         top_cpu=top_cpu,
         top_rss=top_rss,
         bench=bench_result,
@@ -1598,17 +1615,35 @@ def evaluate_general(snapshot: Snapshot) -> list[Finding]:
         )
 
     if snapshot.tuned_profile:
-        findings.append(
-            _finding(
-                "tuned-profile",
-                "info",
-                "TuneD is active",
-                f"Profile {snapshot.tuned_profile} is active. TuneD may overwrite sysctl and CPU settings "
-                "at boot; run `tuned-adm verify` if its values do not match the running system.",
-                current=snapshot.tuned_profile,
-                apply_by_default=False,
+        if snapshot.tuned_verified is False:
+            findings.append(
+                _finding(
+                    "tuned-profile",
+                    "warn",
+                    "TuneD profile is not applied as configured",
+                    f"Profile {snapshot.tuned_profile} is active, but `tuned-adm verify` reports that "
+                    "running kernel settings differ from the profile. Another power daemon may have "
+                    "overwritten governor/EPP, or the profile was applied before a driver loaded. "
+                    "For a desktop, `tuned-adm profile desktop` is usually a better fit; restart tuned "
+                    "to enforce the current profile instead.",
+                    current="verification failed",
+                    target="tuned-adm profile desktop (balanced) or systemctl restart tuned (enforce profile)",
+                    apply_by_default=False,
+                )
             )
-        )
+        else:
+            verified = " Settings match the profile." if snapshot.tuned_verified else ""
+            findings.append(
+                _finding(
+                    "tuned-profile",
+                    "info",
+                    "TuneD is active",
+                    f"Profile {snapshot.tuned_profile} is active.{verified} TuneD may overwrite sysctl and "
+                    "CPU settings at boot.",
+                    current=snapshot.tuned_profile,
+                    apply_by_default=False,
+                )
+            )
 
     return findings
 
@@ -1932,7 +1967,10 @@ def format_report(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
         f"{snapshot.psi_mem_full:.1f}%   psi io {snapshot.psi_io_some:.1f}%"
     )
     if snapshot.tuned_profile:
-        lines.append(f"  tuned    {snapshot.tuned_profile}")
+        tuned = snapshot.tuned_profile
+        if snapshot.tuned_verified is False:
+            tuned += " (verify failed)"
+        lines.append(f"  tuned    {tuned}")
     if snapshot.latency is not None:
         latency = snapshot.latency
         lines.append(

@@ -213,6 +213,13 @@ def test_selected_findings_respects_aggressive(snapshot) -> None:
     assert "cpu-cstates" in all_keys
 
 
+def test_tuned_verify_failure_is_a_warning(snapshot) -> None:
+    findings = lt.evaluate_general(snapshot(tuned_profile="throughput-performance", tuned_verified=False))
+    by_key = {finding.key: finding for finding in findings}
+    assert by_key["tuned-profile"].status == "warn"
+    assert "verification failed" in by_key["tuned-profile"].current
+
+
 def test_build_sysctl_conf() -> None:
     findings = [
         lt.Finding(
