@@ -93,7 +93,13 @@ def make_prefix(root: Path, pfx_layout: bool = False) -> Path:
 
 def options(**overrides) -> SimpleNamespace:
     """Build the option namespace used by the add functions."""
-    values = {"force": False, "dry_run": False, "verbose": False}
+    values = {
+        "force": False,
+        "dry_run": False,
+        "verbose": False,
+        "move": False,
+        "yes": False,
+    }
     values.update(overrides)
     return SimpleNamespace(**values)
 
@@ -307,6 +313,166 @@ def test_add_lutris_writes_yaml_and_database(isolated_home):
     assert config["game"]["prefix"] == str(prefix)
     assert config["game"]["args"] == "-windowed"
     assert config["wine"]["version"] == "wine-test"
+
+
+def test_move_install_dir_moves_game(isolated_home):
+    prefix = make_prefix(isolated_home / "Prefixes" / "Demo Game")
+    source = isolated_home / "Downloads" / "Demo Game"
+    exe = write_executable(source / "bin" / "Demo Game.exe")
+    runner = wga.Runner(kind="wine", binary="/bin/true", name="Wine")
+
+    destination = wga.move_install_dir(
+        source, prefix, runner, "Demo Game", options(move=True, yes=True)
+    )
+
+    expected = prefix / "drive_c" / "Games" / "Demo Game"
+    assert destination == expected
+    assert not source.exists()
+    assert (expected / "bin" / exe.name).is_file()
+
+
+def test_move_install_dir_dry_run_keeps_source(isolated_home):
+    prefix = make_prefix(isolated_home / "Prefixes" / "Demo Game")
+    source = isolated_home / "Downloads" / "Demo Game"
+    write_executable(source / "Demo Game.exe")
+    runner = wga.Runner(kind="wine", binary="/bin/true", name="Wine")
+
+    destination = wga.move_install_dir(
+        source, prefix, runner, "Demo Game", options(move=True, dry_run=True)
+    )
+
+    assert destination == prefix / "drive_c" / "Games" / "Demo Game"
+    assert source.is_dir()
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize("source_name", ["", "Downloads", "Games"])
+def test_move_refuses_container_directories(isolated_home, source_name):
+    prefix = make_prefix(isolated_home / "Prefixes" / "Demo Game")
+    source = isolated_home / source_name if source_name else isolated_home
+    source.mkdir(parents=True, exist_ok=True)
+
+    assert wga.protected_move_source(source, prefix) is not None
+
+
+def test_move_refuses_source_containing_prefix(isolated_home):
+    prefix = make_prefix(isolated_home / "Prefixes" / "Demo Game")
+    parent = prefix.parent
+
+    assert wga.protected_move_source(parent, prefix) is not None
+
+
+def test_main_move_into_prefix(isolated_home):
+    wga.HEROIC_STORE_CONFIG.write_text(
+        json.dumps(
+            {
+                "settings": {
+                    "wineVersion": {"bin": "/bin/true", "name": "Test Wine", "type": "wine"}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    source = isolated_home / "Downloads" / "Demo Game"
+    exe = write_executable(source / "Demo Game.exe")
+    prefix = isolated_home / "Prefixes" / "Demo Game"
+
+    assert (
+        wga.main(
+            [
+                "--move",
+                "--yes",
+                "--launcher",
+                "heroic",
+                "--prefix",
+                str(prefix),
+                str(exe),
+            ]
+        )
+        == 0
+    )
+
+    moved_exe = prefix / "drive_c" / "Games" / "Demo Game" / "Demo Game.exe"
+    assert moved_exe.is_file()
+    assert not source.exists()
+    library = json.loads(wga.HEROIC_LIBRARY.read_text(encoding="utf-8"))
+    assert library["games"][0]["install"]["executable"] == str(moved_exe)
+
+
+def test_main_move_updates_existing_entry(isolated_home):
+    wga.HEROIC_STORE_CONFIG.write_text(
+        json.dumps(
+            {
+                "settings": {
+                    "wineVersion": {"bin": "/bin/true", "name": "Test Wine", "type": "wine"}
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    source = isolated_home / "Downloads" / "Demo Game"
+    exe = write_executable(source / "Demo Game.exe")
+    prefix = isolated_home / "Prefixes" / "Demo Game"
+    base = ["--launcher", "heroic", "--prefix", str(prefix), str(exe)]
+
+    assert wga.main(base) == 0
+    first = json.loads(wga.HEROIC_LIBRARY.read_text(encoding="utf-8"))
+    app_name = first["games"][0]["app_name"]
+
+    assert wga.main(["--move", "--yes", "--force", *base]) == 0
+
+    library = json.loads(wga.HEROIC_LIBRARY.read_text(encoding="utf-8"))
+    assert len(library["games"]) == 1
+    assert library["games"][0]["app_name"] == app_name
+    assert library["games"][0]["install"]["executable"].startswith(str(prefix))
+    assert not source.exists()
+
+
+def test_add_lutris_updates_previous_exe(isolated_home):
+    with sqlite3.connect(wga.LUTRIS_DATABASE) as connection:
+        connection.executescript(LUTRIS_SCHEMA)
+
+    prefix = make_prefix(isolated_home / "Games" / "Demo Game")
+    source = isolated_home / "Downloads" / "Demo Game"
+    old_exe = write_executable(source / "Demo Game.exe")
+    runner = wga.Runner(kind="wine", binary="/bin/true", name="Wine")
+
+    first = wga.Game(
+        target=old_exe,
+        title="Demo Game",
+        exe=old_exe,
+        directory=source,
+        install_dir=source,
+        prefix=prefix,
+        args=[],
+        gog=None,
+    )
+    assert wga.add_lutris(first, runner, options(), prefix) == 0
+
+    destination = wga.move_install_dir(
+        source, prefix, runner, "Demo Game", options(move=True, yes=True)
+    )
+    assert destination is not None
+    new_exe = destination / old_exe.name
+    second = wga.Game(
+        target=new_exe,
+        title="Demo Game",
+        exe=new_exe,
+        directory=destination,
+        install_dir=destination,
+        prefix=prefix,
+        args=[],
+        gog=None,
+    )
+
+    assert (
+        wga.add_lutris(second, runner, options(force=True), prefix, previous_exe=old_exe)
+        == 0
+    )
+    rows = wga.lutris_rows()
+    assert len(rows) == 1
+    config = yaml.safe_load(wga.lutris_config_file(rows[0]["configpath"]).read_text())
+    assert config["game"]["exe"] == str(new_exe)
 
 
 def test_adjust_runner_uses_wine_for_plain_prefix(isolated_home, monkeypatch):

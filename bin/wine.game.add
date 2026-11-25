@@ -26,13 +26,23 @@ Options:
         --runner NAME   launcher runner name (Lutris wine version, etc.)
         --wine PATH     use this Wine binary instead of the inferred runner
         --proton PATH   use this Proton script instead of the inferred runner
+        --move          move the game folder into <prefix>/drive_c/Games
+    -y, --yes           with --move, do not ask before moving files
     -n, --dry-run       print what would be written or run
     -f, --force         update an existing launcher entry for the same exe
     -v, --verbose       print discovery details
     -h, --help          show this help
 
+The game folder moved by --move is the inferred install root, not just the
+directory containing the executable, so data next to a bin/Win64 folder stays
+with the game.  A game already inside a Wine prefix is left in place.  When no
+prefix is found, --move creates the launcher's default prefix and uses a plain
+Wine runner unless an initialized Proton prefix was supplied.
+
 Examples:
     wine.game.add ~/Downloads/Game/Game.exe
+    wine.game.add --move ~/Downloads/Game/Game.exe
+    wine.game.add --move --yes ~/Downloads/Game/Game.exe
     wine.game.add --launcher lutris ~/Games/some-game/game.exe
     wine.game.add --install ~/Downloads/setup_game_1.0.exe
     wine.game.add --install --launcher lutris --name "My Game" setup.exe
@@ -144,6 +154,27 @@ PRUNE_DIRS = {
     "windows",
     "winsxs",
 }
+
+SYSTEM_ROOTS = (
+    "/bin",
+    "/sbin",
+    "/usr",
+    "/lib",
+    "/lib32",
+    "/lib64",
+    "/libx32",
+    "/opt",
+    "/etc",
+    "/var",
+    "/boot",
+    "/proc",
+    "/sys",
+    "/dev",
+    "/run",
+    "/snap",
+    "/nix",
+    "/srv",
+)
 
 BAD_EXE = re.compile(
     r"(unins|uninstall|unwise|_setup|setup|installer|vcredist|vc_redist|dxsetup|"
@@ -756,15 +787,21 @@ def adjust_runner_for_prefix(runner: Runner, prefix: Path | None, launcher: str,
     if wants_proton and runner.kind == "wine" and usable_runner(global_wine):
         candidate = runner_from_heroic(global_wine)
         if candidate.kind == "proton":
+            log("using Proton because the prefix has a pfx layout")
             return candidate
 
-    if has_drive and not has_pfx and runner.kind == "proton":
+    move_needs_wine = getattr(options, "move", False) and not has_pfx
+    if (has_drive and not has_pfx and runner.kind == "proton") or (
+        move_needs_wine and runner.kind == "proton"
+    ):
         if usable_runner(global_wine):
             candidate = runner_from_heroic(global_wine)
             if candidate.kind == "wine":
+                log("using Wine for a plain prefix (Proton needs an initialized pfx)")
                 return candidate
         binary = system_wine()
         if binary:
+            log("using system Wine for a plain prefix (Proton needs an initialized pfx)")
             return Runner(
                 kind="wine",
                 binary=binary,
@@ -838,6 +875,129 @@ def infer_install_root(exe: Path, prefix: Path | None) -> Path:
             break
         root = root.parent
     return root
+
+
+def windows_drive_c(prefix: Path, runner_kind: str) -> Path:
+    """Return the drive_c directory a launcher will actually use.
+
+    Examples
+    --------
+    >>> windows_drive_c(Path("/tmp/pfx-prefix"), "wine").name
+    'drive_c'
+    """
+    nested = prefix / "pfx" / "drive_c"
+    if nested.is_dir() or runner_kind == "proton":
+        return nested
+    return prefix / "drive_c"
+
+
+def protected_move_source(source: Path, prefix: Path) -> str | None:
+    """Return a reason why source must not be moved, or None when safe."""
+    if source.is_symlink():
+        return f"refusing to move symlink {source}"
+    real = Path(os.path.realpath(source))
+    if same_path(real, "/") or same_path(real, HOME):
+        return f"refusing to move {real}"
+    try:
+        if os.path.commonpath([os.path.realpath(HOME), str(real)]) == str(real):
+            return f"refusing to move {real}, which contains the home directory"
+    except ValueError:
+        pass
+    if os.path.ismount(real):
+        return f"refusing to move mount point {real}"
+    for root in SYSTEM_ROOTS:
+        if same_path(real, root) or under(real, root):
+            return f"refusing to move system path {real}"
+
+    containers = [
+        HOME / "Games",
+        HOME / "Games" / "Heroic",
+        HOME / "Games" / "linux",
+        HOME / "Downloads",
+        HOME / "Desktop",
+        HOME / "Documents",
+        HOME / "Pictures",
+        HOME / "Videos",
+        HOME / "Music",
+        HEROIC_DIR,
+        LUTRIS_CONFIG,
+        LUTRIS_DATA,
+    ]
+    for container in containers:
+        if same_path(real, container):
+            return f"refusing to move {real}, which holds multiple games or launcher data"
+    if same_path(real, prefix) or under(prefix, real):
+        return f"refusing to move {real}, which contains the Wine prefix"
+    if (source / "drive_c").is_dir() or (source / "pfx").is_dir():
+        return f"refusing to move {real}, which looks like a Wine prefix"
+    return None
+
+
+def move_install_dir(
+    source: Path, prefix: Path, runner: Runner, title: str, options
+) -> Path | None:
+    """Move a game folder into the prefix's drive_c/Games directory.
+
+    Returns
+    -------
+    pathlib.Path or None
+        The game's new install root, or None when the move was cancelled.
+    """
+    if runner.kind == "proton" and not (prefix / "pfx" / "drive_c").is_dir():
+        die(
+            "the Proton prefix is not initialized; run the installer with --install "
+            "or choose a Wine runner with --wine"
+        )
+    drive = windows_drive_c(prefix, runner.kind)
+    destination = drive / "Games" / safe_component(title)
+
+    if same_path(source, destination):
+        log(f"game is already at {destination}")
+        return source
+    if under(source, drive):
+        log(f"game is already inside {drive}; leaving it in place")
+        return source
+
+    problem = protected_move_source(source, prefix)
+    if problem:
+        die(problem)
+    if destination.exists():
+        die(f"destination already exists: {destination}")
+
+    log(f"move: {source} -> {destination}")
+    if options.dry_run:
+        return destination
+    if not options.yes:
+        if not sys.stdin.isatty():
+            die("refusing to move without confirmation; use --yes")
+        print(
+            f"Move {source}\n  to {destination}\nProceed? [y/N] ",
+            end="",
+            file=sys.stderr,
+            flush=True,
+        )
+        answer = sys.stdin.readline()
+        if answer.strip().casefold() not in {"y", "yes"}:
+            log("cancelled")
+            return None
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if source.stat().st_dev != destination.parent.stat().st_dev:
+            log("crossing filesystems; this may copy the whole game")
+        shutil.move(str(source), str(destination))
+    except (OSError, shutil.Error) as error:
+        die(f"cannot move {source}: {error}")
+    log(f"moved to {destination}")
+    return destination
+
+
+def existing_launcher_entry(launcher: str, exe: Path):
+    """Return the launcher entry already using exe, if any."""
+    if launcher == "heroic":
+        record = heroic_existing(heroic_library()["games"], exe)
+        return record.get("app_name") if record else None
+    existing = lutris_existing(exe)
+    return existing[0].get("name") if existing else None
 
 
 @dataclass
@@ -1030,12 +1190,18 @@ def heroic_runner_config(runner: Runner) -> dict:
 
 
 def add_heroic(
-    game: Game, runner: Runner, options, prefix: Path | None
+    game: Game,
+    runner: Runner,
+    options,
+    prefix: Path | None,
+    previous_exe: Path | None = None,
 ) -> int:
     """Add or update a Heroic sideload entry and its per-game config."""
     data = heroic_library()
     games = data["games"]
     existing = heroic_existing(games, game.exe)
+    if existing is None and previous_exe is not None:
+        existing = heroic_existing(games, previous_exe)
     if existing and not options.force:
         die(
             "this executable is already in Heroic as "
@@ -1204,10 +1370,16 @@ def write_lutris_row(values: dict, game_id: int | None = None) -> int:
 
 
 def add_lutris(
-    game: Game, runner: Runner, options, prefix: Path | None
+    game: Game,
+    runner: Runner,
+    options,
+    prefix: Path | None,
+    previous_exe: Path | None = None,
 ) -> int:
     """Add or update a Lutris game in pga.db and its YAML config."""
     existing = lutris_existing(game.exe)
+    if existing is None and previous_exe is not None:
+        existing = lutris_existing(previous_exe)
     if existing and not options.force:
         row = existing[0]
         die(f"this executable is already in Lutris as {row.get('name')!r}; use --force to update it")
@@ -1413,6 +1585,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--runner", metavar="NAME", help="launcher runner name")
     parser.add_argument("--wine", metavar="PATH", help="use this Wine binary")
     parser.add_argument("--proton", metavar="PATH", help="use this Proton script")
+    parser.add_argument(
+        "--move",
+        action="store_true",
+        help="move the game folder into <prefix>/drive_c/Games",
+    )
+    parser.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="with --move, do not ask before moving files",
+    )
     parser.add_argument("-n", "--dry-run", action="store_true", help="print what would be written or run")
     parser.add_argument("-f", "--force", action="store_true", help="update an existing entry for the same exe")
     parser.add_argument("-v", "--verbose", action="store_true", help="print discovery details")
@@ -1425,6 +1608,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--wine and --proton are mutually exclusive")
     if options.exe and not options.install:
         parser.error("--exe is only used with --install")
+    if options.move and options.install:
+        parser.error("--move cannot be combined with --install")
+    if options.yes and not options.move:
+        parser.error("--yes requires --move")
 
     target = Path(expand(options.target)).expanduser()
     if not target.is_file():
@@ -1456,6 +1643,9 @@ def main(argv: list[str] | None = None) -> int:
         prefix = detect_prefix(target)
         if prefix is None and launcher == "heroic":
             prefix = guess_heroic_prefix(settings, title)
+        if prefix is None and options.move:
+            prefix = default_prefix(launcher, title, slug, settings)
+            log(f"no Wine prefix detected; moving into {prefix}", verbose_only=True)
         if prefix:
             log(f"prefix: {prefix}", verbose_only=True)
         else:
@@ -1463,6 +1653,35 @@ def main(argv: list[str] | None = None) -> int:
 
     runner = adjust_runner_for_prefix(runner, prefix, launcher, options)
     log(f"runner: {runner.kind} - {runner.name or runner.binary}", verbose_only=True)
+
+    previous_exe: Path | None = None
+    moved_exe: Path | None = None
+    moved_directory: Path | None = None
+    pre_move_gog: dict | None = None
+    if options.move:
+        if prefix is None:
+            die("no Wine prefix was selected for --move")
+        source_prefix = detect_prefix(target)
+        if source_prefix and not same_path(source_prefix, prefix):
+            die(
+                f"the game is inside Wine prefix {source_prefix}; "
+                f"use --prefix {source_prefix} instead of moving it"
+            )
+        existing = existing_launcher_entry(launcher, target)
+        if existing is not None and not options.force:
+            die(
+                f"this executable is already in {launcher} as {existing!r}; "
+                "use --force to move and update it"
+            )
+        if existing is not None:
+            previous_exe = target
+        pre_move_gog = find_gog_info(target)
+        source_root = infer_install_root(target, prefix)
+        relative = target.relative_to(source_root)
+        moved_directory = move_install_dir(source_root, prefix, runner, title, options)
+        if moved_directory is None:
+            return 1
+        moved_exe = moved_directory / relative
 
     before: set[Path] = set()
     if options.install:
@@ -1497,15 +1716,19 @@ def main(argv: list[str] | None = None) -> int:
                 slug = slugify(title)
         if prefix is None:
             prefix = detect_prefix(exe)
+    elif options.move:
+        exe = moved_exe or target
     else:
         exe = target
 
-    if options.install and launcher == "lutris":
+    if options.move and moved_directory is not None:
+        directory = moved_directory
+    elif options.install and launcher == "lutris":
         directory = prefix or infer_install_root(exe, prefix)
     else:
         directory = infer_install_root(exe, prefix)
 
-    gog = find_gog_info(exe)
+    gog = find_gog_info(exe) or pre_move_gog
     if options.game_args is not None:
         args = shlex.split(options.game_args)
     else:
@@ -1518,7 +1741,7 @@ def main(argv: list[str] | None = None) -> int:
             slug = slugify(title)
 
     game = Game(
-        target=target,
+        target=exe,
         title=title,
         exe=exe,
         directory=directory,
@@ -1537,8 +1760,8 @@ def main(argv: list[str] | None = None) -> int:
         log(f"  args         {' '.join(shlex.quote(part) for part in game.args)}")
 
     if launcher == "heroic":
-        return add_heroic(game, runner, options, game.prefix)
-    return add_lutris(game, runner, options, game.prefix)
+        return add_heroic(game, runner, options, game.prefix, previous_exe)
+    return add_lutris(game, runner, options, game.prefix, previous_exe)
 
 
 if __name__ == "__main__":
