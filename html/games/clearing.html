@@ -99,12 +99,17 @@
     position:relative;
     user-select:none;
   }
-  .tile.dark{cursor:pointer;background:radial-gradient(circle at 50% 50%,#111114 0%,#0b0b0d 72%)}
-  .tile.dark:hover{border-color:#3d3d44;background:#131316}
-  .tile.dark::after{content:'';width:3px;height:3px;border-radius:50%;background:#2e2e34}
-  .tile.dark.poor{cursor:not-allowed;background:#0b0b0d}
-  .tile.dark.poor::after{background:#191a1e}
-  .tile.dark.poor:hover{border-color:var(--line);background:#0b0b0d}
+  .tile.dark{cursor:pointer;background:#0c0c0e}
+  .tile.dark:hover{border-color:#3d3d44;background:#121215}
+  .tile.dark .tr{
+    font-size:clamp(6.2px,.8vh,8.6px);
+    font-style:italic;line-height:1.16;color:#5c5c67;
+    padding:0 1px;overflow:hidden;max-height:100%;word-break:break-word;
+  }
+  .tile.dark:hover .tr{color:#8d867a}
+  .tile.dark.poor{cursor:not-allowed;background:#0a0a0b}
+  .tile.dark.poor .tr{color:#282830}
+  .tile.dark.poor:hover{border-color:var(--line);background:#0a0a0b}
   .tile.bound{cursor:pointer;border-color:#26262c;background:#101012}
   .tile.bound:hover{border-color:#3d3d44}
   .tile.bound .nm{
@@ -259,6 +264,10 @@
     aside{flex:0 0 auto}
     #ledgerbox{max-height:none}
     #log{max-height:170px}
+    .tile.dark .tr{
+      font-size:7.4px;line-height:1.1;color:#55555f;
+      display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+    }
     header .sub{display:none}
   }
 </style>
@@ -330,19 +339,66 @@ const MAX_ROUND = 30;
 const CLEARINGS_TO_WIN = 4;
 const FOG_TO_WIN = Math.ceil(SIZE * 0.25);   // 13
 
-const REFERENTS = [
-  "a stairwell","damp","rust","sparrows","the smell of gas","a broken lock",
-  "laundry","a man asleep","cats","wire","chalk","a tap dripping",
-  "an unlit bulb","cigarette ends","a name in pencil","frost","someone's radio",
-  "a dead plant","gravel","paint","a mattress","tiles","a window that will not close",
-  "graffiti","a bicycle chain","wet cardboard","a dog","someone crying",
-  "the number four","a spill","peeling paper","broken glass","a locked door",
-  "a queue","an old coat","bread","a shoe","a hand","the smell of rain",
-  "a light left on","a photograph face down","wire mesh","a puddle","dust",
-  "a bell","a walled-up window","a child's drawing","a phone that rings",
-  "cutlery","a mirror","an empty bottle","copper pipe","a sleeping bag",
-  "a stain shaped like a country","footsteps","a curtain","a cold radiator",
-  "a wasp","milk"
+const PLACES = [
+  ["a smell of cold stone", "a stairwell"],
+  ["a wetness in the air", "damp"],
+  ["a taste of iron", "rust"],
+  ["a scrabbling overhead", "sparrows"],
+  ["a smell of gas", "a gas tap"],
+  ["a smell of cold metal", "a broken lock"],
+  ["a smell of soap", "laundry"],
+  ["a slow breathing", "a man asleep"],
+  ["a low warmth", "cats"],
+  ["a line of cold metal", "wire"],
+  ["a dry rasp", "chalk"],
+  ["a sound of water, one drop at a time", "a tap dripping"],
+  ["a dead glass thing overhead", "an unlit bulb"],
+  ["a smell of old smoke", "cigarette ends"],
+  ["a faint grey line", "a name in pencil"],
+  ["a cold coming off the ground", "frost"],
+  ["a voice through a wall", "someone's radio"],
+  ["something brittle", "a dead plant"],
+  ["a crunch underfoot", "gravel"],
+  ["a smell of thinner", "paint"],
+  ["something soft underfoot", "a mattress"],
+  ["a hard flat sound", "tiles"],
+  ["a draught", "a window that will not close"],
+  ["a colour where colour shouldn't be", "graffiti"],
+  ["a smell of oil", "a bicycle chain"],
+  ["a sodden softness", "wet cardboard"],
+  ["a nearby breathing", "a dog"],
+  ["a sound like crying", "someone crying"],
+  ["a mark that means something", "the number four"],
+  ["a stain, still wet", "a spill"],
+  ["a flake of paint", "peeling paper"],
+  ["a glitter on the floor", "broken glass"],
+  ["a door that does not move", "a locked door"],
+  ["a standing stillness", "a queue"],
+  ["a smell of someone", "an old coat"],
+  ["a smell of bread", "bread"],
+  ["something left behind", "a shoe"],
+  ["a warmth, briefly", "a hand"],
+  ["a smell of rain coming", "a gutter running"],
+  ["a light under a door", "a light left on"],
+  ["a square of card", "a photograph face down"],
+  ["a grid of cold metal", "wire mesh"],
+  ["water standing still", "a puddle"],
+  ["a smell of dust", "dust"],
+  ["a sound not yet made", "a bell"],
+  ["a shape that used to be a window", "a walled-up window"],
+  ["a colour out of place", "a child's drawing"],
+  ["a ringing, far off", "a phone that rings"],
+  ["a clink of metal", "cutlery"],
+  ["a cold flat shine", "a mirror"],
+  ["an emptiness of glass", "an empty bottle"],
+  ["a warm metal line", "copper pipe"],
+  ["something soft on the floor", "a sleeping bag"],
+  ["a dark shape on the floor", "a stain shaped like a country"],
+  ["a sound of footsteps going away", "footsteps"],
+  ["a draught, and cloth", "a curtain"],
+  ["a cold iron", "a cold radiator"],
+  ["a small dry buzz", "a wasp"],
+  ["a sourness", "milk"]
 ];
 
 const $ = id => document.getElementById(id);
@@ -376,10 +432,10 @@ function neighbours(i){
 /* ---------------- derived numbers ---------------- */
 
 const ledgerValue = () => S.ledger.reduce((a,x)=>a+x.price, 0);
-const tempo = () => 10 + Math.floor(S.liquidity * 0.35) + S.ledger.length * 2;
+const tempo = () => 10 + Math.floor(S.liquidity * 0.30) + S.ledger.length * 2;
 const actionsForTempo = () => clamp(6 - Math.floor(tempo()/35), 2, 6);
 const provisionIncome = () => 1 + Math.floor(tiles.filter(t=>t.state==="bound").length / 4);
-const nameCost = () => 2 + Math.floor(tiles.filter(t=>t.state!=="dark").length / 3);
+const nameCost = () => 2 + Math.floor(tiles.filter(t=>t.state!=="dark").length / 4);
 const darkCount = () => tiles.filter(t=>t.state==="dark").length;
 const clearingCount = () => tiles.filter(t=>t.clearing).length;
 
@@ -436,7 +492,10 @@ function render(){
     d.dataset.i = i;
 
     if(t.state === "dark"){
-      d.title = "unnamed";
+      const tr = document.createElement("div");
+      tr.className = "tr"; tr.textContent = t.trace;
+      d.appendChild(tr);
+      d.title = t.trace + " — unnamed";
     } else if(t.state === "bound"){
       const n = document.createElement("div");
       n.className = "nm"; n.textContent = t.name;
@@ -528,7 +587,7 @@ function tryName(i){
   openSheet(`
     <h3>Naming</h3>
     <p class="lead">What will you call this?</p>
-    <p>You cannot see it yet. You name it blind, and then you find out what was there.</p>
+    <p>There is <em>${escapeHtml(t.trace)}</em> here. You cannot see it yet — only that.</p>
     <input type="text" id="nameInput" autocomplete="off" spellcheck="false" placeholder="a word for it" maxlength="42">
     <div class="row">
       <span class="hint">COST ${cost} PROVISION · 1 ACTION</span>
@@ -558,7 +617,7 @@ function doName(i, name, cost){
   S.actions--;
   S.seenWords.add(clean(name));
   S.namedOrder.push(i);
-  log("You called it " + name + ". It was " + t.ref + ".", "hi");
+  log("You called " + t.trace + " “" + name + "”. It was " + t.ref + ".", "hi");
   render();
   checkEnd();
 }
@@ -608,7 +667,7 @@ function doExchange(){
   S.actions--;
   S.liquidity += money;
   S.provision += food;
-  S.heat += 3;
+  S.heat += 4;
   log("You trade names against names. +" + money.toFixed(1) + " money, +" + food + " provision, and nothing is made.", "bad");
   render();
   checkEnd();
@@ -820,6 +879,10 @@ function nextRound(panicked){
   );
   if(!panicked) S.actions = actionsForTempo();
 
+  if(S.sensibility <= 33 && !S.warned.a){ S.warned.a = true; log("Your sensibility is going. There is less of you to think with.", "bad"); }
+  if(S.sensibility <= 18 && !S.warned.b){ S.warned.b = true; log("Almost nothing is left of the one who is playing.", "bad"); }
+  if(S.heat >= 8 && !S.warned.c){ S.warned.c = true; log("The pace is hot. One more exchange this round may pitch you into panic.", "i"); }
+
   render();
   checkEnd();
   if(!S.over) log("— round " + S.round + " —", "i");
@@ -854,10 +917,10 @@ function showReading(kind){
   let html = '<div class="reading"><h2>The Reading</h2>';
 
   kept.slice(0, 12).forEach(t => {
-    html += '<div class="line">You said <b>' + escapeHtml(t.name) + '</b>. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
+    html += '<div class="line">You called ' + escapeHtml(t.trace) + ' <b>\u201c' + escapeHtml(t.name) + '\u201d</b>. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
   });
   sold.slice(0, 12).forEach(t => {
-    html += '<div class="line cutline">You said <b>' + escapeHtml(t.name) + '</b>, and then you sold it. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
+    html += '<div class="line cutline">You called ' + escapeHtml(t.trace) + ' <b>\u201c' + escapeHtml(t.name) + '\u201d</b>, and sold it. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
   });
   const rest = named.length - kept.slice(0,12).length - sold.slice(0,12).length;
   if(rest > 0){
@@ -924,15 +987,15 @@ function showReading(kind){
 /* ---------------- setup ---------------- */
 
 function start(){
-  const pool = shuffle(REFERENTS.slice());
-  tiles = pool.slice(0, SIZE).map(ref => ({
-    ref, name: null, state: "dark", price: 0, clearing: false
+  const pool = shuffle(PLACES.slice());
+  tiles = pool.slice(0, SIZE).map(([trace, ref]) => ({
+    trace, ref, name: null, state: "dark", price: 0, clearing: false
   }));
 
   S = {
     round: 1,
     actions: 6,
-    provision: 5,
+    provision: 6,
     breath: 8, breathMax: 8,
     invention: 5, inventionMax: 9,
     sensibility: 100,
@@ -946,7 +1009,8 @@ function start(){
     mode: null,
     log: [],
     over: false,
-    ending: null
+    ending: null,
+    warned: {}
   };
 
   $("log").innerHTML = "";
@@ -954,7 +1018,7 @@ function start(){
   closeSheet();
   render();
 
-  log("A field of unnamed matter. You cannot see what you cannot say.", "i");
+  log("A field of unnamed matter. You can smell it. You cannot say it.", "i");
   log("Name what you can reach. Or sell the names and let them float.", "i");
 }
 
@@ -1037,7 +1101,7 @@ start();
 openSheet(`
   <h3>Clearing</h3>
   <p class="lead">A sign comes loose from the thing it means. Then it is worth something.</p>
-  <p><b>Name</b> an unnamed tile. You name it blind, and then you see what was there. Named things feed you.</p>
+  <p><b>Name</b> an unnamed tile. The fog carries a smell or a sound you can almost read — that is all you get. You give it a word, and then you find out what it was. Named things feed you.</p>
   <p><b>Sell</b> a name. It goes into the ledger, where it is priced against other names and never again against anything. The tile goes dark and the thing is gone.</p>
   <p><b>Exchange</b> sold names for money and provision. The ledger also sets the pace: the faster it runs, the less you can do in a round.</p>
   <p><b>Compose</b> two sold names into a phrase. If the phrase says something not yet on the map, a place opens — and you can hold it as a <em>clearing</em>, a small place where the rules are yours. If it only repeats what is already there, it is just more of the same, and it gets a price too.</p>
