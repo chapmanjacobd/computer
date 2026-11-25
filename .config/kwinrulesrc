@@ -3,7 +3,7 @@ update_info=kwinrules.upd:replace-placement-string-to-enum,kwinrules.upd:use-vir
 
 [1]
 Description=mpv focus levels
-fpplevel=3
+fpplevel=2
 fpplevelrule=2
 fsplevel=3
 fsplevelrule=2
