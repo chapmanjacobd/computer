@@ -14,12 +14,11 @@ if you wanna be my lover you gotta get with my friends:
     mv computer/.git/ .
     rmdir computer
 
-    # mi casa, su casa? sin casa: this will delete everything in your home folder
-    #git reset --hard HEAD
-    #git clean -fd
-    # or do this to keep your local versions of conflicts
-    git reset
-    git ls-files -z --deleted | xargs -0 git checkout --
+    # do this to keep your local versions of conflicts
+    git reset && git ls-files -z --deleted | xargs -0 git checkout --
+
+    # or mi casa, su casa? sin casa (this will delete everything in your home folder)
+    #git reset --hard HEAD && git clean -fd
 
     bash .github/setup-server.sh
     bash .github/setup-fedora.sh
