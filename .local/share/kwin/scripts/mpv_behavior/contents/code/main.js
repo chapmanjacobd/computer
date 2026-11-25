@@ -27,6 +27,19 @@ function sameOutput(a, b) {
     return !a.output || !b.output || a.output === b.output;
 }
 
+// KWin's scripting API has no onCurrentDesktop property (that only exists on
+// EffectWindow), so check the window's desktop list against the desktop of the
+// window's own output.
+function isOnCurrentDesktop(window) {
+    if (window.onAllDesktops) {
+        return true;
+    }
+    const desktop = typeof workspace.currentDesktopForScreen === "function"
+        ? workspace.currentDesktopForScreen(window.output)
+        : workspace.currentDesktop;
+    return !desktop || window.desktops.indexOf(desktop) !== -1;
+}
+
 function rememberActive(window) {
     if (!window || window.deleted || !window.normalWindow) {
         return;
@@ -99,7 +112,7 @@ function keepNewWindowBehindStack(window) {
 
     const existing = [];
     for (const other of workspace.windowList()) {
-        if (other !== window && other.onCurrentDesktop && isFullscreenMpv(other) && sameOutput(other, window)) {
+        if (other !== window && isOnCurrentDesktop(other) && isFullscreenMpv(other) && sameOutput(other, window)) {
             existing.push(other);
         }
     }
