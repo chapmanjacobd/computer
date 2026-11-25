@@ -42,6 +42,7 @@ dnf-utils
 dolphin
 dolphin-emu
 dolphin-emu-tool
+dotool
 dracut-config-rescue
 dub
 earlyoom
