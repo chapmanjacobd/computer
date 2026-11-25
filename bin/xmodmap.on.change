@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "${XDG_SESSION_TYPE:-}" = wayland ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
+    echo "xmodmap.on.change: X11 only; KDE applies the keyboard layout on Wayland" >&2
+    exit 1
+fi
+
 # The motivation for this is that for me, and many others, xmodmap
 # does not affect plugged in keyboards.
 #
