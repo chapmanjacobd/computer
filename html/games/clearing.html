@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clearing — an economy of signs</title>
+<style>
+  :root{
+    --bg:#0a0a0b;
+    --ink:#ddd6c6;
+    --dim:#6f6a60;
+    --faint:#2a2a2e;
+    --line:#1d1d21;
+    --rust:#c0573f;
+    --rust-dim:#7d3a2b;
+    --warm:#e8e0cd;
+    --gold:#c9b98f;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  #app{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    max-width:1180px;
+    margin:0 auto;
+    padding:18px 22px 14px;
+    gap:12px;
+  }
+
+  header{display:flex;align-items:baseline;gap:14px;flex:0 0 auto}
+  h1{
+    font-size:19px;
+    font-weight:400;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+  }
+  header .sub{font-style:italic;color:var(--dim);font-size:13px}
+  header .spacer{flex:1}
+  header .round{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em}
+
+  /* ---------- status ---------- */
+  #status{display:flex;flex-wrap:wrap;gap:7px;flex:0 0 auto}
+  .chip{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    border:1px solid var(--line);
+    padding:5px 8px;
+    display:flex;
+    gap:6px;
+    align-items:baseline;
+    color:var(--dim);
+    white-space:nowrap;
+  }
+  .chip b{font-weight:400;color:var(--ink);font-size:12px}
+  .chip.money{border-color:var(--rust-dim);color:var(--rust-dim)}
+  .chip.money b{color:var(--rust)}
+  .chip.warn b{color:var(--rust)}
+  .chip.good{border-color:#4a4436;color:#7d7458}
+  .chip.good b{color:var(--gold)}
+  .chip.actions{border-color:#3a3a3f}
+  .chip.actions b{color:var(--warm);font-size:14px}
+
+  /* ---------- main ---------- */
+  main{flex:1 1 auto;display:flex;gap:26px;min-height:0}
+  #mapwrap{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;gap:10px}
+  #map{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:5px;
+    width:min(66vh,570px);
+  }
+  .tile{
+    aspect-ratio:1;
+    border:1px solid var(--line);
+    background:#0d0d0f;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:3px;
+    cursor:default;
+    overflow:hidden;
+    transition:background .18s,border-color .18s;
+    position:relative;
+    user-select:none;
+  }
+  .tile.dark{cursor:pointer;background:radial-gradient(circle at 50% 50%,#111114 0%,#0b0b0d 72%)}
+  .tile.dark:hover{border-color:#3d3d44;background:#131316}
+  .tile.dark::after{content:'';width:3px;height:3px;border-radius:50%;background:#2e2e34}
+  .tile.dark.poor{cursor:not-allowed;background:#0b0b0d}
+  .tile.dark.poor::after{background:#191a1e}
+  .tile.dark.poor:hover{border-color:var(--line);background:#0b0b0d}
+  .tile.bound{cursor:pointer;border-color:#26262c;background:#101012}
+  .tile.bound:hover{border-color:#3d3d44}
+  .tile.bound .nm{
+    font-size:clamp(9px,1.2vh,13px);
+    line-height:1.15;color:var(--warm);word-break:break-word;max-width:100%;
+  }
+  .tile.bound .rf{
+    font-size:clamp(6.5px,.88vh,9.5px);
+    font-style:italic;color:#4e4a43;line-height:1.1;margin-top:2px;
+    max-width:100%;word-break:break-word;
+  }
+  .tile.cut{cursor:default;border-color:var(--rust-dim);background:#0e0a09}
+  .tile.cut .nm{
+    font-family:var(--mono);font-size:clamp(10px,1.25vh,14px);
+    color:var(--rust);letter-spacing:.04em;
+  }
+  .tile.cut .strike{
+    font-size:clamp(6px,.8vh,8px);color:#4a2a22;text-decoration:line-through;
+    max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  }
+  .tile.clearing{
+    box-shadow:inset 0 0 0 1px #5a5a64, 0 0 16px -7px #9a9aa8;
+    border-color:#5a5a64;
+  }
+  .tile.clearing::before{
+    content:'';position:absolute;inset:3px;
+    border:1px dashed #3a3a44;pointer-events:none;
+  }
+  .tile.pulse{animation:pulse 1.2s ease-out}
+  @keyframes pulse{
+    0%{box-shadow:inset 0 0 0 1px #9a8a6a,0 0 0 0 rgba(200,160,110,.45)}
+    100%{box-shadow:inset 0 0 0 1px transparent,0 0 0 24px rgba(200,160,110,0)}
+  }
+  .tile.target{border-color:var(--warm);animation:blink 1.1s infinite}
+  @keyframes blink{50%{border-color:#3a3a42}}
+
+  /* ---------- aside ---------- */
+  aside{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:14px;min-height:0}
+  .panel{border:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .panel h2{
+    font-family:var(--mono);font-size:9.5px;font-weight:400;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);padding:7px 10px;
+    border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;justify-content:space-between;
+  }
+  #ledgerbox{flex:0 1 auto;max-height:38%;min-height:86px}
+  #ledger{overflow-y:auto;padding:4px 0;flex:1 1 auto;min-height:0}
+  #ledger .row{
+    display:flex;justify-content:space-between;gap:10px;
+    font-family:var(--mono);font-size:11px;padding:2px 10px;color:#8a8578;
+  }
+  #ledger .row .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:line-through;text-decoration-color:#3a2a24}
+  #ledger .row .p{color:var(--rust);flex:0 0 auto}
+  #ledger .empty{padding:6px 10px;font-style:italic;color:#3f3b36;font-size:12px}
+
+  #logbox{flex:1 1 auto;min-height:130px}
+  #log{overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:7px}
+  #log p{font-size:13px;line-height:1.45;color:#9a948a}
+  #log p.i{font-style:italic;color:#6f6a60}
+  #log p.hi{color:var(--warm)}
+  #log p.bad{color:var(--rust)}
+  #log p.good{color:var(--gold)}
+
+  /* ---------- controls ---------- */
+  footer{flex:0 0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+    background:transparent;color:var(--ink);border:1px solid #2e2e34;
+    padding:8px 14px;cursor:pointer;transition:all .15s;
+  }
+  button:hover:not(:disabled){border-color:#5a5a63;background:#141417}
+  button:disabled{opacity:.25;cursor:default}
+  button.primary{border-color:#4a4a52;color:var(--warm)}
+  button.money{border-color:var(--rust-dim);color:var(--rust)}
+  button.money:hover:not(:disabled){background:#150e0c;border-color:var(--rust)}
+  footer .spacer{flex:1}
+
+  /* ---------- modal ---------- */
+  #modal{
+    position:fixed;inset:0;background:rgba(6,6,7,.88);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;z-index:50;padding:24px;
+  }
+  #modal.hidden{display:none}
+  .sheet{
+    background:#0d0d0f;border:1px solid #2e2e34;max-width:560px;width:100%;
+    padding:26px 28px;max-height:86vh;overflow-y:auto;
+  }
+  .sheet h3{
+    font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:14px;
+  }
+  .sheet p{font-size:14px;line-height:1.55;margin-bottom:12px;color:#a8a296}
+  .sheet p.lead{font-size:15.5px;color:var(--warm);font-style:italic}
+  .sheet em{color:var(--warm);font-style:italic}
+  .sheet b{font-weight:400;color:var(--warm)}
+  .sheet input[type=text]{
+    width:100%;background:#08080a;border:1px solid #33333a;color:var(--warm);
+    font-family:var(--serif);font-size:17px;padding:11px 13px;outline:none;margin:6px 0 4px;
+  }
+  .sheet input[type=text]:focus{border-color:#6a6a74}
+  .sheet .row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+  .sheet .hint{font-family:var(--mono);font-size:10px;color:#4a463f;letter-spacing:.08em}
+  .signs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+  .signs .s{
+    font-family:var(--mono);font-size:11px;border:1px solid #33333a;color:#9a948a;
+    padding:5px 9px;cursor:pointer;transition:all .12s;
+  }
+  .signs .s:hover{border-color:#5a5a63;color:var(--warm)}
+  .signs .s.on{border-color:var(--rust);color:var(--rust);background:#150e0c}
+  .stat{font-family:var(--mono);font-size:11px;color:#5a554d}
+
+  /* ---------- end ---------- */
+  #end{position:fixed;inset:0;background:#08080a;z-index:80;overflow-y:auto;padding:8vh 24px 12vh}
+  #end.hidden{display:none}
+  .reading{max-width:620px;margin:0 auto}
+  .reading h2{
+    font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--dim);margin-bottom:34px;
+  }
+  .reading .line{font-size:16px;line-height:1.85;color:#b8b2a4;margin-bottom:2px}
+  .reading .line b{font-weight:400;color:var(--warm)}
+  .reading .line i{color:#6f6a60}
+  .reading .cutline{color:#7d3a2b}
+  .reading .cutline b{color:#a8543c}
+  .reading .block{margin:34px 0 10px;font-style:italic;color:var(--warm);font-size:16px;line-height:1.65}
+  .reading .poems{margin:34px 0 6px;font-style:italic;color:#a8a294;font-size:15.5px;line-height:1.6}
+  .reading .poem{margin-bottom:20px}
+  .reading .poem b{font-style:normal;font-weight:400;color:var(--warm)}
+  .reading .block b{font-style:normal;font-weight:400;color:#fff}
+  .reading .never{margin-top:44px;padding-top:22px;border-top:1px solid #1d1d21}
+  .reading .never p{
+    font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:#4a463f;margin-bottom:14px;
+  }
+  .reading .never .l{font-size:14px;color:#8a8578;line-height:1.75}
+  .reading .verdict{margin-top:46px;padding-top:22px;border-top:1px solid #1d1d21}
+  .reading .verdict p{font-size:15.5px;line-height:1.7;color:#b8b2a4}
+  .reading .verdict .t{
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--rust);margin-bottom:12px;
+  }
+  .reading .score{font-family:var(--mono);font-size:11px;color:#4a463f;letter-spacing:.1em;margin-top:26px;line-height:1.9}
+
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#26262c}
+
+  @media (max-width:820px){
+    #app{padding:12px;gap:10px}
+    main{flex-direction:column;overflow-y:auto;gap:14px}
+    #map{width:100%}
+    #mapwrap{flex:0 0 auto}
+    aside{flex:0 0 auto}
+    #ledgerbox{max-height:none}
+    #log{max-height:170px}
+    header .sub{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Clearing</h1>
+    <span class="sub">an economy of signs</span>
+    <span class="spacer"></span>
+    <span class="round" id="roundchip">ROUND 1</span>
+  </header>
+
+  <div id="status">
+    <span class="chip actions">ACTIONS <b id="s-actions">6</b></span>
+    <span class="chip">PROVISION <b id="s-prov">5</b></span>
+    <span class="chip">BREATH <b id="s-breath">8</b></span>
+    <span class="chip">INVENTION <b id="s-inv">5</b></span>
+    <span class="chip" id="chip-sens">SENSIBILITY <b id="s-sens">100</b></span>
+    <span class="chip money">LEDGER <b id="s-liq">0</b></span>
+    <span class="chip" id="chip-heat">HEAT <b id="s-heat">0</b></span>
+    <span class="chip good" id="chip-clr">CLEARINGS <b id="s-clr">0 / 4</b></span>
+    <span class="chip" id="chip-un">UNNAMED <b id="s-un">49</b></span>
+    <span class="chip">TEMPO <b id="s-tempo">10</b></span>
+  </div>
+
+  <main>
+    <div id="mapwrap"><div id="map"></div></div>
+    <aside>
+      <div class="panel" id="ledgerbox">
+        <h2><span>The Ledger</span><span id="ledgercount">0</span></h2>
+        <div id="ledger"></div>
+      </div>
+      <div class="panel" id="logbox">
+        <h2>The World</h2>
+        <div id="log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <button id="btn-name">Name</button>
+    <button id="btn-compose" class="primary">Compose</button>
+    <button id="btn-exchange" class="money">Exchange</button>
+    <button id="btn-rest">Rest</button>
+    <button id="btn-skip" class="primary" style="display:none">Leave it open</button>
+    <span class="spacer"></span>
+    <button id="btn-irony" class="money">Insolvency</button>
+    <button id="btn-end" class="primary">End Round</button>
+  </footer>
+</div>
+
+<div id="modal" class="hidden"><div class="sheet" id="sheet"></div></div>
+<div id="end" class="hidden"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ============================================================
+   CLEARING — an economy of signs
+   A name, once separated from the thing it named, is worth
+   something. That is the whole game, and it is the problem.
+   ============================================================ */
+
+const GRID = 7;
+const SIZE = GRID * GRID;
+const MAX_ROUND = 30;
+const CLEARINGS_TO_WIN = 4;
+const FOG_TO_WIN = Math.ceil(SIZE * 0.25);   // 13
+
+const REFERENTS = [
+  "a stairwell","damp","rust","sparrows","the smell of gas","a broken lock",
+  "laundry","a man asleep","cats","wire","chalk","a tap dripping",
+  "an unlit bulb","cigarette ends","a name in pencil","frost","someone's radio",
+  "a dead plant","gravel","paint","a mattress","tiles","a window that will not close",
+  "graffiti","a bicycle chain","wet cardboard","a dog","someone crying",
+  "the number four","a spill","peeling paper","broken glass","a locked door",
+  "a queue","an old coat","bread","a shoe","a hand","the smell of rain",
+  "a light left on","a photograph face down","wire mesh","a puddle","dust",
+  "a bell","a walled-up window","a child's drawing","a phone that rings",
+  "cutlery","a mirror","an empty bottle","copper pipe","a sleeping bag",
+  "a stain shaped like a country","footsteps","a curtain","a cold radiator",
+  "a wasp","milk"
+];
+
+const $ = id => document.getElementById(id);
+
+let S, tiles;
+
+/* ---------------- helpers ---------------- */
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const clean = w => w.toLowerCase().replace(/[^a-zà-ÿ'\- ]/g,"").trim();
+const words = s => clean(s).split(/\s+/).filter(w => w.length > 2);
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function neighbours(i){
+  const r = Math.floor(i/GRID), k = i%GRID, out = [];
+  if(r>0) out.push(i-GRID);
+  if(r<GRID-1) out.push(i+GRID);
+  if(k>0) out.push(i-1);
+  if(k<GRID-1) out.push(i+1);
+  return out;
+}
+
+/* ---------------- derived numbers ---------------- */
+
+const ledgerValue = () => S.ledger.reduce((a,x)=>a+x.price, 0);
+const tempo = () => 10 + Math.floor(S.liquidity * 0.35) + S.ledger.length * 2;
+const actionsForTempo = () => clamp(6 - Math.floor(tempo()/35), 2, 6);
+const provisionIncome = () => 1 + Math.floor(tiles.filter(t=>t.state==="bound").length / 4);
+const nameCost = () => 2 + Math.floor(tiles.filter(t=>t.state!=="dark").length / 3);
+const darkCount = () => tiles.filter(t=>t.state==="dark").length;
+const clearingCount = () => tiles.filter(t=>t.clearing).length;
+
+function largestClearing(){
+  const seen = new Set();
+  let best = 0;
+  for(let i=0;i<SIZE;i++){
+    if(!tiles[i].clearing || seen.has(i)) continue;
+    let size = 0;
+    const stack = [i];
+    seen.add(i);
+    while(stack.length){
+      const c = stack.pop();
+      size++;
+      for(const n of neighbours(c)){
+        if(tiles[n].clearing && !seen.has(n)){ seen.add(n); stack.push(n); }
+      }
+    }
+    if(size > best) best = size;
+  }
+  return best;
+}
+
+/* ---------------- log ---------------- */
+
+function log(text, cls){
+  const box = $("log");
+  const last = S.log[S.log.length - 1];
+  if(last && last.text === text){          // repeat: don't stack identical lines
+    last.n = (last.n || 1) + 1;
+    const el = box.lastElementChild;
+    if(el) el.textContent = text + "  (x" + last.n + ")";
+    return;
+  }
+  S.log.push({text, cls: cls || ""});
+  const p = document.createElement("p");
+  if(cls) p.className = cls;
+  p.textContent = text;
+  box.appendChild(p);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ---------------- render ---------------- */
+
+function render(){
+  const map = $("map");
+  map.innerHTML = "";
+  tiles.forEach((t, i) => {
+    const d = document.createElement("div");
+    d.className = "tile " + t.state;
+    if(t.clearing) d.classList.add("clearing");
+    if(S.mode === "clear" && t.state === "bound" && !t.clearing) d.classList.add("target");
+    if(t.state === "dark" && S.provision < nameCost()) d.classList.add("poor");
+    d.dataset.i = i;
+
+    if(t.state === "dark"){
+      d.title = "unnamed";
+    } else if(t.state === "bound"){
+      const n = document.createElement("div");
+      n.className = "nm"; n.textContent = t.name;
+      const r = document.createElement("div");
+      r.className = "rf"; r.textContent = t.ref;
+      d.append(n, r);
+      d.title = t.name + " — " + t.ref;
+    } else {
+      const n = document.createElement("div");
+      n.className = "nm"; n.textContent = t.price.toFixed(1);
+      const s = document.createElement("div");
+      s.className = "strike"; s.textContent = t.name;
+      d.append(n, s);
+      d.title = t.name + " — sold";
+    }
+    map.appendChild(d);
+  });
+
+  $("s-actions").textContent = S.actions;
+  $("s-prov").textContent = S.provision;
+  $("s-breath").textContent = S.breath + "/" + S.breathMax;
+  $("s-inv").textContent = S.invention + "/" + S.inventionMax;
+  $("s-sens").textContent = Math.round(S.sensibility);
+  $("s-liq").textContent = ledgerValue().toFixed(1);
+  $("s-heat").textContent = S.heat;
+  $("s-clr").textContent = Math.min(largestClearing(), CLEARINGS_TO_WIN) + " / " + CLEARINGS_TO_WIN;
+  $("s-un").textContent = darkCount();
+  $("s-tempo").textContent = tempo();
+  $("roundchip").textContent = "ROUND " + S.round;
+
+  $("chip-heat").classList.toggle("warn", S.heat >= 8);
+  $("chip-sens").classList.toggle("warn", S.sensibility <= 30);
+  $("chip-clr").classList.toggle("good", largestClearing() >= CLEARINGS_TO_WIN);
+  $("chip-un").classList.toggle("warn", darkCount() < FOG_TO_WIN);
+
+  const lc = $("ledger");
+  lc.innerHTML = "";
+  if(!S.ledger.length){
+    const e = document.createElement("div");
+    e.className = "empty";
+    e.textContent = "nothing has been sold";
+    lc.appendChild(e);
+  } else {
+    S.ledger.forEach(x => {
+      const row = document.createElement("div");
+      row.className = "row";
+      const n = document.createElement("span");
+      n.className = "n"; n.textContent = x.name;
+      const p = document.createElement("span");
+      p.className = "p"; p.textContent = x.price.toFixed(2);
+      row.append(n, p);
+      lc.appendChild(row);
+    });
+  }
+  $("ledgercount").textContent = S.ledger.length;
+
+  const busy = S.actions <= 0;
+  $("btn-name").disabled = busy || S.mode === "clear";
+  $("btn-compose").disabled = busy || S.mode === "clear" || S.ledger.length < 2 || S.breath < 4 || S.invention < 1;
+  $("btn-exchange").disabled = busy || S.mode === "clear" || S.ledger.length === 0;
+  $("btn-rest").disabled = busy || S.mode === "clear";
+  $("btn-irony").disabled = S.ironyUsed || S.ledger.length === 0;
+  $("btn-skip").style.display = S.mode === "clear" ? "" : "none";
+}
+
+/* ---------------- modal ---------------- */
+
+function openSheet(html, setup){
+  if(S) S.mode = S.mode === "clear" ? S.mode : null;
+  $("sheet").innerHTML = html;
+  $("modal").classList.remove("hidden");
+  if(setup) setup($("sheet"));
+}
+function closeSheet(){
+  $("modal").classList.add("hidden");
+  $("sheet").innerHTML = "";
+}
+
+/* ---------------- naming ---------------- */
+
+function tryName(i){
+  const t = tiles[i];
+  if(t.state !== "dark" || S.actions <= 0) return;
+  const cost = nameCost();
+  if(S.provision < cost){
+    log("You cannot afford a name. Provision " + S.provision + ", the name costs " + cost + ". Exchange or sell something first.", "bad");
+    return;
+  }
+  openSheet(`
+    <h3>Naming</h3>
+    <p class="lead">What will you call this?</p>
+    <p>You cannot see it yet. You name it blind, and then you find out what was there.</p>
+    <input type="text" id="nameInput" autocomplete="off" spellcheck="false" placeholder="a word for it" maxlength="42">
+    <div class="row">
+      <span class="hint">COST ${cost} PROVISION · 1 ACTION</span>
+      <button id="cancelName">Cancel</button>
+      <button id="okName" class="primary">Name</button>
+    </div>
+  `, sheet => {
+    const inp = sheet.querySelector("#nameInput");
+    inp.focus();
+    const go = () => {
+      const v = inp.value.trim();
+      if(!v) return;
+      closeSheet();
+      doName(i, v, cost);
+    };
+    inp.addEventListener("keydown", e => { if(e.key === "Enter") go(); });
+    sheet.querySelector("#okName").addEventListener("click", go);
+    sheet.querySelector("#cancelName").addEventListener("click", closeSheet);
+  });
+}
+
+function doName(i, name, cost){
+  const t = tiles[i];
+  t.name = name;
+  t.state = "bound";
+  S.provision -= cost;
+  S.actions--;
+  S.seenWords.add(clean(name));
+  S.namedOrder.push(i);
+  log("You called it " + name + ". It was " + t.ref + ".", "hi");
+  render();
+  checkEnd();
+}
+
+/* ---------------- selling ---------------- */
+
+function trySell(i){
+  const t = tiles[i];
+  if(t.state !== "bound" || S.actions <= 0) return;
+  openSheet(`
+    <h3>Selling the name</h3>
+    <p class="lead">Sell “${escapeHtml(t.name)}”?</p>
+    <p>The word survives. The thing it meant does not. The name goes into the ledger and is priced against other names, never again against anything.</p>
+    <p class="stat">+ MONEY · + HEAT · − SENSIBILITY${t.clearing ? " · THIS CLEARING FALLS" : ""}</p>
+    <div class="row">
+      <button id="cancelSell">Keep it</button>
+      <button id="okSell" class="money">Sell it</button>
+    </div>
+  `, sheet => {
+    sheet.querySelector("#cancelSell").addEventListener("click", closeSheet);
+    sheet.querySelector("#okSell").addEventListener("click", () => { closeSheet(); doSell(i); });
+  });
+}
+
+function doSell(i){
+  const t = tiles[i];
+  t.state = "cut";
+  t.price = 4;
+  if(t.clearing){
+    t.clearing = false;
+    log("The clearing at " + t.name + " is sold off. It stops holding anything.", "bad");
+  }
+  S.ledger.push({ name: t.name, price: 4, tile: i });
+  S.sensibility -= 4;
+  S.heat += 1;
+  S.actions--;
+  log(t.name + " is now worth " + (4).toFixed(2) + " and means nothing.", "bad");
+  render();
+  checkEnd();
+}
+
+function doExchange(){
+  if(S.actions <= 0 || !S.ledger.length) return;
+  const v = ledgerValue();
+  const money = v * 0.4;
+  const food = Math.ceil(v * 0.5);
+  S.actions--;
+  S.liquidity += money;
+  S.provision += food;
+  S.heat += 3;
+  log("You trade names against names. +" + money.toFixed(1) + " money, +" + food + " provision, and nothing is made.", "bad");
+  render();
+  checkEnd();
+}
+
+function doRest(){
+  if(S.actions <= 0) return;
+  S.actions--;
+  S.breath = clamp(S.breath + 2, 0, S.breathMax);
+  S.invention = clamp(S.invention + 1, 0, S.inventionMax);
+  S.heat = Math.max(0, S.heat - 2);
+  log("You stop. Your breath comes back. The ledger keeps ticking without you.", "i");
+  render();
+  checkEnd();
+}
+
+/* ---------------- composing ---------------- */
+
+function tryCompose(){
+  if(S.actions <= 0) return;
+  if(S.ledger.length < 2){ log("Nothing to compose from. Poetry needs names that have already been sold.", "i"); return; }
+  if(S.breath < 4){ log("Not enough breath.", "bad"); return; }
+  if(S.invention < 1){ log("Nothing left in you that hasn't been said before.", "bad"); return; }
+
+  openSheet(`
+    <h3>Composition</h3>
+    <p class="lead">Take two sold names and say something that hasn't been said.</p>
+    <p>Choose two names from the ledger, then finish the phrase.</p>
+    <div class="signs" id="signPicker"></div>
+    <p class="hint" id="compHint">0 / 2 chosen</p>
+    <input type="text" id="phraseInput" autocomplete="off" spellcheck="false" placeholder="the phrase" disabled maxlength="60">
+    <p class="stat">COST 4 BREATH · 1 INVENTION · 1 ACTION</p>
+    <div class="row">
+      <button id="cancelComp">Cancel</button>
+      <button id="okComp" class="primary" disabled>Compose</button>
+    </div>
+  `, sheet => {
+    const picker = sheet.querySelector("#signPicker");
+    const hint = sheet.querySelector("#compHint");
+    const input = sheet.querySelector("#phraseInput");
+    const ok = sheet.querySelector("#okComp");
+    const sel = [];
+
+    S.ledger.forEach((x, idx) => {
+      const b = document.createElement("span");
+      b.className = "s";
+      b.textContent = x.name;
+      b.addEventListener("click", () => {
+        const at = sel.indexOf(idx);
+        if(at >= 0){ sel.splice(at,1); b.classList.remove("on"); }
+        else if(sel.length < 2){ sel.push(idx); b.classList.add("on"); }
+        hint.textContent = sel.length + " / 2 chosen";
+        if(sel.length === 2){
+          input.disabled = false;
+          input.value = S.ledger[sel[0]].name + " " + S.ledger[sel[1]].name;
+          ok.disabled = false;
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        } else {
+          input.disabled = true;
+          ok.disabled = true;
+        }
+      });
+      picker.appendChild(b);
+    });
+
+    sheet.querySelector("#cancelComp").addEventListener("click", closeSheet);
+    ok.addEventListener("click", () => {
+      if(sel.length !== 2) return;
+      const phrase = input.value.trim();
+      if(!phrase) return;
+      closeSheet();
+      doCompose(phrase, sel.map(n => S.ledger[n]));
+    });
+    input.addEventListener("keydown", e => { if(e.key === "Enter") ok.click(); });
+  });
+}
+
+function doCompose(phrase, used){
+  S.actions--;
+  S.breath -= 4;
+  S.invention -= 1;
+  // the two sold names are spent in the phrase
+  S.ledger = S.ledger.filter(x => !used.includes(x));
+
+  const ws = words(phrase);
+  const fresh = ws.filter(w => !S.seenWords.has(w));
+
+  if(fresh.length === 0){
+    S.sensibility -= 5;
+    S.ledger.push({ name: phrase, price: 2 + ledgerValue()*0.05, tile: -1 });
+    log("“" + phrase + ".” Nothing new is said. The phrase turns into information and is given a price.", "bad");
+    render();
+    checkEnd();
+    return;
+  }
+
+  S.sensibility = clamp(S.sensibility + 3, 0, 100);
+  fresh.forEach(w => S.seenWords.add(w));
+  const opened = openPlaces(fresh, 2);
+  S.compositions.push({ phrase, opened });
+
+  log("“" + phrase + ".” It names nothing that is here, so a place opens.", "good");
+  if(opened.length) log("It was " + opened.map(o => tiles[o].ref).join("; ") + ".", "hi");
+
+  render();
+  if(opened.length){
+    S.mode = "clear";
+    log("Hold one of these places. Click a named tile: keep it touching another clearing, and touching ground you have not named.", "i");
+    render();
+    flash(opened);
+  } else {
+    checkEnd();
+  }
+}
+
+function openPlaces(fresh, count){
+  const dark = [];
+  tiles.forEach((t,i) => { if(t.state === "dark") dark.push(i); });
+  if(!dark.length) return [];
+
+  const edge = dark.filter(i => neighbours(i).some(n => tiles[n].state !== "dark"));
+  const pool = edge.length ? edge : dark;
+  shuffle(pool);
+  const picks = pool.slice(0, count);
+
+  picks.forEach((i, n) => {
+    const t = tiles[i];
+    t.name = fresh[n % fresh.length];
+    t.state = "bound";
+    t.price = 0;
+  });
+  return picks;
+}
+
+/* ---------------- clearings ---------------- */
+
+function holdClearing(i){
+  const t = tiles[i];
+  if(t.state !== "bound" || t.clearing) return;
+  t.clearing = true;
+  S.mode = null;
+  const touchesFog = neighbours(i).some(n => tiles[n].state === "dark");
+  if(touchesFog){
+    S.invention = clamp(S.invention + 1, 0, S.inventionMax);
+    log("You hold " + t.name + ". It borders ground you have not named, and it gives something back.", "good");
+  } else {
+    log("You hold " + t.name + ". Inside, the rules are yours.", "good");
+  }
+  render();
+  checkEnd();
+}
+
+function skipClearing(){
+  S.mode = null;
+  log("You let it stay open to the weather.", "i");
+  render();
+  checkEnd();
+}
+
+function flash(list){
+  list.forEach(i => {
+    const el = document.querySelector('.tile[data-i="'+i+'"]');
+    if(el) el.classList.add("pulse");
+  });
+}
+
+/* ---------------- rounds ---------------- */
+
+function endRound(){
+  if(S.over) return;
+  S.mode = null;
+
+  if(S.heat >= 12){
+    S.actions = 0;
+    S.sensibility -= 8;
+    S.heat = 0;
+    S.round++;
+    log("PANIC. The pace outruns the body. You lose this round.", "bad");
+    if(S.round > MAX_ROUND){ finish("limit"); return; }
+    render();
+    nextRound(true);
+    return;
+  }
+  S.round++;
+  if(S.round > MAX_ROUND){ finish("limit"); return; }
+  nextRound(false);
+}
+
+function nextRound(panicked){
+  if(!panicked) S.heat = Math.max(0, S.heat - 5);
+
+  const clearings = clearingCount();
+  const damp = 1 - Math.min(0.7, 0.12 * clearings);
+  if(S.ledger.length){
+    S.liquidity += ledgerValue() * 0.16 * damp;
+    S.ledger.forEach(x => {
+      x.price *= 1.12;
+      if(x.tile >= 0) tiles[x.tile].price = x.price;   // the tile shows what it is worth
+    });
+  }
+
+  S.provision += provisionIncome();
+  S.breath = clamp(S.breath + 2, 0, S.breathMax);
+  S.invention = clamp(S.invention + 1 + Math.floor(clearings/2), 0, S.inventionMax);
+  S.sensibility = clamp(
+    S.sensibility + Math.min(1, clearings) - (1 + Math.floor(tempo()/30)),
+    0, 100
+  );
+  if(!panicked) S.actions = actionsForTempo();
+
+  render();
+  checkEnd();
+  if(!S.over) log("— round " + S.round + " —", "i");
+}
+
+/* ---------------- endings ---------------- */
+
+function checkEnd(){
+  if(S.over) return;
+  if(S.sensibility <= 0){ finish("collapse"); return; }
+
+  const cluster = largestClearing();
+  if(cluster >= CLEARINGS_TO_WIN && darkCount() >= FOG_TO_WIN){ finish("clearing"); return; }
+  if(darkCount() === 0){ finish("desert"); return; }
+}
+
+function finish(kind){
+  if(S.over) return;
+  S.over = true;
+  S.ending = kind;
+  S.mode = null;
+  closeSheet();
+  showReading(kind);
+}
+
+function showReading(kind){
+  const named = S.namedOrder.map(i => tiles[i]);
+  const kept = named.filter(t => t.state === "bound");
+  const sold = named.filter(t => t.state === "cut");
+  const dark = tiles.filter(t => t.state === "dark");
+
+  let html = '<div class="reading"><h2>The Reading</h2>';
+
+  kept.slice(0, 12).forEach(t => {
+    html += '<div class="line">You said <b>' + escapeHtml(t.name) + '</b>. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
+  });
+  sold.slice(0, 12).forEach(t => {
+    html += '<div class="line cutline">You said <b>' + escapeHtml(t.name) + '</b>, and then you sold it. It was <i>' + escapeHtml(t.ref) + '</i>.</div>';
+  });
+  const rest = named.length - kept.slice(0,12).length - sold.slice(0,12).length;
+  if(rest > 0){
+    html += '<div class="line"><i>and ' + rest + ' other names.</i></div>';
+  }
+
+  if(S.compositions.length){
+    html += '<div class="poems">';
+    S.compositions.forEach((c, n) => {
+      const opened = c.opened && c.opened.length
+        ? 'and a place opened: ' + escapeHtml(c.opened.map(i => tiles[i].ref).join('; ')) + '.'
+        : 'and nothing opened.';
+      const lead = n === 0 ? 'then you said' : 'and then you said';
+      html += '<div class="poem">' + lead + ' <b>' + escapeHtml(c.phrase) + '</b><br>' +
+              'which named nothing that was there,<br>' + opened + '</div>';
+    });
+    html += '</div>';
+  }
+
+  const cleared = tiles.filter(t => t.clearing);
+  if(cleared.length){
+    html += '<div class="block">You held <b>' +
+      cleared.map(t => escapeHtml(t.name)).join(', ') +
+      '</b> — small places where the rules were yours.</div>';
+  }
+
+  if(dark.length){
+    html += '<div class="never"><p>What you never named, and which was there the whole time</p>';
+    html += '<div class="l">' + dark.map(t => escapeHtml(t.ref)).join(' · ') + '</div></div>';
+  }
+
+  const cluster = largestClearing();
+  const verdicts = {
+    clearing: { t: "the clearings hold", p:
+      "You kept " + cluster + " places that do not exchange, and " + dark.length +
+      " tiles are still unnamed. This is not a fortune. It is a commons: worlds that can sit beside each other without being traded." },
+    desert: { t: "the desert", p:
+      "Every tile has a name on it. There is nowhere left that you cannot say. The ledger is elegant now. It is also the only thing here." },
+    collapse: { t: "collapse", p:
+      "The sensibility ran out before the money did. The eye kept working after the body stopped." },
+    limit: { t: "the limit", p:
+      "Thirty rounds. " + (cluster >= CLEARINGS_TO_WIN
+        ? "The clearings held, but the fog had already been cleared away."
+        : "Not enough held together. The exchange outlasted the composing.") }
+  };
+  const v = verdicts[kind] || verdicts.limit;
+
+  html += '<div class="verdict"><div class="t">' + v.t + '</div><p>' + v.p + '</p></div>';
+
+  const score = cluster * 100 + dark.length * 2 + S.compositions.length * 20 - (S.ironyUsed ? 50 : 0);
+  html += '<div class="score">WORLDS HELD ' + Math.max(0, score) +
+          '<br>HELD TOGETHER ' + cluster + ' · UNNAMED ' + dark.length +
+          ' · SOLD ' + S.ledger.length + ' · COMPOSED ' + S.compositions.length + '</div>';
+  html += '<button id="again">Begin again</button></div>';
+
+  $("end").innerHTML = html;
+  $("end").classList.remove("hidden");
+  $("again").addEventListener("click", () => {
+    $("end").classList.add("hidden");
+    start();
+  });
+}
+
+/* ---------------- setup ---------------- */
+
+function start(){
+  const pool = shuffle(REFERENTS.slice());
+  tiles = pool.slice(0, SIZE).map(ref => ({
+    ref, name: null, state: "dark", price: 0, clearing: false
+  }));
+
+  S = {
+    round: 1,
+    actions: 6,
+    provision: 5,
+    breath: 8, breathMax: 8,
+    invention: 5, inventionMax: 9,
+    sensibility: 100,
+    liquidity: 0,
+    heat: 0,
+    ledger: [],
+    namedOrder: [],
+    seenWords: new Set(),
+    compositions: [],
+    ironyUsed: false,
+    mode: null,
+    log: [],
+    over: false,
+    ending: null
+  };
+
+  $("log").innerHTML = "";
+  $("end").classList.add("hidden");
+  closeSheet();
+  render();
+
+  log("A field of unnamed matter. You cannot see what you cannot say.", "i");
+  log("Name what you can reach. Or sell the names and let them float.", "i");
+}
+
+/* ---------------- events ---------------- */
+
+$("map").addEventListener("click", e => {
+  const el = e.target.closest(".tile");
+  if(!el || S.over) return;
+  const i = parseInt(el.dataset.i, 10);
+  const t = tiles[i];
+
+  if(S.mode === "clear"){
+    if(t.state === "bound" && !t.clearing) holdClearing(i);
+    else log("Choose a named tile to hold.", "i");
+    return;
+  }
+  if(t.state === "dark") tryName(i);
+  else if(t.state === "bound") trySell(i);
+});
+
+$("btn-name").addEventListener("click", () => {
+  log("Click an unnamed tile to give it a name.", "i");
+  document.querySelectorAll(".tile.dark").forEach(el => {
+    el.classList.remove("pulse");
+    void el.offsetWidth;
+    el.classList.add("pulse");
+  });
+});
+
+$("btn-compose").addEventListener("click", tryCompose);
+$("btn-exchange").addEventListener("click", doExchange);
+$("btn-rest").addEventListener("click", doRest);
+$("btn-skip").addEventListener("click", skipClearing);
+
+$("btn-irony").addEventListener("click", () => {
+  if(S.ironyUsed || !S.ledger.length) return;
+  openSheet(`
+    <h3>Insolvency</h3>
+    <p class="lead">Declare the debt unreal.</p>
+    <p>Every sold name goes back to the thing it named. The ledger is void. You cannot do this twice, and the reading will remember it.</p>
+    <p class="stat">LEDGER → 0 · EVERY SOLD NAME RESTORED · + SENSIBILITY · SCORED AS INSOLVENT</p>
+    <div class="row">
+      <button id="cancelIro">Not yet</button>
+      <button id="okIro" class="money">Declare it</button>
+    </div>
+  `, sheet => {
+    sheet.querySelector("#cancelIro").addEventListener("click", closeSheet);
+    sheet.querySelector("#okIro").addEventListener("click", () => {
+      closeSheet();
+      S.ironyUsed = true;
+      S.ledger.forEach(x => {
+        if(x.tile >= 0){
+          tiles[x.tile].state = "bound";
+          tiles[x.tile].price = 0;
+        }
+      });
+      S.ledger = [];
+      S.liquidity = 0;
+      S.heat = 0;
+      S.sensibility = clamp(S.sensibility + 25, 0, 100);
+      log("You declare the whole ledger unreal. The names go back to their things. Nothing is owed.", "good");
+      render();
+    });
+  });
+});
+
+$("btn-end").addEventListener("click", endRound);
+
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    if(S && S.mode === "clear"){ skipClearing(); return; }
+    if(!$("modal").classList.contains("hidden")) closeSheet();
+  }
+});
+
+/* ---------------- go ---------------- */
+
+start();
+
+openSheet(`
+  <h3>Clearing</h3>
+  <p class="lead">A sign comes loose from the thing it means. Then it is worth something.</p>
+  <p><b>Name</b> an unnamed tile. You name it blind, and then you see what was there. Named things feed you.</p>
+  <p><b>Sell</b> a name. It goes into the ledger, where it is priced against other names and never again against anything. The tile goes dark and the thing is gone.</p>
+  <p><b>Exchange</b> sold names for money and provision. The ledger also sets the pace: the faster it runs, the less you can do in a round.</p>
+  <p><b>Compose</b> two sold names into a phrase. If the phrase says something not yet on the map, a place opens — and you can hold it as a <em>clearing</em>, a small place where the rules are yours. If it only repeats what is already there, it is just more of the same, and it gets a price too.</p>
+  <p><b>Rest</b> to get breath and invention back. The ledger piles up whether you rest or not.</p>
+  <p class="stat">WIN — hold four clearings that touch, with a quarter of the map still unnamed. LOSE — your sensibility runs out.</p>
+  <div class="row"><button id="begin" class="primary">Begin</button></div>
+`, sheet => {
+  sheet.querySelector("#begin").addEventListener("click", closeSheet);
+});
+
+})();
+</script>
+</body>
+</html>
