@@ -1,7 +1,7 @@
 # Defined interactively
 function wtseek
     kwin.FocusUnderMouse
-    b repeat.delay 0.7 xdotool key i
+    b repeat.delay 0.7 _dotool_key i
     set key_pid (jobs -lp)
 
     wt $argv
