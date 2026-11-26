@@ -25,6 +25,7 @@ Commands:
                             enabled output)
   primary OUTPUT            Make OUTPUT the primary output
   cycle                     Cycle all -> external -> internal -> mirror -> extend
+  -v, --verbose             Trace the kscreenctl commands
   -h, --help                Show this help
 
 Examples:
@@ -242,6 +243,11 @@ cmd_cycle() {
 }
 
 main() {
+    if [ "${1-}" = -v ] || [ "${1-}" = --verbose ]; then
+        set -x
+        shift
+    fi
+
     need kscreenctl
     need jq
 
