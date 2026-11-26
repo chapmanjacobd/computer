@@ -1,0 +1,755 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+# SPDX-License-Identifier: WTFPL
+
+"""Find the pip distribution that installed a command or file.
+
+``which.pip`` answers questions such as "which package provides
+``btrfs-balance-least-used``?" by reading the ``RECORD`` file of every
+distribution it can find.  The argument may be:
+
+* a command name looked up in ``$PATH``,
+* a path to any file installed by pip,
+* a distribution name, when no command of that name exists (or when
+  ``--package`` is given).
+
+The owning distribution, version, installer, and environment are printed;
+``--json`` is available for scripts.  Every file listed in a distribution's
+``RECORD`` counts, including console scripts, modules, and data files.
+
+Run::
+
+    which.pip btrfs-balance-least-used
+    which.pip /home/xk/.local/bin/btrfs-balance-least-used
+    which.pip --package btrfs
+    which.pip --json --verbose btrfs-balance-least-used
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import re
+import shutil
+import site
+import sys
+from collections.abc import Iterable, Iterator, Sequence
+from dataclasses import asdict, dataclass, replace
+from pathlib import Path
+
+LOG = logging.getLogger("which_pip")
+
+_IMPORT_RE = re.compile(
+    r"^\s*(?:from\s+([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s+import"
+    r"|import\s+([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*))"
+)
+
+_SITE_PATTERNS = (
+    "lib/python*/site-packages",
+    "lib/python*/dist-packages",
+    "lib64/python*/site-packages",
+    "lib64/python*/dist-packages",
+    "Lib/site-packages",
+)
+
+
+@dataclass(frozen=True)
+class Owner:
+    """A distribution that installed a file.
+
+    Parameters
+    ----------
+    target : str
+        The command, path, or distribution name that was searched for.
+    package : str
+        Distribution name from its metadata.
+    version : str
+        Distribution version.
+    installer : str
+        Tool that installed it, such as ``pip`` or ``uv``.
+    location : str
+        Site-packages directory containing the distribution metadata.
+    file : str
+        File path as written in the distribution's ``RECORD``.
+
+    Examples
+    --------
+    >>> owner = Owner("tool", "demo", "1.0", "pip", "/site-packages", "../../../bin/tool")
+    >>> owner.package, owner.version
+    ('demo', '1.0')
+    """
+
+    target: str
+    package: str
+    version: str
+    installer: str
+    location: str
+    file: str = ""
+
+
+def resolve_target(name: str, path: str | None = None) -> Path | None:
+    """Resolve a command name or path to an existing file.
+
+    Parameters
+    ----------
+    name : str
+        Command name, relative path, or absolute path.
+    path : str | None
+        Value of ``$PATH`` to use for bare command names.  ``None`` uses the
+        process environment.
+
+    Returns
+    -------
+    Path | None
+        The resolved file, or ``None`` when it does not exist.
+
+    Examples
+    --------
+    >>> resolve_target("/definitely/not/here") is None
+    True
+    """
+    expanded = Path(name).expanduser()
+    if "/" in name or expanded.exists():
+        return expanded.resolve() if expanded.exists() else None
+    found = shutil.which(name, path=path)
+    return Path(found).resolve() if found else None
+
+
+def python_site_dirs(prefix: Path) -> list[Path]:
+    """Return existing site-packages directories under a Python prefix.
+
+    Parameters
+    ----------
+    prefix : Path
+        Directory containing ``bin`` (or ``Scripts``) and ``lib``.
+
+    Returns
+    -------
+    list[Path]
+        Existing ``site-packages`` and ``dist-packages`` directories.
+    """
+    dirs: list[Path] = []
+    for pattern in _SITE_PATTERNS:
+        dirs.extend(
+            candidate for candidate in prefix.glob(pattern) if candidate.is_dir()
+        )
+    return unique_existing(dirs)
+
+
+def script_interpreter(target: Path) -> Path | None:
+    """Return the interpreter named by a script's shebang.
+
+    Parameters
+    ----------
+    target : Path
+        File to inspect.
+
+    Returns
+    -------
+    Path | None
+        Interpreter path, or ``None`` when the file has no readable shebang.
+    """
+    try:
+        with target.open("rb") as handle:
+            first_line = handle.readline(4096)
+    except OSError:
+        return None
+    if not first_line.startswith(b"#!"):
+        return None
+    words = first_line[2:].decode("utf-8", "replace").strip().split()
+    if not words:
+        return None
+    if Path(words[0]).name == "env":
+        for word in words[1:]:
+            if word.startswith("-"):
+                continue
+            found = shutil.which(word)
+            return Path(found) if found else None
+        return None
+    return Path(words[0])
+
+
+def roots_for_target(target: Path) -> list[Path]:
+    """Return site-packages directories that could own ``target``.
+
+    Parameters
+    ----------
+    target : Path
+        File installed by a Python packaging tool.
+
+    Returns
+    -------
+    list[Path]
+        Directories derived from the file's location, its shebang
+        interpreter, and any enclosing site-packages directory.
+
+    Examples
+    --------
+    >>> roots_for_target(Path("/definitely/not/here"))
+    []
+    """
+    roots: list[Path] = []
+    interpreter = script_interpreter(target)
+    if interpreter and interpreter.is_absolute() and "python" in interpreter.name:
+        roots.extend(python_site_dirs(interpreter.parent.parent))
+    if target.parent.name in {"bin", "Scripts"}:
+        roots.extend(python_site_dirs(target.parent.parent))
+    for parent in target.parents:
+        if parent.name in {"site-packages", "dist-packages"}:
+            roots.append(parent)
+            break
+    return unique_existing(roots)
+
+
+def default_roots(*, include_tool_envs: bool = False) -> list[Path]:
+    """Return site-packages directories for the current user and system.
+
+    Parameters
+    ----------
+    include_tool_envs : bool
+        Also return virtual environments managed by pipx, uv, and pipenv.
+        They are only needed when searching distributions by name because
+        their console scripts resolve back to their own environment.
+
+    Returns
+    -------
+    list[Path]
+        Existing site-packages directories, without duplicates.
+    """
+    roots: list[Path] = []
+    try:
+        roots.append(Path(site.getusersitepackages()))
+    except (AttributeError, OSError):
+        pass
+    try:
+        roots.extend(Path(candidate) for candidate in site.getsitepackages())
+    except (AttributeError, OSError):
+        pass
+    roots.extend(
+        Path(candidate)
+        for candidate in sys.path
+        if candidate.endswith(("site-packages", "dist-packages"))
+    )
+    if include_tool_envs:
+        home = Path.home()
+        for pattern in (
+            ".local/lib/python*/site-packages",
+            ".local/lib/python*/dist-packages",
+            ".local/pipx/venvs/*/lib/python*/site-packages",
+            ".local/share/uv/tools/*/lib/python*/site-packages",
+            ".local/share/virtualenvs/*/lib/python*/site-packages",
+        ):
+            roots.extend(home.glob(pattern))
+    return unique_existing(roots)
+
+
+def unique_existing(paths: Iterable[Path]) -> list[Path]:
+    """Return existing directories with symlink duplicates removed.
+
+    Parameters
+    ----------
+    paths : Iterable[Path]
+        Candidate directories.
+
+    Returns
+    -------
+    list[Path]
+        Real paths in input order, with repeats omitted.
+    """
+    seen: set[str] = set()
+    result: list[Path] = []
+    for path in paths:
+        try:
+            real = os.path.realpath(path)
+        except OSError:
+            continue
+        if real in seen or not os.path.isdir(real):
+            continue
+        seen.add(real)
+        result.append(Path(real))
+    return result
+
+
+def _dist_dirs(root: Path) -> Iterator[Path]:
+    """Yield ``.dist-info`` and ``.egg-info`` directories under ``root``.
+
+    Parameters
+    ----------
+    root : Path
+        Site-packages directory.
+
+    Yields
+    ------
+    Path
+        Distribution metadata directory.
+    """
+    try:
+        with os.scandir(root) as entries:
+            for entry in entries:
+                if entry.is_dir(follow_symlinks=False) and entry.name.endswith(
+                    (".dist-info", ".egg-info")
+                ):
+                    yield Path(entry.path)
+    except OSError:
+        return
+
+
+def _identity(dist_dir: Path) -> tuple[str, str]:
+    """Return a distribution's ``(name, version)`` from its metadata.
+
+    Parameters
+    ----------
+    dist_dir : Path
+        ``.dist-info`` or ``.egg-info`` directory.
+
+    Returns
+    -------
+    tuple[str, str]
+        Distribution name and version.  Values fall back to the directory
+        name when metadata cannot be read.
+    """
+    for metadata_name in ("METADATA", "PKG-INFO"):
+        try:
+            with (dist_dir / metadata_name).open(
+                "r", encoding="utf-8", errors="replace"
+            ) as handle:
+                name = version = ""
+                for line in handle:
+                    if not line.strip():
+                        break
+                    key, _, value = line.partition(":")
+                    if key.lower() == "name" and not name:
+                        name = value.strip()
+                    elif key.lower() == "version" and not version:
+                        version = value.strip()
+                    if name and version:
+                        return name, version
+        except OSError:
+            continue
+    stem = dist_dir.name
+    for suffix in (".dist-info", ".egg-info"):
+        if stem.endswith(suffix):
+            stem = stem[: -len(suffix)]
+            break
+    name, _, version = stem.rpartition("-")
+    return (name or stem), version
+
+
+def _installer(dist_dir: Path) -> str:
+    """Return the tool that installed a distribution, if recorded."""
+    try:
+        return (
+            (dist_dir / "INSTALLER")
+            .read_text(encoding="utf-8", errors="replace")
+            .strip()
+        )
+    except OSError:
+        return ""
+
+
+def _owner(
+    dist_dir: Path,
+    target: str,
+    location: Path,
+    installed_file: str,
+) -> Owner:
+    """Build an :class:`Owner` from a distribution metadata directory."""
+    name, version = _identity(dist_dir)
+    return Owner(
+        target=target,
+        package=name,
+        version=version,
+        installer=_installer(dist_dir),
+        location=str(location),
+        file=installed_file,
+    )
+
+
+def _claimed_file(dist_dir: Path, real_target: str) -> str | None:
+    """Return the record entry in ``dist_dir`` that resolves to ``real_target``.
+
+    Parameters
+    ----------
+    dist_dir : Path
+        Distribution metadata directory.
+    real_target : str
+        Symlink-resolved file to look for.
+
+    Returns
+    -------
+    str | None
+        Matching path as written in ``RECORD`` or ``installed-files.txt``.
+    """
+    filename = Path(real_target).name
+    for record_name in ("RECORD", "installed-files.txt"):
+        record = dist_dir / record_name
+        try:
+            data = record.read_bytes()
+        except OSError:
+            continue
+        if os.fsencode(filename) not in data:
+            continue
+        base = dist_dir.parent
+        for line in data.decode("utf-8", "replace").splitlines():
+            entry = line.split(",", 1)[0].strip()
+            if not entry or os.path.basename(entry) != filename:
+                continue
+            for candidate in (base / entry, dist_dir / entry):
+                if os.path.realpath(candidate) == real_target:
+                    return entry
+    return None
+
+
+def find_owners(target: Path, roots: Iterable[Path]) -> list[Owner]:
+    """Find distributions whose ``RECORD`` lists ``target``.
+
+    Parameters
+    ----------
+    target : Path
+        File to look for.
+    roots : Iterable[Path]
+        Site-packages directories to search.
+
+    Returns
+    -------
+    list[Owner]
+        Every distribution claiming the file.  Usually there is one.
+    """
+    real_target = os.path.realpath(target)
+    owners: list[Owner] = []
+    for root in unique_existing(roots):
+        for dist_dir in _dist_dirs(root):
+            installed_file = _claimed_file(dist_dir, real_target)
+            if installed_file is None:
+                continue
+            owners.append(_owner(dist_dir, str(target), root, installed_file))
+    return owners
+
+
+def _canonical_name(name: str) -> str:
+    """Normalize a distribution name for matching.
+
+    Examples
+    --------
+    >>> _canonical_name("Python_DateUtil")
+    'python-dateutil'
+    """
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def find_distributions(query: str, roots: Iterable[Path]) -> list[Owner]:
+    """Find distributions whose name contains ``query``.
+
+    Parameters
+    ----------
+    query : str
+        Case-insensitive substring of a distribution name.
+    roots : Iterable[Path]
+        Site-packages directories to search.
+
+    Returns
+    -------
+    list[Owner]
+        Matching distributions, with an empty ``file``.
+
+    Examples
+    --------
+    >>> find_distributions("nothing-matches-this", [])
+    []
+    """
+    needle = _canonical_name(query)
+    owners: list[Owner] = []
+    for root in unique_existing(roots):
+        for dist_dir in _dist_dirs(root):
+            name, _ = _identity(dist_dir)
+            if needle in _canonical_name(name):
+                owners.append(_owner(dist_dir, query, root, ""))
+    return owners
+
+
+def imported_modules(target: Path) -> list[str]:
+    """Return non-stdlib top-level modules imported by a script.
+
+    Parameters
+    ----------
+    target : Path
+        Script to inspect.  Binary files return no modules.
+
+    Returns
+    -------
+    list[str]
+        Unique module names, in first-import order.
+
+    Examples
+    --------
+    >>> imported_modules(Path("/definitely/not/here"))
+    []
+    """
+    try:
+        data = target.read_bytes()[:1_000_000]
+    except OSError:
+        return []
+    if b"\0" in data:
+        return []
+    stdlib = getattr(sys, "stdlib_module_names", frozenset())
+    modules: list[str] = []
+    for line in data.decode("utf-8", "replace").splitlines():
+        for match in _IMPORT_RE.finditer(line):
+            module = (match.group(1) or match.group(2)).split(".", 1)[0]
+            if module == "__future__" or module in stdlib or module in modules:
+                continue
+            modules.append(module)
+    return modules
+
+
+def find_by_import(target: Path, roots: Iterable[Path]) -> list[Owner]:
+    """Find distributions providing modules imported by ``target``.
+
+    This is a fallback for installations without a usable ``RECORD``.
+
+    Parameters
+    ----------
+    target : Path
+        Script to inspect.
+    roots : Iterable[Path]
+        Site-packages directories to search.
+
+    Returns
+    -------
+    list[Owner]
+        Distributions whose top-level modules are imported by the script.
+    """
+    modules = set(imported_modules(target))
+    if not modules:
+        return []
+    needles = {module.encode() for module in modules}
+    owners: list[Owner] = []
+    for root in unique_existing(roots):
+        for dist_dir in _dist_dirs(root):
+            top_level = dist_dir / "top_level.txt"
+            record = dist_dir / "RECORD"
+            source = top_level if top_level.is_file() else record
+            try:
+                data = source.read_bytes()
+            except OSError:
+                continue
+            if not any(needle in data for needle in needles):
+                continue
+            if source == top_level:
+                provided = {
+                    line.strip()
+                    for line in data.decode("utf-8", "replace").splitlines()
+                    if line.strip()
+                }
+            else:
+                provided = {
+                    entry.split(",", 1)[0].strip().split("/", 1)[0].removesuffix(".py")
+                    for entry in data.decode("utf-8", "replace").splitlines()
+                    if entry.strip() and not entry.startswith("..")
+                }
+            if modules & provided:
+                owners.append(_owner(dist_dir, str(target), root, ""))
+    return owners
+
+
+def lookup(
+    name: str,
+    *,
+    package_only: bool = False,
+    path: str | None = None,
+    roots: Iterable[Path] | None = None,
+    include_tool_envs: bool = False,
+) -> list[Owner]:
+    """Find the distribution behind a command, path, or package name.
+
+    Parameters
+    ----------
+    name : str
+        Command, path, or distribution name.
+    package_only : bool
+        Search distribution names even when a command of that name exists.
+    path : str | None
+        ``$PATH`` used to resolve bare command names.
+    roots : Iterable[Path] | None
+        Site-packages directories to search instead of the defaults.
+    include_tool_envs : bool
+        Include pipx, uv, and pipenv environments in the defaults.
+
+    Returns
+    -------
+    list[Owner]
+        Matching owners.  Owners found by reading ``RECORD`` take precedence
+        over owners guessed from the script's imports.
+    """
+    provided_roots = list(roots) if roots is not None else None
+    target = None if package_only else resolve_target(name, path=path)
+    if target is not None:
+        search_roots = (
+            provided_roots
+            if provided_roots is not None
+            else default_roots(include_tool_envs=include_tool_envs)
+        )
+        search_roots = unique_existing([*roots_for_target(target), *search_roots])
+        owners = find_owners(target, search_roots)
+        if not owners:
+            owners = find_by_import(target, search_roots)
+        if owners:
+            return [replace(owner, target=name) for owner in owners]
+        LOG.warning("%s resolved to %s, but no distribution owns it", name, target)
+
+    search_roots = (
+        provided_roots
+        if provided_roots is not None
+        else default_roots(include_tool_envs=True)
+    )
+    return [
+        replace(owner, target=name) for owner in find_distributions(name, search_roots)
+    ]
+
+
+def render_table(owners: Sequence[Owner], *, verbose: bool = False) -> str:
+    """Render owners as an aligned text table.
+
+    Parameters
+    ----------
+    owners : Sequence[Owner]
+        Rows to show.
+    verbose : bool
+        Include the file path from ``RECORD``.
+
+    Returns
+    -------
+    str
+        Table with a header row and no trailing whitespace.
+
+    Examples
+    --------
+    >>> print(render_table([Owner("tool", "demo", "1.0", "pip", "/sp")]))
+    TARGET  PACKAGE  VERSION  INSTALLER  LOCATION
+    tool    demo     1.0      pip        /sp
+    """
+    headers = ["TARGET", "PACKAGE", "VERSION", "INSTALLER", "LOCATION"]
+    if verbose:
+        headers.append("FILE")
+    rows = [
+        [
+            owner.target,
+            owner.package,
+            owner.version,
+            owner.installer or "?",
+            owner.location,
+        ]
+        + ([owner.file] if verbose else [])
+        for owner in owners
+    ]
+    widths = [
+        max(len(header), *(len(row[index]) for row in rows))
+        for index, header in enumerate(headers)
+    ]
+    lines = [
+        "  ".join(
+            header.ljust(widths[index]) for index, header in enumerate(headers)
+        ).rstrip()
+    ]
+    lines.extend(
+        "  ".join(
+            value.ljust(widths[index]) for index, value in enumerate(row)
+        ).rstrip()
+        for row in rows
+    )
+    return "\n".join(lines)
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    path: str | None = None,
+    roots: Iterable[Path] | None = None,
+) -> int:
+    """Run the command line interface.
+
+    Parameters
+    ----------
+    argv : Sequence[str] | None
+        Arguments to parse.  ``None`` uses ``sys.argv[1:]``.
+    path : str | None
+        ``$PATH`` used to resolve bare command names.
+    roots : Iterable[Path] | None
+        Site-packages directories to search instead of the defaults.
+
+    Returns
+    -------
+    int
+        ``0`` when every target was found, ``1`` otherwise.
+    """
+    parser = argparse.ArgumentParser(
+        prog="which.pip",
+        description="Find the pip distribution that installed a command or file.",
+        epilog=(
+            "Without --package, each argument is resolved as a command or path "
+            "first and only searched as a distribution name if no such command "
+            "exists."
+        ),
+    )
+    parser.add_argument(
+        "names",
+        nargs="+",
+        metavar="COMMAND|PATH|PACKAGE",
+        help="command, installed file, or distribution name",
+    )
+    parser.add_argument(
+        "-p",
+        "--package",
+        action="store_true",
+        help="treat every argument as a distribution name",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="print JSON instead of a table",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="include the RECORD path and log lookup details",
+    )
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.WARNING,
+        format="%(levelname)s: %(message)s",
+    )
+
+    owners: list[Owner] = []
+    missing: list[str] = []
+    for name in args.names:
+        found = lookup(
+            name,
+            package_only=args.package,
+            path=path,
+            roots=roots,
+        )
+        if found:
+            owners.extend(found)
+        else:
+            missing.append(name)
+
+    if args.json:
+        print(json.dumps([asdict(owner) for owner in owners], indent=2))
+    elif owners:
+        print(render_table(owners, verbose=args.verbose))
+
+    for name in missing:
+        print(f"{name}: not found", file=sys.stderr)
+
+    return 1 if missing else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
