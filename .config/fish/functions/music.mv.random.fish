@@ -4,11 +4,11 @@ function music.mv.random
     lb mv ~/sync/audio/weekly/ (d check/audio/)
 
     lb relmv (
-        lb play media ~/lb/fs/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 1600 -p f
+        lb play media --db ~/lb/fs/audio.db --local -w 'play_count=0' -u random --fetch-siblings if-audiobook -L 1600 -p f
     ) ~/sync/audio/weekly/
 
     lb relmv (
-        lb play media ~/lb/fs/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf --folders | shuf | head -n 30
+        lb play media --db ~/lb/fs/audio.db --local -E /sync/audio/ -w 'play_count=0' -FC=+4 -FC=-16 -p bf --folders | shuf | head -n 30
     ) ~/sync/audio/weekly/
 
     lb file normalize --run ~/sync/audio/
