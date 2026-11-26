@@ -11,15 +11,21 @@ the managed ``/etc`` files and their diffs; add ``-x`` to actually write them.
 Kernel command line changes are printed but never written, because a bad cmdline
 can make a machine unbootable.
 
+Profiles:
+    latency     input/desktop responsiveness; BFQ on HDDs, C-state hints (default)
+    balanced    safe low-risk changes only
+    throughput  performance EPP/governor, mq-deadline on HDDs, HDD read-ahead
+
 Examples:
-    latency.tune                     # dry run: report and planned changes
-    latency.tune -x                  # apply the safe runtime changes
-    latency.tune --permanent         # preview /etc diffs, write nothing
-    latency.tune -x --permanent      # apply runtime and write /etc files
-    latency.tune -x --aggressive     # also disable deep C-states, etc.
+    perf.tune                     # dry run: report and planned changes
+    perf.tune --profile throughput  # throughput policy instead of latency
+    perf.tune -x                  # apply the safe runtime changes
+    perf.tune --permanent         # preview /etc diffs, write nothing
+    perf.tune -x --permanent      # apply runtime and write /etc files
+    perf.tune -x --aggressive     # also disable deep C-states, etc.
 
 Safe runtime changes are reversible by rebooting.  Persistent files are named
-``90-latency-tune*`` and start with a ``Managed by latency.tune`` marker; delete
+``90-perf-tune*`` and start with a ``Managed by perf.tune`` marker; delete
 them to undo.  Kernel command line changes are printed but never written.
 """
 
@@ -42,20 +48,23 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-LOG = logging.getLogger("latency.tune")
+LOG = logging.getLogger("perf.tune")
 
 SYS = Path("/sys")
 PROC = Path("/proc")
-MANAGED_MARKER = "Managed by latency.tune"
-SYSCTL_CONF = "90-latency-tune.conf"
-UDEV_RULES = "90-latency-tune.rules"
-MODPROBE_CONF = "90-latency-tune.conf"
-SERVICE_UNIT = "latency-tune.service"
+MANAGED_MARKER = "Managed by perf.tune"
+SYSCTL_CONF = "90-perf-tune.conf"
+UDEV_RULES = "90-perf-tune.rules"
+MODPROBE_CONF = "90-perf-tune.conf"
+SERVICE_UNIT = "perf-tune.service"
 
 STATUS_RANK = {"crit": 0, "warn": 1, "info": 2, "ok": 3}
 STATUS_LABEL = {"crit": "CRIT", "warn": "WARN", "info": "INFO", "ok": " OK "}
 STATUS_COLOR = {"crit": "\033[31m", "warn": "\033[33m", "info": "\033[36m", "ok": "\033[32m"}
 RESET = "\033[0m"
+
+PROFILES = ("latency", "balanced", "throughput")
+DEFAULT_PROFILE = "latency"
 
 
 # ---------------------------------------------------------------------------
@@ -342,6 +351,7 @@ class BlockDevice:
     name: str
     rotational: bool
     scheduler: str
+    read_ahead_kb: int = 0
 
 
 @dataclass(frozen=True)
@@ -602,7 +612,7 @@ def measure_bench() -> Bench | None:
     fsync_times: list[float] = []
     directory = Path.home() if os.access(Path.home(), os.W_OK) else Path(tempfile.gettempdir())
     try:
-        fd, path = tempfile.mkstemp(prefix=".latency-tune-", dir=directory)
+        fd, path = tempfile.mkstemp(prefix=".perf-tune-", dir=directory)
         try:
             payload = bytes(4096)
             budget = time.monotonic() + 3.0
@@ -696,20 +706,24 @@ def collect_block_devices() -> tuple[BlockDevice, ...]:
                 name=path.name,
                 rotational=bool(rotational),
                 scheduler=bracket_value(scheduler_text),
+                read_ahead_kb=read_int(queue / "read_ahead_kb", 0) or 0,
             )
         )
     return tuple(devices)
 
 
-def collect_cpuidle() -> tuple[CpuIdleState, ...]:
+def collect_cpuidle(sys_root: Path = SYS) -> tuple[CpuIdleState, ...]:
     """Collect CPU idle states, which are identical across CPUs."""
     states: list[CpuIdleState] = []
-    for path in sorted(SYS.glob("devices/system/cpu/cpu0/cpuidle/state*")):
-        index = read_int(path.name.removeprefix("state"), -1)
+    for path in sorted(sys_root.glob("devices/system/cpu/cpu0/cpuidle/state*")):
+        try:
+            index = int(path.name.removeprefix("state"))
+        except ValueError:
+            continue
         name = read_text(path / "name")
         latency = read_int(path / "latency")
         disabled = read_int(path / "disable")
-        if index is None or index < 0 or name is None or latency is None or disabled is None:
+        if name is None or latency is None or disabled is None:
             continue
         states.append(CpuIdleState(index=index, name=name, latency_us=latency, disabled=bool(disabled)))
     return tuple(states)
@@ -1272,48 +1286,82 @@ def evaluate_usb(snapshot: Snapshot) -> list[Finding]:
     return findings
 
 
-def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
+def evaluate_cpu(snapshot: Snapshot, profile: str = DEFAULT_PROFILE) -> list[Finding]:
     """Judge CPU frequency, C-states, preemption, thermal, and watchdog settings."""
     findings: list[Finding] = []
     governors = dict(snapshot.governors)
+    cpus = sorted({cpu for cpu, _ in snapshot.epps}) or list(range(snapshot.ncpu))
 
-    if snapshot.intel_pstate:
-        if set(governors) == {"powersave"}:
+    if snapshot.intel_pstate and governors:
+        if profile == "throughput" and set(governors) != {"performance"}:
+            writes = tuple(
+                Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor", "performance")
+                for cpu in cpus
+            )
+            governor_command = (
+                "for f in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor; "
+                'do echo performance > "$f" 2>/dev/null || true; done'
+            )
+            findings.append(
+                _finding(
+                    "cpu-governor",
+                    "info",
+                    "Throughput profile prefers the performance governor",
+                    f"Governors in use: {governors}. Pinning performance removes frequency ramp-up "
+                    "delay, at the cost of idle power and heat.",
+                    current=str(governors),
+                    target="performance",
+                    writes=writes,
+                    service=(governor_command,),
+                )
+            )
+        elif set(governors) == {"powersave"}:
             status = "ok"
             title = "intel_pstate is using its normal powersave governor"
             detail = "With intel_pstate, powersave still scales up on demand; it is not a fixed low clock."
+            findings.append(_finding("cpu-governor", status, title, detail, current=str(governors)))
         elif "performance" in governors:
             status = "info"
             title = "CPU governor is pinned to performance"
             detail = "This lowers frequency ramp latency at the cost of idle power."
+            findings.append(_finding("cpu-governor", status, title, detail, current=str(governors)))
         else:
-            status = "info"
-            title = "CPU governor is non-default"
-            detail = f"Governors in use: {governors}."
-        findings.append(_finding("cpu-governor", status, title, detail, current=str(governors)))
+            findings.append(
+                _finding(
+                    "cpu-governor",
+                    "info",
+                    "CPU governor is non-default",
+                    f"Governors in use: {governors}.",
+                    current=str(governors),
+                )
+            )
 
-    bad_epps = [(cpu, epp) for cpu, epp in snapshot.epps if epp not in ("balance_performance", "performance")]
+    epp_target = "performance" if profile == "throughput" else "balance_performance"
+    acceptable = ("performance",) if profile == "throughput" else ("balance_performance", "performance")
+    bad_epps = [(cpu, epp) for cpu, epp in snapshot.epps if epp not in acceptable]
     if bad_epps:
         writes = tuple(
-            Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpufreq/energy_performance_preference", "balance_performance")
+            Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpufreq/energy_performance_preference", epp_target)
             for cpu, _ in bad_epps
         )
         epp_command = (
             "for f in /sys/devices/system/cpu/cpu[0-9]*/cpufreq/energy_performance_preference; "
-            'do echo balance_performance > "$f" 2>/dev/null || true; done'
+            f'do echo {epp_target} > "$f" 2>/dev/null || true; done'
         )
-        service = (epp_command,)
+        power_bias = any(epp in ("power", "balance_power") for _, epp in bad_epps)
         findings.append(
             _finding(
                 "cpu-epp",
-                "warn",
-                "Energy performance preference biases toward power saving",
+                "warn" if power_bias else "info",
+                "Energy performance preference biases toward power saving"
+                if power_bias
+                else f"Energy performance preference differs from the {profile} profile",
                 f"{len(bad_epps)} CPU(s) use {sorted({epp for _, epp in bad_epps})}; "
-                "balance_performance wakes up more aggressively without pinning full frequency.",
+                f"{epp_target} is the {profile} target. This trades idle power for wakeup latency.",
                 current=", ".join(sorted({epp for _, epp in bad_epps})),
-                target="balance_performance",
+                target=epp_target,
                 writes=writes,
-                service=service,
+                service=(epp_command,),
             )
         )
     elif snapshot.epps:
@@ -1322,28 +1370,30 @@ def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
                 "cpu-epp",
                 "ok",
                 "Energy performance preference is responsive",
-                "EPP is balance_performance or performance on every CPU.",
+                f"EPP matches the {profile} target ({epp_target}) on every CPU.",
                 current=", ".join(sorted({epp for _, epp in snapshot.epps})),
             )
         )
 
     if snapshot.platform_profile in ("low-power", "quiet"):
+        platform_target = "performance" if profile == "throughput" else "balanced"
         findings.append(
             _finding(
                 "platform-profile",
                 "warn",
                 "Firmware platform profile prefers power saving",
-                f"platform_profile={snapshot.platform_profile} can add wakeup latency.",
+                f"platform_profile={snapshot.platform_profile} can add wakeup latency; "
+                f"{platform_target} is the {profile} target.",
                 current=snapshot.platform_profile,
-                target="performance",
-                writes=(Write(f"{SYS}/firmware/acpi/platform_profile", "performance"),),
-                service=("echo performance > /sys/firmware/acpi/platform_profile 2>/dev/null || true",),
-                apply_by_default=False,
+                target=platform_target,
+                writes=(Write(f"{SYS}/firmware/acpi/platform_profile", platform_target),),
+                service=(f"echo {platform_target} > /sys/firmware/acpi/platform_profile 2>/dev/null || true",),
+                apply_by_default=profile == "throughput",
             )
         )
 
     deepest = max(snapshot.cpuidle, key=lambda state: state.latency_us, default=None)
-    if deepest is not None and deepest.latency_us >= 500 and not deepest.disabled:
+    if profile == "latency" and deepest is not None and deepest.latency_us >= 500 and not deepest.disabled:
         status = "warn" if deepest.latency_us >= 5_000 else "info"
         writes = tuple(
             Write(f"{SYS}/devices/system/cpu/cpu{cpu}/cpuidle/state{deepest.index}/disable", "1")
@@ -1370,7 +1420,7 @@ def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
         )
 
     preempt = snapshot.preempt.lower()
-    if preempt and preempt not in ("unknown",) and not preempt.startswith("full"):
+    if profile == "latency" and preempt and preempt not in ("unknown",) and not preempt.startswith("full"):
         findings.append(
             _finding(
                 "preempt-mode",
@@ -1386,7 +1436,7 @@ def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
                 apply_by_default=False,
             )
         )
-    elif preempt.startswith("full"):
+    elif profile == "latency" and preempt.startswith("full"):
         findings.append(
             _finding(
                 "preempt-mode",
@@ -1412,7 +1462,7 @@ def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
             )
         )
 
-    if snapshot.nmi_watchdog:
+    if profile == "latency" and snapshot.nmi_watchdog:
         findings.append(
             _finding(
                 "nmi-watchdog",
@@ -1431,11 +1481,31 @@ def evaluate_cpu(snapshot: Snapshot) -> list[Finding]:
     return findings
 
 
-def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
+def evaluate_storage(snapshot: Snapshot, profile: str = DEFAULT_PROFILE) -> list[Finding]:
     """Judge block schedulers, dirty writeback, swap layout, and THP."""
     findings: list[Finding] = []
     ssd_changes = [device for device in snapshot.block_devices if not device.rotational and device.scheduler != "none"]
-    hdd_changes = [device for device in snapshot.block_devices if device.rotational and device.scheduler != "bfq"]
+
+    if profile == "latency":
+        hdd_target = "bfq"
+        hdd_changes = [device for device in snapshot.block_devices if device.rotational and device.scheduler != "bfq"]
+        hdd_title = "Rotational disks could use BFQ for interactivity"
+        hdd_detail = "BFQ favors low latency for interactive I/O. It trades some throughput on a busy HDD. "
+        hdd_apply = False
+    elif profile == "throughput":
+        hdd_target = "mq-deadline"
+        hdd_changes = [
+            device for device in snapshot.block_devices if device.rotational and device.scheduler != "mq-deadline"
+        ]
+        hdd_title = "Rotational disks are not using the throughput scheduler"
+        hdd_detail = "mq-deadline batches requests with low overhead, which favors sequential throughput. "
+        hdd_apply = True
+    else:
+        hdd_target = "mq-deadline"
+        hdd_changes = [device for device in snapshot.block_devices if device.rotational and device.scheduler == "none"]
+        hdd_title = "Rotational disks should not use the none scheduler"
+        hdd_detail = "none is intended for non-rotational devices; mq-deadline handles HDD queueing properly. "
+        hdd_apply = True
 
     if ssd_changes:
         writes = tuple(Write(f"{SYS}/block/{device.name}/queue/scheduler", "none") for device in ssd_changes)
@@ -1457,23 +1527,56 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
         )
 
     if hdd_changes:
-        writes = tuple(Write(f"{SYS}/block/{device.name}/queue/scheduler", "bfq") for device in hdd_changes)
+        writes = tuple(
+            Write(f"{SYS}/block/{device.name}/queue/scheduler", hdd_target) for device in hdd_changes
+        )
+        hdd_rule = (
+            f'ACTION=="add|change", KERNEL=="sd[a-z]*", '
+            f'ATTR{{queue/rotational}}=="1", ATTR{{queue/scheduler}}="{hdd_target}"'
+        )
         findings.append(
             _finding(
                 "block-scheduler-hdd",
                 "info",
-                "Rotational disks could use BFQ for interactivity",
-                "BFQ favors low latency for interactive I/O. It trades some throughput on a busy HDD. "
-                + ", ".join(f"{device.name}={device.scheduler}" for device in hdd_changes),
+                hdd_title,
+                hdd_detail + ", ".join(f"{device.name}={device.scheduler}" for device in hdd_changes),
                 current=", ".join(f"{device.name}={device.scheduler}" for device in hdd_changes),
-                target="bfq",
+                target=hdd_target,
                 writes=writes,
-                udev=(
-                    'ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"',
-                ),
-                apply_by_default=False,
+                udev=(hdd_rule,),
+                apply_by_default=hdd_apply,
             )
         )
+
+    if profile == "throughput":
+        readahead_changes = [
+            device
+            for device in snapshot.block_devices
+            if device.rotational and 0 < device.read_ahead_kb < 4096
+        ]
+        if readahead_changes:
+            writes = tuple(
+                Write(f"{SYS}/block/{device.name}/queue/read_ahead_kb", "4096")
+                for device in readahead_changes
+            )
+            readahead_rule = (
+                'ACTION=="add|change", KERNEL=="sd[a-z]*", '
+                'ATTR{queue/rotational}=="1", ATTR{queue/read_ahead_kb}="4096"'
+            )
+            findings.append(
+                _finding(
+                    "block-readahead",
+                    "info",
+                    "Rotational disk read-ahead is small",
+                    "A larger read-ahead helps sequential throughput on HDDs, at some cost in "
+                    "cache pollution and random-read latency. "
+                    + ", ".join(f"{device.name}={device.read_ahead_kb} KiB" for device in readahead_changes),
+                    current=", ".join(f"{device.name}={device.read_ahead_kb} KiB" for device in readahead_changes),
+                    target="4096 KiB",
+                    writes=writes,
+                    udev=(readahead_rule,),
+                )
+            )
 
     if snapshot.psi_io_some >= 25 or snapshot.psi_io_full >= 5:
         findings.append(
@@ -1490,7 +1593,7 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
             )
         )
 
-    if snapshot.zram_disksize and snapshot.page_cluster != 0:
+    if profile != "throughput" and snapshot.zram_disksize and snapshot.page_cluster != 0:
         findings.append(
             _finding(
                 "zram-page-cluster",
@@ -1505,7 +1608,7 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
             )
         )
 
-    if snapshot.dirty_bytes and snapshot.dirty_bytes > 512 * 1024 * 1024:
+    if profile == "latency" and snapshot.dirty_bytes and snapshot.dirty_bytes > 512 * 1024 * 1024:
         findings.append(
             _finding(
                 "dirty-writeback",
@@ -1521,7 +1624,7 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
             )
         )
 
-    if snapshot.thp and snapshot.thp != "madvise":
+    if profile == "latency" and snapshot.thp and snapshot.thp != "madvise":
         findings.append(
             _finding(
                 "thp",
@@ -1537,7 +1640,7 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
             )
         )
 
-    if snapshot.swappiness < 60 and snapshot.zram_disksize and snapshot.psi_mem_some >= 10:
+    if profile == "latency" and snapshot.swappiness < 60 and snapshot.zram_disksize and snapshot.psi_mem_some >= 10:
         findings.append(
             _finding(
                 "swappiness",
@@ -1565,7 +1668,7 @@ def evaluate_storage(snapshot: Snapshot) -> list[Finding]:
     return findings
 
 
-def evaluate_general(snapshot: Snapshot) -> list[Finding]:
+def evaluate_general(snapshot: Snapshot, profile: str = DEFAULT_PROFILE) -> list[Finding]:
     """Judge general desktop sysctls that affect responsiveness and tooling."""
     findings: list[Finding] = []
 
@@ -1625,6 +1728,11 @@ def evaluate_general(snapshot: Snapshot) -> list[Finding]:
         )
 
     if snapshot.tuned_profile:
+        desired = {
+            "throughput": "throughput-performance",
+            "balanced": "balanced",
+            "latency": "desktop",
+        }.get(profile, "balanced")
         if snapshot.tuned_verified is False:
             findings.append(
                 _finding(
@@ -1633,11 +1741,24 @@ def evaluate_general(snapshot: Snapshot) -> list[Finding]:
                     "TuneD profile is not applied as configured",
                     f"Profile {snapshot.tuned_profile} is active, but `tuned-adm verify` reports that "
                     "running kernel settings differ from the profile. Another power daemon may have "
-                    "overwritten governor/EPP, or the profile was applied before a driver loaded. "
-                    "For a desktop, `tuned-adm profile desktop` is usually a better fit; restart tuned "
-                    "to enforce the current profile instead.",
+                    f"overwritten governor/EPP, or the profile was applied before a driver loaded. "
+                    f"The {profile} profile usually pairs with {desired}; restart tuned to enforce the "
+                    "current profile instead.",
                     current="verification failed",
-                    target="tuned-adm profile desktop (balanced) or systemctl restart tuned (enforce profile)",
+                    target=f"tuned-adm profile {desired} or systemctl restart tuned",
+                    apply_by_default=False,
+                )
+            )
+        elif snapshot.tuned_profile != desired:
+            findings.append(
+                _finding(
+                    "tuned-profile",
+                    "info",
+                    "TuneD profile does not match the selected policy",
+                    f"Profile {snapshot.tuned_profile} is active; the {profile} policy usually pairs "
+                    f"with {desired}. This is advisory, not a latency fix.",
+                    current=snapshot.tuned_profile,
+                    target=f"tuned-adm profile {desired}",
                     apply_by_default=False,
                 )
             )
@@ -1648,8 +1769,8 @@ def evaluate_general(snapshot: Snapshot) -> list[Finding]:
                     "tuned-profile",
                     "info",
                     "TuneD is active",
-                    f"Profile {snapshot.tuned_profile} is active.{verified} TuneD may overwrite sysctl and "
-                    "CPU settings at boot.",
+                    f"Profile {snapshot.tuned_profile} is active and matches the {profile} policy."
+                    f"{verified} TuneD may overwrite sysctl and CPU settings at boot.",
                     current=snapshot.tuned_profile,
                     apply_by_default=False,
                 )
@@ -1703,15 +1824,15 @@ def evaluate_kernel_log(snapshot: Snapshot) -> list[Finding]:
     return findings
 
 
-def evaluate(snapshot: Snapshot) -> list[Finding]:
+def evaluate(snapshot: Snapshot, profile: str = DEFAULT_PROFILE) -> list[Finding]:
     """Run every evaluator and sort findings by severity."""
     findings: list[Finding] = []
     findings.extend(evaluate_load(snapshot))
     findings.extend(evaluate_memory(snapshot))
     findings.extend(evaluate_usb(snapshot))
-    findings.extend(evaluate_cpu(snapshot))
-    findings.extend(evaluate_storage(snapshot))
-    findings.extend(evaluate_general(snapshot))
+    findings.extend(evaluate_cpu(snapshot, profile))
+    findings.extend(evaluate_storage(snapshot, profile))
+    findings.extend(evaluate_general(snapshot, profile))
     findings.extend(evaluate_kernel_log(snapshot))
     return sorted(findings, key=lambda finding: (STATUS_RANK.get(finding.status, 9), finding.key))
 
@@ -1836,7 +1957,7 @@ def build_service_unit(findings: Sequence[Finding]) -> str:
     lines = [
         f"# {MANAGED_MARKER}; remove this file to undo.",
         "[Unit]",
-        "Description=Apply latency.tune sysfs settings at boot",
+        "Description=Apply perf.tune sysfs settings at boot",
         "After=local-fs.target sys-kernel-debug.mount",
         "ConditionPathExists=/sys/devices/system/cpu",
         "",
@@ -1904,7 +2025,7 @@ def make_diff(
             old_lines,
             new_lines,
             fromfile=from_label or str(path),
-            tofile=to_label or f"{path} (latency.tune)",
+            tofile=to_label or f"{path} (perf.tune)",
             lineterm="\n",
         )
     )
@@ -2052,7 +2173,7 @@ def apply_permanent(findings: Sequence[Finding], etc_root: Path = Path("/etc")) 
 
 
 def rpm_conflict_dirs(etc_root: Path = Path("/etc")) -> tuple[Path, ...]:
-    """Directories whose rpmconf-style siblings latency.tune cares about."""
+    """Directories whose rpmconf-style siblings perf.tune cares about."""
     return (
         etc_root / "sysctl.d",
         etc_root / "udev" / "rules.d",
@@ -2064,7 +2185,7 @@ def rpm_conflict_dirs(etc_root: Path = Path("/etc")) -> tuple[Path, ...]:
 def scan_rpm_conflicts(etc_root: Path = Path("/etc")) -> tuple[RpmConflict, ...]:
     """Find .rpmnew/.rpmsave/.rpmorig files next to configs we touch.
 
-    This is deliberately read-only: latency.tune prints the diff and leaves the
+    This is deliberately read-only: perf.tune prints the diff and leaves the
     decision to the user or to rpmconf.
     """
     conflicts: list[RpmConflict] = []
@@ -2146,7 +2267,11 @@ def apply_runtime(writes: Sequence[Write], execute: bool) -> list[ApplyResult]:
 # ---------------------------------------------------------------------------
 
 
-def format_report(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
+def format_report(
+    snapshot: Snapshot,
+    findings: Sequence[Finding],
+    profile: str = DEFAULT_PROFILE,
+) -> str:
     """Render the human-readable report."""
     lines: list[str] = []
     lines.append(f"System responsiveness report - {snapshot.host}")
@@ -2154,6 +2279,7 @@ def format_report(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
     lines.append(f"  cpu      {snapshot.cpu_model or 'unknown'}, {snapshot.ncpu} threads")
     if snapshot.gpu:
         lines.append(f"  gpu      {snapshot.gpu}")
+    lines.append(f"  profile  {profile}")
     used_kib = max(0, snapshot.mem_total_kib - snapshot.mem_available_kib)
     swap_used_kib = max(0, snapshot.swap_total_kib - snapshot.swap_free_kib)
     lines.append(
@@ -2298,7 +2424,7 @@ def format_rpm_conflicts(conflicts: Sequence[RpmConflict]) -> str:
         lines.append(f"  ! {conflict.path} ({conflict.kind})")
         if conflict.diff:
             lines.append(colorize_diff(conflict.diff).rstrip("\n"))
-    lines.append("  latency.tune never edits these; review with `rpmconf -a` or merge/delete manually.")
+    lines.append("  perf.tune never edits these; review with `rpmconf -a` or merge/delete manually.")
     return "\n".join(lines)
 
 
@@ -2342,7 +2468,7 @@ def format_permanent_results(results: Sequence[tuple[Path, str]]) -> str:
     if reloads:
         lines.append(f"  Next: {' && '.join(reloads)}")
     if wants_changed:
-        lines.append("  Enable the boot-time sysfs unit with: systemctl enable --now latency-tune.service")
+        lines.append("  Enable the boot-time sysfs unit with: systemctl enable --now perf-tune.service")
     if counts.get("conflict"):
         lines.append("  Unmanaged files were left untouched; merge or move them and rerun.")
     return "\n".join(lines)
@@ -2351,11 +2477,11 @@ def format_permanent_results(results: Sequence[tuple[Path, str]]) -> str:
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        prog="latency.tune",
+        prog="perf.tune",
         description="Diagnose input latency, throughput, and kernel/hardware tuning.",
         epilog=(
             "Default is a dry run. -x applies runtime changes; add --permanent to also write "
-            "managed files under /etc. Persistent files are named 90-latency-tune* and carry a "
+            "managed files under /etc. Persistent files are named 90-perf-tune* and carry a "
             "managed marker. Kernel cmdline changes are only printed."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -2374,7 +2500,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--aggressive",
         action="store_true",
-        help="include power-costly tweaks: deep C-states, BFQ on HDDs, preempt=full, dirty limits",
+        help="include power-costly or riskier tweaks available in the selected profile",
+    )
+    parser.add_argument(
+        "--profile",
+        choices=PROFILES,
+        default=DEFAULT_PROFILE,
+        help="tuning policy: latency (BFQ/C-states), balanced (safe only), throughput (performance EPP, mq-deadline)",
     )
     parser.add_argument("--bench", action="store_true", help="run memory-copy and fsync microbenchmarks")
     parser.add_argument("--duration", type=float, default=2.0, help="counter and latency sampling window in seconds")
@@ -2382,7 +2514,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("-q", "--quiet", action="store_true", help="only show warnings, critical findings, and actions")
     parser.add_argument("-v", "--verbose", action="store_true", help="log diagnostic detail")
-    parser.add_argument("--version", action="version", version="latency.tune 1.0")
+    parser.add_argument("--version", action="version", version="perf.tune 1.1")
     return parser.parse_args(argv)
 
 
@@ -2400,10 +2532,12 @@ def report_as_dict(
     applied: Sequence[ApplyResult] = (),
     permanent: Sequence[tuple[Path, str]] = (),
     *,
+    profile: str = DEFAULT_PROFILE,
     executed: bool = False,
 ) -> dict[str, object]:
     """Build a JSON-serializable result."""
     return {
+        "profile": profile,
         "snapshot": dataclasses.asdict(snapshot),
         "findings": [dataclasses.asdict(finding) for finding in findings],
         "verdict": verdict(snapshot, findings),
@@ -2419,7 +2553,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     setup_logging(args.verbose)
 
     snapshot = collect_snapshot(args.duration, args.bench)
-    findings = evaluate(snapshot)
+    findings = evaluate(snapshot, args.profile)
     shown = [finding for finding in findings if not args.quiet or finding.status in ("warn", "crit") or finding.has_actions]
     actions = selected_findings(findings, args.aggressive)
 
@@ -2428,7 +2562,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     exit_code = 0
 
     if not args.json:
-        print(format_report(snapshot, shown))
+        print(format_report(snapshot, shown, args.profile))
         print()
 
     writes = runtime_writes(actions)
@@ -2482,7 +2616,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.json:
         print(
             json.dumps(
-                report_as_dict(snapshot, shown, applied, permanent, executed=args.execute),
+                report_as_dict(snapshot, shown, applied, permanent, profile=args.profile, executed=args.execute),
                 indent=2,
                 sort_keys=True,
             )

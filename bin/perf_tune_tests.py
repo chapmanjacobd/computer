@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for latency.tune."""
+"""Tests for perf.tune."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-MODULE_PATH = Path(__file__).with_name("latency.tune")
-MODULE = types.ModuleType("latency_tune")
+MODULE_PATH = Path(__file__).with_name("perf.tune")
+MODULE = types.ModuleType("perf_tune")
 MODULE.__dict__.update(runpy.run_path(str(MODULE_PATH)))
 lt = MODULE
 
@@ -211,6 +211,104 @@ def test_selected_findings_respects_aggressive(snapshot) -> None:
     assert "cpu-epp" in safe_keys
     assert "cpu-cstates" not in safe_keys
     assert "cpu-cstates" in all_keys
+
+
+def test_balanced_skips_cstates_and_hdd_bfq(snapshot) -> None:
+    states = (lt.CpuIdleState(index=3, name="C3", latency_us=5000, disabled=False),)
+    cpu_findings = lt.evaluate_cpu(snapshot(ncpu=2, cpuidle=states), "balanced")
+    assert "cpu-cstates" not in {finding.key for finding in cpu_findings}
+
+    devices = (lt.BlockDevice(name="sda", rotational=True, scheduler="mq-deadline"),)
+    storage_findings = lt.evaluate_storage(snapshot(block_devices=devices), "balanced")
+    assert "block-scheduler-hdd" not in {finding.key for finding in storage_findings}
+
+
+def test_latency_hdd_targets_bfq(snapshot) -> None:
+    devices = (lt.BlockDevice(name="sda", rotational=True, scheduler="mq-deadline"),)
+    findings = lt.evaluate_storage(snapshot(block_devices=devices), "latency")
+    finding = {entry.key: entry for entry in findings}["block-scheduler-hdd"]
+    assert finding.target == "bfq"
+    assert finding.apply_by_default is False
+    assert finding.writes == (lt.Write("/sys/block/sda/queue/scheduler", "bfq"),)
+
+
+def test_throughput_hdd_targets_mq_deadline(snapshot) -> None:
+    devices = (lt.BlockDevice(name="sda", rotational=True, scheduler="bfq"),)
+    findings = lt.evaluate_storage(snapshot(block_devices=devices), "throughput")
+    finding = {entry.key: entry for entry in findings}["block-scheduler-hdd"]
+    assert finding.target == "mq-deadline"
+    assert finding.apply_by_default is True
+    assert finding.writes == (lt.Write("/sys/block/sda/queue/scheduler", "mq-deadline"),)
+    assert 'ATTR{queue/scheduler}="mq-deadline"' in finding.udev[0]
+
+
+def test_throughput_epp_and_governor_target_performance(snapshot) -> None:
+    data = snapshot(
+        ncpu=2,
+        intel_pstate=True,
+        governors=(("powersave", 2),),
+        epps=((0, "balance_performance"), (1, "balance_performance")),
+    )
+    findings = lt.evaluate_cpu(data, "throughput")
+    by_key = {finding.key: finding for finding in findings}
+    assert by_key["cpu-epp"].target == "performance"
+    assert all(write.value == "performance" for write in by_key["cpu-epp"].writes)
+    assert by_key["cpu-governor"].target == "performance"
+    assert len(by_key["cpu-governor"].writes) == 2
+
+
+def test_throughput_skips_latency_only_tweaks(snapshot) -> None:
+    data = snapshot(
+        ncpu=2,
+        dirty_bytes=2 * 1024**3,
+        zram_disksize=16 * 1024**3,
+        page_cluster=3,
+        thp="always",
+        cpuidle=(lt.CpuIdleState(index=3, name="C3", latency_us=5000, disabled=False),),
+    )
+    storage = lt.evaluate_storage(data, "throughput")
+    storage_keys = {finding.key for finding in storage}
+    assert "dirty-writeback" not in storage_keys
+    assert "zram-page-cluster" not in storage_keys
+    assert "thp" not in storage_keys
+
+    cpu = lt.evaluate_cpu(data, "throughput")
+    assert "cpu-cstates" not in {finding.key for finding in cpu}
+
+
+def test_throughput_readahead(snapshot) -> None:
+    devices = (lt.BlockDevice(name="sda", rotational=True, scheduler="mq-deadline", read_ahead_kb=1024),)
+    findings = lt.evaluate_storage(snapshot(block_devices=devices), "throughput")
+    finding = {entry.key: entry for entry in findings}["block-readahead"]
+    assert finding.target == "4096 KiB"
+    assert finding.writes == (lt.Write("/sys/block/sda/queue/read_ahead_kb", "4096"),)
+
+
+def test_format_report_shows_profile(snapshot) -> None:
+    report = lt.format_report(snapshot(host="test"), [], "throughput")
+    assert "profile  throughput" in report
+
+
+def test_report_dict_includes_profile(snapshot) -> None:
+    payload = lt.report_as_dict(snapshot(), [], profile="balanced")
+    assert payload["profile"] == "balanced"
+
+
+def test_parse_args_profile() -> None:
+    args = lt.parse_args(["--profile", "throughput"])
+    assert args.profile == "throughput"
+
+
+def test_collect_cpuidle_parses_state_index(tmp_path: Path) -> None:
+    state = tmp_path / "devices" / "system" / "cpu" / "cpu0" / "cpuidle" / "state3"
+    state.mkdir(parents=True)
+    (state / "name").write_text("C3\n")
+    (state / "latency").write_text("1048\n")
+    (state / "disable").write_text("0\n")
+
+    assert lt.collect_cpuidle(tmp_path) == (
+        lt.CpuIdleState(index=3, name="C3", latency_us=1048, disabled=False),
+    )
 
 
 def test_tuned_verify_failure_is_a_warning(snapshot) -> None:
