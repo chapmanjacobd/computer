@@ -1,0 +1,3 @@
+#!/usr/bin/env fish
+# Show files changed relative to the default branch.
+git diff --name-status (git main) $argv

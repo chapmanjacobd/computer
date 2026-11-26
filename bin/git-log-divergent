@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show commits that differ between HEAD and its upstream, in both directions.
+set -euo pipefail
+exec git log --oneline --graph --decorate --left-right --cherry-pick --boundary '@{u}...HEAD' "$@"

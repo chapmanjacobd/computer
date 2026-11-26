@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show commits that are on the upstream but not yet in HEAD.
+set -euo pipefail
+exec git log --stat 'HEAD..@{u}' "$@"

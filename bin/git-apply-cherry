@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Start an interactive rebase at HEAD to reorder, squash, or reword commits.
+set -euo pipefail
+exec git rebase -i HEAD
