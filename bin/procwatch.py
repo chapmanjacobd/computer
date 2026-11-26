@@ -35,6 +35,7 @@ Keys in the TUI:
   4/5/6       commands / network sockets / cgroups
   7 or !      risk (root, dangerous caps, deleted exe, suspicious path)
   j/k, g/G    move, top, bottom
+  left/right  scroll one column
   [ / ]       previous / next group (triage)
   s/S         cycle sort column / reverse
   click       sort by a column (all-processes and risk views)
@@ -3036,6 +3037,48 @@ if _textual_is_modern():
 
 
 if TEXTUAL_AVAILABLE:
+
+    class ProcTable(DataTable):
+        """DataTable that scrolls one whole column per left/right press.
+
+        With a row cursor, Textual scrolls horizontally one cell at a time,
+        which makes wide process tables feel stuck. Aligning to column
+        boundaries moves exactly one column per keypress instead.
+        """
+
+        def column_offsets(self) -> list[int]:
+            """Scroll offsets where each scrollable column starts."""
+            offsets = [0]
+            total = 0
+            for column in self.ordered_columns[self.fixed_columns :]:
+                total += column.get_render_width(self)
+                offsets.append(total)
+            return offsets
+
+        def scroll_column(self, direction: int) -> None:
+            """Scroll to the previous or next column boundary."""
+            offsets = self.column_offsets()
+            current = self.scroll_x
+            if direction > 0:
+                candidates = [offset for offset in offsets if offset > current]
+                target = candidates[0] if candidates else offsets[-1]
+            else:
+                candidates = [offset for offset in offsets if offset < current]
+                target = candidates[-1] if candidates else 0
+            self.scroll_to(x=target, animate=False, force=True)
+
+        def action_cursor_left(self) -> None:
+            if self.show_cursor and self.cursor_type in ("cell", "column"):
+                super().action_cursor_left()
+            else:
+                self.scroll_column(-1)
+
+        def action_cursor_right(self) -> None:
+            if self.show_cursor and self.cursor_type in ("cell", "column"):
+                super().action_cursor_right()
+            else:
+                self.scroll_column(1)
+
     HELP_ROWS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
         (
             "VIEWS",
@@ -3054,6 +3097,7 @@ if TEXTUAL_AVAILABLE:
             (
                 ("j / down", "Next item"),
                 ("k / up", "Previous item"),
+                ("left / right", "Previous / next column"),
                 ("g / G", "Top / bottom"),
                 ("[ / ]", "Previous / next group (triage)"),
             ),
@@ -3350,37 +3394,37 @@ if TEXTUAL_AVAILABLE:
             yield Static(id="summary")
             with TabbedContent(initial="tab-main"):
                 with TabPane("Triage", id="tab-main"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-main",
                         cursor_type="row",
                         zebra_stripes=True,
                         fixed_columns=1,
                     )
                 with TabPane("All processes", id="tab-all"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-all",
                         cursor_type="row",
                         zebra_stripes=True,
                         fixed_columns=1,
                     )
                 with TabPane("Events", id="tab-events"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-events", cursor_type="row", zebra_stripes=True
                     )
                 with TabPane("Commands", id="tab-commands"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-commands", cursor_type="row", zebra_stripes=True
                     )
                 with TabPane("Network", id="tab-network"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-network", cursor_type="row", zebra_stripes=True
                     )
                 with TabPane("Cgroups", id="tab-cgroups"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-cgroups", cursor_type="row", zebra_stripes=True
                     )
                 with TabPane("Risk", id="tab-risk"):
-                    yield DataTable(
+                    yield ProcTable(
                         id="table-risk", cursor_type="row", zebra_stripes=True
                     )
             yield Input(

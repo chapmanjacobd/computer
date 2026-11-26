@@ -1072,6 +1072,60 @@ def test_textual_refresh_keeps_scrollbar(proc_tree, tmp_path):
     store.close()
 
 
+def test_textual_left_right_move_one_column(proc_tree, tmp_path):
+    if not procwatch.TEXTUAL_AVAILABLE:
+        pytest.skip("modern textual is available only under uv in this environment")
+
+    for pid in range(100, 160):
+        write_proc(proc_tree, pid, comm=f"p{pid}")
+
+    cfg = Config(interval=999)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+
+    app = procwatch.ProcWatchApp(dash)
+
+    async def scenario() -> None:
+        async with app.run_test(size=(60, 40)) as pilot:
+            await pilot.pause()
+            await pilot.press("2")
+            await pilot.pause()
+            table = app.query_one("#table-all", procwatch.ProcTable)
+            offsets = table.column_offsets()
+            assert offsets[0] == 0
+            assert len(offsets) > 2
+            table.scroll_to(x=0, animate=False)
+            await pilot.pause()
+            assert table.scroll_x == 0
+
+            await pilot.press("right")
+            await pilot.pause()
+            assert table.scroll_x == offsets[1]
+
+            await pilot.press("right")
+            await pilot.pause()
+            assert table.scroll_x == offsets[2]
+
+            await pilot.press("left")
+            await pilot.pause()
+            assert table.scroll_x == offsets[1]
+
+            await pilot.press("left")
+            await pilot.pause()
+            assert table.scroll_x == 0
+
+            await pilot.press("down")
+            await pilot.pause()
+            assert table.cursor_row == 1
+            await pilot.press("up")
+            await pilot.pause()
+            assert table.cursor_row == 0
+
+    asyncio.run(scenario())
+    store.close()
+
+
 def test_aggregate_views_and_risk(proc_tree, tmp_path):
     add_net(
         proc_tree,
