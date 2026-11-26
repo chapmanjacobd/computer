@@ -1070,3 +1070,195 @@ def test_textual_refresh_keeps_scrollbar(proc_tree, tmp_path):
 
     asyncio.run(scenario())
     store.close()
+
+
+def test_aggregate_views_and_risk(proc_tree, tmp_path):
+    add_net(
+        proc_tree,
+        tcp=[
+            tcp_line(inode=100),
+            tcp_line(
+                local="127.0.0.1",
+                lport=5555,
+                remote="1.1.1.1",
+                rport=443,
+                state="01",
+                inode=101,
+            ),
+        ],
+    )
+    write_proc(
+        proc_tree,
+        100,
+        comm="nginx",
+        ppid=1,
+        fds=(("3", "socket:[100]", False),),
+    )
+    write_proc(
+        proc_tree,
+        101,
+        comm="nginx",
+        ppid=1,
+        fds=(("3", "socket:[101]", False),),
+        cgroup="/docker/web",
+    )
+    write_proc(proc_tree, 102, comm="rootproc", uid=0, euid=0)
+    write_proc(proc_tree, 103, comm="capproc", caps=1 << 21)
+
+    cfg = Config(interval=999)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+
+    dash.set_view("commands")
+    command = next(
+        row
+        for row in dash.visible_items()
+        if isinstance(row, procwatch.CommandRow) and row.comm == "nginx"
+    )
+    assert command.count == 2
+    assert command.conn_count == 2
+    assert command.pids == (100, 101)
+    assert "2 process(es)" in dash.detail_lines(command)[0][0]
+
+    dash.set_view("cgroups")
+    cgroups = {row.path: row for row in dash.visible_items()}
+    assert cgroups["/docker/web"].count == 1
+    assert cgroups["/user.slice/user-1000.slice/session-1.scope"].count == 3
+
+    dash.set_view("network")
+    endpoints = dash.visible_items()
+    exposures = {endpoint.exposure for endpoint in endpoints}
+    assert exposures == {"PUBLIC", "REMOTE"}
+    assert endpoints[0].exposure == "PUBLIC"
+    assert dash.detail_lines(endpoints[0])[0][1] == "bold"
+
+    dash.set_view("risk")
+    risk_pids = {row.process.pid for row in dash.visible_items()}
+    assert risk_pids == {102, 103}
+    assert any("caps" in line for line, _ in dash.detail_lines(dash.visible_items()[0]))
+
+    store.close()
+
+
+def test_tree_age_sort_and_novelty_filter(proc_tree, tmp_path):
+    write_proc(proc_tree, 1, comm="init", starttime=100)
+    write_proc(proc_tree, 10, comm="parent", ppid=1, starttime=200)
+    write_proc(proc_tree, 11, comm="child", ppid=10, starttime=300)
+    write_proc(proc_tree, 12, comm="child2", ppid=10, starttime=400)
+
+    cfg = Config(interval=999, rare_observations=1, warm_identities=0)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+    dash.poll(now=1001.0)
+
+    dash.set_view("all")
+    dash.set_sort("age")
+    assert [row.process.pid for row in dash.visible_rows()] == [12, 11, 10, 1]
+
+    dash.toggle_tree()
+    rows = dash.visible_rows()
+    assert [row.process.pid for row in rows] == [1, 10, 11, 12]
+    parent = next(row for row in rows if row.process.pid == 10)
+    assert dash.display_command(parent).startswith("  ")
+    assert any(text.startswith("baseline:") for text, _ in dash.detail_lines(rows[0]))
+
+    dash.cycle_novelty_filter()
+    assert dash.novelty_filter == "NEW"
+    assert dash.visible_rows() == []
+    dash.cycle_novelty_filter(-1)
+    assert dash.novelty_filter == ""
+    assert len(dash.visible_rows()) == 4
+
+    store.close()
+
+
+def test_textual_views_and_shortcuts(proc_tree, tmp_path):
+    if not procwatch.TEXTUAL_AVAILABLE:
+        pytest.skip("modern textual is available only under uv in this environment")
+
+    add_net(proc_tree, tcp=[tcp_line(inode=100)])
+    write_proc(proc_tree, 1, comm="init")
+    write_proc(proc_tree, 100, comm="server", fds=(("3", "socket:[100]", False),))
+    write_proc(proc_tree, 101, comm="rootproc", uid=0, euid=0)
+    write_proc(proc_tree, 102, comm="child", ppid=100)
+
+    cfg = Config(interval=2.0, rare_observations=1, warm_identities=0)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+    dash.poll(now=1001.0)
+
+    app = procwatch.ProcWatchApp(dash)
+
+    async def scenario() -> None:
+        async with app.run_test(size=(120, 40)) as pilot:
+            await pilot.pause()
+
+            for key, view, table_id in (
+                ("4", "commands", "table-commands"),
+                ("5", "network", "table-network"),
+                ("6", "cgroups", "table-cgroups"),
+                ("7", "risk", "table-risk"),
+            ):
+                await pilot.press(key)
+                await pilot.pause()
+                assert dash.view == view
+                assert app.query_one(f"#{table_id}", procwatch.DataTable).row_count
+
+            await pilot.press("exclamation_mark")
+            await pilot.pause()
+            assert dash.view == "risk"
+
+            await pilot.press("2")
+            await pilot.pause()
+            await pilot.press("t")
+            await pilot.pause()
+            assert dash.tree_mode
+            await pilot.press("n")
+            await pilot.pause()
+            assert dash.novelty_filter == "NEW"
+            await pilot.press("c")
+            await pilot.pause()
+            assert dash.novelty_filter == ""
+
+            await pilot.press("w")
+            await pilot.pause()
+            assert app.compact
+            assert len(app.query_one("#table-all", procwatch.DataTable).columns) == 5
+            await pilot.press("w")
+            await pilot.pause()
+            assert not app.compact
+
+            await pilot.press("1")
+            await pilot.pause()
+            first_group = app.selected_groups.get("table-main")
+            await pilot.press("right_square_bracket")
+            await pilot.pause()
+            assert app.selected_groups.get("table-main") != first_group
+            await pilot.press("left_square_bracket")
+            await pilot.pause()
+            assert app.selected_groups.get("table-main") == first_group
+
+            await pilot.press("enter")
+            await pilot.pause()
+            assert isinstance(app.screen, procwatch.DetailScreen)
+            await pilot.press("escape")
+            await pilot.pause()
+            assert not isinstance(app.screen, procwatch.DetailScreen)
+
+            interval = dash.config.interval
+            await pilot.press("plus")
+            await pilot.pause()
+            assert dash.config.interval > interval
+            await pilot.press("minus")
+            await pilot.pause()
+            assert dash.config.interval == interval
+
+            await pilot.press("y")
+            await pilot.pause()
+            assert app.clipboard
+
+    asyncio.run(scenario())
+    store.close()

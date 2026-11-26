@@ -11,7 +11,8 @@ XDG state directory, and highlights processes that are new, rare, returning,
 or behaving unlike their baseline. The main view groups processes by what they
 are doing (serving, connecting, writing, computing, ...). The all-processes
 view sorts on connections, privilege/capability score, write rate, network
-transmit rate, CPU, memory, or novelty.
+transmit rate, CPU, memory, age, or novelty. Additional views aggregate
+commands and cgroups, list network endpoints, and show risky processes.
 
 Files (all XDG):
   $XDG_STATE_HOME/procwatch/baseline.db      baseline + events (default
@@ -31,12 +32,21 @@ Run:
 
 Keys in the TUI:
   1/2/3       triage / all processes / events
+  4/5/6       commands / network sockets / cgroups
+  7 or !      risk (root, dangerous caps, deleted exe, suspicious path)
   j/k, g/G    move, top, bottom
+  [ / ]       previous / next group (triage)
   s/S         cycle sort column / reverse
-  click       sort by a column (all-processes view)
+  click       sort by a column (all-processes and risk views)
+  n           cycle novelty filter (all, NEW, CHANGED, RARE, RETURNING)
+  t           toggle process tree (all-processes view)
+  w           toggle compact / wide columns
+  enter       full scrollable detail screen
+  y           copy selected pid/command
   /           filter by pid, name, user, category, capability
   r           refresh now (auto-refresh is off by default)
   R           toggle auto-refresh
+  +/-         adjust auto-refresh interval
   ?           full keyboard shortcut list
   q           quit
 
@@ -92,7 +102,17 @@ __version__ = "0.1.0"
 
 LOG = logging.getLogger("procwatch")
 
-VIEWS = ("main", "all", "events")
+VIEWS = ("main", "all", "events", "commands", "network", "cgroups", "risk")
+VIEW_LABELS = {
+    "main": "Triage",
+    "all": "All processes",
+    "events": "Events",
+    "commands": "Commands",
+    "network": "Network",
+    "cgroups": "Cgroups",
+    "risk": "Risk",
+}
+NOVELTY_FILTERS = ("", "NEW", "CHANGED", "RARE", "RETURNING")
 SORT_KEYS = (
     "connections",
     "perm",
@@ -101,6 +121,7 @@ SORT_KEYS = (
     "cpu",
     "mem",
     "novelty",
+    "age",
     "name",
     "pid",
 )
@@ -112,6 +133,7 @@ SORT_LABELS = {
     "cpu": "CPU",
     "mem": "MEM",
     "novelty": "NOV",
+    "age": "AGE",
     "name": "NAME",
     "pid": "PID",
 }
@@ -1689,6 +1711,7 @@ def sort_rows(
         "cpu": lambda row: row.cpu_percent,
         "mem": lambda row: row.rss,
         "novelty": lambda row: row.novelty.score,
+        "age": lambda row: row.process.started_at,
         "name": lambda row: row.process.comm.lower(),
         "pid": lambda row: row.process.pid,
     }
@@ -1724,6 +1747,310 @@ def filter_rows(rows: Sequence[ViewRow], text: str) -> list[ViewRow]:
         if needle in haystack:
             result.append(row)
     return result
+
+
+def risk_reasons(process: Process, config: Config) -> tuple[str, ...]:
+    """Explain why a process appears in the risk view."""
+    reasons: list[str] = []
+    if process.euid == 0:
+        reasons.append("root")
+    caps = sorted(process.caps & DANGEROUS_CAPS)
+    if caps:
+        reasons.append("caps " + ",".join(caps))
+    if process.exe_deleted:
+        reasons.append("deleted executable")
+    suspicious = _suspicious_path(process, config)
+    if suspicious:
+        reasons.append(f"runs from {suspicious}")
+    return tuple(reasons)
+
+
+def risk_rows(rows: Sequence[ViewRow], config: Config) -> list[ViewRow]:
+    """Keep only processes with privilege or location risk markers."""
+    return [row for row in rows if risk_reasons(row.process, config)]
+
+
+def tree_order(rows: Sequence[ViewRow]) -> list[tuple[ViewRow, int]]:
+    """Order rows parent-first, with a depth for indentation."""
+    by_pid = {row.process.pid: row for row in rows}
+    children: dict[int, list[ViewRow]] = {}
+    roots: list[ViewRow] = []
+    for row in rows:
+        parent = row.process.ppid
+        if parent in by_pid and parent != row.process.pid:
+            children.setdefault(parent, []).append(row)
+        else:
+            roots.append(row)
+
+    ordered: list[tuple[ViewRow, int]] = []
+    visited: set[str] = set()
+
+    def walk(row: ViewRow, depth: int) -> None:
+        if row.key in visited:
+            return
+        visited.add(row.key)
+        ordered.append((row, depth))
+        for child in sorted(
+            children.get(row.process.pid, []), key=lambda item: item.process.pid
+        ):
+            walk(child, depth + 1)
+
+    for root in sorted(roots, key=lambda item: item.process.pid):
+        walk(root, 0)
+    for row in sorted(rows, key=lambda item: item.process.pid):
+        walk(row, 0)
+    return ordered
+
+
+@dataclass(frozen=True, slots=True)
+class CommandRow:
+    """All processes sharing one command identity, aggregated."""
+
+    fingerprint: str
+    comm: str
+    members: tuple[ViewRow, ...]
+    users: tuple[str, ...]
+    category: str
+    novelty: Novelty
+    count: int
+    conn_count: int
+    listen_count: int
+    perm: int
+    write_rate: float
+    tx_rate: float
+    rx_rate: float
+    read_rate: float
+    cpu_percent: float
+    rss: int
+    tags: tuple[str, ...]
+    first_seen: float = 0.0
+    observations: int = 0
+
+    @property
+    def key(self) -> str:
+        return f"cmd:{self.fingerprint}"
+
+    @property
+    def display_command(self) -> str:
+        return self.members[0].display_command
+
+    @property
+    def pids(self) -> tuple[int, ...]:
+        return tuple(sorted(member.process.pid for member in self.members))
+
+
+@dataclass(frozen=True, slots=True)
+class CgroupRow:
+    """All processes in one cgroup, aggregated."""
+
+    path: str
+    name: str
+    members: tuple[ViewRow, ...]
+    users: tuple[str, ...]
+    comms: tuple[str, ...]
+    novelty: Novelty
+    count: int
+    perm: int
+    write_rate: float
+    tx_rate: float
+    rx_rate: float
+    read_rate: float
+    cpu_percent: float
+    rss: int
+    first_seen: float = 0.0
+
+    @property
+    def key(self) -> str:
+        return f"cg:{self.path}"
+
+
+@dataclass(frozen=True, slots=True)
+class EndpointRow:
+    """One inet socket belonging to a process."""
+
+    socket: Socket
+    row: ViewRow
+    exposure: str
+
+    @property
+    def key(self) -> str:
+        process = self.row.process
+        return f"{process.pid}:{process.starttime}:{self.socket.inode}"
+
+    @property
+    def display_command(self) -> str:
+        return self.row.display_command
+
+
+def _best_novelty(members: Sequence[ViewRow]) -> Novelty:
+    return max(members, key=lambda row: row.novelty.score).novelty
+
+
+def _first_seen(members: Sequence[ViewRow]) -> float:
+    values = [row.first_seen for row in members if row.first_seen]
+    return min(values) if values else 0.0
+
+
+def aggregate_commands(rows: Sequence[ViewRow]) -> list[CommandRow]:
+    """Collapse processes into one row per command fingerprint."""
+    grouped: dict[str, list[ViewRow]] = {}
+    for row in rows:
+        grouped.setdefault(row.process.fingerprint, []).append(row)
+    commands: list[CommandRow] = []
+    for fingerprint, members in grouped.items():
+        best = max(members, key=lambda row: (row.novelty.score, row.cpu_percent))
+        tags = tuple(dict.fromkeys(tag for member in members for tag in member.tags))
+        commands.append(
+            CommandRow(
+                fingerprint=fingerprint,
+                comm=best.process.comm,
+                members=tuple(members),
+                users=tuple(sorted({member.user for member in members})),
+                category=best.category,
+                novelty=_best_novelty(members),
+                count=len(members),
+                conn_count=sum(member.conn_count for member in members),
+                listen_count=sum(member.listen_count for member in members),
+                perm=max(member.perm for member in members),
+                write_rate=sum(member.write_rate for member in members),
+                tx_rate=sum(member.tx_rate for member in members),
+                rx_rate=sum(member.rx_rate for member in members),
+                read_rate=sum(member.read_rate for member in members),
+                cpu_percent=sum(member.cpu_percent for member in members),
+                rss=sum(member.rss for member in members),
+                tags=tags,
+                first_seen=_first_seen(members),
+                observations=max(member.observations for member in members),
+            )
+        )
+    return commands
+
+
+def aggregate_cgroups(rows: Sequence[ViewRow]) -> list[CgroupRow]:
+    """Collapse processes into one row per cgroup."""
+    grouped: dict[str, list[ViewRow]] = {}
+    for row in rows:
+        grouped.setdefault(row.process.cgroup or "(none)", []).append(row)
+    cgroups: list[CgroupRow] = []
+    for path, members in grouped.items():
+        name = path.rstrip("/").rsplit("/", 1)[-1] or path
+        cgroups.append(
+            CgroupRow(
+                path=path,
+                name=name,
+                members=tuple(members),
+                users=tuple(sorted({member.user for member in members})),
+                comms=tuple(sorted({member.process.comm for member in members})),
+                novelty=_best_novelty(members),
+                count=len(members),
+                perm=max(member.perm for member in members),
+                write_rate=sum(member.write_rate for member in members),
+                tx_rate=sum(member.tx_rate for member in members),
+                rx_rate=sum(member.rx_rate for member in members),
+                read_rate=sum(member.read_rate for member in members),
+                cpu_percent=sum(member.cpu_percent for member in members),
+                rss=sum(member.rss for member in members),
+                first_seen=_first_seen(members),
+            )
+        )
+    return cgroups
+
+
+def _socket_exposure(sock: Socket) -> str:
+    if not sock.listening:
+        return "REMOTE"
+    local = sock.local
+    if local.startswith((":", "0.0.0.0:", "[::]:")):
+        return "PUBLIC"
+    if local.startswith(("127.", "[::1]")):
+        return "LOCAL"
+    return "BOUND"
+
+
+def build_endpoint_rows(rows: Sequence[ViewRow]) -> list[EndpointRow]:
+    """Flatten process sockets into endpoint rows."""
+    endpoints: list[EndpointRow] = []
+    for row in rows:
+        for sock in row.process.inet_sockets:
+            endpoints.append(
+                EndpointRow(socket=sock, row=row, exposure=_socket_exposure(sock))
+            )
+    return endpoints
+
+
+def sort_commands(
+    rows: Sequence[CommandRow], key: str, reverse: bool | None = None
+) -> list[CommandRow]:
+    if reverse is None:
+        reverse = default_reverse(key)
+    key_functions = {
+        "connections": lambda row: row.conn_count,
+        "perm": lambda row: row.perm,
+        "write": lambda row: row.write_rate,
+        "tx": lambda row: row.tx_rate,
+        "cpu": lambda row: row.cpu_percent,
+        "mem": lambda row: row.rss,
+        "novelty": lambda row: row.novelty.score,
+        "age": lambda row: row.first_seen,
+        "name": lambda row: row.comm.lower(),
+        "pid": lambda row: row.pids[0] if row.pids else 0,
+    }
+    key_function = key_functions.get(key, key_functions["novelty"])
+    return sorted(rows, key=key_function, reverse=reverse)
+
+
+def sort_cgroups(
+    rows: Sequence[CgroupRow], key: str, reverse: bool | None = None
+) -> list[CgroupRow]:
+    if reverse is None:
+        reverse = default_reverse(key)
+    key_functions = {
+        "connections": lambda row: row.count,
+        "perm": lambda row: row.perm,
+        "write": lambda row: row.write_rate,
+        "tx": lambda row: row.tx_rate,
+        "cpu": lambda row: row.cpu_percent,
+        "mem": lambda row: row.rss,
+        "novelty": lambda row: row.novelty.score,
+        "age": lambda row: row.first_seen,
+        "name": lambda row: row.name.lower(),
+        "pid": lambda row: row.name.lower(),
+    }
+    key_function = key_functions.get(key, key_functions["novelty"])
+    return sorted(rows, key=key_function, reverse=reverse)
+
+
+def sort_endpoints(
+    rows: Sequence[EndpointRow], key: str, reverse: bool | None = None
+) -> list[EndpointRow]:
+    if reverse is None:
+        reverse = default_reverse(key)
+    exposure_score = {"PUBLIC": 3, "BOUND": 2, "LOCAL": 1, "REMOTE": 0}
+    key_functions = {
+        "connections": lambda row: (
+            exposure_score.get(row.exposure, 0),
+            row.socket.port or 0,
+        ),
+        "perm": lambda row: row.row.perm,
+        "write": lambda row: row.row.write_rate,
+        "tx": lambda row: row.row.tx_rate,
+        "cpu": lambda row: row.row.cpu_percent,
+        "mem": lambda row: row.row.rss,
+        "novelty": lambda row: row.row.novelty.score,
+        "age": lambda row: row.row.process.started_at,
+        "name": lambda row: row.row.process.comm.lower(),
+        "pid": lambda row: row.row.process.pid,
+    }
+    key_function = key_functions.get(key, key_functions["connections"])
+    return sorted(
+        rows,
+        key=lambda row: (
+            key_function(row),
+            row.socket.port or 0,
+            row.socket.inode,
+        ),
+        reverse=reverse,
+    )
 
 
 def _sort_group(rows: Sequence[ViewRow]) -> list[ViewRow]:
@@ -1815,6 +2142,7 @@ class Dashboard:
         self.snapshot: SystemSnapshot | None = None
         self.rates: dict[int, Rates] = {}
         self.novelty: dict[int, Novelty] = {}
+        self.profiles: dict[str, Profile] = {}
         self.snapshot_ts = 0.0
         self.identity_count = 0
         self.warming = True
@@ -1822,6 +2150,9 @@ class Dashboard:
         self.sort_key = "connections"
         self.sort_reverse = True
         self.filter_text = ""
+        self.novelty_filter = ""
+        self.tree_mode = False
+        self.tree_depths: dict[str, int] = {}
         self.selected = 0
         self.scroll = 0
         self.page_size = 10
@@ -1874,6 +2205,7 @@ class Dashboard:
         self.snapshot_ts = ts
         self.rates = rates
         self.novelty = novelty
+        self.profiles = profiles
         self.rows = rows
         self.events = self.baseline.recent_events(200)
         self.last_error = ""
@@ -1928,37 +2260,100 @@ class Dashboard:
         elif 32 <= key < 127:
             self.filter_buffer += chr(key)
 
-    def grouped_rows(self) -> list[tuple[str, list[ViewRow]]]:
-        filtered = filter_rows(self.rows, self.filter_text)
-        return group_rows(filtered, self.config.novel_group_score)
+    def toggle_tree(self) -> None:
+        self.tree_mode = not self.tree_mode
+        self.selected = 0
+        self.scroll = 0
 
-    def visible_rows(self) -> list[ViewRow]:
+    def cycle_novelty_filter(self, direction: int = 1) -> None:
+        index = NOVELTY_FILTERS.index(self.novelty_filter)
+        self.novelty_filter = NOVELTY_FILTERS[
+            (index + direction) % len(NOVELTY_FILTERS)
+        ]
+        self.selected = 0
+        self.scroll = 0
+
+    def filtered_rows(self) -> list[ViewRow]:
+        rows = filter_rows(self.rows, self.filter_text)
+        if self.novelty_filter:
+            rows = [row for row in rows if row.novelty.level == self.novelty_filter]
+        return rows
+
+    def grouped_rows(self) -> list[tuple[str, list[ViewRow]]]:
+        return group_rows(self.filtered_rows(), self.config.novel_group_score)
+
+    def visible_items(self) -> list[Any]:
+        """Rows for the active view, in display order."""
+        self.tree_depths = {}
         if self.view == "main":
             return [row for _, group in self.grouped_rows() for row in group]
         if self.view == "all":
-            filtered = filter_rows(self.rows, self.filter_text)
+            filtered = self.filtered_rows()
+            if self.tree_mode:
+                ordered = tree_order(filtered)
+                self.tree_depths = {row.key: depth for row, depth in ordered}
+                return [row for row, _ in ordered]
             return sort_rows(filtered, self.sort_key, self.sort_reverse)
+        if self.view == "risk":
+            return sort_rows(
+                risk_rows(self.filtered_rows(), self.config),
+                self.sort_key,
+                self.sort_reverse,
+            )
+        if self.view == "commands":
+            return sort_commands(
+                aggregate_commands(self.filtered_rows()),
+                self.sort_key,
+                self.sort_reverse,
+            )
+        if self.view == "network":
+            return sort_endpoints(
+                build_endpoint_rows(self.filtered_rows()),
+                self.sort_key,
+                self.sort_reverse,
+            )
+        if self.view == "cgroups":
+            return sort_cgroups(
+                aggregate_cgroups(self.filtered_rows()),
+                self.sort_key,
+                self.sort_reverse,
+            )
         return []
 
-    def selected_row(self) -> ViewRow | None:
-        rows = self.visible_rows()
-        if not rows:
+    def visible_rows(self) -> list[ViewRow]:
+        items = self.visible_items()
+        return [item for item in items if isinstance(item, ViewRow)]
+
+    def selected_item(self) -> Any | None:
+        items = self.visible_items()
+        if not items:
             return None
-        return rows[min(max(0, self.selected), len(rows) - 1)]
+        return items[min(max(0, self.selected), len(items) - 1)]
+
+    def selected_row(self) -> ViewRow | None:
+        item = self.selected_item()
+        return item if isinstance(item, ViewRow) else None
 
     def move_selection(self, delta: int) -> None:
-        rows = self.visible_rows()
-        if not rows:
+        items = self.visible_items()
+        if not items:
             return
-        self.selected = min(max(0, self.selected + delta), len(rows) - 1)
+        self.selected = min(max(0, self.selected + delta), len(items) - 1)
 
     def _clamp_selection(self) -> None:
-        rows = self.visible_rows()
-        if not rows:
+        items = self.visible_items()
+        if not items:
             self.selected = 0
             self.scroll = 0
             return
-        self.selected = min(max(0, self.selected), len(rows) - 1)
+        self.selected = min(max(0, self.selected), len(items) - 1)
+
+    def display_command(self, row: ViewRow) -> str:
+        """Command text with tree indentation when tree mode is active."""
+        depth = self.tree_depths.get(row.key, 0)
+        if self.view == "all" and self.tree_mode and depth:
+            return "  " * depth + row.display_command
+        return row.display_command
 
     def totals(self) -> dict[str, Any]:
         levels = [row.novelty.level for row in self.rows]
@@ -1993,7 +2388,7 @@ class Dashboard:
         lines: list[RenderLine] = [
             self._title_line(width),
             self._metrics_line(totals, width),
-            self._tabs_line(),
+            self._tabs_line(width),
             RenderLine((Span("-" * width, "dim"),)),
         ]
         if self.view == "events":
@@ -2069,24 +2464,37 @@ class Dashboard:
             parts.append("warming")
         if self.filter_text:
             parts.append(f'filter "{self.filter_text}"')
-        if self.view == "all":
+        if self.novelty_filter:
+            parts.append(f"novelty {self.novelty_filter}")
+        if self.view == "all" and self.tree_mode:
+            parts.append("tree")
+        if self.view in ("all", "risk", "commands", "network", "cgroups"):
             parts.append(
                 f"sort {SORT_LABELS[self.sort_key]} {'desc' if self.sort_reverse else 'asc'}"
             )
         text = " | ".join(parts)
         return RenderLine((Span(truncate(text, width), "dim"),))
 
-    def _tabs_line(self) -> RenderLine:
+    def _tabs_line(self, width: int) -> RenderLine:
         spans: list[Span] = []
-        for key, label in (
-            ("main", "Triage"),
-            ("all", "All processes"),
-            ("events", "Events"),
+        used = 0
+        for key, number in (
+            ("main", "1"),
+            ("all", "2"),
+            ("events", "3"),
+            ("commands", "4"),
+            ("network", "5"),
+            ("cgroups", "6"),
+            ("risk", "!"),
         ):
             active = self.view == key
             marker = ">" if active else " "
-            spans.append(Span(f" {marker} {label} ", "tab-active" if active else "dim"))
+            chunk = f" {marker} {number} {VIEW_LABELS[key]} "
+            if used + len(chunk) > width:
+                break
+            spans.append(Span(chunk, "tab-active" if active else "dim"))
             spans.append(Span(" ", ""))
+            used += len(chunk) + 1
         return RenderLine(tuple(spans))
 
     def _novelty_badge(self, novelty: Novelty) -> str:
@@ -2100,9 +2508,9 @@ class Dashboard:
 
     def _content_lines(self, width: int) -> list[RenderLine]:
         lines: list[RenderLine] = []
-        lines.append(self._process_header(width))
-        index = 0
         if self.view == "main":
+            lines.append(self._process_header(width))
+            index = 0
             for group_name, rows in self.grouped_rows():
                 lines.append(
                     RenderLine((Span(f"{group_name} ({len(rows)})", "header"),))
@@ -2112,16 +2520,51 @@ class Dashboard:
                         self._process_line(row, width, index, include_extra=False)
                     )
                     index += 1
-        else:
-            for row in sort_rows(
-                filter_rows(self.rows, self.filter_text),
-                self.sort_key,
-                self.sort_reverse,
-            ):
+            if index == 0:
+                lines.append(
+                    RenderLine((Span("no processes match the filter", "dim"),))
+                )
+            return lines
+
+        if self.view in ("all", "risk"):
+            lines.append(self._process_header(width))
+            items = self.visible_items()
+            for index, row in enumerate(items):
                 lines.append(self._process_line(row, width, index, include_extra=True))
-                index += 1
-        if index == 0:
-            lines.append(RenderLine((Span("no processes match the filter", "dim"),)))
+            if not items:
+                message = (
+                    "no risky processes"
+                    if self.view == "risk"
+                    else "no processes match the filter"
+                )
+                lines.append(RenderLine((Span(message, "dim"),)))
+            return lines
+
+        if self.view == "commands":
+            lines.append(self._command_header(width))
+            commands = self.visible_items()
+            for index, command in enumerate(commands):
+                lines.append(self._command_line(command, width, index))
+            if not commands:
+                lines.append(RenderLine((Span("no commands match the filter", "dim"),)))
+            return lines
+
+        if self.view == "network":
+            lines.append(self._endpoint_header(width))
+            endpoints = self.visible_items()
+            for index, endpoint in enumerate(endpoints):
+                lines.append(self._endpoint_line(endpoint, width, index))
+            if not endpoints:
+                lines.append(RenderLine((Span("no sockets match the filter", "dim"),)))
+            return lines
+
+        if self.view == "cgroups":
+            lines.append(self._cgroup_header(width))
+            cgroups = self.visible_items()
+            for index, cgroup in enumerate(cgroups):
+                lines.append(self._cgroup_line(cgroup, width, index))
+            if not cgroups:
+                lines.append(RenderLine((Span("no cgroups match the filter", "dim"),)))
         return lines
 
     def _process_header(self, width: int) -> RenderLine:
@@ -2142,32 +2585,99 @@ class Dashboard:
             )
         return RenderLine((Span(truncate(text, width), "header"),))
 
-    def _process_line(
-        self, row: ViewRow, width: int, index: int, *, include_extra: bool
-    ) -> RenderLine:
-        selected = index == self.selected
-        style = "selected" if selected else NOVELTY_STYLES.get(row.novelty.level, "")
+    def _proc_prefix(self, row: ViewRow, include_extra: bool) -> str:
         badge = self._novelty_badge(row.novelty)
         tags = ",".join(row.tags)
         if include_extra:
-            prefix = (
+            return (
                 f"{row.process.pid:>7} {badge:<5} {row.conn_count:>5} {row.perm:>4} "
                 f"{format_rate(row.write_rate):>8} {format_rate(row.tx_rate):>8} "
                 f"{row.cpu_percent:>4.0f}% {format_bytes(row.rss):>6} {tags:<20} "
                 f"{row.user:<8} "
             )
-        else:
-            prefix = (
-                f"{row.process.pid:>7} {badge:<5} {row.conn_count:>5} {row.perm:>4} "
-                f"{format_rate(row.write_rate):>8} {row.cpu_percent:>4.0f}% "
-                f"{tags:<20} "
-            )
+        return (
+            f"{row.process.pid:>7} {badge:<5} {row.conn_count:>5} {row.perm:>4} "
+            f"{format_rate(row.write_rate):>8} {row.cpu_percent:>4.0f}% "
+            f"{tags:<20} "
+        )
+
+    def _process_line(
+        self, row: ViewRow, width: int, index: int, *, include_extra: bool
+    ) -> RenderLine:
+        selected = index == self.selected
+        style = "selected" if selected else NOVELTY_STYLES.get(row.novelty.level, "")
+        prefix = self._proc_prefix(row, include_extra)
+        command = truncate(self.display_command(row), max(1, width - len(prefix)))
+        spans = [Span(prefix, style)]
+        spans.append(Span(command, "selected" if selected else ""))
+        return RenderLine(tuple(spans), row_index=index)
+
+    def _command_header(self, width: int) -> RenderLine:
+        text = (
+            f"{'COUNT':>5} {'NOV':<5} {'CONN':>5} {'PERM':>4} {'WR/s':>8} "
+            f"{'TX/s':>8} {'CPU':>5} {'MEM':>6} {'USER':<8} COMMAND"
+        )
+        return RenderLine((Span(truncate(text, width), "header"),))
+
+    def _command_line(self, row: CommandRow, width: int, index: int) -> RenderLine:
+        selected = index == self.selected
+        style = "selected" if selected else NOVELTY_STYLES.get(row.novelty.level, "")
+        badge = self._novelty_badge(row.novelty)
+        prefix = (
+            f"{row.count:>5} {badge:<5} {row.conn_count:>5} {row.perm:>4} "
+            f"{format_rate(row.write_rate):>8} {format_rate(row.tx_rate):>8} "
+            f"{row.cpu_percent:>4.0f}% {format_bytes(row.rss):>6} "
+            f"{truncate(','.join(row.users), 8):<8} "
+        )
         command = truncate(row.display_command, max(1, width - len(prefix)))
         spans = [Span(prefix, style)]
-        if selected:
-            spans.append(Span(command, "selected"))
-        else:
-            spans.append(Span(command, ""))
+        spans.append(Span(command, "selected" if selected else ""))
+        return RenderLine(tuple(spans), row_index=index)
+
+    def _endpoint_header(self, width: int) -> RenderLine:
+        text = (
+            f"{'PROTO':<5} {'LOCAL':<22} {'REMOTE':<22} {'STATE':<10} "
+            f"{'EXPOSE':<7} {'PID':>7} {'USER':<8} {'NOV':<5} COMMAND"
+        )
+        return RenderLine((Span(truncate(text, width), "header"),))
+
+    def _endpoint_line(self, row: EndpointRow, width: int, index: int) -> RenderLine:
+        selected = index == self.selected
+        style = (
+            "selected" if selected else NOVELTY_STYLES.get(row.row.novelty.level, "")
+        )
+        badge = self._novelty_badge(row.row.novelty)
+        prefix = (
+            f"{row.socket.proto:<5} {row.socket.local:<22} "
+            f"{(row.socket.remote or '-'):<22} {row.socket.state:<10} "
+            f"{row.exposure:<7} {row.row.process.pid:>7} {row.row.user:<8} "
+            f"{badge:<5} "
+        )
+        command = truncate(row.display_command, max(1, width - len(prefix)))
+        spans = [Span(prefix, style)]
+        spans.append(Span(command, "selected" if selected else ""))
+        return RenderLine(tuple(spans), row_index=index)
+
+    def _cgroup_header(self, width: int) -> RenderLine:
+        text = (
+            f"{'NAME':<22} {'PROCS':>5} {'NOV':<5} {'WR/s':>8} {'TX/s':>8} "
+            f"{'CPU':>5} {'MEM':>6} {'USER':<8} PROCESSES"
+        )
+        return RenderLine((Span(truncate(text, width), "header"),))
+
+    def _cgroup_line(self, row: CgroupRow, width: int, index: int) -> RenderLine:
+        selected = index == self.selected
+        style = "selected" if selected else NOVELTY_STYLES.get(row.novelty.level, "")
+        badge = self._novelty_badge(row.novelty)
+        prefix = (
+            f"{truncate(row.name, 22):<22} {row.count:>5} {badge:<5} "
+            f"{format_rate(row.write_rate):>8} {format_rate(row.tx_rate):>8} "
+            f"{row.cpu_percent:>4.0f}% {format_bytes(row.rss):>6} "
+            f"{','.join(row.users)[:8]:<8} "
+        )
+        comms = truncate(",".join(row.comms), max(1, width - len(prefix)))
+        spans = [Span(prefix, style)]
+        spans.append(Span(comms, "selected" if selected else ""))
         return RenderLine(tuple(spans), row_index=index)
 
     def _event_lines(self, width: int) -> list[RenderLine]:
@@ -2194,71 +2704,276 @@ class Dashboard:
             lines.append(RenderLine((Span("no events recorded yet", "dim"),)))
         return lines
 
-    def _detail_lines(self, width: int) -> list[RenderLine]:
-        row = self.selected_row()
-        if row is None:
-            message = (
-                "no process selected"
-                if self.view != "events"
-                else f"{len(self.events)} recent baseline events"
-            )
-            return [RenderLine((Span(message, "dim"),))]
+    def detail_lines(self, item: Any, view: str | None = None) -> list[tuple[str, str]]:
+        """Untruncated detail lines for the selected item."""
+        view = self.view if view is None else view
+        if isinstance(item, ViewRow):
+            return self._detail_process(item, view)
+        if isinstance(item, CommandRow):
+            return self._detail_command(item)
+        if isinstance(item, EndpointRow):
+            return self._detail_endpoint(item)
+        if isinstance(item, CgroupRow):
+            return self._detail_cgroup(item)
+        if isinstance(item, Event):
+            return self._detail_event(item)
+        return []
+
+    def _detail_process(self, row: ViewRow, view: str) -> list[tuple[str, str]]:
         process = row.process
-        lines: list[RenderLine] = []
-        cgroup = (process.cgroup or "").rsplit("/", 1)[-1]
-        identity = (
-            f"PID {process.pid}  {process.comm}  uid {process.uid}({row.user})  "
-            f"{row.novelty.level} {row.novelty.score}  {row.category}"
-        )
-        if cgroup:
-            identity += f"  [{cgroup}]"
-        lines.append(RenderLine((Span(truncate(identity, width), ""),)))
-        reasons = "; ".join(row.novelty.reasons) or "no baseline deviation"
+        cgroup = process.cgroup or ""
         seen = (
             f"first seen {format_age(self.snapshot_ts - row.first_seen)} ago"
             if row.first_seen
             else "not in baseline yet"
         )
+        identity = (
+            f"PID {process.pid}  {process.comm}  uid {process.uid}({row.user})  "
+            f"{row.category}  {row.novelty.level} {row.novelty.score}  perm {row.perm}  "
+            f"{seen}, {row.observations} obs"
+        )
+        lines: list[tuple[str, str]] = [(identity, "bold")]
+        reasons = "; ".join(row.novelty.reasons) or "no baseline deviation"
         lines.append(
-            RenderLine(
-                (
-                    Span("why: ", "label"),
-                    Span(
-                        truncate(reasons, max(1, width - 5)),
-                        "warn" if row.novelty.score else "dim",
-                    ),
-                    Span(f"  |  {seen}, {row.observations} obs", "dim"),
-                )
+            (
+                "why: " + reasons,
+                "warn" if row.novelty.score else "dim",
             )
         )
-        remotes = ", ".join(sorted(process.remote_endpoints)[:4]) or "none"
-        sockets = (
-            f"sockets: {row.conn_count} inet ({row.listen_count} listening), "
-            f"{len(process.unix_sockets)} unix, {row.remote_count} remotes ({remotes})"
+        if view == "risk":
+            lines.append(
+                ("risk: " + ", ".join(risk_reasons(process, self.config)), "warn")
+            )
+        profile = self.profiles.get(process.fingerprint)
+        if profile is not None:
+            ports = ", ".join(f":{port}" for port in sorted(profile.ports)) or "none"
+            caps = ", ".join(sorted(profile.caps)) or "none"
+            lines.append(
+                (
+                    (
+                        f"baseline: {profile.observations} obs | sockets mean "
+                        f"{profile.sockets_mean:.1f} | write {format_rate(profile.write_mean)} | "
+                        f"cpu {profile.cpu_mean:.0f}% | ports {ports} | caps {caps}"
+                    ),
+                    "dim",
+                )
+            )
+        else:
+            lines.append(("baseline: not seen yet", "dim"))
+        remotes = ", ".join(sorted(process.remote_endpoints)) or "none"
+        lines.append(
+            (
+                (
+                    f"sockets: {row.conn_count} inet ({row.listen_count} listening), "
+                    f"{len(process.unix_sockets)} unix, {row.remote_count} remotes ({remotes})"
+                ),
+                "",
+            )
         )
-        lines.append(RenderLine((Span(truncate(sockets, width), ""),)))
-        io = (
-            f"io: write {format_rate(row.write_rate)} read {format_rate(row.read_rate)}  |  "
-            f"cpu {row.cpu_percent:.0f}%  |  tx {format_rate(row.tx_rate)} "
-            f"rx {format_rate(row.rx_rate)}  |  rss {format_bytes(row.rss)}  |  "
-            f"{process.threads} threads"
+        lines.append(
+            (
+                (
+                    f"io: write {format_rate(row.write_rate)} read "
+                    f"{format_rate(row.read_rate)} | cpu {row.cpu_percent:.0f}% | "
+                    f"tx {format_rate(row.tx_rate)} rx {format_rate(row.rx_rate)} | "
+                    f"rss {format_bytes(row.rss)} | {process.threads} threads"
+                ),
+                "",
+            )
         )
-        lines.append(RenderLine((Span(truncate(io, width), ""),)))
         caps = ", ".join(sorted(process.caps)) or "none"
-        details = (
-            f"perm {row.perm}  |  files {process.open_files} "
-            f"({process.open_writes} writable)  |  caps: {truncate(caps, 60)}  |  "
-            f"seccomp {process.seccomp}  |  cmd: {process.cmdline}"
+        lines.append(
+            (
+                (
+                    f"files {process.open_files} ({process.open_writes} writable) | "
+                    f"caps: {caps} | seccomp {process.seccomp} | "
+                    f"no_new_privs {process.no_new_privs}"
+                ),
+                "dim",
+            )
         )
-        lines.append(RenderLine((Span(truncate(details, width), "dim"),)))
+        exe = process.exe or f"[{process.comm}]"
+        if process.exe_deleted:
+            exe += " (deleted)"
+        lines.append((f"exe: {exe}", "dim"))
+        lines.append((f"cgroup: {cgroup or '(none)'}", "dim"))
+        if process.started_at:
+            lines.append((f"started: {_iso(process.started_at)}", "dim"))
+        lines.append((f"cmd: {process.cmdline or f'[{process.comm}]'}", "dim"))
         return lines
+
+    def _detail_command(self, row: CommandRow) -> list[tuple[str, str]]:
+        best = max(row.members, key=lambda member: member.novelty.score)
+        pids = ", ".join(str(pid) for pid in row.pids[:12])
+        if len(row.pids) > 12:
+            pids += ", …"
+        lines: list[tuple[str, str]] = [
+            (
+                (
+                    f"{row.comm}  {row.count} process(es)  pids {pids}  "
+                    f"users {', '.join(row.users)}"
+                ),
+                "bold",
+            ),
+            (
+                (
+                    f"{row.novelty.level} {row.novelty.score}  {row.category}  "
+                    f"perm {row.perm}  tags {','.join(row.tags) or '-'}"
+                ),
+                "",
+            ),
+            (
+                "why: " + ("; ".join(row.novelty.reasons) or "no baseline deviation"),
+                "warn" if row.novelty.score else "dim",
+            ),
+            (
+                (
+                    f"totals: conn {row.conn_count} ({row.listen_count} listening) | "
+                    f"write {format_rate(row.write_rate)} | tx {format_rate(row.tx_rate)} | "
+                    f"cpu {row.cpu_percent:.0f}% | rss {format_bytes(row.rss)}"
+                ),
+                "",
+            ),
+        ]
+        profile = self.profiles.get(row.fingerprint)
+        if profile is not None:
+            ports = ", ".join(f":{port}" for port in sorted(profile.ports)) or "none"
+            lines.append(
+                (
+                    (
+                        f"baseline: {profile.observations} obs | sockets mean "
+                        f"{profile.sockets_mean:.1f} | write {format_rate(profile.write_mean)} | "
+                        f"cpu {profile.cpu_mean:.0f}% | ports {ports}"
+                    ),
+                    "dim",
+                )
+            )
+        else:
+            lines.append(("baseline: not seen yet", "dim"))
+        lines.append((f"cmd: {best.display_command}", "dim"))
+        for member in row.members[:20]:
+            lines.append(
+                (
+                    (
+                        f"  pid {member.process.pid}  {member.user}  "
+                        f"{member.novelty.level} {member.novelty.score}  "
+                        f"{member.category}"
+                    ),
+                    "dim",
+                )
+            )
+        return lines
+
+    def _detail_endpoint(self, row: EndpointRow) -> list[tuple[str, str]]:
+        sock = row.socket
+        process = row.row.process
+        lines: list[tuple[str, str]] = [
+            (
+                (
+                    f"{sock.proto.upper()}  {sock.local or '-'} -> "
+                    f"{sock.remote or '-'}  {sock.state}  exposure {row.exposure}"
+                ),
+                "bold",
+            ),
+            (
+                (
+                    f"pid {process.pid}  {process.comm}  user {row.row.user}  "
+                    f"{row.row.novelty.level} {row.row.novelty.score}  "
+                    f"perm {row.row.perm}"
+                ),
+                "",
+            ),
+            (
+                "why: "
+                + ("; ".join(row.row.novelty.reasons) or "no baseline deviation"),
+                "warn" if row.row.novelty.score else "dim",
+            ),
+            (
+                (
+                    f"caps: {', '.join(sorted(process.caps)) or 'none'} | "
+                    f"seccomp {process.seccomp}"
+                ),
+                "dim",
+            ),
+            (f"cmd: {process.cmdline or f'[{process.comm}]'}", "dim"),
+        ]
+        return lines
+
+    def _detail_cgroup(self, row: CgroupRow) -> list[tuple[str, str]]:
+        lines: list[tuple[str, str]] = [
+            (f"cgroup: {row.path}", "bold"),
+            (
+                (
+                    f"{row.count} process(es)  users {', '.join(row.users)}  "
+                    f"{row.novelty.level} {row.novelty.score}"
+                ),
+                "",
+            ),
+            (
+                "why: " + ("; ".join(row.novelty.reasons) or "no baseline deviation"),
+                "warn" if row.novelty.score else "dim",
+            ),
+            (
+                (
+                    f"totals: write {format_rate(row.write_rate)} | "
+                    f"tx {format_rate(row.tx_rate)} | cpu {row.cpu_percent:.0f}% | "
+                    f"rss {format_bytes(row.rss)}"
+                ),
+                "",
+            ),
+            (f"processes: {', '.join(row.comms)}", "dim"),
+        ]
+        for member in row.members[:20]:
+            lines.append(
+                (
+                    (
+                        f"  pid {member.process.pid}  {member.process.comm}  "
+                        f"{member.user}  {member.novelty.level} {member.novelty.score}"
+                    ),
+                    "dim",
+                )
+            )
+        return lines
+
+    def _detail_event(self, event: Event) -> list[tuple[str, str]]:
+        stamp = dt.datetime.fromtimestamp(event.ts).strftime("%Y-%m-%d %H:%M:%S")
+        return [
+            (
+                f"{event.level}  pid {event.pid}  {event.comm}  {stamp}",
+                "bold",
+            ),
+            ("why: " + (event.reasons or "no reason recorded"), "warn"),
+            (f"fingerprint: {event.fingerprint}", "dim"),
+        ]
+
+    def _detail_lines(self, width: int) -> list[RenderLine]:
+        if self.view == "events":
+            return [
+                RenderLine((Span(f"{len(self.events)} recent baseline events", "dim"),))
+            ]
+        item = self.selected_item()
+        if item is None:
+            message = {
+                "commands": "no commands match the filter",
+                "network": "no sockets match the filter",
+                "cgroups": "no cgroups match the filter",
+                "risk": "no risky processes",
+            }.get(self.view, "no process selected")
+            return [RenderLine((Span(message, "dim"),))]
+        return [
+            RenderLine((Span(truncate(text, width), style),))
+            for text, style in self.detail_lines(item)
+        ]
 
     def _footer_line(self, width: int) -> RenderLine:
         if self.input_mode:
             text = f"filter: {self.filter_buffer}_  (enter apply, esc cancel)"
             return RenderLine((Span(truncate(text, width), "accent"),))
-        text = "1/2/3 view  j/k move  s/S sort  r refresh  R auto  c clear  / filter  ? help  q quit"
-        if self.view == "all":
+        text = (
+            "1-7 views  j/k move  s/S sort  n novelty  t tree  w compact  "
+            "enter details  y copy  r refresh  R auto  / filter  ? help  q quit"
+        )
+        if self.view in ("all", "risk", "commands", "network", "cgroups"):
             text += f"  |  sort {SORT_LABELS[self.sort_key]} {'desc' if self.sort_reverse else 'asc'}"
         return RenderLine((Span(truncate(text, width), "dim"),))
 
@@ -2266,6 +2981,25 @@ class Dashboard:
 # ---------------------------------------------------------------------------
 # Textual TUI (optional; direct execution uses uv + inline dependency)
 # ---------------------------------------------------------------------------
+
+
+RICH_STYLE_NAMES = {
+    "warn": "yellow",
+    "label": "yellow",
+    "accent": "cyan",
+    "title": "bold cyan",
+    "header": "bold",
+    "selected": "reverse",
+    "new": "bold red",
+    "changed": "yellow",
+    "returning": "magenta",
+    "rare": "cyan",
+}
+
+
+def _rich_style(style: str) -> str:
+    """Translate the plain renderer's style names for rich.text.Text."""
+    return RICH_STYLE_NAMES.get(style, style)
 
 
 def _textual_is_modern() -> bool:
@@ -2309,20 +3043,25 @@ if TEXTUAL_AVAILABLE:
                 ("1", "Triage"),
                 ("2", "All processes"),
                 ("3", "Events"),
+                ("4", "Commands (grouped by identity)"),
+                ("5", "Network sockets"),
+                ("6", "Cgroups"),
+                ("7 / !", "Risk (root, caps, deleted exe, suspicious path)"),
             ),
         ),
         (
             "MOVE",
             (
-                ("j / down", "Next process"),
-                ("k / up", "Previous process"),
+                ("j / down", "Next item"),
+                ("k / up", "Previous item"),
                 ("g / G", "Top / bottom"),
+                ("[ / ]", "Previous / next group (triage)"),
             ),
         ),
         (
             "SORT",
             (
-                ("s", "Next sort column"),
+                ("s", "Next sort column (includes AGE)"),
                 ("S", "Reverse sort order"),
                 ("click header", "Sort by that column"),
             ),
@@ -2331,8 +3070,18 @@ if TEXTUAL_AVAILABLE:
             "FILTER",
             (
                 ("/", "Filter by pid, name, user, category, capability"),
-                ("c", "Clear filter"),
+                ("n", "Cycle novelty: all, NEW, CHANGED, RARE, RETURNING"),
+                ("c", "Clear filter and novelty filter"),
                 ("esc", "Cancel filter entry"),
+            ),
+        ),
+        (
+            "DISPLAY",
+            (
+                ("t", "Toggle process tree in All processes"),
+                ("w", "Toggle compact / wide columns"),
+                ("enter", "Full detail screen"),
+                ("y", "Copy selected pid/command"),
             ),
         ),
         (
@@ -2340,6 +3089,7 @@ if TEXTUAL_AVAILABLE:
             (
                 ("r", "Refresh now"),
                 ("R", "Toggle auto-refresh"),
+                ("+ / -", "Adjust auto-refresh interval"),
                 ("q", "Quit"),
                 ("?", "Close this help"),
             ),
@@ -2387,6 +3137,39 @@ if TEXTUAL_AVAILABLE:
             text.append("\nesc or ? closes this help", style="dim")
             return text
 
+    class DetailScreen(ModalScreen[None]):
+        """Scrollable, untruncated detail for the selected row."""
+
+        CSS = """
+        DetailScreen { align: center middle; background: $background 60%; }
+        #detail-modal {
+            width: 100;
+            max-width: 95%;
+            height: auto;
+            max-height: 90%;
+            padding: 1 2;
+            border: round $accent;
+            background: $surface;
+        }
+        """
+
+        BINDINGS: ClassVar[list[BindingType]] = [
+            Binding("escape", "dismiss", "Close", show=False),
+            Binding("q", "dismiss", "Close", show=False),
+            Binding("question_mark", "dismiss", "Close", show=False),
+        ]
+
+        def __init__(self, text: RichText) -> None:
+            super().__init__()
+            self.text = text
+
+        def compose(self) -> ComposeResult:
+            with VerticalScroll(id="detail-modal", can_focus=True):
+                yield Static(self.text)
+
+        def on_mount(self) -> None:
+            self.query_one(VerticalScroll).focus()
+
     class ProcWatchApp(App[None]):
         """Interactive Textual dashboard."""
 
@@ -2404,30 +3187,53 @@ if TEXTUAL_AVAILABLE:
         BINDINGS: ClassVar[list[BindingType]] = [
             Binding("q", "quit", "Quit"),
             Binding("1", "show_main", "Triage"),
-            Binding("2", "show_all", "All processes"),
+            Binding("2", "show_all", "All"),
             Binding("3", "show_events", "Events"),
+            Binding("4", "show_commands", "Commands"),
+            Binding("5", "show_network", "Network"),
+            Binding("6", "show_cgroups", "Cgroups"),
+            Binding("7", "show_risk", "Risk"),
+            Binding("exclamation_mark", "show_risk", "Risk", show=False),
             Binding("j", "cursor_down", "Down", show=False),
             Binding("k", "cursor_up", "Up", show=False),
             Binding("g", "top", "Top", show=False),
             Binding("G", "bottom", "Bottom", show=False),
+            Binding("left_square_bracket", "group_prev", "Prev group", show=False),
+            Binding("right_square_bracket", "group_next", "Next group", show=False),
             Binding("s", "sort_next", "Sort"),
             Binding("S", "sort_reverse", "Reverse"),
+            Binding("n", "novelty_filter", "Novelty"),
+            Binding("t", "toggle_tree", "Tree"),
+            Binding("w", "toggle_compact", "Compact"),
+            Binding("enter", "details", "Details"),
+            Binding("y", "copy", "Copy"),
             Binding("slash", "filter", "Filter"),
+            Binding("c", "clear_filter", "Clear filter", show=False),
             Binding("r", "refresh_data", "Refresh"),
             Binding("R", "toggle_auto_refresh", "Auto refresh"),
+            Binding("plus", "interval_up", "Interval +", show=False),
+            Binding("equals_sign", "interval_up", "Interval +", show=False),
+            Binding("minus", "interval_down", "Interval -", show=False),
             Binding("question_mark", "help", "Help"),
-            Binding("c", "clear_filter", "Clear filter", show=False),
             Binding("escape", "cancel_filter", "Cancel", show=False),
         ]
         VIEW_BY_PANE: ClassVar[dict[str, str]] = {
             "tab-main": "main",
             "tab-all": "all",
             "tab-events": "events",
+            "tab-commands": "commands",
+            "tab-network": "network",
+            "tab-cgroups": "cgroups",
+            "tab-risk": "risk",
         }
         TABLE_BY_VIEW: ClassVar[dict[str, str]] = {
             "main": "table-main",
             "all": "table-all",
             "events": "table-events",
+            "commands": "table-commands",
+            "network": "table-network",
+            "cgroups": "table-cgroups",
+            "risk": "table-risk",
         }
         HEADER_SORT: ClassVar[dict[str, str]] = {
             "CONN": "connections",
@@ -2439,7 +3245,7 @@ if TEXTUAL_AVAILABLE:
             "NOV": "novelty",
             "PID": "pid",
         }
-        COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+        PROCESS_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
             ("CAT", "cat", 9),
             ("PID", "pid", 7),
             ("NOV", "nov", 5),
@@ -2453,14 +3259,88 @@ if TEXTUAL_AVAILABLE:
             ("USER", "user", 9),
             ("COMMAND", "command", 40),
         )
+        PROCESS_COMPACT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("PID", "pid", 7),
+            ("NOV", "nov", 5),
+            ("CONN", "conn", 6),
+            ("WR/s", "wr", 8),
+            ("COMMAND", "command", 40),
+        )
+        COMMAND_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("COUNT", "count", 5),
+            ("NOV", "nov", 5),
+            ("CONN", "conn", 6),
+            ("PERM", "perm", 4),
+            ("WR/s", "wr", 8),
+            ("TX/s", "tx", 8),
+            ("CPU", "cpu", 5),
+            ("MEM", "mem", 6),
+            ("TAGS", "tags", 20),
+            ("USER", "user", 9),
+            ("COMMAND", "command", 40),
+        )
+        COMMAND_COMPACT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("COUNT", "count", 5),
+            ("NOV", "nov", 5),
+            ("CONN", "conn", 6),
+            ("WR/s", "wr", 8),
+            ("COMMAND", "command", 40),
+        )
+        CGROUP_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("NAME", "name", 22),
+            ("PROCS", "count", 5),
+            ("NOV", "nov", 5),
+            ("WR/s", "wr", 8),
+            ("TX/s", "tx", 8),
+            ("CPU", "cpu", 5),
+            ("MEM", "mem", 6),
+            ("USER", "user", 9),
+            ("PROCESSES", "procs", 30),
+        )
+        CGROUP_COMPACT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("NAME", "name", 22),
+            ("PROCS", "count", 5),
+            ("NOV", "nov", 5),
+            ("WR/s", "wr", 8),
+            ("PROCESSES", "procs", 30),
+        )
+        ENDPOINT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("PROTO", "proto", 5),
+            ("LOCAL", "local", 22),
+            ("REMOTE", "remote", 22),
+            ("STATE", "state", 10),
+            ("EXPOSE", "exposure", 7),
+            ("PID", "pid", 7),
+            ("USER", "user", 9),
+            ("NOV", "nov", 5),
+            ("COMMAND", "command", 30),
+        )
+        ENDPOINT_COMPACT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("LOCAL", "local", 22),
+            ("REMOTE", "remote", 22),
+            ("EXPOSE", "exposure", 7),
+            ("PID", "pid", 7),
+            ("COMMAND", "command", 30),
+        )
+        EVENT_COLUMNS: ClassVar[tuple[tuple[str, str, int], ...]] = (
+            ("TIME", "time", 14),
+            ("LEVEL", "level", 9),
+            ("PID", "pid", 7),
+            ("PROCESS", "process", 20),
+            ("WHY", "why", 40),
+        )
 
         def __init__(self, dashboard: Dashboard, *, auto_poll: bool = False) -> None:
             super().__init__()
             self.dashboard = dashboard
             self.auto_poll = auto_poll
+            self.compact = False
             self.refresh_timer: Timer | None = None
             self.rows_by_key: dict[str, ViewRow] = {}
             self.events_by_key: dict[str, Event] = {}
+            self.commands_by_key: dict[str, CommandRow] = {}
+            self.endpoints_by_key: dict[str, EndpointRow] = {}
+            self.cgroups_by_key: dict[str, CgroupRow] = {}
             self.selected_keys: dict[str, str] = {}
             self.selected_groups: dict[str, str] = {}
             self.row_groups: dict[str, dict[str, str]] = {}
@@ -2487,6 +3367,22 @@ if TEXTUAL_AVAILABLE:
                     yield DataTable(
                         id="table-events", cursor_type="row", zebra_stripes=True
                     )
+                with TabPane("Commands", id="tab-commands"):
+                    yield DataTable(
+                        id="table-commands", cursor_type="row", zebra_stripes=True
+                    )
+                with TabPane("Network", id="tab-network"):
+                    yield DataTable(
+                        id="table-network", cursor_type="row", zebra_stripes=True
+                    )
+                with TabPane("Cgroups", id="tab-cgroups"):
+                    yield DataTable(
+                        id="table-cgroups", cursor_type="row", zebra_stripes=True
+                    )
+                with TabPane("Risk", id="tab-risk"):
+                    yield DataTable(
+                        id="table-risk", cursor_type="row", zebra_stripes=True
+                    )
             yield Input(
                 placeholder="filter by pid, name, user, category, capability",
                 id="filter",
@@ -2495,13 +3391,7 @@ if TEXTUAL_AVAILABLE:
             yield Footer()
 
         def on_mount(self) -> None:
-            for table_id in self.TABLE_BY_VIEW.values():
-                table = self.query_one(f"#{table_id}", DataTable)
-                if table_id == "table-events":
-                    table.add_columns("TIME", "LEVEL", "PID", "PROCESS", "WHY")
-                else:
-                    for label, key, width in self.COLUMNS:
-                        table.add_column(label, key=key, width=width)
+            self.configure_tables()
             self.query_one("#filter", Input).display = False
             self.ready = True
             if self.dashboard.snapshot is None:
@@ -2509,6 +3399,38 @@ if TEXTUAL_AVAILABLE:
             self.refresh_views()
             self.call_after_refresh(self.focus_table)
             self.apply_auto_refresh()
+
+        def columns_for(self, view: str) -> tuple[tuple[str, str, int], ...]:
+            if view in ("main", "all", "risk"):
+                return (
+                    self.PROCESS_COMPACT_COLUMNS
+                    if self.compact
+                    else self.PROCESS_COLUMNS
+                )
+            if view == "commands":
+                return (
+                    self.COMMAND_COMPACT_COLUMNS
+                    if self.compact
+                    else self.COMMAND_COLUMNS
+                )
+            if view == "cgroups":
+                return (
+                    self.CGROUP_COMPACT_COLUMNS if self.compact else self.CGROUP_COLUMNS
+                )
+            if view == "network":
+                return (
+                    self.ENDPOINT_COMPACT_COLUMNS
+                    if self.compact
+                    else self.ENDPOINT_COLUMNS
+                )
+            return self.EVENT_COLUMNS
+
+        def configure_tables(self) -> None:
+            for view, table_id in self.TABLE_BY_VIEW.items():
+                table = self.query_one(f"#{table_id}", DataTable)
+                table.clear(columns=True)
+                for label, key, width in self.columns_for(view):
+                    table.add_column(label, key=key, width=width)
 
         def tick(self) -> None:
             if not self.auto_poll:
@@ -2554,18 +3476,38 @@ if TEXTUAL_AVAILABLE:
                     )
                     labelled.extend((short, row) for row in rows)
                 self.fill_process_table(
-                    table, labelled, preserve_scroll=preserve_scroll
+                    table, view, labelled, preserve_scroll=preserve_scroll
                 )
-            elif view == "all":
-                table = self.query_one("#table-all", DataTable)
-                rows = sort_rows(
-                    filter_rows(self.dashboard.rows, self.dashboard.filter_text),
-                    self.dashboard.sort_key,
-                    self.dashboard.sort_reverse,
+            elif view in ("all", "risk"):
+                table_id = "table-all" if view == "all" else "table-risk"
+                table = self.query_one(f"#{table_id}", DataTable)
+                rows = self.dashboard.visible_items()
+                label = (
+                    CATEGORY_SHORT[row.category] if view == "all" else "RISK"
+                    for row in rows
                 )
                 self.fill_process_table(
                     table,
-                    [(CATEGORY_SHORT[row.category], row) for row in rows],
+                    view,
+                    list(zip(label, rows)),
+                    preserve_scroll=preserve_scroll,
+                )
+            elif view == "commands":
+                self.fill_commands(
+                    self.query_one("#table-commands", DataTable),
+                    self.dashboard.visible_items(),
+                    preserve_scroll=preserve_scroll,
+                )
+            elif view == "network":
+                self.fill_endpoints(
+                    self.query_one("#table-network", DataTable),
+                    self.dashboard.visible_items(),
+                    preserve_scroll=preserve_scroll,
+                )
+            elif view == "cgroups":
+                self.fill_cgroups(
+                    self.query_one("#table-cgroups", DataTable),
+                    self.dashboard.visible_items(),
                     preserve_scroll=preserve_scroll,
                 )
             else:
@@ -2575,68 +3517,32 @@ if TEXTUAL_AVAILABLE:
                 )
             self.update_detail()
 
-        def fill_process_table(
+        def write_table(
             self,
             table: DataTable,
-            labelled_rows: Sequence[tuple[str, ViewRow]],
+            entries: Sequence[tuple[str, Mapping[str, Any]]],
+            columns: Sequence[tuple[str, str, int]],
             *,
-            preserve_scroll: bool = True,
+            preserve_scroll: bool,
         ) -> None:
+            """Replace table rows, keeping cursor row and scroll when possible."""
             scroll_x = table.scroll_x
             scroll_y = table.scroll_y
             first_key = self.selected_keys.get(table.id, "")
-            previous_group = self.selected_groups.get(table.id, "")
-            self.rows_by_key = {}
             keys: list[str] = []
-            groups: dict[str, str] = {}
             with self.batch_update():
                 table.clear(columns=False)
-                for category, row in labelled_rows:
-                    key = row.key
+                for key, cells in entries:
                     keys.append(key)
-                    groups[key] = category
-                    self.rows_by_key[key] = row
-                    badge = {
-                        "NEW": "NEW",
-                        "CHANGED": "CHG",
-                        "RETURNING": "RET",
-                        "RARE": "RARE",
-                        "KNOWN": "",
-                    }.get(row.novelty.level, row.novelty.level[:4])
-                    style = {
-                        "NEW": "bold red",
-                        "CHANGED": "yellow",
-                        "RETURNING": "magenta",
-                        "RARE": "cyan",
-                        "KNOWN": "",
-                    }.get(row.novelty.level, "")
-                    command_style = (
-                        "bold" if row.novelty.level in ("NEW", "CHANGED") else ""
-                    )
                     table.add_row(
-                        RichText(category, style="dim"),
-                        str(row.process.pid),
-                        RichText(badge, style=style),
-                        str(row.conn_count),
-                        str(row.perm),
-                        format_rate(row.write_rate),
-                        format_rate(row.tx_rate),
-                        f"{row.cpu_percent:.0f}%",
-                        format_bytes(row.rss),
-                        ",".join(row.tags),
-                        row.user,
-                        RichText(row.display_command, style=command_style),
+                        *(cells.get(column_key, "") for _, column_key, _ in columns),
                         key=key,
                     )
-            keep_selection = (
-                first_key in groups and groups.get(first_key) == previous_group
-            )
+            keep_selection = first_key in keys
             if not keep_selection:
                 first_key = keys[0] if keys else ""
             self.selected_keys[table.id] = first_key
-            self.selected_groups[table.id] = groups.get(first_key, "")
-            self.row_groups[table.id or ""] = groups
-            index = keys.index(first_key) if first_key in groups else 0
+            index = keys.index(first_key) if first_key in keys else 0
             if table.row_count:
                 target = max(0, min(index, table.row_count - 1))
                 if preserve_scroll and keep_selection:
@@ -2645,12 +3551,206 @@ if TEXTUAL_AVAILABLE:
                 else:
                     table.move_cursor(row=target, scroll=True)
 
+        def process_cells(self, category: str, row: ViewRow) -> dict[str, Any]:
+            badge = {
+                "NEW": "NEW",
+                "CHANGED": "CHG",
+                "RETURNING": "RET",
+                "RARE": "RARE",
+                "KNOWN": "",
+            }.get(row.novelty.level, row.novelty.level[:4])
+            style = {
+                "NEW": "bold red",
+                "CHANGED": "yellow",
+                "RETURNING": "magenta",
+                "RARE": "cyan",
+                "KNOWN": "",
+            }.get(row.novelty.level, "")
+            command_style = "bold" if row.novelty.level in ("NEW", "CHANGED") else ""
+            return {
+                "cat": RichText(category, style="dim"),
+                "pid": str(row.process.pid),
+                "nov": RichText(badge, style=style),
+                "conn": str(row.conn_count),
+                "perm": str(row.perm),
+                "wr": format_rate(row.write_rate),
+                "tx": format_rate(row.tx_rate),
+                "cpu": f"{row.cpu_percent:.0f}%",
+                "mem": format_bytes(row.rss),
+                "tags": ",".join(row.tags),
+                "user": row.user,
+                "command": RichText(
+                    self.dashboard.display_command(row), style=command_style
+                ),
+            }
+
+        def fill_process_table(
+            self,
+            table: DataTable,
+            view: str,
+            labelled_rows: Sequence[tuple[str, ViewRow]],
+            *,
+            preserve_scroll: bool = True,
+        ) -> None:
+            first_key = self.selected_keys.get(table.id, "")
+            previous_group = self.selected_groups.get(table.id, "")
+            self.rows_by_key = {}
+            groups: dict[str, str] = {}
+            entries: list[tuple[str, Mapping[str, Any]]] = []
+            for category, row in labelled_rows:
+                key = row.key
+                groups[key] = category
+                self.rows_by_key[key] = row
+                entries.append((key, self.process_cells(category, row)))
+            if first_key not in groups or groups.get(first_key) != previous_group:
+                self.selected_keys[table.id] = ""
+            self.write_table(
+                table,
+                entries,
+                self.columns_for(view),
+                preserve_scroll=preserve_scroll,
+            )
+            first_key = self.selected_keys.get(table.id, "")
+            self.selected_groups[table.id] = groups.get(first_key, "")
+            self.row_groups[table.id or ""] = groups
+
+        def command_cells(self, row: CommandRow) -> dict[str, Any]:
+            badge = {
+                "NEW": "NEW",
+                "CHANGED": "CHG",
+                "RETURNING": "RET",
+                "RARE": "RARE",
+                "KNOWN": "",
+            }.get(row.novelty.level, row.novelty.level[:4])
+            style = {
+                "NEW": "bold red",
+                "CHANGED": "yellow",
+                "RETURNING": "magenta",
+                "RARE": "cyan",
+                "KNOWN": "",
+            }.get(row.novelty.level, "")
+            return {
+                "count": str(row.count),
+                "nov": RichText(badge, style=style),
+                "conn": str(row.conn_count),
+                "perm": str(row.perm),
+                "wr": format_rate(row.write_rate),
+                "tx": format_rate(row.tx_rate),
+                "cpu": f"{row.cpu_percent:.0f}%",
+                "mem": format_bytes(row.rss),
+                "tags": ",".join(row.tags),
+                "user": ",".join(row.users),
+                "command": RichText(
+                    row.display_command,
+                    style="bold" if row.novelty.level in ("NEW", "CHANGED") else "",
+                ),
+            }
+
+        def fill_commands(
+            self,
+            table: DataTable,
+            rows: Sequence[CommandRow],
+            *,
+            preserve_scroll: bool = True,
+        ) -> None:
+            self.commands_by_key = {row.key: row for row in rows}
+            self.write_table(
+                table,
+                [(row.key, self.command_cells(row)) for row in rows],
+                self.columns_for("commands"),
+                preserve_scroll=preserve_scroll,
+            )
+
+        def cgroup_cells(self, row: CgroupRow) -> dict[str, Any]:
+            badge = {
+                "NEW": "NEW",
+                "CHANGED": "CHG",
+                "RETURNING": "RET",
+                "RARE": "RARE",
+                "KNOWN": "",
+            }.get(row.novelty.level, row.novelty.level[:4])
+            style = {
+                "NEW": "bold red",
+                "CHANGED": "yellow",
+                "RETURNING": "magenta",
+                "RARE": "cyan",
+                "KNOWN": "",
+            }.get(row.novelty.level, "")
+            return {
+                "name": row.name,
+                "count": str(row.count),
+                "nov": RichText(badge, style=style),
+                "wr": format_rate(row.write_rate),
+                "tx": format_rate(row.tx_rate),
+                "cpu": f"{row.cpu_percent:.0f}%",
+                "mem": format_bytes(row.rss),
+                "user": ",".join(row.users),
+                "procs": ",".join(row.comms),
+            }
+
+        def fill_cgroups(
+            self,
+            table: DataTable,
+            rows: Sequence[CgroupRow],
+            *,
+            preserve_scroll: bool = True,
+        ) -> None:
+            self.cgroups_by_key = {row.key: row for row in rows}
+            self.write_table(
+                table,
+                [(row.key, self.cgroup_cells(row)) for row in rows],
+                self.columns_for("cgroups"),
+                preserve_scroll=preserve_scroll,
+            )
+
+        def endpoint_cells(self, row: EndpointRow) -> dict[str, Any]:
+            badge = {
+                "NEW": "NEW",
+                "CHANGED": "CHG",
+                "RETURNING": "RET",
+                "RARE": "RARE",
+                "KNOWN": "",
+            }.get(row.row.novelty.level, row.row.novelty.level[:4])
+            style = {
+                "NEW": "bold red",
+                "CHANGED": "yellow",
+                "RETURNING": "magenta",
+                "RARE": "cyan",
+                "KNOWN": "",
+            }.get(row.row.novelty.level, "")
+            return {
+                "proto": row.socket.proto,
+                "local": row.socket.local or "-",
+                "remote": row.socket.remote or "-",
+                "state": row.socket.state,
+                "exposure": row.exposure,
+                "pid": str(row.row.process.pid),
+                "user": row.row.user,
+                "nov": RichText(badge, style=style),
+                "command": RichText(
+                    row.display_command,
+                    style="bold" if row.row.novelty.level in ("NEW", "CHANGED") else "",
+                ),
+            }
+
+        def fill_endpoints(
+            self,
+            table: DataTable,
+            rows: Sequence[EndpointRow],
+            *,
+            preserve_scroll: bool = True,
+        ) -> None:
+            self.endpoints_by_key = {row.key: row for row in rows}
+            self.write_table(
+                table,
+                [(row.key, self.endpoint_cells(row)) for row in rows],
+                self.columns_for("network"),
+                preserve_scroll=preserve_scroll,
+            )
+
         def fill_events(
             self, table: DataTable, *, preserve_scroll: bool = True
         ) -> None:
-            scroll_x = table.scroll_x
-            scroll_y = table.scroll_y
-            first_key = self.selected_keys.get(table.id, "")
             needle = self.dashboard.filter_text.strip().lower()
             events = [
                 event
@@ -2659,39 +3759,43 @@ if TEXTUAL_AVAILABLE:
                 or needle
                 in f"{event.pid} {event.comm} {event.level} {event.reasons}".lower()
             ]
+            if self.dashboard.novelty_filter:
+                events = [
+                    event
+                    for event in events
+                    if event.level == self.dashboard.novelty_filter
+                ]
             self.events_by_key = {}
-            with self.batch_update():
-                table.clear(columns=False)
-                for index, event in enumerate(events):
-                    key = f"{event.ts}:{event.pid}:{index}"
-                    self.events_by_key[key] = event
-                    style = {
-                        "NEW": "bold red",
-                        "CHANGED": "yellow",
-                        "RETURNING": "magenta",
-                        "RARE": "cyan",
-                    }.get(event.level, "")
-                    table.add_row(
-                        dt.datetime.fromtimestamp(event.ts).strftime("%m-%d %H:%M:%S"),
-                        RichText(event.level, style=style),
-                        str(event.pid),
-                        event.comm,
-                        event.reasons,
-                        key=key,
+            entries: list[tuple[str, Mapping[str, Any]]] = []
+            for index, event in enumerate(events):
+                key = f"{event.ts}:{event.pid}:{index}"
+                self.events_by_key[key] = event
+                style = {
+                    "NEW": "bold red",
+                    "CHANGED": "yellow",
+                    "RETURNING": "magenta",
+                    "RARE": "cyan",
+                }.get(event.level, "")
+                entries.append(
+                    (
+                        key,
+                        {
+                            "time": dt.datetime.fromtimestamp(event.ts).strftime(
+                                "%m-%d %H:%M:%S"
+                            ),
+                            "level": RichText(event.level, style=style),
+                            "pid": str(event.pid),
+                            "process": event.comm,
+                            "why": event.reasons,
+                        },
                     )
-            keep_selection = first_key in self.events_by_key
-            if not keep_selection:
-                first_key = next(iter(self.events_by_key), "")
-            if first_key:
-                self.selected_keys[table.id] = first_key
-            if table.row_count:
-                keys = list(self.events_by_key)
-                index = keys.index(first_key) if first_key in self.events_by_key else 0
-                if preserve_scroll and keep_selection:
-                    table.move_cursor(row=index, scroll=False)
-                    table.scroll_to(x=scroll_x, y=scroll_y, animate=False)
-                else:
-                    table.move_cursor(row=index, scroll=True)
+                )
+            self.write_table(
+                table,
+                entries,
+                self.EVENT_COLUMNS,
+                preserve_scroll=preserve_scroll,
+            )
 
         def update_summary(self) -> None:
             totals = self.dashboard.totals()
@@ -2699,7 +3803,9 @@ if TEXTUAL_AVAILABLE:
             title.append("procwatch", style="bold cyan")
             title.append("  process baseline triage", style="dim")
             if self.auto_poll:
-                title.append("   auto", style="dim")
+                title.append(
+                    f"   auto {self.dashboard.config.interval:g}s", style="dim"
+                )
             else:
                 title.append("   manual", style="dim")
             title.append(
@@ -2725,7 +3831,21 @@ if TEXTUAL_AVAILABLE:
                 metrics.append(
                     f' | filter "{self.dashboard.filter_text}"', style="cyan"
                 )
-            if self.dashboard.view == "all":
+            if self.dashboard.novelty_filter:
+                metrics.append(
+                    f" | novelty {self.dashboard.novelty_filter}", style="cyan"
+                )
+            if self.dashboard.view == "all" and self.dashboard.tree_mode:
+                metrics.append(" | tree", style="cyan")
+            if self.compact:
+                metrics.append(" | compact", style="cyan")
+            if self.dashboard.view in (
+                "all",
+                "risk",
+                "commands",
+                "network",
+                "cgroups",
+            ):
                 metrics.append(
                     f" | sort {SORT_LABELS[self.dashboard.sort_key]} "
                     f"{'desc' if self.dashboard.sort_reverse else 'asc'}",
@@ -2737,90 +3857,36 @@ if TEXTUAL_AVAILABLE:
                 RichText("\n").join([title, metrics])
             )
 
+        def item_for_view(self) -> Any | None:
+            view = self.dashboard.view
+            table = self.active_table()
+            key = self.selected_keys.get(table.id, "")
+            if view == "events":
+                return self.events_by_key.get(key)
+            if view == "commands":
+                return self.commands_by_key.get(key)
+            if view == "network":
+                return self.endpoints_by_key.get(key)
+            if view == "cgroups":
+                return self.cgroups_by_key.get(key)
+            return self.rows_by_key.get(key)
+
         def update_detail(self) -> None:
             detail = self.query_one("#detail", Static)
             width = max(24, (self.size.width or 120) - 4)
-            if self.dashboard.view == "events":
-                key = self.selected_keys.get("table-events", "")
-                event = self.events_by_key.get(key)
-                if event is None:
-                    detail.update(
-                        RichText(f"{len(self.events_by_key)} events", style="dim")
-                    )
-                    return
-                stamp = dt.datetime.fromtimestamp(event.ts).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
-                text = RichText()
-                text.append(f"{event.level}  ", style="bold red")
-                text.append(
-                    truncate(f"pid {event.pid}  {event.comm}  {stamp}", width),
-                    style="bold",
-                )
-                text.append("\nwhy: ", style="yellow")
-                text.append(truncate(event.reasons or "no reason recorded", width - 5))
-                detail.update(text)
+            item = self.item_for_view()
+            if item is None:
+                if self.dashboard.view == "events":
+                    message = f"{len(self.events_by_key)} events"
+                else:
+                    message = "select a row"
+                detail.update(RichText(message, style="dim"))
                 return
-            table = self.active_table()
-            row = self.rows_by_key.get(self.selected_keys.get(table.id, ""))
-            if row is None:
-                detail.update(RichText("select a process", style="dim"))
-                return
-            process = row.process
-            seen = (
-                f"first seen {format_age(self.dashboard.snapshot_ts - row.first_seen)} ago"
-                if row.first_seen
-                else "not in baseline yet"
-            )
             text = RichText()
-            text.append(f"PID {process.pid}  ", style="bold")
-            text.append(
-                truncate(
-                    f"{process.comm}  uid {process.uid}({row.user})  {row.category}  "
-                    f"{row.novelty.level} {row.novelty.score}  perm {row.perm}  {seen}",
-                    width,
-                )
-            )
-            text.append("\nwhy: ", style="yellow")
-            text.append(
-                truncate(
-                    "; ".join(row.novelty.reasons) or "no baseline deviation",
-                    width - 5,
-                ),
-                style="yellow" if row.novelty.score else "dim",
-            )
-            remotes = ", ".join(sorted(process.remote_endpoints)[:3]) or "none"
-            text.append(
-                "\n"
-                + truncate(
-                    f"sockets {row.conn_count} inet ({row.listen_count} listening) | "
-                    f"{len(process.unix_sockets)} unix | remotes: {remotes}",
-                    width,
-                ),
-                style="dim",
-            )
-            text.append(
-                "\n"
-                + truncate(
-                    f"io write {format_rate(row.write_rate)} read {format_rate(row.read_rate)} | "
-                    f"cpu {row.cpu_percent:.0f}% | tx {format_rate(row.tx_rate)} "
-                    f"rx {format_rate(row.rx_rate)} | rss {format_bytes(row.rss)} | "
-                    f"{process.threads} threads",
-                    width,
-                ),
-                style="dim",
-            )
-            caps = ", ".join(sorted(process.caps)) or "none"
-            text.append(
-                "\n"
-                + truncate(
-                    f"files {process.open_files} ({process.open_writes} wr) | "
-                    f"caps: {caps} | seccomp {process.seccomp} | "
-                    f"cmd: {process.cmdline or f'[{process.comm}]'}",
-                    width,
-                ),
-                style="dim",
-            )
+            for index, (line, style) in enumerate(self.dashboard.detail_lines(item)):
+                if index:
+                    text.append("\n")
+                text.append(truncate(line, width), style=_rich_style(style))
             detail.update(text)
 
         # -- events ------------------------------------------------------
@@ -2851,7 +3917,7 @@ if TEXTUAL_AVAILABLE:
         def on_data_table_header_selected(
             self, event: DataTable.HeaderSelected
         ) -> None:
-            if event.data_table.id != "table-all":
+            if event.data_table.id not in ("table-all", "table-risk"):
                 return
             key = self.HEADER_SORT.get(event.label.plain)
             if not key:
@@ -2861,6 +3927,9 @@ if TEXTUAL_AVAILABLE:
             else:
                 self.dashboard.set_sort(key)
             self.refresh_views(preserve_scroll=False)
+
+        def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+            self.action_details()
 
         def on_input_submitted(self, event: Input.Submitted) -> None:
             self.dashboard.set_filter(event.value)
@@ -2877,6 +3946,18 @@ if TEXTUAL_AVAILABLE:
         def action_show_events(self) -> None:
             self.query_one(TabbedContent).active = "tab-events"
 
+        def action_show_commands(self) -> None:
+            self.query_one(TabbedContent).active = "tab-commands"
+
+        def action_show_network(self) -> None:
+            self.query_one(TabbedContent).active = "tab-network"
+
+        def action_show_cgroups(self) -> None:
+            self.query_one(TabbedContent).active = "tab-cgroups"
+
+        def action_show_risk(self) -> None:
+            self.query_one(TabbedContent).active = "tab-risk"
+
         def action_cursor_down(self) -> None:
             self.active_table().action_cursor_down()
 
@@ -2891,20 +3972,134 @@ if TEXTUAL_AVAILABLE:
             if table.row_count:
                 table.move_cursor(row=table.row_count - 1)
 
+        def move_group(self, direction: int) -> None:
+            if self.dashboard.view != "main":
+                return
+            table = self.active_table()
+            groups = self.row_groups.get(table.id or "", {})
+            if not groups:
+                return
+            current_key = self.selected_keys.get(table.id or "", "")
+            if current_key not in groups:
+                return
+            group_order: list[tuple[str, str]] = []
+            for key, group in groups.items():
+                if not group_order or group_order[-1][0] != group:
+                    group_order.append((group, key))
+            current_group = groups[current_key]
+            index = next(
+                (
+                    position
+                    for position, (group, _) in enumerate(group_order)
+                    if group == current_group
+                ),
+                0,
+            )
+            target = max(0, min(len(group_order) - 1, index + direction))
+            target_key = group_order[target][1]
+            row_index = list(groups).index(target_key)
+            table.move_cursor(row=row_index, scroll=True)
+
+        def action_group_prev(self) -> None:
+            self.move_group(-1)
+
+        def action_group_next(self) -> None:
+            self.move_group(1)
+
         def show_all_if_needed(self) -> None:
             if self.dashboard.view != "all":
                 self.dashboard.set_view("all")
                 self.query_one(TabbedContent).active = "tab-all"
 
         def action_sort_next(self) -> None:
-            self.show_all_if_needed()
+            if self.dashboard.view in ("main", "events"):
+                self.show_all_if_needed()
             self.dashboard.cycle_sort(1)
             self.refresh_views(preserve_scroll=False)
 
         def action_sort_reverse(self) -> None:
-            self.show_all_if_needed()
+            if self.dashboard.view in ("main", "events"):
+                self.show_all_if_needed()
             self.dashboard.toggle_reverse()
             self.refresh_views(preserve_scroll=False)
+
+        def action_novelty_filter(self) -> None:
+            self.dashboard.cycle_novelty_filter()
+            self.refresh_views(preserve_scroll=False)
+
+        def action_toggle_tree(self) -> None:
+            if self.dashboard.view != "all":
+                self.show_all_if_needed()
+                if not self.dashboard.tree_mode:
+                    self.dashboard.toggle_tree()
+            else:
+                self.dashboard.toggle_tree()
+            self.refresh_views(preserve_scroll=False)
+
+        def action_toggle_compact(self) -> None:
+            self.compact = not self.compact
+            self.configure_tables()
+            self.refresh_views(preserve_scroll=False)
+            self.update_summary()
+
+        def action_details(self) -> None:
+            if isinstance(self.screen, DetailScreen):
+                return
+            item = self.item_for_view()
+            if item is None:
+                return
+            text = RichText()
+            for index, (line, style) in enumerate(self.dashboard.detail_lines(item)):
+                if index:
+                    text.append("\n")
+                text.append(line, style=_rich_style(style))
+            self.push_screen(DetailScreen(text))
+
+        def copy_text(self) -> str:
+            item = self.item_for_view()
+            if isinstance(item, ViewRow):
+                return f"{item.process.pid} {item.display_command}"
+            if isinstance(item, CommandRow):
+                pids = " ".join(str(pid) for pid in item.pids)
+                return f"{item.comm} pids {pids} :: {item.display_command}"
+            if isinstance(item, EndpointRow):
+                sock = item.socket
+                return (
+                    f"{item.row.process.pid} {item.row.process.comm} "
+                    f"{sock.local} -> {sock.remote or '-'}"
+                )
+            if isinstance(item, CgroupRow):
+                return item.path
+            if isinstance(item, Event):
+                return f"{item.pid} {item.comm} {item.reasons}"
+            return ""
+
+        def action_copy(self) -> None:
+            text = self.copy_text()
+            if not text:
+                return
+            self.copy_to_clipboard(text)
+            self.notify(f"copied: {truncate(text, 60)}")
+
+        def adjust_interval(self, direction: int) -> None:
+            interval = self.dashboard.config.interval
+            step = 1.0 if interval >= 1.0 else 0.5
+            new_interval = max(0.5, interval + direction * step)
+            if new_interval == interval:
+                return
+            self.dashboard.config.interval = new_interval
+            if self.auto_poll:
+                if self.refresh_timer is not None:
+                    self.refresh_timer.stop()
+                    self.refresh_timer = None
+                self.apply_auto_refresh()
+            self.update_summary()
+
+        def action_interval_up(self) -> None:
+            self.adjust_interval(1)
+
+        def action_interval_down(self) -> None:
+            self.adjust_interval(-1)
 
         def action_refresh_data(self) -> None:
             self.dashboard.poll()
@@ -2934,6 +4129,7 @@ if TEXTUAL_AVAILABLE:
 
         def action_clear_filter(self) -> None:
             self.dashboard.set_filter("")
+            self.dashboard.novelty_filter = ""
             self.refresh_views(preserve_scroll=False)
 
 
@@ -3029,7 +4225,7 @@ def _row_payload(row: ViewRow) -> dict[str, Any]:
 def snapshot_payload(dashboard: Dashboard, limit: int, sort_key: str) -> dict[str, Any]:
     stats = dashboard.baseline.stats()
     rows = sort_rows(
-        filter_rows(dashboard.rows, dashboard.filter_text),
+        dashboard.filtered_rows(),
         sort_key,
         default_reverse(sort_key),
     )[:limit]
@@ -3071,8 +4267,9 @@ def build_parser() -> argparse.ArgumentParser:
             "  $XDG_CONFIG_HOME/procwatch/config.toml\n"
             "  $XDG_RUNTIME_DIR/procwatch.lock\n"
             "\n"
-            "TUI keys: 1/2/3 views, j/k move, s/S sort, / filter, r refresh, R auto-refresh,\n"
-            "? full key list, q quit.\n"
+            "TUI keys: 1-7 views (Triage/All/Events/Commands/Network/Cgroups/Risk),\n"
+            "j/k move, s/S sort, n novelty, t tree, w compact, enter details, y copy,\n"
+            "/ filter, r refresh, R auto-refresh, +/- interval, ? full key list, q quit.\n"
             "The TUI needs textual>=1; direct execution uses uv and the inline dependency.\n"
         ),
     )
