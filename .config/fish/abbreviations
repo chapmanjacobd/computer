@@ -1263,3 +1263,4 @@ abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --un
 abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | open.browser'
 abbr -a -- gl git log --oneline --decorate --first-parent --stat
 abbr -a -- git.clean git clean -fd --interactive
+abbr -a -- git.log.divergent git log --oneline --graph --decorate --left-right '@{u}...HEAD'

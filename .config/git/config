@@ -34,7 +34,6 @@
 [rebase]
     autoStash = true
     autosquash = true
-    updateRefs = true
     missingCommitsCheck = warn
 [rerere]
 	enabled = true
