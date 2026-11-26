@@ -1,6 +1,6 @@
 # Defined interactively
 function windows.maximize.all
-    if test "$XDG_SESSION_TYPE" = wayland; and qdbus org.kde.KWin / >/dev/null 2>&1
+    if _is_wayland; and qdbus org.kde.KWin / >/dev/null 2>&1
         _windows.kwin maximize
         or return
     else

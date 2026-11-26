@@ -4,7 +4,7 @@ function kde.reset
     ps.pause ffmpeg
 
     bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         systemd-run --user kwin_x11 --replace
     else
         qdbus org.kde.KWin /KWin reconfigure

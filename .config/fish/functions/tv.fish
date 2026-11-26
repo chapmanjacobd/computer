@@ -5,7 +5,7 @@ function tv
 
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen blank no
-    test "$XDG_SESSION_TYPE" = x11; and xset s off
+    not _is_wayland; and xset s off
     #breaktimer disable && pkill breaktimer
 
     session.reset &

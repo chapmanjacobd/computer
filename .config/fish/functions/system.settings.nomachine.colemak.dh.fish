@@ -1,6 +1,6 @@
 # Defined interactively
 function system.settings.nomachine.colemak.dh
-    if test "$XDG_SESSION_TYPE" = wayland
+    if _is_wayland
         echo "system.settings.nomachine.colemak.dh: NoMachine per-device keymaps are X11-only; KDE manages the Wayland layout globally" >&2
         return 1
     end

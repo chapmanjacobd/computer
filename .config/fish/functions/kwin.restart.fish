@@ -1,6 +1,6 @@
 # Defined interactively
 function kwin.restart
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         kwin_x11 --replace & disown
     else
         qdbus org.kde.KWin /KWin reconfigure

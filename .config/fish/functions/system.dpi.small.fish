@@ -1,5 +1,5 @@
 function system.dpi.small
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         xrandr --dpi 128
     end
     if test -n "$DISPLAY"

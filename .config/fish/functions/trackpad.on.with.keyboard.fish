@@ -1,5 +1,5 @@
 function trackpad.on.with.keyboard
-    if test "$XDG_SESSION_TYPE" = wayland; and command -q qdbus
+    if _is_wayland; and command -q qdbus
         set -l pointers (qdbus org.kde.KWin /org/kde/KWin/InputDevice \
             org.kde.KWin.InputDeviceManager.ListPointers 2>/dev/null)
         for sysname in $pointers

@@ -1,6 +1,6 @@
 # Defined in /home/xk/.config/fish/functions/system.dpi.small.fish @ line 1, copied in /home/xk/.config/fish/functions/funccp.fish @ line 3
 function system.dpi.big
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         xrandr --dpi 192
     end
     if test -n "$DISPLAY"

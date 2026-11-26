@@ -3,7 +3,7 @@ function session.reset
     kde-inhibit --colorCorrect sleep 0.1
     xcalib.reset
 
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         xset -r 108
         xset -r 135
     end
@@ -11,7 +11,7 @@ function session.reset
     sleep 3
     pkill ibus
 
-    if test "$XDG_SESSION_TYPE" = x11
+    if not _is_wayland
         xinput set-prop 9 310 1
         xmodmap -e "clear Lock" >/dev/null
         sudo setkeycodes 6e 97 # remap Copilot key to RCtrl

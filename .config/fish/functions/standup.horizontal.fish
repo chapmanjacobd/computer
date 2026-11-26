@@ -6,7 +6,7 @@ function standup.horizontal
     # ultrawideMonocle.off
     #bash -c 'kquitapp6 plasmashell || killall plasmashell; systemd-run --user kstart plasmashell'
     screen blank
-    test "$XDG_SESSION_TYPE" = x11; and xset +dpms
+    not _is_wayland; and xset +dpms
     #breaktimer disable
     session.reset &
 end

@@ -1,5 +1,5 @@
 function _xcalib.apply --argument-names mode
-    if not string match -q 'wayland*' -- "$XDG_SESSION_TYPE"; and not set -q WAYLAND_DISPLAY
+    if not _is_wayland
         if test "$mode" = dim
             xcalib -red 1 1 99 -green 1 1 95 -blue 1 1 90 -contrast 99 -alter
         else

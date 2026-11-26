@@ -1,6 +1,6 @@
 function _screen.size
     # Bounding box of the enabled outputs in logical (compositor) pixels.
-    if test "$XDG_SESSION_TYPE" = wayland; and command -q kscreenctl
+    if _is_wayland; and command -q kscreenctl
         kscreenctl list-outputs --json 2>/dev/null |
             jq -r '
                 [.[] | select(.enabled and .position != null and .mode != null)

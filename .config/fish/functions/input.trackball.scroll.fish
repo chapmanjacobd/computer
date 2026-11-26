@@ -1,7 +1,7 @@
 function input.trackball.scroll
     # Enable hold-to-scroll on trackball buttons. Wayland configures KWin
     # directly and persists it to kcminputrc; X11 uses the libinput driver.
-    if test "$XDG_SESSION_TYPE" = wayland
+    if _is_wayland
         command -q qdbus; or return 0
 
         set -l pointers (qdbus org.kde.KWin /org/kde/KWin/InputDevice \
