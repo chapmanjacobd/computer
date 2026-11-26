@@ -307,6 +307,123 @@ def test_apply_permanent_links_service_unit(tmp_path: Path) -> None:
     assert wants.is_symlink()
 
 
+def test_plan_permanent_create_update_and_diff(tmp_path: Path) -> None:
+    finding = lt.Finding(
+        key="x",
+        title="x",
+        status="info",
+        detail="x",
+        sysctl=(("vm.page-cluster", "0"),),
+    )
+    path = tmp_path / "sysctl.d" / lt.SYSCTL_CONF
+
+    plan = lt.plan_permanent([finding], tmp_path)
+    item = {entry.path: entry for entry in plan}[path]
+    assert item.action == "create"
+    assert "--- /dev/null" in item.diff
+    assert "+vm.page-cluster = 0" in item.diff
+
+    lt.apply_plan(plan, tmp_path)
+    assert path.exists()
+
+    unchanged = {entry.path: entry for entry in lt.plan_permanent([finding], tmp_path)}[path]
+    assert unchanged.action == "unchanged"
+
+    finding2 = dataclasses.replace(
+        finding,
+        sysctl=(("vm.page-cluster", "0"), ("fs.inotify.max_user_watches", "524288")),
+    )
+    update = {entry.path: entry for entry in lt.plan_permanent([finding2], tmp_path)}[path]
+    assert update.action == "update"
+    assert "-vm.page-cluster = 0" not in update.diff
+    assert "+fs.inotify.max_user_watches = 524288" in update.diff
+
+
+def test_plan_permanent_conflict_is_not_written(tmp_path: Path) -> None:
+    path = tmp_path / "sysctl.d" / lt.SYSCTL_CONF
+    path.parent.mkdir(parents=True)
+    path.write_text("hand written\n")
+    finding = lt.Finding(
+        key="x",
+        title="x",
+        status="info",
+        detail="x",
+        sysctl=(("vm.page-cluster", "0"),),
+    )
+
+    plan = lt.plan_permanent([finding], tmp_path)
+    item = {entry.path: entry for entry in plan}[path]
+    assert item.action == "conflict"
+    assert "-hand written" in item.diff
+
+    results = lt.apply_plan(plan, tmp_path)
+    assert (path, "conflict") in results
+    assert path.read_text() == "hand written\n"
+
+
+def test_format_permanent_plan_includes_diff(tmp_path: Path) -> None:
+    finding = lt.Finding(
+        key="x",
+        title="x",
+        status="info",
+        detail="x",
+        sysctl=(("vm.page-cluster", "0"),),
+    )
+    plan = lt.plan_permanent([finding], tmp_path)
+    text = lt.format_permanent_plan(plan)
+    assert f"+ {tmp_path / 'sysctl.d' / lt.SYSCTL_CONF}" in text
+    assert "--- /dev/null" in text
+    assert "+++ " in text
+    assert "1 create" in text
+
+
+def test_scan_rpm_conflicts(tmp_path: Path) -> None:
+    base = tmp_path / "sysctl.d" / "99-example.conf"
+    base.parent.mkdir(parents=True)
+    base.write_text("old = 1\n")
+    sibling = base.with_name(base.name + ".rpmnew")
+    sibling.write_text("old = 2\n")
+
+    conflicts = lt.scan_rpm_conflicts(tmp_path)
+    assert len(conflicts) == 1
+    assert conflicts[0].kind == "rpmnew"
+    assert "-old = 1" in conflicts[0].diff
+    assert "+old = 2" in conflicts[0].diff
+
+    text = lt.format_rpm_conflicts(conflicts)
+    assert "rpmconf" in text
+    assert str(sibling) in text
+
+
+def test_scan_rpm_conflicts_ignores_other_files(tmp_path: Path) -> None:
+    (tmp_path / "sysctl.d").mkdir()
+    (tmp_path / "sysctl.d" / "normal.conf").write_text("x = 1\n")
+    assert lt.scan_rpm_conflicts(tmp_path) == ()
+
+
+def test_report_splits_normal_and_aggressive(snapshot) -> None:
+    data = snapshot(
+        ncpu=1,
+        intel_pstate=True,
+        governors=(("powersave", 1),),
+        epps=((0, "power"),),
+        cpuidle=(lt.CpuIdleState(index=3, name="C3", latency_us=5000, disabled=False),),
+    )
+    report = lt.format_report(data, lt.evaluate(data))
+    normal, aggressive = report.split("Aggressive tuning opportunities (--aggressive)", 1)
+    normal_list = normal.split("Tuning opportunities", 1)[1]
+    assert "cpu-epp" in normal_list
+    assert "cpu-cstates" not in normal_list
+    assert "cpu-cstates" in aggressive
+
+
+def test_format_apply_results_marks_dry_run() -> None:
+    results = lt.apply_runtime([lt.Write("/tmp/example", "1")], execute=False)
+    text = lt.format_apply_results(results, executed=False)
+    assert "dry run" in text
+    assert "No runtime settings written" in text
+
+
 def test_permanent_files_use_etc_paths(tmp_path: Path) -> None:
     findings = [
         lt.Finding(

@@ -6,26 +6,28 @@ network throughput, CPU/memory pressure, USB input devices, CPU power settings,
 block schedulers, and recent kernel complaints.  It then explains which settings
 are worth changing and why.
 
-Runtime changes are only made with ``-x/--execute``.  Persistent configuration
-is only written with ``--permanent``.  Kernel command line changes are printed
-but never written, because a bad cmdline can make a machine unbootable.
+Runtime changes are only made with ``-x/--execute``.  ``--permanent`` previews
+the managed ``/etc`` files and their diffs; add ``-x`` to actually write them.
+Kernel command line changes are printed but never written, because a bad cmdline
+can make a machine unbootable.
 
 Examples:
-    latency.tune                     # report only
+    latency.tune                     # dry run: report and planned changes
     latency.tune -x                  # apply the safe runtime changes
+    latency.tune --permanent         # preview /etc diffs, write nothing
+    latency.tune -x --permanent      # apply runtime and write /etc files
     latency.tune -x --aggressive     # also disable deep C-states, etc.
-    latency.tune --permanent         # write /etc files (needs root)
-    latency.tune -x --permanent      # apply now and persist
 
 Safe runtime changes are reversible by rebooting.  Persistent files are named
 ``90-latency-tune*`` and start with a ``Managed by latency.tune`` marker; delete
-them to undo.
+them to undo.  Kernel command line changes are printed but never written.
 """
 
 from __future__ import annotations
 
 import argparse
 import dataclasses
+import difflib
 import json
 import logging
 import math
@@ -65,6 +67,14 @@ def read_text(path: str | Path, default: str | None = None) -> str | None:
     """Read a small text file, returning *default* if it is unavailable."""
     try:
         return Path(path).read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return default
+
+
+def read_raw(path: str | Path, default: str = "") -> str:
+    """Read a file without stripping whitespace, for faithful diffs."""
+    try:
+        return Path(path).read_text(encoding="utf-8", errors="replace")
     except OSError:
         return default
 
@@ -1850,21 +1860,154 @@ def permanent_files(findings: Sequence[Finding], etc_root: Path = Path("/etc")) 
     return {path: content for path, content in files.items() if content}
 
 
+@dataclass(frozen=True)
+class PlannedFile:
+    """One pending change to a managed configuration file."""
+
+    path: Path
+    action: str
+    content: str = ""
+    old: str = ""
+    diff: str = ""
+    note: str = ""
+
+
+@dataclass(frozen=True)
+class RpmConflict:
+    """An .rpmnew/.rpmsave/.rpmorig file found next to a config file."""
+
+    path: Path
+    base: Path
+    kind: str
+    diff: str
+
+
+def make_diff(
+    path: Path,
+    old: str,
+    new: str,
+    *,
+    from_label: str | None = None,
+    to_label: str | None = None,
+) -> str:
+    """Render a unified diff, including creation and deletion."""
+    if old == new:
+        return ""
+    old_lines = old.splitlines(keepends=True)
+    new_lines = new.splitlines(keepends=True)
+    if old_lines and not old_lines[-1].endswith("\n"):
+        old_lines[-1] += "\n"
+    if new_lines and not new_lines[-1].endswith("\n"):
+        new_lines[-1] += "\n"
+    return "".join(
+        difflib.unified_diff(
+            old_lines,
+            new_lines,
+            fromfile=from_label or str(path),
+            tofile=to_label or f"{path} (latency.tune)",
+            lineterm="\n",
+        )
+    )
+
+
+def colorize_diff(text: str) -> str:
+    """Color a unified diff when stdout is a terminal."""
+    if not text or not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
+        return text
+    lines: list[str] = []
+    for line in text.splitlines(keepends=True):
+        body = line.rstrip("\n")
+        if body.startswith(("+++", "---")):
+            lines.append(f"\033[1m{body}{RESET}\n")
+        elif body.startswith("@@"):
+            lines.append(f"\033[36m{body}{RESET}\n")
+        elif body.startswith("+"):
+            lines.append(f"\033[32m{body}{RESET}\n")
+        elif body.startswith("-"):
+            lines.append(f"\033[31m{body}{RESET}\n")
+        else:
+            lines.append(line)
+    return "".join(lines)
+
+
+def plan_managed_file(path: Path, content: str) -> PlannedFile:
+    """Classify what would happen to one managed file."""
+    exists = path.exists()
+    if not content:
+        if exists and MANAGED_MARKER in read_raw(path):
+            old = read_raw(path)
+            return PlannedFile(
+                path,
+                "remove",
+                old=old,
+                diff=make_diff(path, old, "", to_label="/dev/null"),
+            )
+        if exists or path.is_symlink():
+            return PlannedFile(path, "skip", note="existing file is not managed")
+        return PlannedFile(path, "skip")
+
+    if not exists:
+        return PlannedFile(
+            path,
+            "create",
+            content=content,
+            diff=make_diff(path, "", content, from_label="/dev/null"),
+        )
+
+    old = read_raw(path)
+    if MANAGED_MARKER not in old:
+        return PlannedFile(
+            path,
+            "conflict",
+            content=content,
+            old=old,
+            diff=make_diff(path, old, content),
+            note="unmanaged file; leaving it untouched",
+        )
+    if old == content:
+        return PlannedFile(path, "unchanged", content=content, old=old)
+    return PlannedFile(path, "update", content=content, old=old, diff=make_diff(path, old, content))
+
+
+def plan_permanent(findings: Sequence[Finding], etc_root: Path = Path("/etc")) -> list[PlannedFile]:
+    """Build a per-file plan, including the systemd wants symlink."""
+    files = permanent_files(findings, etc_root)
+    managed_paths = (
+        etc_root / "sysctl.d" / SYSCTL_CONF,
+        etc_root / "udev" / "rules.d" / UDEV_RULES,
+        etc_root / "modprobe.d" / MODPROBE_CONF,
+        etc_root / "systemd" / "system" / SERVICE_UNIT,
+    )
+    plans = [plan_managed_file(path, files.get(path, "")) for path in managed_paths]
+
+    service_path = etc_root / "systemd" / "system" / SERVICE_UNIT
+    wants = etc_root / "systemd" / "system" / "multi-user.target.wants" / SERVICE_UNIT
+    service = next(item for item in plans if item.path == service_path)
+    if service.action in ("create", "update", "unchanged"):
+        if wants.is_symlink() and wants.resolve() == service_path.resolve():
+            plans.append(PlannedFile(wants, "unchanged"))
+        else:
+            plans.append(PlannedFile(wants, "link", note="systemd dependency symlink"))
+    elif service.action in ("remove", "skip") and (wants.is_symlink() or wants.exists()):
+        plans.append(PlannedFile(wants, "unlink", note="stale systemd dependency symlink"))
+    return plans
+
+
 def write_managed(path: Path, content: str) -> str:
     """Write a managed file atomically, refusing to clobber foreign files.
 
     Returns ``wrote``, ``unchanged``, or ``removed``.
     """
     if not content:
-        if path.exists() and MANAGED_MARKER in (read_text(path) or ""):
+        if path.exists() and MANAGED_MARKER in read_raw(path):
             path.unlink()
             return "removed"
         return "skipped"
     if path.exists():
-        existing = read_text(path) or ""
+        existing = read_raw(path)
         if MANAGED_MARKER not in existing:
             raise ValueError(f"refusing to overwrite unmanaged file: {path}")
-        if existing == content.rstrip("\n"):
+        if existing == content:
             return "unchanged"
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -1872,6 +2015,98 @@ def write_managed(path: Path, content: str) -> str:
     os.chmod(temporary, 0o644)
     os.replace(temporary, path)
     return "wrote"
+
+
+def apply_plan(plan: Sequence[PlannedFile], etc_root: Path = Path("/etc")) -> list[tuple[Path, str]]:
+    """Apply a permanent plan and return per-path outcomes."""
+    if etc_root == Path("/etc") and os.geteuid() != 0:
+        raise PermissionError("writing /etc requires root; run with sudo")
+
+    results: list[tuple[Path, str]] = []
+    for item in plan:
+        if item.action in ("create", "update"):
+            write_managed(item.path, item.content)
+            results.append((item.path, item.action))
+        elif item.action == "remove":
+            write_managed(item.path, "")
+            results.append((item.path, "removed"))
+        elif item.action == "conflict":
+            results.append((item.path, "conflict"))
+        elif item.action == "link":
+            item.path.parent.mkdir(parents=True, exist_ok=True)
+            if item.path.is_symlink() or item.path.exists():
+                item.path.unlink()
+            item.path.symlink_to(f"../{SERVICE_UNIT}")
+            results.append((item.path, "linked"))
+        elif item.action == "unlink":
+            item.path.unlink(missing_ok=True)
+            results.append((item.path, "removed"))
+        elif item.action == "unchanged":
+            results.append((item.path, "unchanged"))
+    return results
+
+
+def apply_permanent(findings: Sequence[Finding], etc_root: Path = Path("/etc")) -> list[tuple[Path, str]]:
+    """Write managed configuration files and return their outcomes."""
+    return apply_plan(plan_permanent(findings, etc_root), etc_root)
+
+
+def rpm_conflict_dirs(etc_root: Path = Path("/etc")) -> tuple[Path, ...]:
+    """Directories whose rpmconf-style siblings latency.tune cares about."""
+    return (
+        etc_root / "sysctl.d",
+        etc_root / "udev" / "rules.d",
+        etc_root / "modprobe.d",
+        etc_root / "systemd" / "system",
+    )
+
+
+def scan_rpm_conflicts(etc_root: Path = Path("/etc")) -> tuple[RpmConflict, ...]:
+    """Find .rpmnew/.rpmsave/.rpmorig files next to configs we touch.
+
+    This is deliberately read-only: latency.tune prints the diff and leaves the
+    decision to the user or to rpmconf.
+    """
+    conflicts: list[RpmConflict] = []
+    for directory in rpm_conflict_dirs(etc_root):
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.iterdir()):
+            if not path.is_file():
+                continue
+            for suffix in (".rpmnew", ".rpmsave", ".rpmorig"):
+                if not path.name.endswith(suffix):
+                    continue
+                base = path.with_name(path.name[: -len(suffix)])
+                base_text = read_raw(base) if base.exists() else ""
+                other_text = read_raw(path)
+                if suffix == ".rpmsave" and base.exists():
+                    diff = make_diff(
+                        path,
+                        other_text,
+                        base_text,
+                        from_label=str(path),
+                        to_label=str(base),
+                    )
+                else:
+                    diff = make_diff(
+                        base,
+                        base_text,
+                        other_text,
+                        from_label=str(base) if base.exists() else "/dev/null",
+                        to_label=str(path),
+                    )
+                conflicts.append(
+                    RpmConflict(
+                        path=path,
+                        base=base,
+                        kind=suffix.removeprefix("."),
+                        diff=diff,
+                    )
+                )
+                break
+    return tuple(conflicts)
+
 
 
 @dataclass(frozen=True)
@@ -1903,41 +2138,6 @@ def apply_runtime(writes: Sequence[Write], execute: bool) -> list[ApplyResult]:
             results.append(ApplyResult(write, "applied"))
         except OSError as error:
             results.append(ApplyResult(write, "failed", str(error)))
-    return results
-
-
-def apply_permanent(findings: Sequence[Finding], etc_root: Path = Path("/etc")) -> list[tuple[Path, str]]:
-    """Write managed configuration files and return their outcomes."""
-    results: list[tuple[Path, str]] = []
-
-    if etc_root == Path("/etc") and os.geteuid() != 0:
-        raise PermissionError("writing /etc requires root; run with sudo")
-
-    files = permanent_files(findings, etc_root)
-    managed_paths = (
-        etc_root / "sysctl.d" / SYSCTL_CONF,
-        etc_root / "udev" / "rules.d" / UDEV_RULES,
-        etc_root / "modprobe.d" / MODPROBE_CONF,
-        etc_root / "systemd" / "system" / SERVICE_UNIT,
-    )
-    for path in managed_paths:
-        action = write_managed(path, files.get(path, ""))
-        if action != "skipped":
-            results.append((path, action))
-
-    service_path = etc_root / "systemd" / "system" / SERVICE_UNIT
-    wants = etc_root / "systemd" / "system" / "multi-user.target.wants" / SERVICE_UNIT
-    if service_path.exists():
-        wants.parent.mkdir(parents=True, exist_ok=True)
-        if not (wants.is_symlink() and wants.resolve() == service_path.resolve()):
-            if wants.is_symlink() or wants.exists():
-                wants.unlink()
-            wants.symlink_to(f"../{SERVICE_UNIT}")
-            results.append((wants, "linked"))
-    elif wants.is_symlink() or wants.exists():
-        wants.unlink()
-        results.append((wants, "removed"))
-
     return results
 
 
@@ -2012,50 +2212,139 @@ def format_report(snapshot: Snapshot, findings: Sequence[Finding]) -> str:
         lines.extend(wrap(finding.detail))
 
     actionable = [finding for finding in findings if finding.has_actions]
+    normal = [finding for finding in actionable if finding.apply_by_default]
+    aggressive = [finding for finding in actionable if not finding.apply_by_default]
+
     lines.append("")
-    if actionable:
-        lines.append("Tuning opportunities")
-        for finding in actionable:
-            suffix = "" if finding.apply_by_default else "  (needs --aggressive)"
-            lines.append(f"  - {finding.key:<22} {finding.target or finding.title}{suffix}")
+    lines.append("Tuning opportunities")
+    if normal:
+        for finding in normal:
+            lines.append(f"  - {finding.key:<22} {finding.target or finding.title}")
             lines.append(f"    {finding.scope}")
     else:
-        lines.append("Tuning opportunities: none")
+        lines.append("  none")
+
+    lines.append("")
+    lines.append("Aggressive tuning opportunities (--aggressive)")
+    if aggressive:
+        for finding in aggressive:
+            lines.append(f"  - {finding.key:<22} {finding.target or finding.title}")
+            lines.append(f"    {finding.scope}")
+    else:
+        lines.append("  none")
 
     lines.append("")
     lines.append(f"Verdict: {verdict(snapshot, findings)}")
     return "\n".join(lines)
 
 
-def format_apply_results(results: Sequence[ApplyResult]) -> str:
-    """Render runtime write outcomes."""
+def format_apply_results(results: Sequence[ApplyResult], *, executed: bool) -> str:
+    """Render runtime write outcomes or the default dry-run plan."""
     counts = Counter(result.action for result in results)
+    header = "Runtime changes (-x)" if executed else "Planned runtime changes (dry run; use -x to apply)"
     lines = [
-        "Runtime changes (-x)",
+        header,
         "  " + ", ".join(f"{count} {action}" for action, count in sorted(counts.items())),
     ]
     for result in results:
         detail = f" ({result.detail})" if result.detail else ""
         lines.append(f"  {result.action:<8} {result.write.path} = {result.write.value}{detail}")
-    if counts.get("denied"):
+    if not executed:
+        lines.append("  No runtime settings written.")
+    elif counts.get("denied"):
         lines.append("  Re-run with sudo to apply the permission-blocked settings.")
     return "\n".join(lines)
 
 
-def format_permanent_results(results: Sequence[tuple[Path, str]]) -> str:
-    """Render permanent file outcomes."""
+def format_permanent_plan(plan: Sequence[PlannedFile], verbose: bool = False) -> str:
+    """Render the per-file permanent plan, including unified diffs."""
+    prefixes = {
+        "create": "+",
+        "update": "~",
+        "remove": "-",
+        "conflict": "!",
+        "link": "+",
+        "unlink": "-",
+    }
     lines = ["Permanent configuration (--permanent)"]
+    unchanged = 0
+    for item in plan:
+        if item.action == "skip":
+            continue
+        if item.action == "unchanged":
+            unchanged += 1
+            if verbose:
+                lines.append(f"  = {item.path}")
+            continue
+        lines.append(f"  {prefixes.get(item.action, '?')} {item.path}")
+        if item.note:
+            lines.append(f"    {item.note}")
+        if item.diff:
+            lines.append(colorize_diff(item.diff).rstrip("\n"))
+
+    counts = Counter(item.action for item in plan if item.action != "skip")
+    summary = ", ".join(f"{count} {action}" for action, count in sorted(counts.items())) or "no changes"
+    lines.append("")
+    lines.append(f"  {summary}")
+    if unchanged and not verbose:
+        lines.append(f"  ({unchanged} unchanged file(s); rerun with -v to list them)")
+    return "\n".join(lines)
+
+
+def format_rpm_conflicts(conflicts: Sequence[RpmConflict]) -> str:
+    """Render rpmconf-style sibling files without changing them."""
+    lines = ["Config file conflicts (rpmconf)"]
+    for conflict in conflicts:
+        lines.append(f"  ! {conflict.path} ({conflict.kind})")
+        if conflict.diff:
+            lines.append(colorize_diff(conflict.diff).rstrip("\n"))
+    lines.append("  latency.tune never edits these; review with `rpmconf -a` or merge/delete manually.")
+    return "\n".join(lines)
+
+
+def format_permanent_results(results: Sequence[tuple[Path, str]]) -> str:
+    """Render permanent write outcomes as a summary."""
+    lines = ["Permanent write results"]
     if not results:
-        lines.append("  nothing to write")
+        lines.append("  nothing changed")
         return "\n".join(lines)
-    for path, action in results:
-        lines.append(f"  {action:<9} {path}")
-    has_udev = any(path.name == UDEV_RULES for path, _ in results)
-    has_service = any(path.name == SERVICE_UNIT for path, _ in results)
-    if has_udev or has_service:
-        lines.append("  Next: udevadm control --reload-rules && systemctl daemon-reload")
-    if has_service:
+
+    labels = {
+        "create": "created",
+        "update": "updated",
+        "removed": "removed",
+        "conflict": "conflict",
+        "unchanged": "unchanged",
+        "linked": "linked",
+    }
+    counts = Counter(action for _, action in results)
+    parts = [f"{count} {labels.get(action, action)}" for action, count in sorted(counts.items())]
+    lines.append(f"  {', '.join(parts)}")
+
+    unit_paths = [
+        (path, action)
+        for path, action in results
+        if path.name == SERVICE_UNIT and path.parent.name == "system"
+    ]
+    wants_paths = [
+        (path, action)
+        for path, action in results
+        if path.name == SERVICE_UNIT and path.parent.name == "multi-user.target.wants"
+    ]
+    has_udev = any(path.name == UDEV_RULES and action in ("create", "update", "removed") for path, action in results)
+    has_service = any(action in ("create", "update", "removed") for _, action in unit_paths)
+    wants_changed = any(action in ("create", "update", "linked") for _, action in wants_paths)
+    reloads: list[str] = []
+    if has_udev:
+        reloads.append("udevadm control --reload-rules")
+    if has_service or wants_changed:
+        reloads.append("systemctl daemon-reload")
+    if reloads:
+        lines.append(f"  Next: {' && '.join(reloads)}")
+    if wants_changed:
         lines.append("  Enable the boot-time sysfs unit with: systemctl enable --now latency-tune.service")
+    if counts.get("conflict"):
+        lines.append("  Unmanaged files were left untouched; merge or move them and rerun.")
     return "\n".join(lines)
 
 
@@ -2065,17 +2354,27 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         prog="latency.tune",
         description="Diagnose input latency, throughput, and kernel/hardware tuning.",
         epilog=(
-            "Safe runtime changes are reversible by rebooting. Persistent files are named "
-            "90-latency-tune* and carry a managed marker. Kernel cmdline changes are only printed."
+            "Default is a dry run. -x applies runtime changes; add --permanent to also write "
+            "managed files under /etc. Persistent files are named 90-latency-tune* and carry a "
+            "managed marker. Kernel cmdline changes are only printed."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-x", "--execute", action="store_true", help="apply recommended runtime settings now")
-    parser.add_argument("--permanent", action="store_true", help="write managed config files under /etc")
+    parser.add_argument(
+        "-x",
+        "--execute",
+        action="store_true",
+        help="apply runtime changes, and write /etc files when --permanent is also given",
+    )
+    parser.add_argument(
+        "--permanent",
+        action="store_true",
+        help="preview persistent /etc file diffs; write them only with -x",
+    )
     parser.add_argument(
         "--aggressive",
         action="store_true",
-        help="also apply power-costly tweaks: deep C-states, BFQ on HDDs, preempt=full, dirty limits",
+        help="include power-costly tweaks: deep C-states, BFQ on HDDs, preempt=full, dirty limits",
     )
     parser.add_argument("--bench", action="store_true", help="run memory-copy and fsync microbenchmarks")
     parser.add_argument("--duration", type=float, default=2.0, help="counter and latency sampling window in seconds")
@@ -2100,12 +2399,15 @@ def report_as_dict(
     findings: Sequence[Finding],
     applied: Sequence[ApplyResult] = (),
     permanent: Sequence[tuple[Path, str]] = (),
+    *,
+    executed: bool = False,
 ) -> dict[str, object]:
     """Build a JSON-serializable result."""
     return {
         "snapshot": dataclasses.asdict(snapshot),
         "findings": [dataclasses.asdict(finding) for finding in findings],
         "verdict": verdict(snapshot, findings),
+        "executed": executed,
         "applied": [dataclasses.asdict(result) for result in applied],
         "permanent": [{"path": str(path), "action": action} for path, action in permanent],
     }
@@ -2129,30 +2431,58 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(format_report(snapshot, shown))
         print()
 
+    writes = runtime_writes(actions)
     if args.execute:
-        writes = runtime_writes(actions)
         applied = apply_runtime(writes, execute=True)
+        if not args.json and writes:
+            print(format_apply_results(applied, executed=True))
+            print()
+    elif writes:
+        applied = apply_runtime(writes, execute=False)
         if not args.json:
-            print(format_apply_results(applied))
+            print(format_apply_results(applied, executed=False))
             print()
 
     if args.permanent:
-        try:
-            permanent = apply_permanent(actions, args.etc)
-        except (PermissionError, ValueError) as error:
-            LOG.error("%s", error)
-            if not args.json:
-                print(f"Permanent configuration failed: {error}")
-            exit_code = 1
+        plan = plan_permanent(actions, args.etc)
+        if not args.json:
+            print(format_permanent_plan(plan, args.verbose))
+            print()
+            conflicts = scan_rpm_conflicts(args.etc)
+            if conflicts:
+                print(format_rpm_conflicts(conflicts))
+                print()
+            elif args.verbose:
+                print("Config file conflicts (rpmconf): none")
+                print()
+
+        if args.execute:
+            try:
+                permanent = apply_plan(plan, args.etc)
+            except (PermissionError, ValueError) as error:
+                LOG.error("%s", error)
+                if not args.json:
+                    print(f"Permanent configuration failed: {error}")
+                    print()
+                exit_code = 1
+            else:
+                if not args.json:
+                    print(format_permanent_results(permanent))
+                    print()
         else:
+            permanent = [
+                (item.path, item.action)
+                for item in plan
+                if item.action not in ("skip", "unchanged")
+            ]
             if not args.json:
-                print(format_permanent_results(permanent))
+                print("Dry run: no permanent files written; rerun with -x --permanent to write.")
                 print()
 
     if args.json:
         print(
             json.dumps(
-                report_as_dict(snapshot, shown, applied, permanent),
+                report_as_dict(snapshot, shown, applied, permanent, executed=args.execute),
                 indent=2,
                 sort_keys=True,
             )
