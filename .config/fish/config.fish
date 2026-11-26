@@ -10,6 +10,12 @@ set -gx OPENCODE_CONFIG_PROJECT_DISABLE 1
 set -gx OPENCODE_DISABLE_CLAUDE_CODE 1
 set -gx COPILOT_CUSTOM_INSTRUCTIONS_DIRS "$HOME/.config/copilot"
 
+# Fedora installs the ccache wrappers in /usr/lib64/ccache and prepends them
+# from /etc/profile.d/ccache.sh, which is POSIX-only and never read by fish.
+# Put them first explicitly so gcc, g++, cc, c++ and the cross compilers such
+# as aarch64-linux-gnu-gcc go through ccache instead of /usr/bin.
+fish_add_path --path --move /usr/lib64/ccache
+
 if not status --is-interactive
     return 0
 end
