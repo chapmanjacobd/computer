@@ -1,5 +1,5 @@
 # Defined interactively
-function wip
+function wipp
     argparse y/yes -- $argv
 
     if count $argv >/dev/null

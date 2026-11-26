@@ -14,7 +14,7 @@ function mc.links.open
         set qty 7
     end
 
-    fish -c 'wip ~/mc/'
+    fish -c 'wipp ~/mc/'
 
     set tabs (head -n $qty $file)
     for tab in $tabs
@@ -32,5 +32,5 @@ function mc.links.open
     wait
     sed -i -e 1,"$qty"d $file
 
-    fish -c 'wip -y ~/mc/'
+    fish -c 'wipp -y ~/mc/'
 end
