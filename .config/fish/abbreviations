@@ -1265,3 +1265,4 @@ abbr -a -- gl git log --oneline --decorate --first-parent --stat
 abbr -a -- git.clean git clean -fd --interactive
 abbr -a -- wip 'commit (git.wip.message --staged)'
 abbr -a -- git.log.divergent git log --oneline --graph --decorate --left-right --cherry-pick --boundary '@{u}...HEAD'
+abbr -a -- git.log.incoming git log --stat 'HEAD..@{u}'
