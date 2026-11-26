@@ -29,7 +29,7 @@ function pipuninstall --wraps='pip uninstall'
         printf 'These packages are referenced elsewhere:\n\n'
         printf '  %s\n' $references
         printf '\n'
-        if test $force = 0; and not set --query PIPUNINSTALL_ASSUME_YES
+        if test $force = 0
             if not status is-interactive
                 echo 'Refusing to uninstall non-interactively. Re-run with --force to skip this check.' >&2
                 return 1

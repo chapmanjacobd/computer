@@ -3,10 +3,6 @@ function _pipuninstall_refs --description 'Report installed packages and fish co
     set --query packages[1]
     or return 0
 
-    set --local pip_command pip
-    set --query PIPUNINSTALL_PIP
-    and set pip_command $PIPUNINSTALL_PIP
-
     set --local fish_dir ~/.config/fish
     set --query PIPUNINSTALL_FISH_DIR
     and set fish_dir $PIPUNINSTALL_FISH_DIR
@@ -14,7 +10,7 @@ function _pipuninstall_refs --description 'Report installed packages and fish co
     # Distribution and console script names never contain spaces, so a single
     # space is an unambiguous field separator here.
     set --local metadata (
-        $pip_command show --files $packages 2>/dev/null | awk '
+        pip show --files $packages 2>/dev/null | awk '
             /^Name: / { package = substr($0, 7); in_files = 0; next }
             /^Required-by: / {
                 required_by = substr($0, 14)
