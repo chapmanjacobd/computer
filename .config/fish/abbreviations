@@ -232,7 +232,7 @@ abbr -a -- wtm wt -m 4 --fstack
 abbr -a -- disks lsblk -o HCTL,NAME,SIZE,MODEL,SERIAL -S
 abbr -a -- mounts lsblk -o HCTL,NAME,SIZE,FSTYPE,MOUNTPOINT,UUID
 abbr -a -- nulea run sudo python /home/xk/bin/wheel.py Compx
-abbr -a -- autoclicker repeat.delay 0.1 dotool click left
+abbr -a -- autoclicker repeat.delay 0.1 _dotool_click left
 abbr -a -- exiftool 'exiftool -g -a -u'
 abbr -a -- ip.addr ip.public
 abbr -a -- update.grub sudo grub2-mkconfig -o /boot/grub2/grub.cfg
