@@ -1,4 +1,5 @@
 # Defined interactively
+# X11-only by design: starts a private Xvfb server and a Plasma X11 session.
 function rdp.headless
     pkill Xvfb
     b Xvfb :99 -screen 0 1024x768x24
