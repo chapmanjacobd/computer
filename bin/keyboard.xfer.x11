@@ -1120,6 +1120,7 @@ def main():
     # window focus
 
     wfp = None
+    hwnd = None
     if chk_focus:
         wfp = WindowFocusProvider()
         own_window = wfp.get(True)
