@@ -5,7 +5,8 @@ The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
 Full disc images are ranked as DVDs, so WEB-DL releases are preferred over them.
 Listing tables (including Gazelle-style /torrents.php?id= pages, their
-activity_info cards, grouped similar-torrents tables, and the newer UNIT3D
+activity_info cards, grouped similar-torrents tables, the UNIT3D
+/torrents/browse search tables with their td-* cells, and the newer UNIT3D
 /torrents/similar/{category}.{tmdb} article.similar-torrent-row lists) are
 detected from their contents rather than by URL. Torrents carrying a
 taglist=horror link are printed to stderr and skipped.
@@ -28,6 +29,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import cmp_to_key
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urljoin, urlparse
@@ -78,6 +80,24 @@ SIMILAR_COLUMNS = {
     "completed": ".similar-torrent-row__stat--completed",
     "age": ".similar-torrent-row__stat--age",
 }
+
+# UNIT3D browse/search results merge the category, name, and quick-download
+# columns under one header cell with colspan=3, so header indexes do not line up
+# with the data cells. Their stable td-* classes do.
+UNIT3D_TORRENTS_COLUMNS = {
+    "filename": ".td-name",
+    "download": ".td-quick-download",
+    "size": ".td-size",
+    "seeders": ".td-seeders",
+    "leechers": ".td-leechers",
+    "completed": ".td-snatched",
+    "age": ".td-uploaded-time",
+    "comments": ".td-comment",
+}
+
+ISO_DATE_PATTERN = re.compile(
+    r"\b(\d{4})-(\d{2})-(\d{2})(?:[ T]?(\d{2}):(\d{2})(?::(\d{2}))?)?"
+)
 
 AGE_UNITS = [
     (r"(\d+(?:\.\d+)?)\s*years?", 365),
@@ -254,9 +274,16 @@ def is_grouped_table(table):
     return table.select_one('[class*="torrent-search--grouped__"]') is not None
 
 
+def is_unit3d_torrents_table(table):
+    """Detect the UNIT3D browse/search table layout by its stable cell classes."""
+    return table.select_one("td.td-name") is not None and table.select_one("td.td-seeders") is not None
+
+
 def build_column_map(table):
     if is_grouped_table(table):
         return dict(GROUPED_COLUMNS)
+    if is_unit3d_torrents_table(table):
+        return dict(UNIT3D_TORRENTS_COLUMNS)
 
     columns = dict(DEFAULT_COLUMNS)
     for index, cell in enumerate(header_cells(table)):
@@ -325,8 +352,8 @@ def get_completed(row, columns):
     return first_int(cell.get_text()) if cell is not None else 0
 
 
-def age_years_from_text(text):
-    """Parse relative ages (eg. '4 months', '3 days 18 hours')."""
+def age_years_from_text(text, now=None):
+    """Parse relative ages (eg. '4 months', '3 days 18 hours') and ISO dates."""
     text = (text or "").lower()
     total_days = 0.0
     matched = False
@@ -334,14 +361,33 @@ def age_years_from_text(text):
         for match in re.finditer(pattern, text):
             total_days += float(match.group(1)) * days_per_unit
             matched = True
-    return total_days / 365 if matched else None
+    if matched:
+        return total_days / 365
+    return age_years_from_iso_date(text, now)
+
+
+def age_years_from_iso_date(text, now=None):
+    """Parse a date such as '2026-11-26 16:01:15' and return its age in years."""
+    match = ISO_DATE_PATTERN.search(text or "")
+    if not match:
+        return None
+
+    year, month, day = (int(value) for value in match.group(1, 2, 3))
+    hour, minute, second = (int(value or 0) for value in match.group(4, 5, 6))
+    try:
+        timestamp = datetime(year, month, day, hour, minute, second)
+    except ValueError:
+        return None
+
+    delta = (now or datetime.now()) - timestamp
+    return max(delta.total_seconds(), 0) / 86400 / 365
 
 
 def get_age_years(row, columns):
     cell = get_cell(row, columns.get("age"))
     if cell is None:
         return 0
-    return age_years_from_text(cell.get_text()) or 0
+    return age_years_from_text(cell.get_text(" ", strip=True)) or 0
 
 
 def get_section_by_text(row, keyword):
@@ -372,6 +418,7 @@ def has_free_download(row):
             ".fa-star.text-gold,"
             " .torrent-badges__item--freeleech,"
             " .torrent-badges__item--personal-freeleech,"
+            " .labelfreeleech,"
             " [data-bs-original-title='Free Download'],"
             " [data-original-title='Free Download'],"
             " [aria-label='Free Download'],"
@@ -522,7 +569,7 @@ def element_classes(element):
 def find_torrent_tables(soup):
     tables = []
     for table in soup.find_all("table"):
-        if is_grouped_table(table):
+        if is_grouped_table(table) or is_unit3d_torrents_table(table):
             tables.append(table)
             continue
 
@@ -628,6 +675,16 @@ def row_download_url(row, columns=None, base_url=None):
     return None
 
 
+def text_without_labels(element):
+    """Return an element's text without badge spans such as 'new' or '1080p'."""
+    parts = [
+        text
+        for text in element.find_all(string=True)
+        if text.find_parent(class_="label") is None
+    ]
+    return re.sub(r"\s+", " ", " ".join(parts)).strip()
+
+
 def row_title(row, columns=None):
     anchor = row.select_one("a.torrent-filename, a.torrent-link")
     if anchor is not None:
@@ -638,8 +695,8 @@ def row_title(row, columns=None):
         anchors = filename_cell.find_all("a", href=True)
         for anchor in anchors:
             if is_torrent_detail_link(anchor["href"]) and anchor.get_text(" ", strip=True):
-                return anchor.get_text(" ", strip=True)
-        text = filename_cell.get_text(" ", strip=True)
+                return text_without_labels(anchor) or anchor.get_text(" ", strip=True)
+        text = text_without_labels(filename_cell)
         if text:
             return text
     return row.get_text(" ", strip=True)
@@ -665,7 +722,7 @@ def candidate_uses_direct_download(candidate):
         return True
     detail_path = urlparse(candidate.url).path
     download_path = urlparse(candidate.download_url).path
-    if re.match(r"^/torrents/download/\d+", download_path):
+    if re.match(r"^/(?:torrents/)?download/\d+", download_path):
         return True
     return bool(re.match(r"^/torrents/\d+", detail_path) and download_path.endswith("/download"))
 
@@ -1211,7 +1268,7 @@ def wait_for_selenium_content(args):
             lambda driver: driver.find_elements(
                 By.CSS_SELECTOR,
                 '.torrent-file, a.torrent-filename, a.torrent-link, .torrent_row, .activity_info,'
-                ' .similar-torrent-row,'
+                ' .similar-torrent-row, .td-name,'
                 ' a[href*="action=download"], a[href*="/download/torrent/"],'
                 ' a[href*="/torrents/download/"], a[href$="/download"]',
             )
