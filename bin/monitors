@@ -68,8 +68,8 @@ list_outputs() {
             (if .mode != null then
                 "\(.mode.resolution.width)x\(.mode.resolution.height)@\(.mode.refreshRate | round)"
              else "-" end),
-            (.scale | tostring),
-            "\(.position.x),\(.position.y)"
+            ((.scale // 1) | tostring),
+            "\(.position.x // 0),\(.position.y // 0)"
           ]
         | @tsv
     ' | {
