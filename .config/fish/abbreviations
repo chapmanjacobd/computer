@@ -1264,3 +1264,4 @@ abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | o
 abbr -a -- gl git log --oneline --decorate --first-parent --stat
 abbr -a -- git.clean git clean -fd --interactive
 abbr -a -- git.log.divergent git log --oneline --graph --decorate --left-right '@{u}...HEAD'
+abbr -a -- wip 'commit (git.wip.message --staged)'
