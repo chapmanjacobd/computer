@@ -978,9 +978,6 @@ def test_textual_app_smoke(proc_tree, tmp_path):
             await pilot.press("s")
             await pilot.pause()
             assert dash.sort_key != "connections"
-            await pilot.press("space")
-            await pilot.pause()
-            assert dash.paused
 
     asyncio.run(scenario())
     store.close()

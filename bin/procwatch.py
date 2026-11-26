@@ -37,7 +37,6 @@ Keys in the TUI:
   /           filter by pid, name, user, category, capability
   r           refresh now (auto-refresh is off by default)
   R           toggle auto-refresh
-  space       pause / resume auto-refresh
   ?           full keyboard shortcut list
   q           quit
 
@@ -1826,7 +1825,6 @@ class Dashboard:
         self.selected = 0
         self.scroll = 0
         self.page_size = 10
-        self.paused = False
         self.input_mode = False
         self.filter_buffer = ""
         self.last_error = ""
@@ -2046,7 +2044,7 @@ class Dashboard:
             "%H:%M:%S"
         )
         left = [Span("procwatch", "title"), Span("  process baseline triage", "dim")]
-        right = f"{stamp}  {'PAUSED' if self.paused else ''} "
+        right = f"{stamp}  "
         used = sum(len(span.text) for span in left)
         gap = max(0, width - used - len(right))
         return RenderLine(tuple(left) + (Span(" " * gap + right, "dim"),))
@@ -2259,7 +2257,7 @@ class Dashboard:
         if self.input_mode:
             text = f"filter: {self.filter_buffer}_  (enter apply, esc cancel)"
             return RenderLine((Span(truncate(text, width), "accent"),))
-        text = "1/2/3 view  j/k move  s/S sort  r refresh  R auto  c clear  / filter  space pause  ? help  q quit"
+        text = "1/2/3 view  j/k move  s/S sort  r refresh  R auto  c clear  / filter  ? help  q quit"
         if self.view == "all":
             text += f"  |  sort {SORT_LABELS[self.sort_key]} {'desc' if self.sort_reverse else 'asc'}"
         return RenderLine((Span(truncate(text, width), "dim"),))
@@ -2342,7 +2340,6 @@ if TEXTUAL_AVAILABLE:
             (
                 ("r", "Refresh now"),
                 ("R", "Toggle auto-refresh"),
-                ("space", "Pause / resume auto-refresh"),
                 ("q", "Quit"),
                 ("?", "Close this help"),
             ),
@@ -2416,7 +2413,6 @@ if TEXTUAL_AVAILABLE:
             Binding("s", "sort_next", "Sort"),
             Binding("S", "sort_reverse", "Reverse"),
             Binding("slash", "filter", "Filter"),
-            Binding("space", "pause", "Pause"),
             Binding("r", "refresh_data", "Refresh"),
             Binding("R", "toggle_auto_refresh", "Auto refresh"),
             Binding("question_mark", "help", "Help"),
@@ -2517,8 +2513,7 @@ if TEXTUAL_AVAILABLE:
         def tick(self) -> None:
             if not self.auto_poll:
                 return
-            if not self.dashboard.paused:
-                self.dashboard.poll()
+            self.dashboard.poll()
             self.refresh_views()
 
         def apply_auto_refresh(self) -> None:
@@ -2703,9 +2698,7 @@ if TEXTUAL_AVAILABLE:
             title = RichText()
             title.append("procwatch", style="bold cyan")
             title.append("  process baseline triage", style="dim")
-            if self.dashboard.paused:
-                title.append("   PAUSED", style="bold yellow")
-            elif self.auto_poll:
+            if self.auto_poll:
                 title.append("   auto", style="dim")
             else:
                 title.append("   manual", style="dim")
@@ -2913,17 +2906,12 @@ if TEXTUAL_AVAILABLE:
             self.dashboard.toggle_reverse()
             self.refresh_views(preserve_scroll=False)
 
-        def action_pause(self) -> None:
-            self.dashboard.paused = not self.dashboard.paused
-            self.update_summary()
-
         def action_refresh_data(self) -> None:
             self.dashboard.poll()
             self.refresh_views()
 
         def action_toggle_auto_refresh(self) -> None:
             self.auto_poll = not self.auto_poll
-            self.dashboard.paused = False
             self.apply_auto_refresh()
             self.update_summary()
 
@@ -3084,7 +3072,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  $XDG_RUNTIME_DIR/procwatch.lock\n"
             "\n"
             "TUI keys: 1/2/3 views, j/k move, s/S sort, / filter, r refresh, R auto-refresh,\n"
-            "space pause, ? full key list, q quit.\n"
+            "? full key list, q quit.\n"
             "The TUI needs textual>=1; direct execution uses uv and the inline dependency.\n"
         ),
     )
