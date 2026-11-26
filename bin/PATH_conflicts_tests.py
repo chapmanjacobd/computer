@@ -1,15 +1,24 @@
 #!/usr/bin/env pytest
 # SPDX-License-Identifier: WTFPL
 
-"""Tests for path_conflicts.py."""
+"""Tests for PATH.conflicts."""
 
+import importlib.machinery
+import importlib.util
 import os
+import sys
 import time
 from pathlib import Path
 
 import pytest
 
-import path_conflicts as pc
+_SCRIPT = Path(__file__).with_name("PATH.conflicts")
+_LOADER = importlib.machinery.SourceFileLoader("path_conflicts", str(_SCRIPT))
+_SPEC = importlib.util.spec_from_loader("path_conflicts", _LOADER)
+assert _SPEC is not None
+pc = importlib.util.module_from_spec(_SPEC)
+sys.modules["path_conflicts"] = pc
+_LOADER.exec_module(pc)
 
 
 def make_exec(path: Path, body: str = "#!/bin/sh\nexit 0\n") -> Path:
