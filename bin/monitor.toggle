@@ -1,3 +1,4 @@
 #!/bin/bash
 # Compatibility wrapper. The stateful mode cycling now lives in monitors.
-exec "$(dirname "$0")/monitors" cycle
+dir=$(cd -- "$(dirname -- "$0")" && pwd)
+exec "$dir/monitors" cycle
