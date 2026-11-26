@@ -17,8 +17,10 @@ function screen --argument-names action
                     end
                 end
             end
-            kwriteconfig6 --file powermanagementprofilesrc --group AC --group DPMSControl --key idleTime $idle
-            qdbus org.freedesktop.PowerManagement /org/kde/Solid/PowerManagement reparseConfiguration
+            # PowerDevil 6 reads display timeouts from powerdevilrc; the old
+            # powermanagementprofilesrc file is only migration input now.
+            kwriteconfig6 --file powerdevilrc --group AC --group Display --key TurnOffDisplayIdleTimeoutSec $idle
+            qdbus org.kde.Solid.PowerManagement /org/kde/Solid/PowerManagement reparseConfiguration
         case virtual
             set -l preset $argv[2]
             set -l output $argv[3]
