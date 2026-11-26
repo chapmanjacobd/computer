@@ -4,6 +4,7 @@
 """Tests for path_conflicts.py."""
 
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -254,6 +255,45 @@ def test_probe_version(
     assert pc.probe_version(str(executable), timeout=timeout) == expected
 
 
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ("#!/bin/sh\nprintf '\\033[31mtool 1.0\\033[0m\\n'\n", "tool 1.0"),
+        ("#!/bin/sh\nprintf 'tool\\a 1.0\\n'\n", "tool 1.0"),
+        ("#!/bin/sh\nprintf '\\033]0;title\\007tool 1.0\\n'\n", "tool 1.0"),
+        ("#!/bin/sh\nprintf '\\177tool 1.0\\n'\n", "tool 1.0"),
+        ("#!/bin/sh\nprintf 'tool\\302\\233 1.0\\n'\n", "tool 1.0"),
+    ],
+)
+def test_probe_version_filters_terminal_sequences(
+    tmp_path: Path, body: str, expected: str
+) -> None:
+    executable = make_exec(tmp_path / "tool", body)
+    assert pc.probe_version(str(executable)) == expected
+
+
+def test_probe_version_can_keep_raw_terminal_sequences(tmp_path: Path) -> None:
+    executable = make_exec(
+        tmp_path / "tool", "#!/bin/sh\nprintf 'tool\\033[31m 1.0\\033[0m\\n'\n"
+    )
+    assert "\x1b" in pc.probe_version(str(executable), filter_output=False)
+
+
+def test_probe_version_starts_a_new_session(tmp_path: Path) -> None:
+    executable = make_exec(
+        tmp_path / "tool",
+        "#!/usr/bin/env python3\nimport os\nprint(os.getsid(0) == os.getpid())\n",
+    )
+    assert pc.probe_version(str(executable)) == "True"
+
+
+def test_probe_version_kills_the_process_group_on_timeout(tmp_path: Path) -> None:
+    executable = make_exec(tmp_path / "tool", "#!/bin/sh\nsleep 5 &\nsleep 5\n")
+    started = time.monotonic()
+    assert pc.probe_version(str(executable), timeout=0.2) == ""
+    assert time.monotonic() - started < 3
+
+
 def test_rpm_info_parses_stub_output(tmp_path: Path) -> None:
     stub = make_exec(tmp_path / "rpm", "#!/bin/sh\nprintf 'bash 5.2.1-1.fc45\\n'\n")
     assert pc.rpm_info("/usr/bin/bash", rpm=str(stub)) == ("bash", "5.2.1-1.fc45")
@@ -304,6 +344,58 @@ def test_package_label_uses_rpm_for_system_path(tmp_path: Path) -> None:
         "/usr/bin/bash", home=str(tmp_path / "home"), rpm=str(stub)
     )
     assert label == "bash 5.2.1-1.fc45"
+
+
+def test_render_conflict_filters_terminal_sequences() -> None:
+    path_dir = pc.PathDir(path="/tmp/one\x1b[31m", real="/tmp/one\x1b[31m", kind="user")
+    occurrence = pc.Occurrence(
+        name="tool\x07",
+        path_dir=path_dir,
+        file="/tmp/one\x1b[31m/tool",
+        real="/tmp/one\x1b[31m/tool",
+        version="tool 1.0\x1b[0m\x07",
+        package="pkg\x1b]0;title\x07 1.0",
+    )
+
+    text = pc.render_conflict("tool\x1b[31m", [occurrence])
+
+    assert "\x1b" not in text
+    assert "\x07" not in text
+    assert "tool 1.0" in text
+    assert "pkg 1.0" in text
+
+
+def test_render_conflict_can_keep_raw_terminal_sequences() -> None:
+    path_dir = pc.PathDir(path="/tmp/one", real="/tmp/one", kind="user")
+    occurrence = pc.Occurrence(
+        name="tool",
+        path_dir=path_dir,
+        file="/tmp/one/tool",
+        real="/tmp/one/tool",
+        version="tool 1.0\x1b[0m",
+    )
+
+    text = pc.render_conflict("tool", [occurrence], filter_output=False)
+
+    assert "\x1b" in text
+
+
+def test_main_does_not_run_non_conflicting_commands(tmp_path: Path, capsys) -> None:
+    one = tmp_path / "one"
+    two = tmp_path / "two"
+    one.mkdir()
+    two.mkdir()
+    marker = tmp_path / "solo-ran"
+    make_exec(one / "solo", f"#!/bin/sh\ntouch {marker}\n")
+    make_exec(one / "shared", "#!/bin/sh\necho 'shared 1.0'\n")
+    make_exec(two / "shared", "#!/bin/sh\necho 'shared 2.0'\n")
+
+    assert pc.main(["--path", f"{one}:{two}", "--no-packages"]) == 0
+
+    assert not marker.exists()
+    out = capsys.readouterr().out
+    assert "shared 1.0" in out
+    assert "shared 2.0" in out
 
 
 def test_main_prints_non_conflicting_then_conflicting(tmp_path: Path, capsys) -> None:

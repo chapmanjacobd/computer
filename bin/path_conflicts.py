@@ -21,7 +21,9 @@ Run::
     ./path_conflicts.py --no-versions  # do not execute foreign --version flags
 
 Versions come from running ``COMMAND --version`` (first line of output) and
-fall back to ``rpm -qf`` for the owning package. ``--no-packages`` skips RPM.
+fall back to ``rpm -qf`` for the owning package. Only commands that actually
+conflict are probed. ``--no-packages`` skips RPM, and ``--no-filter`` keeps
+terminal control characters in the report.
 """
 
 from __future__ import annotations
@@ -29,6 +31,8 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import re
+import signal
 import subprocess
 import sys
 import textwrap
@@ -42,6 +46,39 @@ LOG = logging.getLogger("path_conflicts")
 
 MAX_VERSION_LEN = 120
 DEFAULT_WRAP_WIDTH = 100
+
+_ESCAPE_SEQUENCE = re.compile(
+    r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-_])"
+)
+_CONTROL_CHAR = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+
+
+def clean_text(text: str) -> str:
+    """Remove terminal escape sequences and control characters from text.
+
+    The report can contain text from untrusted sources: executable names,
+    resolved paths, and version output. Keeping terminal control characters
+    out of the report prevents them from changing colours, moving the cursor,
+    or otherwise corrupting the terminal that displays it.
+
+    Parameters
+    ----------
+    text : str
+        Text that may contain terminal escape sequences or control characters.
+
+    Returns
+    -------
+    str
+        Printable text with escape sequences and control characters removed.
+
+    Examples
+    --------
+    >>> clean_text("\\x1b[31mtool\\x1b[0m")
+    'tool'
+    >>> clean_text("tool\\x07 1.0")
+    'tool 1.0'
+    """
+    return _CONTROL_CHAR.sub("", _ESCAPE_SEQUENCE.sub("", text))
 
 
 @dataclass(frozen=True)
@@ -294,12 +331,106 @@ def non_conflicting(
     return {name: items for name, items in index.items() if _distinct_files(items) == 1}
 
 
-def probe_version(executable: str, timeout: float = 5.0) -> str:
+def _probe_environment() -> dict[str, str]:
+    """Build an environment for version probes that discourages interaction.
+
+    Returns
+    -------
+    dict[str, str]
+        A copy of the current environment with colour disabled, a dumb
+        terminal, and display variables removed so GUI applications do not
+        open windows while reporting their version.
+    """
+    env = dict(os.environ)
+    env.setdefault("NO_COLOR", "1")
+    env["TERM"] = "dumb"
+    for name in ("DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY"):
+        env.pop(name, None)
+    return env
+
+
+def _kill_process_group(process: subprocess.Popen[str]) -> None:
+    """Kill a probe and every process it started.
+
+    Parameters
+    ----------
+    process : subprocess.Popen[str]
+        Probe launched in its own session, and therefore its own process
+        group.
+    """
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        process.kill()
+
+
+def _run_probe(
+    command: list[str], timeout: float, env: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
+    """Run one probe without a controlling terminal.
+
+    The child gets its own session so helpers such as ``fzf`` cannot draw on
+    the terminal that is displaying the report. On timeout the whole process
+    group is killed, because descendants that inherit the output pipes would
+    otherwise keep the probe blocked.
+
+    Parameters
+    ----------
+    command : list[str]
+        Command and arguments to run.
+    timeout : float
+        Seconds to wait before killing the process group.
+    env : dict[str, str]
+        Environment for the child.
+
+    Returns
+    -------
+    subprocess.CompletedProcess[str]
+        Captured output and return status; a timeout is reported as a
+        negative ``SIGKILL`` status with empty output.
+    """
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        errors="replace",
+        cwd="/",
+        env=env,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _kill_process_group(process)
+        try:
+            stdout, stderr = process.communicate(timeout=1.0)
+        except subprocess.TimeoutExpired:
+            for pipe in (process.stdout, process.stderr):
+                if pipe is not None:
+                    pipe.close()
+            try:
+                process.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            stdout, stderr = "", ""
+        return subprocess.CompletedProcess(command, -signal.SIGKILL, stdout, stderr)
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def probe_version(
+    executable: str, timeout: float = 5.0, filter_output: bool = True
+) -> str:
     """Ask an executable for its version.
 
-    Runs ``executable --version`` with stdin closed, from ``/``, and returns
-    the first non-empty output line. Failures, timeouts, and empty output all
-    produce an empty string.
+    Runs ``executable --version`` with stdin closed, from ``/``, in its own
+    session so it has no controlling terminal, and returns the first non-empty
+    output line without terminal control sequences. Failures, timeouts, and
+    empty output all produce an empty string.
 
     Parameters
     ----------
@@ -307,6 +438,9 @@ def probe_version(executable: str, timeout: float = 5.0) -> str:
         Path to the executable to run.
     timeout : float, optional
         Seconds to wait before killing it, by default 5.0.
+    filter_output : bool, optional
+        Strip terminal escape sequences and control characters from the
+        output, by default True.
 
     Returns
     -------
@@ -318,21 +452,9 @@ def probe_version(executable: str, timeout: float = 5.0) -> str:
     >>> probe_version("/definitely/not/here") == ''
     True
     """
-    env = dict(os.environ)
-    env.setdefault("NO_COLOR", "1")
-    env["TERM"] = "dumb"
+    env = _probe_environment()
     try:
-        completed = subprocess.run(
-            [executable, "--version"],
-            check=False,
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            errors="replace",
-            timeout=timeout,
-            cwd="/",
-            env=env,
-        )
+        completed = _run_probe([executable, "--version"], timeout, env)
     except (OSError, subprocess.SubprocessError) as exc:
         LOG.debug("version probe failed for %s: %s", executable, exc)
         return ""
@@ -342,7 +464,10 @@ def probe_version(executable: str, timeout: float = 5.0) -> str:
     if completed.returncode != 0 and not (completed.stdout or "").strip():
         # Usage text from a rejected --version is not a version.
         return ""
-    return output.splitlines()[0].strip()[:MAX_VERSION_LEN]
+    line = output.splitlines()[0].strip()
+    if filter_output:
+        line = clean_text(line)
+    return line[:MAX_VERSION_LEN]
 
 
 def rpm_info(path: str, rpm: str = "rpm", timeout: float = 5.0) -> tuple[str, str]:
@@ -444,6 +569,7 @@ def enrich(
     jobs: int = 16,
     versions: bool = True,
     packages: bool = True,
+    filter_output: bool = True,
     home: str | None = None,
     rpm: str = "rpm",
 ) -> None:
@@ -452,12 +578,14 @@ def enrich(
     Probes run in parallel and are cached by ``$PATH`` file, so a command
     reachable through several directories is executed once per directory.
     The entry itself is probed instead of its symlink target, which matters for
-    argv[0] dispatchers such as ccache.
+    argv[0] dispatchers such as ccache. Callers should pass only the
+    conflicting subset, because non-conflicting rows do not display versions.
 
     Parameters
     ----------
     index : dict[str, list[Occurrence]]
-        Result of :func:`scan`, modified in place.
+        Result of :func:`scan`, or a subset such as :func:`conflicting`,
+        modified in place.
     timeout : float, optional
         Seconds allowed per probe, by default 5.0.
     jobs : int, optional
@@ -466,6 +594,8 @@ def enrich(
         Run ``--version`` probes, by default True.
     packages : bool, optional
         Query RPM, by default True.
+    filter_output : bool, optional
+        Strip terminal control sequences from version output, by default True.
     home : str, optional
         Home directory for source classification.
     rpm : str, optional
@@ -481,7 +611,11 @@ def enrich(
         return
 
     def describe(file: str) -> tuple[str, str]:
-        version = probe_version(file, timeout=timeout) if versions else ""
+        version = (
+            probe_version(file, timeout=timeout, filter_output=filter_output)
+            if versions
+            else ""
+        )
         package = package_label(file, home=home, rpm=rpm, enabled=packages)
         return (version, package)
 
@@ -522,7 +656,10 @@ def wrap_names(names: list[str], width: int = DEFAULT_WRAP_WIDTH) -> str:
 
 
 def render_conflict(
-    name: str, occurrences: list[Occurrence], tablefmt: str = "simple"
+    name: str,
+    occurrences: list[Occurrence],
+    tablefmt: str = "simple",
+    filter_output: bool = True,
 ) -> str:
     """Render one conflicting command as a table of its occurrences.
 
@@ -538,6 +675,9 @@ def render_conflict(
         Occurrences in ``$PATH`` order.
     tablefmt : str, optional
         Any :mod:`tabulate` table format, by default ``"simple"``.
+    filter_output : bool, optional
+        Strip terminal escape sequences and control characters from dynamic
+        text, by default True.
 
     Returns
     -------
@@ -549,17 +689,18 @@ def render_conflict(
     >>> render_conflict("nothing", []).splitlines()[0]
     'nothing'
     """
+    clean = clean_text if filter_output else (lambda value: value)
     rows = []
     ordered = sorted(occurrences, key=lambda item: item.path_dir.order)
     for position, item in enumerate(ordered):
         marker = "* " if position == 0 else "  "
         rows.append(
             [
-                marker + item.path_dir.real,
+                clean(marker + item.path_dir.real),
                 item.path_dir.kind,
-                item.real,
-                item.version or "-",
-                item.package or "-",
+                clean(item.real),
+                clean(item.version or "-"),
+                clean(item.package or "-"),
             ]
         )
     table = tabulate(
@@ -569,7 +710,7 @@ def render_conflict(
         disable_numparse=True,
         missingval="-",
     )
-    return f"{name}\n{table}"
+    return f"{clean(name)}\n{table}"
 
 
 def render_non_conflicting(
@@ -577,6 +718,7 @@ def render_non_conflicting(
     index: dict[str, list[Occurrence]],
     tablefmt: str = "simple",
     width: int = DEFAULT_WRAP_WIDTH,
+    filter_output: bool = True,
 ) -> str:
     """Render unambiguous command names grouped by resolved ``$PATH`` directory.
 
@@ -594,6 +736,9 @@ def render_non_conflicting(
         Any :mod:`tabulate` table format, by default ``"simple"``.
     width : int, optional
         Line width for the command list, by default 100.
+    filter_output : bool, optional
+        Strip terminal escape sequences and control characters from dynamic
+        text, by default True.
 
     Returns
     -------
@@ -605,19 +750,20 @@ def render_non_conflicting(
     >>> render_non_conflicting([], {})
     ''
     """
+    clean = clean_text if filter_output else (lambda value: value)
     by_dir: dict[str, list[str]] = {}
     for name, items in index.items():
         if _distinct_files(items) == 1:
             primary = min(items, key=lambda item: item.path_dir.order)
-            by_dir.setdefault(primary.path_dir.real, []).append(name)
+            by_dir.setdefault(primary.path_dir.real, []).append(clean(name))
     rows = []
     for path_dir in sorted(dirs, key=lambda item: item.order):
-        names = sorted(by_dir.get(path_dir.real, []))
+        names = sorted(name for name in by_dir.get(path_dir.real, []) if name)
         if not names:
             continue
         rows.append(
             [
-                path_dir.real,
+                clean(path_dir.real),
                 path_dir.kind,
                 len(names),
                 wrap_names(names, width=width),
@@ -688,6 +834,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="hide the non-conflicting command table",
     )
     parser.add_argument(
+        "--no-filter",
+        action="store_true",
+        help="keep terminal control characters in the report",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="count",
@@ -738,11 +889,12 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     enrich(
-        index,
+        conflicts,
         timeout=args.timeout,
         jobs=args.jobs,
         versions=not args.no_versions,
         packages=not args.no_packages,
+        filter_output=not args.no_filter,
     )
 
     print(
@@ -753,7 +905,12 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     if not args.only_conflicts:
-        table = render_non_conflicting(dirs, index, tablefmt=args.tablefmt)
+        table = render_non_conflicting(
+            dirs,
+            index,
+            tablefmt=args.tablefmt,
+            filter_output=not args.no_filter,
+        )
         if table:
             print("\n== Non-conflicting commands ==")
             print(table)
@@ -765,7 +922,14 @@ def main(argv: list[str] | None = None) -> int:
             "* is the file that runs.\n"
         )
         for name in sorted(conflicts):
-            print(render_conflict(name, index[name], tablefmt=args.tablefmt))
+            print(
+                render_conflict(
+                    name,
+                    index[name],
+                    tablefmt=args.tablefmt,
+                    filter_output=not args.no_filter,
+                )
+            )
             print()
     else:
         print("\nNo conflicting commands.")
