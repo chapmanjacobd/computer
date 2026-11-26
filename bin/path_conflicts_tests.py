@@ -65,6 +65,22 @@ def test_path_dirs_skips_missing_directories(tmp_path: Path) -> None:
     assert pc.path_dirs(str(tmp_path / "nope"), home=str(tmp_path)) == []
 
 
+def test_path_dirs_numbers_resolved_entries_in_order(tmp_path: Path) -> None:
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    alias = tmp_path / "alias"
+    alias.symlink_to(second)
+
+    dirs = pc.path_dirs(f"{first}:{second}:{alias}", home=str(tmp_path / "home"))
+
+    assert [(d.real, d.order) for d in dirs] == [
+        (str(first), 0),
+        (str(second), 1),
+    ]
+
+
 def test_iter_commands_lists_executables(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -138,6 +154,37 @@ def test_render_conflict_marks_first_path_as_winner(tmp_path: Path) -> None:
     assert "tool-pkg 2.0-1" in text
 
 
+def test_render_conflict_uses_resolved_paths_in_resolution_order(
+    tmp_path: Path,
+) -> None:
+    late = pc.PathDir(
+        path=str(tmp_path / "late-alias"),
+        real=str(tmp_path / "late-real"),
+        kind="system",
+        order=1,
+    )
+    early = pc.PathDir(
+        path=str(tmp_path / "early-alias"),
+        real=str(tmp_path / "early-real"),
+        kind="user",
+        order=0,
+    )
+    occurrences = [
+        pc.Occurrence("tool", late, f"{late.path}/tool", f"{late.real}/tool"),
+        pc.Occurrence("tool", early, f"{early.path}/tool", f"{early.real}/tool"),
+    ]
+
+    text = pc.render_conflict("tool", occurrences, tablefmt="simple")
+
+    assert late.path not in text
+    assert early.path not in text
+    assert text.index(early.real) < text.index(late.real)
+    winner_line = next(line for line in text.splitlines() if early.real in line)
+    loser_line = next(line for line in text.splitlines() if late.real in line)
+    assert "*" in winner_line
+    assert "*" not in loser_line
+
+
 def test_render_non_conflicting_groups_by_path(tmp_path: Path) -> None:
     one = pc.PathDir(
         path=str(tmp_path / "one"), real=str(tmp_path / "one"), kind="user"
@@ -156,6 +203,37 @@ def test_render_non_conflicting_groups_by_path(tmp_path: Path) -> None:
     assert two.path in text
     assert "alpha" in text
     assert "beta" in text
+
+
+def test_render_non_conflicting_uses_resolved_paths_in_resolution_order(
+    tmp_path: Path,
+) -> None:
+    late = pc.PathDir(
+        path=str(tmp_path / "late-alias"),
+        real=str(tmp_path / "late-real"),
+        kind="system",
+        order=1,
+    )
+    early = pc.PathDir(
+        path=str(tmp_path / "early-alias"),
+        real=str(tmp_path / "early-real"),
+        kind="user",
+        order=0,
+    )
+    index = {
+        "alpha": [
+            pc.Occurrence("alpha", late, f"{late.path}/alpha", f"{late.path}/alpha")
+        ],
+        "beta": [
+            pc.Occurrence("beta", early, f"{early.path}/beta", f"{early.path}/beta")
+        ],
+    }
+
+    text = pc.render_non_conflicting([late, early], index, tablefmt="simple")
+
+    assert late.path not in text
+    assert early.path not in text
+    assert text.index(early.real) < text.index(late.real)
 
 
 @pytest.mark.parametrize(

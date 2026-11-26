@@ -53,20 +53,25 @@ class PathDir:
     path : str
         Absolute directory path, spelled as it appears in ``$PATH``.
     real : str
-        Symlink-resolved directory path, used to drop duplicate entries.
+        Symlink-resolved directory path, used for display and for dropping
+        duplicate entries.
     kind : str
         ``"user"`` when the directory lives under the home directory,
         otherwise ``"system"``.
+    order : int
+        Zero-based position after resolving and deduplicating ``$PATH``,
+        which is also the order in which the shell consults the directory.
 
     Examples
     --------
-    >>> PathDir(path="/usr/bin", real="/usr/bin", kind="system").kind
+    >>> PathDir(path="/usr/bin", real="/usr/bin", kind="system", order=0).kind
     'system'
     """
 
     path: str
     real: str
     kind: str
+    order: int = 0
 
 
 @dataclass
@@ -174,7 +179,7 @@ def path_dirs(path_value: str, home: str | None = None) -> list[PathDir]:
             continue
         seen.add(real)
         kind = "user" if _within(real, home) else "system"
-        result.append(PathDir(path=directory, real=real, kind=kind))
+        result.append(PathDir(path=directory, real=real, kind=kind, order=len(result)))
     return result
 
 
@@ -521,7 +526,8 @@ def render_conflict(
 ) -> str:
     """Render one conflicting command as a table of its occurrences.
 
-    The first occurrence is the one the shell runs and is marked ``*``. Only
+    Rows are sorted by ``PathDir.order`` and show resolved directory paths.
+    The first row is the one the shell runs and is marked ``*``. Only
     directories that contain the command appear, so there are no empty rows.
 
     Parameters
@@ -544,11 +550,12 @@ def render_conflict(
     'nothing'
     """
     rows = []
-    for position, item in enumerate(occurrences):
+    ordered = sorted(occurrences, key=lambda item: item.path_dir.order)
+    for position, item in enumerate(ordered):
         marker = "* " if position == 0 else "  "
         rows.append(
             [
-                marker + item.path_dir.path,
+                marker + item.path_dir.real,
                 item.path_dir.kind,
                 item.real,
                 item.version or "-",
@@ -571,8 +578,9 @@ def render_non_conflicting(
     tablefmt: str = "simple",
     width: int = DEFAULT_WRAP_WIDTH,
 ) -> str:
-    """Render unambiguous command names grouped by their ``$PATH`` directory.
+    """Render unambiguous command names grouped by resolved ``$PATH`` directory.
 
+    Rows follow ``PathDir.order`` and show resolved directory paths.
     Directories with no unambiguous names are omitted, so the table has no
     empty rows.
 
@@ -600,15 +608,16 @@ def render_non_conflicting(
     by_dir: dict[str, list[str]] = {}
     for name, items in index.items():
         if _distinct_files(items) == 1:
-            by_dir.setdefault(items[0].path_dir.path, []).append(name)
+            primary = min(items, key=lambda item: item.path_dir.order)
+            by_dir.setdefault(primary.path_dir.real, []).append(name)
     rows = []
-    for path_dir in dirs:
-        names = sorted(by_dir.get(path_dir.path, []))
+    for path_dir in sorted(dirs, key=lambda item: item.order):
+        names = sorted(by_dir.get(path_dir.real, []))
         if not names:
             continue
         rows.append(
             [
-                path_dir.path,
+                path_dir.real,
                 path_dir.kind,
                 len(names),
                 wrap_names(names, width=width),
@@ -751,7 +760,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if conflicts:
         print(f"\n== Conflicting commands ({len(conflicts)}) ==")
-        print("Rows follow PATH resolution order; * is the file that runs.\n")
+        print(
+            "PATHs are shown resolved, in PATH resolution order; "
+            "* is the file that runs.\n"
+        )
         for name in sorted(conflicts):
             print(render_conflict(name, index[name], tablefmt=args.tablefmt))
             print()
