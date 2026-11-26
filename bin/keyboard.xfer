@@ -510,14 +510,16 @@ class WindowFocusProvider:
 
         if WAYLAND and HAVE_KDOTOOL:
             hwnd = None
-            try:
-                p = sp.Popen(["kdotool", "getactivewindow"], stdout=sp.PIPE)
-                hwnd = p.communicate()[0].decode("utf-8").strip()
-                if not hwnd:
-                    raise ValueError("empty window id")
-            except Exception as e:
-                warn(f"kdotool getActive failed; {repr(e)}")
-                hwnd = None
+            for _ in range(3):
+                try:
+                    p = sp.Popen(["kdotool", "getactivewindow"], stdout=sp.PIPE)
+                    hwnd = p.communicate()[0].decode("utf-8").strip()
+                except Exception as e:
+                    warn(f"kdotool getActive failed; {repr(e)}")
+                    hwnd = None
+                if hwnd:
+                    break
+                time.sleep(0.1)
 
             if hwnd is None or not include_title:
                 return hwnd
@@ -1008,14 +1010,16 @@ class Typist(object):
 
             if self.wfp and time.time() - last_focus_check > 0.5:
                 hwnd = self.wfp.get(False)
-                # debug(f"focus @ {hwnd}")
+                last_focus_check = time.time()
+                # A transient failure to read the active window is not a focus
+                # change; keep typing and check again later.
+                if hwnd is None:
+                    continue
                 if hwnd != self.hwnd:
                     _, title = self.wfp.get(True)
                     error(f"lost focus to: ({hwnd}, {title})")
                     self.dead = True
                     continue
-
-                last_focus_check = time.time()
 
             if self.logfile:
                 self.logfile.write(txt.encode("utf-8"))
@@ -1253,7 +1257,9 @@ def main():
         while True:
             time.sleep(0.1)
             hwnd = wfp.get(False)
-            if hwnd != own_window[0] and hwnd != 0:
+            if hwnd is None or hwnd == 0:
+                continue
+            if hwnd != own_window[0]:
                 break
 
         target_window = wfp.get(True)
