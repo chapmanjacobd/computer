@@ -5,9 +5,10 @@ The ranking is a Python port of the in-browser sorting script: seeders,
 completed count, audio/subtitle tracks, freeleech, age, size, and resolution.
 Full disc images are ranked as DVDs, so WEB-DL releases are preferred over them.
 Listing tables (including Gazelle-style /torrents.php?id= pages, their
-activity_info cards, and grouped similar-torrents tables) are detected from
-their contents rather than by URL. Torrents carrying a taglist=horror link are
-printed to stderr and skipped.
+activity_info cards, grouped similar-torrents tables, and the newer UNIT3D
+/torrents/similar/{category}.{tmdb} article.similar-torrent-row lists) are
+detected from their contents rather than by URL. Torrents carrying a
+taglist=horror link are printed to stderr and skipped.
 Rows with a direct download link are downloaded without fetching the detail page;
 other selected /torrent/ pages download their .torrent plus the newest
 downloadable English subtitle into --prefix (default: ~/Downloads).
@@ -67,6 +68,17 @@ GROUPED_COLUMNS = {
     "age": ".torrent-search--grouped__age",
 }
 
+SIMILAR_ROW_SELECTOR = "article.similar-torrent-row, .similar-torrent-row"
+SIMILAR_COLUMNS = {
+    "filename": ".similar-torrent-row__name",
+    "download": ".similar-torrent-row__action--download",
+    "size": ".similar-torrent-row__stat--size",
+    "seeders": ".similar-torrent-row__stat--seeders",
+    "leechers": ".similar-torrent-row__stat--leechers",
+    "completed": ".similar-torrent-row__stat--completed",
+    "age": ".similar-torrent-row__stat--age",
+}
+
 AGE_UNITS = [
     (r"(\d+(?:\.\d+)?)\s*years?", 365),
     (r"(\d+(?:\.\d+)?)\s*months?", 30),
@@ -74,6 +86,13 @@ AGE_UNITS = [
     (r"(\d+(?:\.\d+)?)\s*days?", 1),
     (r"(\d+(?:\.\d+)?)\s*hours?", 1 / 24),
     (r"(\d+(?:\.\d+)?)\s*minutes?", 1 / 1440),
+    # Compact diffForHumans output such as "2d ago", "3h ago", and "1mo ago".
+    (r"(\d+(?:\.\d+)?)\s*y(?:r|rs)?\b", 365),
+    (r"(\d+(?:\.\d+)?)\s*mo\b", 30),
+    (r"(\d+(?:\.\d+)?)\s*w\b", 7),
+    (r"(\d+(?:\.\d+)?)\s*d\b", 1),
+    (r"(\d+(?:\.\d+)?)\s*h\b", 1 / 24),
+    (r"(\d+(?:\.\d+)?)\s*(?:m|min|mins)\b", 1 / 1440),
 ]
 
 SIZE_UNITS = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3, "TB": 1024**4}
@@ -351,6 +370,8 @@ def has_free_download(row):
     return (
         row.select_one(
             ".fa-star.text-gold,"
+            " .torrent-badges__item--freeleech,"
+            " .torrent-badges__item--personal-freeleech,"
             " [data-bs-original-title='Free Download'],"
             " [data-original-title='Free Download'],"
             " [aria-label='Free Download'],"
@@ -362,6 +383,12 @@ def has_free_download(row):
 
 def grouped_type_text(row):
     """Return the type header shared by a grouped listing row (eg. 'Full Disc')."""
+    container = row.find_parent(class_="similar-torrents-type")
+    if container is not None:
+        title = container.select_one(".similar-torrents-type__title")
+        if title is not None:
+            return title.get_text(" ", strip=True)
+
     current = row
     while current is not None:
         header = current.find("th", recursive=False)
@@ -729,6 +756,33 @@ def activity_info_candidates(soup, base_url=None):
     return candidates
 
 
+def similar_row_candidates(soup, base_url=None):
+    """Parse the UNIT3D similar-torrents list layout (.similar-torrent-row)."""
+    candidates = []
+    for article in soup.select(SIMILAR_ROW_SELECTOR):
+        name = article.select_one(".similar-torrent-row__name a[href]")
+        if name is None:
+            name = activity_link(article, is_torrent_detail_link)
+        if name is None:
+            continue
+
+        columns = dict(SIMILAR_COLUMNS)
+        candidates.append(
+            TorrentCandidate(
+                url=absolute_url(name["href"], base_url),
+                title=name.get_text(" ", strip=True),
+                row=article,
+                columns=columns,
+                score=get_qualitative_score(article, columns),
+                seeders=get_seeders(article, columns),
+                has_english_subtitles=has_english_subtitles(article),
+                download_url=row_download_url(article, columns, base_url),
+                is_horror=has_horror_tag(article),
+            )
+        )
+    return candidates
+
+
 def torrent_candidates(soup, base_url=None):
     """Return every torrent candidate across detected listing layouts, including horror ones."""
     tables = find_torrent_tables(soup)
@@ -758,9 +812,12 @@ def torrent_candidates(soup, base_url=None):
     card_candidates = activity_info_candidates(soup, base_url)
     log.debug("Found %d activity_info torrent card(s)", len(card_candidates))
 
+    list_candidates = similar_row_candidates(soup, base_url)
+    log.debug("Found %d similar-torrent-row card(s)", len(list_candidates))
+
     # Some themes render both layouts; keep one candidate per torrent.
     by_url = {}
-    for candidate in table_candidates + card_candidates:
+    for candidate in table_candidates + card_candidates + list_candidates:
         key = candidate.url.split("#", 1)[0]
         existing = by_url.get(key)
         if existing is None or (candidate.download_url and not existing.download_url):
@@ -786,7 +843,10 @@ def best_torrent_from_soup(soup, base_url=None):
     """Return the highest-ranked non-horror torrent across every detected listing layout."""
     candidates = torrent_candidates(soup, base_url)
     if not candidates:
-        log.debug("Found %d torrent row(s) without a usable detail URL", len(soup.select(".torrent-file, .torrent_row")))
+        log.debug(
+            "Found %d torrent row(s) without a usable detail URL",
+            len(soup.select(".torrent-file, .torrent_row, .similar-torrent-row")),
+        )
         return None
     return best_from_candidates(candidates)
 
@@ -820,7 +880,11 @@ def is_torrent_detail_page(soup):
         return True
 
     # A group page can contain download links too; its listing content wins.
-    if find_torrent_tables(soup) or soup.select_one(".activity_info, .grouped_info, .torrent_card"):
+    if (
+        soup.select_one(SIMILAR_ROW_SELECTOR)
+        or find_torrent_tables(soup)
+        or soup.select_one(".activity_info, .grouped_info, .torrent_card")
+    ):
         return False
 
     # Gazelle detail pages have no details table, but expose action=download.
@@ -856,7 +920,12 @@ def direct_torrents_filename(url):
 
 
 def is_listing_url(url):
-    return bool(re.search(r"/(?:movie|movies|tv|series|manga|mangas|anime|animes)/", urlparse(url).path, re.IGNORECASE))
+    path = urlparse(url).path
+    if re.search(r"/torrents/similar/", path, re.IGNORECASE):
+        return True
+    return bool(
+        re.search(r"/(?:movie|movies|tv|series|manga|mangas|anime|animes)/", path, re.IGNORECASE)
+    )
 
 
 def details_value(table, label):
@@ -1142,7 +1211,9 @@ def wait_for_selenium_content(args):
             lambda driver: driver.find_elements(
                 By.CSS_SELECTOR,
                 '.torrent-file, a.torrent-filename, a.torrent-link, .torrent_row, .activity_info,'
-                ' a[href*="action=download"], a[href*="/download/torrent/"], a[href$="/download"]',
+                ' .similar-torrent-row,'
+                ' a[href*="action=download"], a[href*="/download/torrent/"],'
+                ' a[href*="/torrents/download/"], a[href$="/download"]',
             )
         )
     except Exception as excinfo:
@@ -1337,8 +1408,8 @@ def process_url(args, url, state=None):
         if horror_urls:
             log.warning("Skipped %d horror torrent(s) in %s; no non-horror torrent selected", len(horror_urls), url)
             return True
-        if find_torrent_tables(soup):
-            log.warning("Found torrent table(s) in %s, but no rows had a usable detail link", url)
+        if find_torrent_tables(soup) or soup.select_one(SIMILAR_ROW_SELECTOR):
+            log.warning("Found torrent rows in %s, but none had a usable detail link", url)
         else:
             log.warning(
                 "Could not find any torrent rows in %s (try a larger --wait if the page loads them dynamically)",
