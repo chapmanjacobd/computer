@@ -1,0 +1,33 @@
+import json
+import subprocess
+import sys
+
+
+def call(args):
+    return subprocess.run(["busctl", "--user", "call"] + args, capture_output=True, text=True)
+
+out = call(["org.kde.kglobalaccel", "/component/kwin",
+            "org.kde.kglobalaccel.Component", "allShortcutInfos", "--json=short"])
+if out.returncode != 0:
+    sys.exit("allShortcutInfos failed: " + out.stderr)
+
+entries = json.loads(out.stdout)["data"][0]
+ok = fail = skipped = 0
+for e in entries:
+    unique, friendly, comp, comp_friendly, ctx, ctx_friendly, keys, _dkeys = e
+    if not keys:
+        skipped += 1
+        continue
+    args = ["org.kde.kglobalaccel", "/kglobalaccel", "org.kde.KGlobalAccel", "setShortcutKeys",
+            "asa(ai)u", "4", comp, unique, comp_friendly, friendly, str(len(keys))]
+    for k in keys:
+        args += ["1", str(k)]
+    args += ["2"]  # SetPresent
+    r = call(args)
+    if r.returncode != 0:
+        fail += 1
+        print("FAIL", unique, r.stderr.strip())
+    else:
+        ok += 1
+
+print(f"total={len(entries)} replayed={ok} skipped(no keys)={skipped} failed={fail}")
