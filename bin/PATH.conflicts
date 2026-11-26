@@ -10,7 +10,7 @@
 Every directory in ``$PATH`` is scanned for executable files. Commands found
 in exactly one place are listed grouped by that directory; commands whose name
 appears in several places are reported one table per name, with the file that
-actually runs marked ``*``, its real path, the version it reports, and the
+actually runs in the first row, its real path, the version it reports, and the
 package that owns it.
 
 Run::
@@ -664,8 +664,8 @@ def render_conflict(
     """Render one conflicting command as a table of its occurrences.
 
     Rows are sorted by ``PathDir.order`` and show resolved directory paths.
-    The first row is the one the shell runs and is marked ``*``. Only
-    directories that contain the command appear, so there are no empty rows.
+    The first row is the one the shell runs. Only directories that contain the
+    command appear, so there are no empty rows.
 
     Parameters
     ----------
@@ -692,11 +692,10 @@ def render_conflict(
     clean = clean_text if filter_output else (lambda value: value)
     rows = []
     ordered = sorted(occurrences, key=lambda item: item.path_dir.order)
-    for position, item in enumerate(ordered):
-        marker = "* " if position == 0 else "  "
+    for item in ordered:
         rows.append(
             [
-                clean(marker + item.path_dir.real),
+                clean(item.path_dir.real),
                 item.path_dir.kind,
                 clean(item.real),
                 clean(item.version or "-"),
@@ -924,7 +923,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n== Conflicting commands ({len(conflicts)}) ==")
         print(
             "PATHs are shown resolved, in PATH resolution order; "
-            "* is the file that runs.\n"
+            "the first row wins.\n"
         )
         for name in sorted(conflicts):
             print(

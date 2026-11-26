@@ -129,7 +129,7 @@ def test_scan_treats_two_names_for_one_file_as_non_conflicting(tmp_path: Path) -
     assert set(pc.non_conflicting(index)) == {"tool"}
 
 
-def test_render_conflict_marks_first_path_as_winner(tmp_path: Path) -> None:
+def test_render_conflict_puts_winner_first(tmp_path: Path) -> None:
     one = pc.PathDir(
         path=str(tmp_path / "one"), real=str(tmp_path / "one"), kind="user"
     )
@@ -158,8 +158,8 @@ def test_render_conflict_marks_first_path_as_winner(tmp_path: Path) -> None:
     assert text.splitlines()[0] == "tool"
     winner_line = next(line for line in text.splitlines() if one.path in line)
     loser_line = next(line for line in text.splitlines() if two.path in line)
-    assert "*" in winner_line
-    assert "*" not in loser_line
+    assert text.index(winner_line) < text.index(loser_line)
+    assert "*" not in text
     assert "tool 2.0" in text
     assert "tool-pkg 2.0-1" in text
 
@@ -189,10 +189,7 @@ def test_render_conflict_uses_resolved_paths_in_resolution_order(
     assert late.path not in text
     assert early.path not in text
     assert text.index(early.real) < text.index(late.real)
-    winner_line = next(line for line in text.splitlines() if early.real in line)
-    loser_line = next(line for line in text.splitlines() if late.real in line)
-    assert "*" in winner_line
-    assert "*" not in loser_line
+    assert "*" not in text
 
 
 def test_render_non_conflicting_groups_by_path(tmp_path: Path) -> None:
