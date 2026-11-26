@@ -7,4 +7,5 @@ if [ "${XDG_SESSION_TYPE:-}" = wayland ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
     exit 1
 fi
 
-exec "$(dirname "$0")/xcaliber.x11" "$@"
+dir=$(cd -- "$(dirname -- "$0")" && pwd)
+exec "$dir/xcaliber.x11" "$@"
