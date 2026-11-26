@@ -1,0 +1,6 @@
+#!/usr/bin/env fish
+git remote remove origin
+set user (id -un)
+git remote add server ssh://$user@pakon/home/$user/github/xk/(path basename (pwd))/
+git branch --set-upstream-to=server/main main
+git fetch

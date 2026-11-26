@@ -49,45 +49,6 @@
     autocorrect = prompt
 [log]
     date = relative-local
-[alias]
-    create = switch -c
-    ccp = "!f() { git create \"$1\" && shift && git cherry-pick \"$@\"; }; f"
-    delete = branch -D
-    rename = "!fish -c 'git.rename $argv' --"
-    grame = "!r() { git grep -n $1 $2 | while IFS=: read i j k; do echo $i; git blame -f -L $j,$j $i; done }; r"
-    startover = "!f() { git reset --hard $(git merge-base $(git main) HEAD); git rebase $(git main); }; f"
-    diffbranch = diff --ignore-all-space -U0 DEV...HEAD
-    branches = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)'
-    unmerged = for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' --no-merged
-    conflicts = diff --name-only --diff-filter U
-    edit-conflicts = !git conflicts | xargs -r $(git var GIT_EDITOR)
-    history = log --follow -p --
-    utccommit = !git commit --date="$(date --utc +%Y-%m-%dT%H:%M:%S%z)"
-    amend = commit --amend --no-edit
-    lg = log --color --graph --pretty=format:'%Cred%h%Creset %C(bold blue)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit
-    keep = "!f() { dir=${1:-.}; printf \\*\"\\n\"!.gitignore > \"$dir/.gitignore\"; git add \"$dir\"; }; f"
-    divergence = !git log --reverse --oneline ..$(git main)
-    tagged = describe --tags --exact-match
-    tags = tag --sort=creatordate --contains
-    reword = "!f() { git commit --amend -m \"$*\"; }; f"
-    pushf = push --force-with-lease --force-if-includes
-    head = show HEAD
-    remotes = remote -v
-    localignore = !printf \"%s\\n\" \"$@\" >> .git/info/exclude
-    ignore = !printf \"%s\\n\" \"$@\" >> .gitignore
-    whoami = !git config user.name && git config user.email
-    difflog = log -p --stat
-    diffsbs = -c delta.side-by-side=true diff
-    sha = log -n 1 --pretty=format:'%H'
-    staged = diff --cached
-    commits = rev-list HEAD --count
-    find = !git.checkout.fzf
-    main = "!f() { m=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null); if [ -z \"$m\" ]; then git remote set-head origin --auto >/dev/null 2>&1; m=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null); fi; m=${m#refs/remotes/origin/}; echo ${m:-main}; }; f"
-    diff-ignore-moved = "!f() { unbuffer git --no-pager diff --color-moved=plain --color=always \"$@\" | grep -vE \"^\\[[0-9;]*(34|35|36)m[+-]\"; }; f"
-    diff-deleted = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*31m-\"; }; f"
-    diff-added = "!f() { unbuffer git --no-pager diff --color=always \"$@\" | grep -E \"^\\[[0-9;]*32m\\+\"; }; f"
-	pop = "!fish -c 'git.pop $argv' --"
-	pushff = "!f() { git push origin \"+HEAD:refs/heads/$(git main)\" \"$@\"; }; f"
 [advice]
     skippedCherryPicks = false
 [branch]

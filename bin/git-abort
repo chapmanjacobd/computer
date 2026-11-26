@@ -1,0 +1,5 @@
+#!/usr/bin/env fish
+# Defined interactively
+git cherry-pick --abort
+or git rebase --abort
+or git merge --abort

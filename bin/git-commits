@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Count commits reachable from HEAD.
+set -euo pipefail
+exec git rev-list HEAD --count "$@"

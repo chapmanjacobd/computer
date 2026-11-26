@@ -15,7 +15,7 @@ function wipp
 
     set -l tree_oid (git write-tree)
     set -l parent_oid (git rev-parse HEAD)
-    set -l msg (git.wip.message --staged)
+    set -l msg (git-wip-message --staged)
 
     git --no-pager diff $parent_oid $tree_oid
     git --no-pager diff $parent_oid $tree_oid | grep -i TODO

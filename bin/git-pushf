@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Force-push, but only when it is safe for the remote.
+set -euo pipefail
+exec git push --force-with-lease --force-if-includes "$@"

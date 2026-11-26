@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Create and switch to a new branch.
+set -euo pipefail
+exec git switch -c "$@"

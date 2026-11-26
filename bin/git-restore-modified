@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+git diff
+git restore (git-status-filter M M)

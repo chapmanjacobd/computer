@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+git add .
+git stash push --keep-index

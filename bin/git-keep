@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Track only a .gitignore in a directory, so its contents stay untracked.
+set -euo pipefail
+dir=${1:-.}
+printf '*\n!.gitignore\n' > "$dir/.gitignore"
+exec git add "$dir"

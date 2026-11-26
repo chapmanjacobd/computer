@@ -1,0 +1,3 @@
+#!/usr/bin/env fish
+# Defined via `source`
+git show "$argv[1]":"$argv[2..-1]"

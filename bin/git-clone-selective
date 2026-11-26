@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+git clone --filter=blob:none --sparse $argv[1] selective
+git -C selective sparse-checkout add $argv[2..-1]

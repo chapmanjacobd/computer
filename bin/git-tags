@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# List tags that contain the current commit.
+set -euo pipefail
+exec git tag --sort=creatordate --contains "$@"

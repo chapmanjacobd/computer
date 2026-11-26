@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+git rm --cached -- $argv
+git restore --source=HEAD --staged --worktree -- $argv

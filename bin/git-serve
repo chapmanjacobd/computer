@@ -1,0 +1,5 @@
+#!/usr/bin/env fish
+# Defined interactively
+git remote -v
+git remote remove origin
+git config receive.denyCurrentBranch updateInstead

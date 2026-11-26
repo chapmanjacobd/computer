@@ -15,7 +15,7 @@ function git
         end
 
         if $has_force
-            command git pushf $remaining_args
+            command git-pushf $remaining_args
         else
             command git $argv
         end

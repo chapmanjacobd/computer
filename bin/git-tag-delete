@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+git tag --delete $argv
+git push origin :refs/tags/$argv

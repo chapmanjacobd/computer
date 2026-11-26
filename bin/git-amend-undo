@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: git.amend.undo [--dry-run]
+Usage: git amend-undo [--dry-run]
 
 Move HEAD back to the commit before the most recent amend and leave only
 the amend's changes staged.

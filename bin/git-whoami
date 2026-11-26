@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Print the configured commit identity.
+git config user.name
+git config user.email

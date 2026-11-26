@@ -216,7 +216,7 @@ abbr -a -- timers 'systemctl list-timers --all --no-pager; systemctl --user list
 abbr -a -- wget wget --content-disposition --no-verbose --continue --trust-server-names
 abbr -a -- torrent.status 'print $servers | parallel server.ssh {} lb.dev torrent info --dl -pa | ov'
 abbr -a -- zj z j
-abbr -a -- wipc git.checkpoint
+abbr -a -- wipc git-checkpoint
 abbr -a -- gitconfig git config -l --show-origin
 abbr -a -- mpvinput 'mpv --idle --script-opts=stats-bindlist=yes | ov'
 abbr -a -- ipy ipython --pdb
@@ -353,7 +353,7 @@ abbr -a -- lb-load lb.load
 abbr -a -- xkcd_password password.xkcd
 abbr -a -- btrfs_temp_device_add btrfs.tempdevice.add
 abbr -a -- blockchannel yt.downloadarchive.add
-abbr -a -- gitcopystaged git.copy.staged
+abbr -a -- gitcopystaged git-copy-staged
 abbr -a -- psd ps.blocked
 abbr -a -- video.to.keyframes.slow.io video.to.keyframes.slow.named
 abbr -a -- ppaused ps.paused
@@ -417,15 +417,15 @@ abbr -a -- presume ps.resume
 abbr -a -- key-refresh-nomachine key.refresh.nomachine
 abbr -a -- append file.append.line
 abbr -a -- git_clone git.clone
-abbr -a -- git-recreate git.reclone
+abbr -a -- git-recreate git-reclone
 abbr -a -- delete_duplicate_lines file.lines.dedupe
 abbr -a -- filetype file.type
-abbr -a -- gitblame-percent git.blame.share
+abbr -a -- gitblame-percent git-blame-share
 abbr -a -- trash-restore-here trash.restore.here
 abbr -a -- the_empire_dl dl.torrent.the.empire
 abbr -a -- load_env_the_empire load.env.the.empire
 abbr -a -- filterByGenre files.audio.genre
-abbr -a -- gitignore git.ignore
+abbr -a -- gitignore git-ignore
 abbr -a -- snapshot_restore folder.snapshot.restore
 abbr -a -- snakecase lines.to.snake.case
 abbr -a -- syncwebpy.release syncwebpy.release
@@ -441,8 +441,8 @@ abbr -a -- focus_follows_mouse kwin.FocusFollowsMouse
 abbr -a -- truncatelines files.lines.truncate
 abbr -a -- locate_folders folders.locate
 abbr -a -- fd-date fd.date
-abbr -a -- gitcommitbefore git.hash.before.date
-abbr -a -- gitdiffdate git.diff.date
+abbr -a -- gitcommitbefore git-hash-before-date
+abbr -a -- gitdiffdate git-diff-date
 abbr -a -- gen_from_random_date random.date
 abbr -a -- datesleep sleep.date
 abbr -a -- mv-by-filename-yearmonth paths.mv.date
@@ -472,13 +472,13 @@ abbr -a -- qbt-unqueue qbt.unqueue
 abbr -a -- interleave lines.interleave
 abbr -a -- allpct servers.ssh.interactive
 abbr -a -- btrfs_temp_device_remove btrfs.tempdevice.remove
-abbr -a -- git_remote_serve git.serve
+abbr -a -- git_remote_serve git-serve
 abbr -a -- preserve_titles file.urls.titles.preserve
 abbr -a -- stickysync_size stickysync.size
 abbr -a -- filesize file.size
 abbr -a -- trash-size trash.size
 abbr -a -- rpmsize rpm.size
-abbr -a -- gitsize git.size
+abbr -a -- gitsize git-size
 abbr -a -- torrent_size torrent.size
 abbr -a -- gcp-resize gcp.resize
 abbr -a -- cb2pdf cb.to.pdf
@@ -500,13 +500,13 @@ abbr -a -- bigdpi system.dpi.big
 abbr -a -- load_env_syncthing load.env.syncthing
 abbr -a -- sleepy_perf ps.waiting
 abbr -a -- githistory paths.git.log
-abbr -a -- git-changelog git.changelog
+abbr -a -- git-changelog git-changelog
 abbr -a -- avg_size files.size.avg
 abbr -a -- logeach log.each
 abbr -a -- eachpc servers.ssh.each
 abbr -a -- speak text.to.speach
 abbr -a -- git_branch git.branch
-abbr -a -- gitMoveToNewBranch git.rebranch.unstaged
+abbr -a -- gitMoveToNewBranch git-rebranch-unstaged
 abbr -a -- redarc_site_search redarc.site.search
 abbr -a -- mam_search mam.search
 abbr -a -- lt-search lt.search
@@ -521,7 +521,7 @@ abbr -a -- dsql_refresh d.sql.refresh
 abbr -a -- dsql_refresh_disk dsql.refresh
 abbr -a -- tor-refresh torrents.refresh
 abbr -a -- sum_fish lines.sum.fish
-abbr -a -- git_remote_use_ssh git.remote.ssh
+abbr -a -- git_remote_use_ssh git-remote-ssh
 abbr -a -- key-refresh-ssh key.refresh.ssh
 abbr -a -- sshpc server.ssh
 abbr -a -- allpc servers.ssh
@@ -561,7 +561,7 @@ abbr -a -- ffsmall.audio audio.shrink
 abbr -a -- image-folder-ask-keep folders.images.ask
 abbr -a -- unlidisk unli.disk
 abbr -a -- is_vertical_video video.is.vertical
-abbr -a -- gitignore-local git.ignore.local
+abbr -a -- gitignore-local git-ignore-local
 abbr -a -- img_radial_gradient image.gradient.radial
 abbr -a -- not-fish prompt.minimal
 abbr -a -- standuphorizontally standup.horizontal
@@ -590,10 +590,10 @@ abbr -a -- json2yaml json.to.yaml
 abbr -a -- cb_append_html cb.append.html
 abbr -a -- cb_htmlfile cb.file.html
 abbr -a -- vpn_nl vpn.nl
-abbr -a -- git-eol-reset git.reset.eol
+abbr -a -- git-eol-reset git-reset-eol
 abbr -a -- ansible-repl ansible.repl
 abbr -a -- ytm.url yt.print.url
-abbr -a -- gitupstream git.upstream
+abbr -a -- gitupstream git-upstream
 abbr -a -- mam_dl dl.mam
 abbr -a -- load_env_mam load.env.mam
 abbr -a -- to_insta video.to.instagram
@@ -643,7 +643,7 @@ abbr -a -- llm_python llm.python
 abbr -a -- duration ffprobe.duration
 abbr -a -- vnc-pakon vnc.pakon
 abbr -a -- pkilldaemon pkill.daemon
-abbr -a -- git_serve git.daemon
+abbr -a -- git_serve git-daemon
 abbr -a -- noonday noon
 abbr -a -- systemd-cron systemd.cron
 abbr -a -- fs_display display.enable
@@ -655,7 +655,7 @@ abbr -a -- yaml2json yaml.to.json
 abbr -a -- volumedown catt.volume.down
 abbr -a -- brightness_lg_down brightness.lg.down
 abbr -a -- brightness_down brightness.down
-abbr -a -- gittodo git.todo
+abbr -a -- gittodo git-todo
 abbr -a -- redarc_video redarc.video
 abbr -a -- fzf_mpv_preview fzf.video
 abbr -a -- check_local_video search.video
@@ -686,7 +686,7 @@ abbr -a -- gen_from_random_timestamp random.timestamp
 abbr -a -- mkcdtemp tmp
 abbr -a -- ripcd cd.audio.dump
 abbr -a -- popline file.line.pop
-abbr -a -- gitpop git.pop
+abbr -a -- gitpop git-pop
 abbr -a -- laptop screen.virtual.laptop
 abbr -a -- parallel-stop parallel.stop
 abbr -a -- timers-stop timers.stop
@@ -709,7 +709,7 @@ abbr -a -- match-trunc-head file.truncate.after
 abbr -a -- match-first-tail lines.after
 abbr -a -- filterfile file.lines.filter
 abbr -a -- sqlite-recover sqlite.recover
-abbr -a -- git_remote_use_server git.remote.server
+abbr -a -- git_remote_use_server git-remote-server
 abbr -a -- has_git_dir git.dir
 abbr -a -- vpn-for sshuttle.vpn.for
 abbr -a -- previousdiff diff.prior
@@ -720,7 +720,7 @@ abbr -a -- gsgdalinfo gdalinfo.gcs
 abbr -a -- gsogr ogrinfo.gcs
 abbr -a -- redarc_pics redarc.pics
 abbr -a -- video.to.keyframes.slow.images video.to.images
-abbr -a -- gitdiffall git.diff.branches
+abbr -a -- gitdiffall git-diff-branches
 abbr -a -- zombies ps.zombies
 abbr -a -- sqlite-tables sqlite.tables
 abbr -a -- filehandles file.handles
@@ -751,7 +751,7 @@ abbr -a -- wineprogs wine.programs
 abbr -a -- displays screens
 abbr -a -- sqlite-columns sqlite.columns
 abbr -a -- clean_home_advanced home.clean.permissions
-abbr -a -- gittodos git.todos
+abbr -a -- gittodos git-todos
 abbr -a -- mu pmaps
 abbr -a -- video.to.keyframes.slow.timestamps ffprobe.video.keyframes.timestamps
 abbr -a -- ffmpeg.pkt.dts ffprobe.audio.dts.timestamps
@@ -794,7 +794,7 @@ abbr -a -- json-compress json.compact
 abbr -a -- trash-inspect trash.inspect
 abbr -a -- trash-restore-d-folder trash.restore.d.folder
 abbr -a -- ffvcs video.to.contactsheet
-abbr -a -- getignore git.ignore.get
+abbr -a -- getignore git-ignore-get
 abbr -a -- brightness_lg_get brightness.lg.get
 abbr -a -- brightness_get brightness.get
 abbr -a -- mpvprop mpv.get
@@ -807,7 +807,7 @@ abbr -a -- restartplasma kde.reset
 abbr -a -- reset-display-len display.len.reset
 abbr -a -- timers-reset timers.reset
 abbr -a -- reset-amdgpu gpu.reset
-abbr -a -- gitresetindex git.index.reset
+abbr -a -- gitresetindex git-index-reset
 abbr -a -- sticky_config system.config.preset
 abbr -a -- duckdb2parquet duckdb.to.parquet
 abbr -a -- mouseleft input.mouse.left
@@ -822,13 +822,13 @@ abbr -a -- tmuxsplit tmux.split
 abbr -a -- catt_set_default catt.default
 abbr -a -- defaultset setdefault
 abbr -a -- lines lines.count
-abbr -a -- git_recent git.recent
+abbr -a -- git_recent git-recent
 abbr -a -- sparse_percent file.sparse.percent
 abbr -a -- battery_percent battery.percent
 abbr -a -- increment path.increment
 abbr -a -- isparent path.is.parent
 abbr -a -- mkpdir mkparent
-abbr -a -- gitstash-checkpoint git.checkpoint
+abbr -a -- gitstash-checkpoint git-checkpoint
 abbr -a -- sqlite-count sqlite.count
 abbr -a -- filecount files.count
 abbr -a -- filelength file.lines.count
@@ -891,7 +891,7 @@ abbr -a -- repeatslowly repeat.slowly
 abbr -a -- mkexecpy mkexec.py
 abbr -a -- py_stat stat.python
 abbr -a -- pulumi-cp-secret pulumi.secret.copy
-abbr -a -- gitcopy git.copy
+abbr -a -- gitcopy git-copy
 abbr -a -- mam_db_dl_query mam.db.dl.query
 abbr -a -- firefox-history search.firefoxhistory
 abbr -a -- ffquality ffmpeg.decode.quality
@@ -922,7 +922,7 @@ abbr -a -- trashls trash-list
 abbr -a -- trash.list trash-list
 abbr -a -- wm commit
 abbr -a -- gc commit
-abbr -a -- wipam git.fixup HEAD
+abbr -a -- wipam git-fixup HEAD
 abbr -a -- phone.cb ssh phone cb
 abbr -a -- code zed
 abbr -a -- gdc 'git diff | cb'
@@ -936,14 +936,14 @@ abbr -a -- dfi df -i
 abbr -a -- amend git commit --amend --no-edit
 abbr -a -- gin git add --intent-to-add .
 abbr -a -- gem gemini
-abbr -a -- fixup git.fixup
+abbr -a -- fixup git-fixup
 abbr -a -- sha sha256sum
 abbr -a -- gemini agy
 abbr -a -- j journalctl --user -u
 abbr -a -- git.amend git-fixup
 abbr -a -- taxes "wt.dev --db ~/lb/fs/scratch.db --action ask_move --exit-code-confirm --ignore-errors --delete-unplayable --cmd6 'lb shrink audio --no-preserve-video' --cmd5 'mv {} '(d library/porn/vr/) --cmd130 exit_multiple_playback --local-media-only --loop -m 3 --fstack --keep-dir :/library/porn/video/ -rs -L inf -S+250 --fstack --mute --pause"
 abbr -a -- ga git add -u
-abbr -a -- git.ssh git.remote.ssh
+abbr -a -- git.ssh git-remote-ssh
 abbr -a -- icat viu -h 30
 abbr -a -- ogrinfo ogrinfo -ro -so -al
 abbr -a -- editcb cb.edit
@@ -968,7 +968,7 @@ abbr -a -- wordfreq_sort.py lines.sort.wordfreq
 abbr -a -- wipefs_undo.py wipefs.undo
 abbr -a -- with_backoff.sh with.backoff
 abbr -a -- wkt2geojson.py wkt.to.geojson
-abbr -a -- wip_message.py git.wip.message
+abbr -a -- wip_message.py git-wip-message
 abbr -a -- usb-reset.sh usb.reset.sh
 abbr -a -- utf8_tool.py utf8.tool
 abbr -a -- utf8_tool2 utf8.tool2
@@ -1159,10 +1159,10 @@ abbr -a -- gh-squash-merge-when-ready gh.merge.squash.wait
 abbr -a -- gh_grabber.py search.github.repos
 abbr -a -- gif.sh video.to.gif.sh
 abbr -a -- gist_dl_user dl.gist.user
-abbr -a -- git-file-size-diff.sh git.filesize.diff
-abbr -a -- git-fzf-checkout git.checkout.fzf
-abbr -a -- git-merge-stats git.merge.stats
-abbr -a -- git-quick-stats git.quick.stats
+abbr -a -- git-file-size-diff.sh git-filesize-diff
+abbr -a -- git-fzf-checkout git-checkout-fzf
+abbr -a -- git-merge-stats git-merge-stats
+abbr -a -- git-quick-stats git-quick-stats
 abbr -a -- grep_percent.py lines.percent
 abbr -a -- gron grep.json
 abbr -a -- group_lines lines.group
@@ -1248,7 +1248,7 @@ abbr -a -- pdftext mutool draw -F txt
 abbr -a -- unset set -Ue
 abbr -a -- usbreset sudo /home/xk/bin/usb.reset.sh
 abbr -a -- dl file.eval.shuf.repeat
-abbr -a -- gi git.ignore
+abbr -a -- gi git-ignore
 abbr -a -- arpa ip -4 neigh show
 abbr -a -- gitstash git stash --keep-index
 abbr -a -- stash git stash --keep-index
@@ -1263,6 +1263,16 @@ abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --un
 abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | open.browser'
 abbr -a -- gl git log --oneline --decorate --first-parent --stat
 abbr -a -- git.clean git clean -fd --interactive
-abbr -a -- wip 'commit (git.wip.message --staged)'
+abbr -a -- wip 'commit (git-wip-message --staged)'
 abbr -a -- git.log.divergent git log --oneline --graph --decorate --left-right --cherry-pick --boundary '@{u}...HEAD'
 abbr -a -- git.log.incoming git log --stat 'HEAD..@{u}'
+abbr -a -- gitedit git-edit
+abbr -a -- gitamendundo git-amend-undo
+abbr -a -- gitfilehistory git-file-history
+abbr -a -- gitkeep git-keep
+abbr -a -- gitmain git-main
+abbr -a -- gitblame git.blame
+abbr -a -- gitdifffiles git.diff.files
+abbr -a -- gitmerge git.merge
+abbr -a -- gitrebase git.rebase
+abbr -a -- gitrestore git.restore

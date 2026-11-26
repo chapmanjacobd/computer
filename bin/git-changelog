@@ -1,0 +1,6 @@
+#!/usr/bin/env fish
+set range $argv[1]
+
+test -n "$range"; or set range (git describe --abbrev=0)".."
+
+git --no-pager log --reverse --format="* %s" $range

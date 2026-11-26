@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Commit with the current UTC time as the author date.
+set -euo pipefail
+date_utc=$(date --utc +%Y-%m-%dT%H:%M:%S%z)
+exec git commit --date="$date_utc" "$@"

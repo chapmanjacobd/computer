@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Defined interactively
+set lang $argv[1]
+curl -L https://raw.githubusercontent.com/github/gitignore/refs/heads/main/$lang.gitignore -o .gitignore

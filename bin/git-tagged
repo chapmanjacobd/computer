@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Describe the current commit by its exact tag.
+set -euo pipefail
+exec git describe --tags --exact-match "$@"

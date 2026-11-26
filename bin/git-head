@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show the current commit.
+set -euo pipefail
+exec git show HEAD "$@"

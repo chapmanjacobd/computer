@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Follow a path through its full history, including renames.
+set -euo pipefail
+exec git log --follow -p -- "$@"

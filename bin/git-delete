@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Delete a local branch even if it is not merged.
+set -euo pipefail
+exec git branch -D "$@"

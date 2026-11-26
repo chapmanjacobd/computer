@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Replace the current commit message.
+set -euo pipefail
+exec git commit --amend -m "$*"

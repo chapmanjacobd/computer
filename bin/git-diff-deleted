@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show only deleted lines from a diff.
+set -o pipefail
+unbuffer git --no-pager diff --color=always "$@" | grep -E $'^\e\\[[0-9;]*31m-'

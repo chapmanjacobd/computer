@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show a diff while hiding lines that only moved.
+set -o pipefail
+unbuffer git --no-pager diff --color-moved=plain --color=always "$@" | grep -vE $'^\e\\[[0-9;]*(34|35|36)m[+-]'

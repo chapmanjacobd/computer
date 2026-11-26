@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# List branches sorted by author date.
+set -euo pipefail
+exec git for-each-ref --sort='authordate' --format='%(authordate:short), %(authorname), %(refname:lstrip=2)' "$@"

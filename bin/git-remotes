@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# List remotes with their URLs.
+set -euo pipefail
+exec git remote -v

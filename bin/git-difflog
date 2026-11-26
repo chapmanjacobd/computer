@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show a patch with per-file statistics.
+set -euo pipefail
+exec git log -p --stat "$@"
