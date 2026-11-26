@@ -1,0 +1,94 @@
+#!/usr/bin/env fish
+# Push only the commits reachable from <rev>, leaving later local commits unpushed.
+set -l name 'git push-until'
+
+argparse -n $name 'f/force' 'n/dry-run' 'h/help' -- $argv
+or exit 1
+
+if set -q _flag_help
+    echo "usage: $name <rev> [remote] [branch]"
+    echo
+    echo 'Push the commits up to <rev> to remote/branch; commits after <rev> stay local.'
+    echo
+    echo 'arguments:'
+    echo '  <rev>     last commit to push (sha, tag, HEAD~2, ...)'
+    echo '  [remote]  default: origin'
+    echo '  [branch]  default: the remote default branch, else the current branch'
+    echo
+    echo 'options:'
+    echo '  -n, --dry-run  print the push command instead of running it'
+    echo '  -f, --force    allow rewinding the remote branch (still --force-with-lease)'
+    exit 0
+end
+
+if test (count $argv) -lt 1 -o (count $argv) -gt 3
+    echo "usage: $name <rev> [remote] [branch]" >&2
+    exit 1
+end
+
+set -l rev $argv[1]
+set -l remote origin
+if test (count $argv) -ge 2
+    set remote $argv[2]
+end
+
+set -l commit (git rev-parse --verify --quiet "$rev^{commit}")
+if test -z "$commit"
+    echo "$name: '$rev' does not resolve to a commit" >&2
+    exit 1
+end
+
+set -l branch
+if test (count $argv) -ge 3
+    set branch $argv[3]
+else
+    set -l head_ref (git symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null)
+    if test -n "$head_ref"
+        set branch (string replace -r "^$remote/" '' -- $head_ref)
+    else
+        set branch (git symbolic-ref --quiet --short HEAD 2>/dev/null)
+    end
+end
+if test -z "$branch"
+    echo "$name: cannot determine a branch name; pass it as the third argument" >&2
+    exit 1
+end
+
+set -l rref "refs/remotes/$remote/$branch"
+set -l rsha (git rev-parse --verify --quiet $rref)
+set -l range "$rref..$commit"
+if test -z "$rsha"
+    set range $commit
+end
+
+set -l commits (git rev-list --reverse $range)
+if test (count $commits) -eq 0
+    echo "$name: $remote/$branch already has everything reachable from $rev" >&2
+    exit 0
+end
+
+if test -n "$rsha"
+    if not git merge-base --is-ancestor $rsha $commit
+        if not set -q _flag_force
+            echo "$name: $remote/$branch has commits that $rev does not contain" >&2
+            echo "$name: pushing $rev would rewind that branch; re-run with --force to do it anyway" >&2
+            exit 1
+        end
+    end
+end
+
+echo "Pushing "(count $commits)" commit(s) to $remote/$branch:" >&2
+git log --oneline --no-decorate --reverse $range >&2
+
+set -l push_args $remote "$commit:refs/heads/$branch"
+if test -n "$rsha"
+    # refuse if the remote branch moved since our last fetch
+    set -a push_args "--force-with-lease=refs/heads/$branch:$rsha"
+end
+
+if set -q _flag_dry_run
+    echo "git push $push_args"
+    exit 0
+end
+
+git push $push_args
