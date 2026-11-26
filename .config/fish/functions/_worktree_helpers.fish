@@ -1,21 +1,9 @@
-function _zw_usage
-    printf '%s\n' \
-        'Usage: zw [-r|--repo <query>] [branch]' \
-        '' \
-        '  zw                     pick a branch in the current repository' \
-        '  zw <branch>            jump to (or create) the <branch> worktree' \
-        '  zw <repo>              pick a branch in another repository' \
-        '  zw <repo> <branch>     jump to (or create) a <repo> worktree for <branch>' \
-        '  zw -r <repo> [branch]  explicit repository, from anywhere' \
-        '' \
-        'Branches already checked out in a worktree are jumped to. Missing local' \
-        'and remote branches get a worktree at ~/.git-worktrees/<repo>/<branch>.' \
-        'New branches start from the origin default branch after a fetch.' >&2
-end
+# Shared helpers for z.fish and zg.fish. Config sources z.fish after zoxide
+# init, and z.fish loads this file, so the helpers are normally always present.
 
 # Print the main repository root for a directory, even when the directory is
 # inside a linked worktree.
-function _zw_repo_root --argument-names dir
+function _worktree_repo_root --argument-names dir
     set -l common (git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
     or return 1
 
@@ -27,7 +15,7 @@ function _zw_repo_root --argument-names dir
 end
 
 # Print "branch<TAB>path" for every attached worktree.
-function _zw_worktrees --argument-names repo
+function _worktree_list --argument-names repo
     set -l path ''
     set -l branch ''
 
@@ -52,10 +40,10 @@ end
 
 # Print "branch<TAB>kind<TAB>detail" rows for fzf. Worktrees come first, then
 # local branches, then remote-tracking branches whose local branch is missing.
-function _zw_branch_rows --argument-names repo
+function _worktree_branch_rows --argument-names repo
     set -l seen
 
-    for row in (_zw_worktrees "$repo")
+    for row in (_worktree_list "$repo")
         set -l parts (string split \t -- $row)
         printf '%s\tworktree\t%s\n' $parts[1] $parts[2]
         set -a seen $parts[1]
@@ -83,9 +71,9 @@ function _zw_branch_rows --argument-names repo
 end
 
 # Resolve a zoxide query to a unique git repository root.
-function _zw_pick_repo --argument-names query
+function _worktree_pick_repo --argument-names query
     if test (count $query) -eq 1; and test -d "$query[1]"
-        _zw_repo_root "$query[1]"
+        _worktree_repo_root "$query[1]"
         return
     end
 
@@ -107,7 +95,7 @@ function _zw_pick_repo --argument-names query
     for dir in $dirs
         test -d "$dir"; or continue
 
-        set -l root (_zw_repo_root "$dir")
+        set -l root (_worktree_repo_root "$dir")
         if test -n "$root"; and not contains -- $root $roots
             set -a roots $root
         end
@@ -132,8 +120,8 @@ function _zw_pick_repo --argument-names query
 end
 
 # Pick a branch, or accept a typed branch name as a new branch.
-function _zw_pick_branch --argument-names repo
-    set -l rows (_zw_branch_rows "$repo")
+function _worktree_pick_branch --argument-names repo query
+    set -l rows (_worktree_branch_rows "$repo")
     if test (count $rows) -eq 0
         return 1
     end
@@ -141,7 +129,9 @@ function _zw_pick_branch --argument-names repo
     set -lx ZW_REPO $repo
     set -l out (printf '%s\n' $rows | fzf \
         --delimiter=\t \
+        --nth=1 \
         --with-nth=1,2 \
+        --query "$query" \
         --print-query \
         --select-1 \
         --exit-0 \
@@ -174,8 +164,8 @@ function _zw_pick_branch --argument-names repo
     return 1
 end
 
-# Find both the origin default branch and the local default branch.
-function _zw_default_branch --argument-names repo
+# Find the origin default branch, preferring it over the local default.
+function _worktree_default_branch --argument-names repo
     set -l ref (git -C "$repo" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)
     if test -n "$ref"
         string replace -r '^origin/' '' -- $ref
@@ -212,7 +202,7 @@ function _zw_default_branch --argument-names repo
 end
 
 # Jump to the branch worktree, creating it when necessary.
-function _zw_ensure_worktree --argument-names repo branch
+function _worktree_ensure --argument-names repo branch
     set -l local_branch $branch
     set -l remote_ref ''
 
@@ -238,13 +228,13 @@ function _zw_ensure_worktree --argument-names repo branch
     end
 
     if not git -C "$repo" check-ref-format --branch "$local_branch" >/dev/null 2>&1
-        echo "zw: invalid branch name: $local_branch" >&2
+        echo "worktree: invalid branch name: $local_branch" >&2
         return 2
     end
 
     # The branch may already be checked out in any worktree, including the main
     # checkout. This also handles a branch passed as "origin/name".
-    for row in (_zw_worktrees "$repo")
+    for row in (_worktree_list "$repo")
         set -l parts (string split \t -- $row)
         if test "$parts[1]" = "$local_branch"
             command zoxide add -- $parts[2] 2>/dev/null
@@ -255,7 +245,7 @@ function _zw_ensure_worktree --argument-names repo branch
 
     set -l wt_path "$HOME/.git-worktrees/"(basename "$repo")"/$local_branch"
     if test -e "$wt_path"
-        echo "zw: path already exists but is not a registered worktree: $wt_path" >&2
+        echo "worktree: path already exists but is not registered: $wt_path" >&2
         return 1
     end
     mkdir -p (dirname "$wt_path")
@@ -269,12 +259,12 @@ function _zw_ensure_worktree --argument-names repo branch
         set add_status $status
     else
         if git -C "$repo" remote get-url origin >/dev/null 2>&1
-            printf 'zw: fetching origin...\n' >&2
+            printf 'worktree: fetching origin...\n' >&2
             git -C "$repo" fetch -q --prune origin
-            or printf 'zw: fetch failed; using existing refs\n' >&2
+            or printf 'worktree: fetch failed; using existing refs\n' >&2
         end
 
-        set -l default (_zw_default_branch "$repo")
+        set -l default (_worktree_default_branch "$repo")
         set -l base HEAD
         if test -n "$default"
             if git -C "$repo" show-ref --verify --quiet refs/remotes/origin/$default
@@ -289,85 +279,11 @@ function _zw_ensure_worktree --argument-names repo branch
     end
 
     if test $add_status -ne 0
-        echo "zw: failed to create worktree" >&2
+        echo "worktree: failed to create worktree" >&2
         return $add_status
     end
 
     command zoxide add -- $wt_path 2>/dev/null
-    printf 'zw: created %s\n' $wt_path >&2
+    printf 'worktree: created %s\n' $wt_path >&2
     cd $wt_path
-end
-
-function zw --description 'Jump to a git branch worktree, creating it when needed'
-    set -l args $argv
-    set -l repo_query
-    set -l branch
-
-    while set -q args[1]
-        switch $args[1]
-            case -h --help
-                _zw_usage
-                return 0
-            case -r --repo
-                if not set -q args[2]
-                    echo 'zw: -r/--repo needs a query' >&2
-                    return 2
-                end
-                set repo_query $args[2]
-                set -e args[1..2]
-            case --
-                set -e args[1]
-                break
-            case '-*'
-                echo "zw: unknown option: $args[1]" >&2
-                _zw_usage
-                return 2
-            case '*'
-                break
-        end
-    end
-
-    set -l current_repo (_zw_repo_root (pwd))
-
-    if test (count $repo_query) -gt 0
-        if test (count $args) -gt 1
-            echo 'zw: quote the repository query: zw -r "repo query" branch' >&2
-            return 2
-        end
-        set branch $args[1]
-    else if test (count $args) -ge 2
-        set repo_query $args[1..-2]
-        set branch $args[-1]
-    else if test (count $args) -eq 1
-        if test -n "$current_repo"
-            set branch $args[1]
-        else
-            set repo_query $args[1]
-        end
-    end
-
-    set -l repo
-    if test (count $repo_query) -gt 0
-        set repo (_zw_pick_repo $repo_query)
-    else if test -n "$current_repo"
-        set repo $current_repo
-    else
-        set repo (_zw_pick_repo)
-    end
-
-    if test -z "$repo"
-        echo 'zw: no repository selected' >&2
-        return 1
-    end
-
-    if test -z "$branch"
-        set branch (_zw_pick_branch "$repo")
-        or return 0
-    end
-
-    if test -z "$branch"
-        return 0
-    end
-
-    _zw_ensure_worktree "$repo" "$branch"
 end

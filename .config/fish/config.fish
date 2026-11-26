@@ -145,6 +145,8 @@ abbr -a ltc --function _abbr_ltc
 abbr 4DIRS --set-cursor=! "$(string join \n -- 'for dir in */' 'cd $dir' '!' 'cd ..' 'end')"
 
 zoxide init fish | source
+# Add the worktree fallback used by `z <repo> <branch>`.
+source $__fish_config_dir/functions/z.fish
 
 set fish_color_host_remote (~/bin/str_rgb.py $hostname)
 
