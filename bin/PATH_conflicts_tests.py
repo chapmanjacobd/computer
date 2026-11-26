@@ -211,8 +211,14 @@ def test_render_non_conflicting_groups_by_path(tmp_path: Path) -> None:
     text = pc.render_non_conflicting([one, two], index, tablefmt="simple")
     assert one.path in text
     assert two.path in text
-    assert "alpha" in text
-    assert "beta" in text
+    assert "alpha" not in text
+    assert "beta" not in text
+
+    verbose = pc.render_non_conflicting(
+        [one, two], index, tablefmt="simple", show_commands=True
+    )
+    assert "alpha" in verbose
+    assert "beta" in verbose
 
 
 def test_render_non_conflicting_uses_resolved_paths_in_resolution_order(
@@ -421,6 +427,9 @@ def test_main_prints_non_conflicting_then_conflicting(tmp_path: Path, capsys) ->
     assert "Non-conflicting" in out
     assert "Conflicting" in out
     assert out.index("Non-conflicting") < out.index("Conflicting")
-    assert "solo" in out
+    assert "solo" not in out
     assert "shared 1.0" in out
     assert "shared 2.0" in out
+
+    assert pc.main(["--path", f"{one}:{two}", "--no-packages", "-v"]) == 0
+    assert "solo" in capsys.readouterr().out

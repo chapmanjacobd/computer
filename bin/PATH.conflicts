@@ -15,10 +15,10 @@ package that owns it.
 
 Run::
 
-    ./path_conflicts.py                # current $PATH
-    ./path_conflicts.py -v             # debug logging
-    ./path_conflicts.py --only-conflicts
-    ./path_conflicts.py --no-versions  # do not execute foreign --version flags
+    ./PATH.conflicts                 # current $PATH
+    ./PATH.conflicts -v              # also list unambiguous commands
+    ./PATH.conflicts --only-conflicts
+    ./PATH.conflicts --no-versions   # do not execute foreign --version flags
 
 Versions come from running ``COMMAND --version`` (first line of output) and
 fall back to ``rpm -qf`` for the owning package. Only commands that actually
@@ -719,12 +719,14 @@ def render_non_conflicting(
     tablefmt: str = "simple",
     width: int = DEFAULT_WRAP_WIDTH,
     filter_output: bool = True,
+    show_commands: bool = False,
 ) -> str:
     """Render unambiguous command names grouped by resolved ``$PATH`` directory.
 
     Rows follow ``PathDir.order`` and show resolved directory paths.
     Directories with no unambiguous names are omitted, so the table has no
-    empty rows.
+    empty rows. The command names themselves are only listed when
+    ``show_commands`` is set, because they dominate the output.
 
     Parameters
     ----------
@@ -739,6 +741,9 @@ def render_non_conflicting(
     filter_output : bool, optional
         Strip terminal escape sequences and control characters from dynamic
         text, by default True.
+    show_commands : bool, optional
+        Add a ``Commands`` column listing each directory's names, by default
+        False.
 
     Returns
     -------
@@ -761,19 +766,18 @@ def render_non_conflicting(
         names = sorted(name for name in by_dir.get(path_dir.real, []) if name)
         if not names:
             continue
-        rows.append(
-            [
-                clean(path_dir.real),
-                path_dir.kind,
-                len(names),
-                wrap_names(names, width=width),
-            ]
-        )
+        row = [clean(path_dir.real), path_dir.kind, len(names)]
+        if show_commands:
+            row.append(wrap_names(names, width=width))
+        rows.append(row)
     if not rows:
         return ""
+    headers = ["PATH", "Kind", "Count"]
+    if show_commands:
+        headers.append("Commands")
     return tabulate(
         rows,
-        headers=["PATH", "Kind", "Count", "Commands"],
+        headers=headers,
         tablefmt=tablefmt,
         disable_numparse=True,
     )
@@ -843,7 +847,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="count",
         default=0,
-        help="debug logging",
+        help="list unambiguous commands and enable debug logging",
     )
     return parser
 
@@ -910,6 +914,7 @@ def main(argv: list[str] | None = None) -> int:
             index,
             tablefmt=args.tablefmt,
             filter_output=not args.no_filter,
+            show_commands=bool(args.verbose),
         )
         if table:
             print("\n== Non-conflicting commands ==")
