@@ -1,5 +1,5 @@
 function etc.apply --description 'Copy ~/.github/etc to /etc, reviewing each diff before overwriting'
-    argparse -n etc.apply 'n/dry-run' 'y/yes' 'r/reload' 'v/verbose' 'h/help' -- $argv
+    argparse -n etc.apply n/dry-run y/yes r/reload v/verbose h/help -- $argv
     or return 2
 
     if set -q _flag_help
