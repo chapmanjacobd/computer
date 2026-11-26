@@ -984,3 +984,92 @@ def test_textual_app_smoke(proc_tree, tmp_path):
 
     asyncio.run(scenario())
     store.close()
+
+
+def test_textual_help_and_manual_refresh(proc_tree, tmp_path):
+    if not procwatch.TEXTUAL_AVAILABLE:
+        pytest.skip("modern textual is available only under uv in this environment")
+
+    write_proc(proc_tree, 100, comm="server")
+    write_proc(proc_tree, 101, comm="client")
+
+    cfg = Config(interval=999)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+    first_sample = dash.snapshot_ts
+
+    app = procwatch.ProcWatchApp(dash)
+
+    async def scenario() -> None:
+        async with app.run_test(size=(100, 20)) as pilot:
+            await pilot.pause()
+            assert app.auto_poll is False
+            assert app.refresh_timer is None
+
+            await pilot.press("r")
+            await pilot.pause()
+            assert dash.snapshot_ts != first_sample
+
+            await pilot.press("R")
+            await pilot.pause()
+            assert app.auto_poll is True
+            assert app.refresh_timer is not None
+
+            await pilot.press("R")
+            await pilot.pause()
+            assert app.auto_poll is False
+            assert app.refresh_timer is None
+
+            await pilot.press("question_mark")
+            await pilot.pause()
+            assert isinstance(app.screen, procwatch.HelpScreen)
+
+            await pilot.press("escape")
+            await pilot.pause()
+            assert not isinstance(app.screen, procwatch.HelpScreen)
+
+            await pilot.press("question_mark")
+            await pilot.pause()
+            assert isinstance(app.screen, procwatch.HelpScreen)
+
+            await pilot.press("q")
+            await pilot.pause()
+            assert not isinstance(app.screen, procwatch.HelpScreen)
+            assert app.is_running
+
+    asyncio.run(scenario())
+    store.close()
+
+
+def test_textual_refresh_keeps_scrollbar(proc_tree, tmp_path):
+    if not procwatch.TEXTUAL_AVAILABLE:
+        pytest.skip("modern textual is available only under uv in this environment")
+
+    for pid in range(100, 140):
+        write_proc(proc_tree, pid, comm=f"p{pid}")
+
+    cfg = Config(interval=999)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=1000.0)
+
+    app = procwatch.ProcWatchApp(dash)
+
+    async def scenario() -> None:
+        async with app.run_test(size=(100, 20)) as pilot:
+            await pilot.pause()
+            await pilot.press("2")
+            await pilot.pause()
+            table = app.query_one("#table-all", procwatch.DataTable)
+            assert table.row_count == 40
+            table.scroll_to(y=10, animate=False)
+            await pilot.pause()
+            assert table.scroll_y == 10
+
+            app.refresh_views()
+            await pilot.pause()
+            assert table.scroll_y == 10
+
+    asyncio.run(scenario())
+    store.close()

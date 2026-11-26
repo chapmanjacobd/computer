@@ -35,7 +35,10 @@ Keys in the TUI:
   s/S         cycle sort column / reverse
   click       sort by a column (all-processes view)
   /           filter by pid, name, user, category, capability
-  space       pause sampling
+  r           refresh now (auto-refresh is off by default)
+  R           toggle auto-refresh
+  space       pause / resume auto-refresh
+  ?           full keyboard shortcut list
   q           quit
 
 Network byte counters come from `ss -tinp` when available; socket counts come
@@ -2256,7 +2259,7 @@ class Dashboard:
         if self.input_mode:
             text = f"filter: {self.filter_buffer}_  (enter apply, esc cancel)"
             return RenderLine((Span(truncate(text, width), "accent"),))
-        text = "1/2/3 view  j/k move  s/S sort  r reverse  c clear  / filter  space pause  q quit"
+        text = "1/2/3 view  j/k move  s/S sort  r refresh  R auto  c clear  / filter  space pause  ? help  q quit"
         if self.view == "all":
             text += f"  |  sort {SORT_LABELS[self.sort_key]} {'desc' if self.sort_reverse else 'asc'}"
         return RenderLine((Span(truncate(text, width), "dim"),))
@@ -2283,6 +2286,9 @@ if _textual_is_modern():
         from rich.text import Text as RichText
         from textual.app import App, ComposeResult
         from textual.binding import Binding, BindingType
+        from textual.containers import VerticalScroll
+        from textual.screen import ModalScreen
+        from textual.timer import Timer
         from textual.widgets import (
             DataTable,
             Footer,
@@ -2298,6 +2304,91 @@ if _textual_is_modern():
 
 
 if TEXTUAL_AVAILABLE:
+    HELP_ROWS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
+        (
+            "VIEWS",
+            (
+                ("1", "Triage"),
+                ("2", "All processes"),
+                ("3", "Events"),
+            ),
+        ),
+        (
+            "MOVE",
+            (
+                ("j / down", "Next process"),
+                ("k / up", "Previous process"),
+                ("g / G", "Top / bottom"),
+            ),
+        ),
+        (
+            "SORT",
+            (
+                ("s", "Next sort column"),
+                ("S", "Reverse sort order"),
+                ("click header", "Sort by that column"),
+            ),
+        ),
+        (
+            "FILTER",
+            (
+                ("/", "Filter by pid, name, user, category, capability"),
+                ("c", "Clear filter"),
+                ("esc", "Cancel filter entry"),
+            ),
+        ),
+        (
+            "SAMPLING",
+            (
+                ("r", "Refresh now"),
+                ("R", "Toggle auto-refresh"),
+                ("space", "Pause / resume auto-refresh"),
+                ("q", "Quit"),
+                ("?", "Close this help"),
+            ),
+        ),
+    )
+
+    class HelpScreen(ModalScreen[None]):
+        """Full keyboard shortcut reference, usable on narrow screens."""
+
+        CSS = """
+        HelpScreen { align: center middle; background: $background 60%; }
+        #help {
+            width: 72;
+            max-width: 95%;
+            height: auto;
+            max-height: 90%;
+            padding: 1 2;
+            border: round $accent;
+            background: $surface;
+        }
+        """
+
+        BINDINGS: ClassVar[list[BindingType]] = [
+            Binding("escape", "dismiss", "Close", show=False),
+            Binding("question_mark", "dismiss", "Close", show=False),
+            Binding("q", "dismiss", "Close", show=False),
+        ]
+
+        def compose(self) -> ComposeResult:
+            with VerticalScroll(id="help", can_focus=True):
+                yield Static(self._help_text())
+
+        def on_mount(self) -> None:
+            self.query_one(VerticalScroll).focus()
+
+        @staticmethod
+        def _help_text() -> RichText:
+            text = RichText()
+            text.append("procwatch keyboard shortcuts\n", style="bold cyan")
+            for title, entries in HELP_ROWS:
+                text.append(f"\n{title}\n", style="bold")
+                for keys, description in entries:
+                    text.append(f"  {keys:<14}", style="cyan")
+                    text.append(f"{description}\n")
+            text.append("\nesc or ? closes this help", style="dim")
+            return text
 
     class ProcWatchApp(App[None]):
         """Interactive Textual dashboard."""
@@ -2314,7 +2405,7 @@ if TEXTUAL_AVAILABLE:
         """
         ENABLE_COMMAND_PALETTE = False
         BINDINGS: ClassVar[list[BindingType]] = [
-            Binding("q", "quit", "Quit", priority=True),
+            Binding("q", "quit", "Quit"),
             Binding("1", "show_main", "Triage"),
             Binding("2", "show_all", "All processes"),
             Binding("3", "show_events", "Events"),
@@ -2326,7 +2417,9 @@ if TEXTUAL_AVAILABLE:
             Binding("S", "sort_reverse", "Reverse"),
             Binding("slash", "filter", "Filter"),
             Binding("space", "pause", "Pause"),
-            Binding("r", "sort_reverse", "Reverse", show=False),
+            Binding("r", "refresh_data", "Refresh"),
+            Binding("R", "toggle_auto_refresh", "Auto refresh"),
+            Binding("question_mark", "help", "Help"),
             Binding("c", "clear_filter", "Clear filter", show=False),
             Binding("escape", "cancel_filter", "Cancel", show=False),
         ]
@@ -2365,10 +2458,11 @@ if TEXTUAL_AVAILABLE:
             ("COMMAND", "command", 40),
         )
 
-        def __init__(self, dashboard: Dashboard, *, auto_poll: bool = True) -> None:
+        def __init__(self, dashboard: Dashboard, *, auto_poll: bool = False) -> None:
             super().__init__()
             self.dashboard = dashboard
             self.auto_poll = auto_poll
+            self.refresh_timer: Timer | None = None
             self.rows_by_key: dict[str, ViewRow] = {}
             self.events_by_key: dict[str, Event] = {}
             self.selected_keys: dict[str, str] = {}
@@ -2414,17 +2508,29 @@ if TEXTUAL_AVAILABLE:
                         table.add_column(label, key=key, width=width)
             self.query_one("#filter", Input).display = False
             self.ready = True
-            if self.auto_poll:
+            if self.dashboard.snapshot is None:
                 self.dashboard.poll()
             self.refresh_views()
             self.call_after_refresh(self.focus_table)
-            if self.auto_poll:
-                self.set_interval(self.dashboard.config.interval, self.tick)
+            self.apply_auto_refresh()
 
         def tick(self) -> None:
+            if not self.auto_poll:
+                return
             if not self.dashboard.paused:
                 self.dashboard.poll()
             self.refresh_views()
+
+        def apply_auto_refresh(self) -> None:
+            """Start or stop the periodic sampling timer."""
+            if self.auto_poll:
+                if self.refresh_timer is None:
+                    self.refresh_timer = self.set_interval(
+                        self.dashboard.config.interval, self.tick
+                    )
+            elif self.refresh_timer is not None:
+                self.refresh_timer.stop()
+                self.refresh_timer = None
 
         # -- view plumbing ---------------------------------------------
         def active_table_id(self) -> str:
@@ -2437,7 +2543,7 @@ if TEXTUAL_AVAILABLE:
             if self.ready:
                 self.active_table().focus()
 
-        def refresh_views(self) -> None:
+        def refresh_views(self, *, preserve_scroll: bool = True) -> None:
             if not self.ready:
                 return
             self.update_summary()
@@ -2452,7 +2558,9 @@ if TEXTUAL_AVAILABLE:
                         else CATEGORY_SHORT[rows[0].category]
                     )
                     labelled.extend((short, row) for row in rows)
-                self.fill_process_table(table, labelled)
+                self.fill_process_table(
+                    table, labelled, preserve_scroll=preserve_scroll
+                )
             elif view == "all":
                 table = self.query_one("#table-all", DataTable)
                 rows = sort_rows(
@@ -2463,14 +2571,24 @@ if TEXTUAL_AVAILABLE:
                 self.fill_process_table(
                     table,
                     [(CATEGORY_SHORT[row.category], row) for row in rows],
+                    preserve_scroll=preserve_scroll,
                 )
             else:
-                self.fill_events(self.query_one("#table-events", DataTable))
+                self.fill_events(
+                    self.query_one("#table-events", DataTable),
+                    preserve_scroll=preserve_scroll,
+                )
             self.update_detail()
 
         def fill_process_table(
-            self, table: DataTable, labelled_rows: Sequence[tuple[str, ViewRow]]
+            self,
+            table: DataTable,
+            labelled_rows: Sequence[tuple[str, ViewRow]],
+            *,
+            preserve_scroll: bool = True,
         ) -> None:
+            scroll_x = table.scroll_x
+            scroll_y = table.scroll_y
             first_key = self.selected_keys.get(table.id, "")
             previous_group = self.selected_groups.get(table.id, "")
             self.rows_by_key = {}
@@ -2515,18 +2633,28 @@ if TEXTUAL_AVAILABLE:
                         RichText(row.display_command, style=command_style),
                         key=key,
                     )
-            if first_key not in groups or groups.get(first_key) != previous_group:
+            keep_selection = (
+                first_key in groups and groups.get(first_key) == previous_group
+            )
+            if not keep_selection:
                 first_key = keys[0] if keys else ""
             self.selected_keys[table.id] = first_key
             self.selected_groups[table.id] = groups.get(first_key, "")
             self.row_groups[table.id or ""] = groups
             index = keys.index(first_key) if first_key in groups else 0
             if table.row_count:
-                table.move_cursor(
-                    row=max(0, min(index, table.row_count - 1)), scroll=True
-                )
+                target = max(0, min(index, table.row_count - 1))
+                if preserve_scroll and keep_selection:
+                    table.move_cursor(row=target, scroll=False)
+                    table.scroll_to(x=scroll_x, y=scroll_y, animate=False)
+                else:
+                    table.move_cursor(row=target, scroll=True)
 
-        def fill_events(self, table: DataTable) -> None:
+        def fill_events(
+            self, table: DataTable, *, preserve_scroll: bool = True
+        ) -> None:
+            scroll_x = table.scroll_x
+            scroll_y = table.scroll_y
             first_key = self.selected_keys.get(table.id, "")
             needle = self.dashboard.filter_text.strip().lower()
             events = [
@@ -2556,14 +2684,19 @@ if TEXTUAL_AVAILABLE:
                         event.reasons,
                         key=key,
                     )
-            if first_key not in self.events_by_key:
+            keep_selection = first_key in self.events_by_key
+            if not keep_selection:
                 first_key = next(iter(self.events_by_key), "")
             if first_key:
                 self.selected_keys[table.id] = first_key
             if table.row_count:
                 keys = list(self.events_by_key)
                 index = keys.index(first_key) if first_key in self.events_by_key else 0
-                table.move_cursor(row=index, scroll=True)
+                if preserve_scroll and keep_selection:
+                    table.move_cursor(row=index, scroll=False)
+                    table.scroll_to(x=scroll_x, y=scroll_y, animate=False)
+                else:
+                    table.move_cursor(row=index, scroll=True)
 
         def update_summary(self) -> None:
             totals = self.dashboard.totals()
@@ -2572,6 +2705,10 @@ if TEXTUAL_AVAILABLE:
             title.append("  process baseline triage", style="dim")
             if self.dashboard.paused:
                 title.append("   PAUSED", style="bold yellow")
+            elif self.auto_poll:
+                title.append("   auto", style="dim")
+            else:
+                title.append("   manual", style="dim")
             title.append(
                 f"   {dt.datetime.fromtimestamp(self.dashboard.snapshot_ts or time.time()).strftime('%H:%M:%S')}",
                 style="dim",
@@ -2702,7 +2839,7 @@ if TEXTUAL_AVAILABLE:
             view = self.VIEW_BY_PANE.get(pane_id)
             if view:
                 self.dashboard.set_view(view)
-                self.refresh_views()
+                self.refresh_views(preserve_scroll=False)
                 self.call_after_refresh(self.focus_table)
 
         def on_data_table_row_highlighted(
@@ -2730,12 +2867,12 @@ if TEXTUAL_AVAILABLE:
                 self.dashboard.toggle_reverse()
             else:
                 self.dashboard.set_sort(key)
-            self.refresh_views()
+            self.refresh_views(preserve_scroll=False)
 
         def on_input_submitted(self, event: Input.Submitted) -> None:
             self.dashboard.set_filter(event.value)
             self.hide_filter()
-            self.refresh_views()
+            self.refresh_views(preserve_scroll=False)
 
         # -- actions -----------------------------------------------------
         def action_show_main(self) -> None:
@@ -2769,16 +2906,29 @@ if TEXTUAL_AVAILABLE:
         def action_sort_next(self) -> None:
             self.show_all_if_needed()
             self.dashboard.cycle_sort(1)
-            self.refresh_views()
+            self.refresh_views(preserve_scroll=False)
 
         def action_sort_reverse(self) -> None:
             self.show_all_if_needed()
             self.dashboard.toggle_reverse()
-            self.refresh_views()
+            self.refresh_views(preserve_scroll=False)
 
         def action_pause(self) -> None:
             self.dashboard.paused = not self.dashboard.paused
             self.update_summary()
+
+        def action_refresh_data(self) -> None:
+            self.dashboard.poll()
+            self.refresh_views()
+
+        def action_toggle_auto_refresh(self) -> None:
+            self.auto_poll = not self.auto_poll
+            self.dashboard.paused = False
+            self.apply_auto_refresh()
+            self.update_summary()
+
+        def action_help(self) -> None:
+            self.push_screen(HelpScreen())
 
         def action_filter(self) -> None:
             field = self.query_one("#filter", Input)
@@ -2796,7 +2946,7 @@ if TEXTUAL_AVAILABLE:
 
         def action_clear_filter(self) -> None:
             self.dashboard.set_filter("")
-            self.refresh_views()
+            self.refresh_views(preserve_scroll=False)
 
 
 # ---------------------------------------------------------------------------
@@ -2933,7 +3083,8 @@ def build_parser() -> argparse.ArgumentParser:
             "  $XDG_CONFIG_HOME/procwatch/config.toml\n"
             "  $XDG_RUNTIME_DIR/procwatch.lock\n"
             "\n"
-            "TUI keys: 1/2/3 views, j/k move, s/S sort, r reverse, / filter, space pause, q quit.\n"
+            "TUI keys: 1/2/3 views, j/k move, s/S sort, / filter, r refresh, R auto-refresh,\n"
+            "space pause, ? full key list, q quit.\n"
             "The TUI needs textual>=1; direct execution uses uv and the inline dependency.\n"
         ),
     )
