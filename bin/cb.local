@@ -1,7 +1,22 @@
 #!/usr/bin/fish
 
-# Read/write the clipboard of the graphical session this command runs in.
-# CB_LOCAL_ONLY keeps cb from trying to follow an SSH session back to its
-# originating terminal; cb.local is always the local clipboard.
-set -lx CB_LOCAL_ONLY 1
-exec cb $argv
+if test -t 0
+    if test -z "$argv"
+        if test -n "$WAYLAND_DISPLAY"
+            wl-paste --no-newline
+        else
+            xsel --clipboard --output
+        end
+    else  # allow cb -t text/html usage, etc
+        xclip -sel c -o $argv
+    end
+else
+    set tmp (mktemp)
+    cat > $tmp
+    if test -n "$WAYLAND_DISPLAY"
+        wl-copy < $tmp
+    else
+        xsel --clipboard --input < $tmp
+    end
+    rm -f $tmp
+end
