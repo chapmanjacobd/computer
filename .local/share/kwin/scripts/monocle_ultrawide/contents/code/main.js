@@ -257,6 +257,27 @@ function scheduleArrange() {
     arrangeTimer.start();
 }
 
+// Screen hotplug and wake leave the output geometry briefly stale: the first
+// arrange can still see the previous monitor's area. Re-arrange a couple of
+// times after the layout settles so the monocle geometry ends up correct
+// without having to switch outputs twice.
+const settleTimers = new Set();
+
+function scheduleSettleArrange() {
+    scheduleArrange();
+    for (const delay of [500, 2000]) {
+        const timer = new QTimer();
+        timer.interval = delay;
+        timer.timeout.connect(() => {
+            timer.stop();
+            settleTimers.delete(timer);
+            scheduleArrange();
+        });
+        settleTimers.add(timer);
+        timer.start();
+    }
+}
+
 function watchWindow(window) {
     if (!window || window.deleted) {
         return;
@@ -305,10 +326,10 @@ function main() {
     });
     workspace.currentDesktopChanged.connect(scheduleArrange);
     workspace.currentActivityChanged.connect(scheduleArrange);
-    workspace.screensChanged.connect(scheduleArrange);
-    workspace.virtualScreenGeometryChanged.connect(scheduleArrange);
+    workspace.screensChanged.connect(scheduleSettleArrange);
+    workspace.virtualScreenGeometryChanged.connect(scheduleSettleArrange);
     if (workspace.clientAreaChanged) {
-        workspace.clientAreaChanged.connect(scheduleArrange);
+        workspace.clientAreaChanged.connect(scheduleSettleArrange);
     }
     scheduleArrange();
 }
