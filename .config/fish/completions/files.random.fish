@@ -1,0 +1,5 @@
+complete -c files.random -l max-files -x -d 'Maximum number of files'
+complete -c files.random -l max-folders -x -d 'Maximum unique folders to process (default: 150)'
+complete -c files.random -l max-files-per-dir -x -d 'Files chosen per directory (default: 1)'
+complete -c files.random -s e -l ext -l exts -l extensions -r -d 'Include only these extensions'
+complete -c files.random -n __fish_is_first_arg -a '(__fish_complete_directories)' -d 'Root directory (default: .)'

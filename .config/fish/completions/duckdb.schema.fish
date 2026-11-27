@@ -1,0 +1,5 @@
+complete -c duckdb.schema -l rows -x -d 'Rows sampled for type inference (default: 1000)'
+complete -c duckdb.schema -l loss -d 'Print records whose types do not match'
+complete -c duckdb.schema -l force -d 'Use TRY_CAST instead of CAST'
+complete -c duckdb.schema -n '__fish_is_nth_token 1' -a '(__fish_complete_suffix .duckdb .db)' -d 'DuckDB database'
+complete -c duckdb.schema -n '__fish_is_nth_token 2' -f -d 'Table name'

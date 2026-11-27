@@ -1,0 +1,8 @@
+complete -c btrfs.snapshots.diff.py -s p -l parent -r -F -d 'Parent snapshot (must exist and be read-only)'
+complete -c btrfs.snapshots.diff.py -s c -l child -r -F -d 'Child snapshot (created if missing)'
+complete -c btrfs.snapshots.diff.py -s f -l file -r -F -d 'Diff file'
+complete -c btrfs.snapshots.diff.py -s t -l filter -d 'Hide temporary files and earlier modifications'
+complete -c btrfs.snapshots.diff.py -s a -l by_path -d 'Group commands by path'
+complete -c btrfs.snapshots.diff.py -s s -l csv -d 'CSV output'
+complete -c btrfs.snapshots.diff.py -s j -l json -d 'JSON output (commands only)'
+complete -c btrfs.snapshots.diff.py -s b -l bogus -d 'Add bogus renamed_from action when grouping by path'

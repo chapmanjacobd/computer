@@ -1,0 +1,7 @@
+complete -c folders.merge.py -l replace -l clobber -d 'Overwrite files on conflict'
+complete -c folders.merge.py -l no-replace -d 'Ask before overwriting (default)'
+complete -c folders.merge.py -l simulate -d 'Do not write changes'
+complete -c folders.merge.py -s y -l no-confirm -d 'Do not ask for confirmation'
+complete -c folders.merge.py -s v -l verbose -d 'Increase logging verbosity'
+complete -c folders.merge.py -s e -l ext -l exts -l extensions -r -d 'Include only these extensions'
+complete -c folders.merge.py -s T -l timeout -x -d 'Quit after N minutes'

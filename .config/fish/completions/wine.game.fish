@@ -1,0 +1,13 @@
+complete -c wine.game -s l -l list -d 'List known Heroic/Lutris games'
+complete -c wine.game -l run -r -d 'Run PROGRAM in the matching prefix'
+complete -c wine.game -s n -l dry-run -d 'Print the command instead of running it'
+complete -c wine.game -s q -l quiet -d 'Suppress detection output'
+complete -c wine.game -l rm -d 'Uninstall the matched game and hide it'
+complete -c wine.game -l keep-prefix -d 'With --rm, keep the Wine prefix'
+complete -c wine.game -l keep-settings -d 'With --rm, keep launcher settings and logs'
+complete -c wine.game -s y -l yes -d 'With --rm, do not ask before deleting files'
+complete -c wine.game -l no-gamemode -d 'Do not use gamemoderun'
+complete -c wine.game -l no-umu -d "Use Proton's wine binary instead of umu-run"
+complete -c wine.game -l prefix -r -F -d 'Force the Wine prefix'
+complete -c wine.game -l wine -r -F -d 'Force a Wine binary'
+complete -c wine.game -l proton -r -F -d 'Force a Proton script'

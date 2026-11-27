@@ -1,0 +1,7 @@
+complete -c audio.combine -s o -l output -r -d 'Output filename (default: output.wav)'
+complete -c audio.combine -l threshold -x -d 'Similarity threshold 0.0-1.0 (default: 0.5)'
+complete -c audio.combine -l window_ms -x -d 'Search window size (default: 200)'
+complete -c audio.combine -l compact -d 'Remove non-matching segments instead of silencing them'
+complete -c audio.combine -n '__fish_is_nth_token 1' -F -d 'Primary audio file'
+complete -c audio.combine -n '__fish_is_nth_token 2' -f -a 'and not or xor' -d 'Boolean operation'
+complete -c audio.combine -n '__fish_is_nth_token 3' -F -d 'Audio file to compare'

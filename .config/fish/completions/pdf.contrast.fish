@@ -1,0 +1,6 @@
+complete -c pdf.contrast -s b -l brightness -x -d 'Brightness percentage (default: 100)'
+complete -c pdf.contrast -s c -l contrast -x -d 'Contrast percentage (default: 100)'
+complete -c pdf.contrast -s C -l color -x -d 'Color percentage (default: 100)'
+complete -c pdf.contrast -s s -l sharpness -x -d 'Sharpness percentage (default: 100)'
+complete -c pdf.contrast -l no-ocr -l skip-ocr -d 'Skip OCR'
+complete -c pdf.contrast -a '(__fish_complete_suffix .pdf)' -d 'PDF file'

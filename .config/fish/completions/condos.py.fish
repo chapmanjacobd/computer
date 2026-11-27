@@ -1,0 +1,8 @@
+complete -c condos.py -n '__fish_is_nth_token 1' -a '(__fish_complete_suffix .toml)' -d 'Scenario TOML file'
+complete -c condos.py -l simulations -x -d 'Monte Carlo trials (default: 5000)'
+complete -c condos.py -l seed -x -d 'Random seed (default: 42)'
+complete -c condos.py -l workers -x -d 'Parallel worker processes (default: CPU count)'
+complete -c condos.py -l no-skip -d 'Simulate every scenario'
+complete -c condos.py -l optimize-prepay -d 'Search for optimal extra-payment levels'
+complete -c condos.py -l risk-aversion -x -d 'Drawdown penalty for --optimize-prepay (default: 1.0)'
+complete -c condos.py -l opt-simulations -x -d 'Trials during prepay optimization (default: 500)'

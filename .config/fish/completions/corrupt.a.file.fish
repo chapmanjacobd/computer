@@ -1,0 +1,5 @@
+complete -c corrupt.a.file -s o -l output -r -F -d 'Output file (default: stdout)'
+complete -c corrupt.a.file -s n -x -d 'Average good bits per error (default: 1000000)'
+complete -c corrupt.a.file -s t -l truncate -x -d 'Truncate after T bytes'
+complete -c corrupt.a.file -s g -l garbage -x -d 'Append G bytes of garbage'
+complete -c corrupt.a.file -s a -l ascii -d 'Assume ASCII input and enforce ASCII output'

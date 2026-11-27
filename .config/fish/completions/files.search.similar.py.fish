@@ -1,0 +1,6 @@
+complete -c files.search.similar.py -s i -l ignore-case -d 'Ignore case'
+complete -c files.search.similar.py -l line-number -d 'Print line numbers'
+complete -c files.search.similar.py -s m -l minimum-similarity -x -d 'Minimum similarity (default: 0.3)'
+complete -c files.search.similar.py -s M -l maximum-similarity -x -d 'Maximum similarity (default: 1.0)'
+complete -c files.search.similar.py -n '__fish_is_nth_token 1' -f -d 'Search term'
+complete -c files.search.similar.py -n 'not __fish_is_nth_token 1' -F -d 'File or directory'

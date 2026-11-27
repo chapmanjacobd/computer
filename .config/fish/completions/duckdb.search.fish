@@ -1,0 +1,5 @@
+complete -c duckdb.search -s E -l exclude -r -d 'Words to exclude'
+complete -c duckdb.search -s s -l include -r -d 'Words to include'
+complete -c duckdb.search -n '__fish_is_nth_token 1' -a '(__fish_complete_suffix .duckdb .db)' -d 'DuckDB database'
+complete -c duckdb.search -n '__fish_is_nth_token 2' -f -d 'Table name'
+complete -c duckdb.search -n '__fish_is_nth_token 3' -f -d 'Columns to search'

@@ -1,0 +1,18 @@
+complete -c cp.settled.py -f
+complete -c cp.settled.py -l src -r -a '(__fish_complete_directories)' -d 'Source folder to monitor'
+complete -c cp.settled.py -l dst -r -a '(__fish_complete_directories)' -d 'Destination folder'
+complete -c cp.settled.py -l mv -d 'Move instead of copy from source to destination'
+complete -c cp.settled.py -l debug -d 'Enable debug output'
+complete -c cp.settled.py -l quiet -d "Don't log to stdout"
+complete -c cp.settled.py -l vlog -r -F -d 'Write diagnostics log to this file'
+complete -c cp.settled.py -l log -r -F -d 'Write transfer log to this file'
+complete -c cp.settled.py -l sf1 -r -F -d 'List pending source files in this file'
+complete -c cp.settled.py -l sf2 -r -F -d 'Write a unixtime idle marker to this file'
+complete -c cp.settled.py -l rate -x -d 'Seconds between source scans (default: 1)'
+complete -c cp.settled.py -l wait -x -d 'Seconds to wait for a file to settle (default: 7)'
+complete -c cp.settled.py -l edir -x -d 'Seconds to keep empty folders (default: 69)'
+complete -c cp.settled.py -l keep -r -d 'Regex of paths to never delete'
+complete -c cp.settled.py -l ignore -r -d 'Regex of paths to ignore'
+complete -c cp.settled.py -l noatomic -d 'Use copy+delete instead of atomic moves'
+complete -c cp.settled.py -l quant -d 'Quantize scans to whole seconds'
+complete -c cp.settled.py -l version -d 'Show version and exit'
