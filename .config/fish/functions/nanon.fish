@@ -1,4 +1,4 @@
 # Defined interactively
-function nanon
+function nanon --wraps='nano'
     nano -Ynone $argv
 end

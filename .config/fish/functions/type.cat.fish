@@ -1,4 +1,4 @@
 # Defined interactively
-function type.cat
+function type.cat --wraps='cat'
     cat (command -v $argv)
 end

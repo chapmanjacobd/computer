@@ -1,4 +1,4 @@
-function portuser
+function portuser --wraps='sudo'
     sudo lsof +c 0 -i:$argv[1]
 
     set -l pid (sudo lsof -t -i:$argv[1])

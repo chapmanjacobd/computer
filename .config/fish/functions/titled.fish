@@ -1,5 +1,5 @@
 # Defined via `source`
-function titled
+function titled --wraps='cat'
     if isatty stdin
         cat $argv | text.to.titlecase | sponge $argv
     else

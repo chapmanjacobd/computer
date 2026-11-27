@@ -1,4 +1,4 @@
 # Defined interactively
-function untimestamp
+function untimestamp --wraps='date'
     date -d @$argv
 end

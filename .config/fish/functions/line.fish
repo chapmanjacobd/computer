@@ -1,4 +1,4 @@
 # Defined interactively
-function line
+function line --wraps='head'
     head -n "$argv" | tail -n 1
 end

@@ -1,5 +1,5 @@
 # Defined interactively
-function file.type
+function file.type --wraps='file'
     if test (count $argv) -gt 0
         file -b $argv
     else

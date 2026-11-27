@@ -1,4 +1,4 @@
 # Defined interactively
-function limit
+function limit --wraps='head'
     head -n$argv
 end

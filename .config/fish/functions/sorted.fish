@@ -1,5 +1,5 @@
 # Defined via `source`
-function sorted
+function sorted --wraps='sort'
     if isatty stdin
         sort --unique --stable --ignore-case $argv | sponge $argv
     else
