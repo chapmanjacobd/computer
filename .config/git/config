@@ -81,8 +81,6 @@
 [diff "sqlite3"]
 	binary = true
 	textconv = "echo .dump | sqlite3"
-[difftool "vscode"]
-	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
 	autostash = true
 	conflictstyle = zdiff3
