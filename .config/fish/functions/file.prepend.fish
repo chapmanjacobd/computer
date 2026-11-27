@@ -1,5 +1,5 @@
 # Defined interactively
-function file.prepend
+function file.prepend --wraps='mv'
     set tmpfile (mktemp --tmpdir=(path dirname "$argv"))
 
     file.eof.newline.awk | cat - "$argv" >>"$tmpfile"

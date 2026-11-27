@@ -1,4 +1,4 @@
 # Defined interactively
-function file.attrs
+function file.attrs --wraps='getfattr'
     getfattr -d -m ^ -R -- $argv
 end

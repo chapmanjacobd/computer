@@ -1,5 +1,5 @@
 # Defined interactively
-function unparallel
+function unparallel --wraps='ps'
     ps.resume.all
     ps.pause (pgrep $argv | offset 4)
     ps -o etime,state,%mem,%cpu -p (pgrep $argv)

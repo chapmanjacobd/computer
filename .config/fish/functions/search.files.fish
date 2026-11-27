@@ -1,5 +1,5 @@
 # Defined interactively
-function search.files
+function search.files --wraps='lb'
     echo $argv
     lb database playlists ~/lb/torrents.db -s "$argv" -pf --cols title 2>/dev/null | lb text sort regex 2>/dev/null
 

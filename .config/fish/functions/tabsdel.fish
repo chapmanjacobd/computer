@@ -1,5 +1,5 @@
 # Defined interactively
-function tabsdel
+function tabsdel --wraps='lb'
     lb tabs open ~/lb/tabs.db $argv -p
     or return
     if confirm

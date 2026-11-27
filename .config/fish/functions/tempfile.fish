@@ -1,4 +1,4 @@
 # Defined interactively
-function tempfile
+function tempfile --wraps='mktemp'
     mktemp --suffix .$argv | tee -a /dev/tty
 end

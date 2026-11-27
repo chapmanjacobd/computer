@@ -1,5 +1,5 @@
 # Defined via `source`
-function mam.delete
+function mam.delete --wraps='lb'
     lb fs ls --db ~/lb/sites/mam/mam.db $argv -p
     or return
     if confirm

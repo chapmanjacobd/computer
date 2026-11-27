@@ -1,5 +1,5 @@
 # Defined interactively
-function commit
+function commit --wraps='git'
     if count $argv >/dev/null
         git utccommit -m "$argv"
     else

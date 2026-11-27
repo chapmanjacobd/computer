@@ -1,5 +1,5 @@
 # Defined interactively
-function search.video
+function search.video --wraps='lb'
     echo $argv
     lb database playlists ~/lb/torrents.db -s "$argv" -p --cols title,size 2>/dev/null
 

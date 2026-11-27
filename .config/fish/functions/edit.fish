@@ -1,5 +1,5 @@
 # Defined via `source`
-function edit
+function edit --wraps='sudoedit'
     set sp ~/.github(path resolve "$argv")
 
     sudoedit "$argv"

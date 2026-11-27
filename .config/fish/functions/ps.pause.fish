@@ -1,4 +1,4 @@
 # Defined interactively
-function ps.pause
+function ps.pause --wraps='kill'
     kill -STOP $argv
 end

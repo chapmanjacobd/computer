@@ -1,4 +1,4 @@
 # Defined interactively
-function domain.ip
+function domain.ip --wraps='dig'
     dig +short $argv | tail -n1
 end

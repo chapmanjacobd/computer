@@ -1,5 +1,5 @@
 # Defined interactively
-function file.sparse.percent
+function file.sparse.percent --wraps='find'
     find $argv -type f -printf '%S\0%P\n' | awk -v FS='\0' '
         function abs(v) {return v < 0 ? -v : v}
 

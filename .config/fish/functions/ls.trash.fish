@@ -1,4 +1,4 @@
 # Defined interactively
-function ls.trash
+function ls.trash --wraps='trash-list'
     trash-list $argv
 end

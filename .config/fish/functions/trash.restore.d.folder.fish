@@ -1,5 +1,5 @@
 # Defined interactively
-function trash.restore.d.folder
+function trash.restore.d.folder --wraps='lb'
     for i in (seq 1 $MERGERFS_DISKS)
         /mnt/d$i/
         mkdir $argv

@@ -1,5 +1,5 @@
 # Defined interactively
-function video.shrink
+function video.shrink --wraps='ffmpeg'
     # while test (pgrep ffmpeg | count) -ge 3
     #    sleep (random.float 0 5000)
     # end

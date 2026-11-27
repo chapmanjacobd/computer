@@ -1,4 +1,4 @@
 # Defined interactively
-function mkparent
+function mkparent --wraps='mkdir'
     mkdir (path dirname $argv)
 end

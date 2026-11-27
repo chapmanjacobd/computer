@@ -1,4 +1,4 @@
 # Defined interactively
-function trace
+function trace --wraps='strace'
     strace -p (pgrep -fn $argv)
 end

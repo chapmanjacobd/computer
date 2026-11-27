@@ -1,5 +1,5 @@
 # Defined interactively
-function remount
+function remount --wraps='mount'
     umount $argv
     mount $argv
 end

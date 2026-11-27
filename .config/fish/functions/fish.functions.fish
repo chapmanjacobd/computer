@@ -1,5 +1,5 @@
 # Defined interactively
-function fish.functions
+function fish.functions --wraps='rg'
     if count $argv >/dev/null
         rg "$argv" ~/.config/fish/functions/
     else

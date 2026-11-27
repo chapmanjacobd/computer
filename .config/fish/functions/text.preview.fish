@@ -1,5 +1,5 @@
 # Defined via `source`
-function text.preview
+function text.preview --wraps='head'
     head -n 1 "$argv"
 
     if test (wc -l "$argv" | awk '{print $1}') -gt 1

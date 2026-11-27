@@ -1,5 +1,5 @@
 # Defined interactively
-function search.db.playlists
+function search.db.playlists --wraps='lb'
     for db in $argv[2..-1]
         echo $db
         lb database search $db playlists $argv[1]

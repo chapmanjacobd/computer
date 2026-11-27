@@ -1,5 +1,5 @@
 # Defined interactively
-function search.db.media
+function search.db.media --wraps='lb'
     for db in $argv[2..-1]
         echo $db
         lb database search $db media $argv[1]

@@ -1,5 +1,5 @@
 # Defined interactively
-function torrents.delete
+function torrents.delete --wraps='lb'
     lb torrent info $argv
     or return
     if confirm

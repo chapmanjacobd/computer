@@ -1,5 +1,5 @@
 # Defined via `source`
-function image.colors
+function image.colors --wraps='magick'
     for space in sRGB RGB HSV LAB
         set -l temp_file (mktemp)
 

@@ -1,5 +1,5 @@
 # Defined via `source`
-function rsync.stdin
+function rsync.stdin --wraps='rsync'
     set tempfile (mktemp)
     cat >$tempfile
     rsync -ahz --remove-sent-files $tempfile $argv

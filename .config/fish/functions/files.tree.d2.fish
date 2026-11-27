@@ -1,4 +1,4 @@
-function files.tree.d2
+function files.tree.d2 --wraps='tree'
     setterm -linewrap off
     tree -FLh 3 --sort=mtime --dirsfirst --prune --du --noreport -up -C $argv | grep -v '/$'
     setterm -linewrap on

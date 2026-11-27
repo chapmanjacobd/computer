@@ -1,4 +1,4 @@
 # Defined interactively
-function file.handlers
+function file.handlers --wraps='lsof'
     lsof -n -t $argv
 end

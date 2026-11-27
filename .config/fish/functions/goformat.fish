@@ -1,5 +1,5 @@
 # Defined interactively
-function goformat
+function goformat --wraps='gofmt'
     staticcheck $argv
     go vet -c=1 $argv
     gofmt -s -w -e $argv
