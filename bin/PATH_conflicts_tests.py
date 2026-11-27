@@ -350,6 +350,15 @@ def test_package_label_for_user_install(tmp_path: Path) -> None:
     assert pc.package_label(path, home=str(tmp_path)) == "user install"
 
 
+@pytest.mark.parametrize(
+    "relative",
+    [".cargo/bin/tool", ".local/share/cargo/bin/tool"],
+)
+def test_package_label_for_cargo_install(tmp_path: Path, relative: str) -> None:
+    path = str(tmp_path / relative)
+    assert pc.package_label(path, home=str(tmp_path)) == "cargo"
+
+
 def test_package_label_uses_rpm_for_system_path(tmp_path: Path) -> None:
     stub = make_exec(tmp_path / "rpm", "#!/bin/sh\nprintf 'bash 5.2.1-1.fc45\\n'\n")
     label = pc.package_label(
