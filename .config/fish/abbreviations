@@ -1273,4 +1273,4 @@ abbr -a -- gitdifffiles git-changed-files
 abbr -a -- gitmerge git.merge
 abbr -a -- gitrebase git.rebase
 abbr -a -- gitrestore git.restore
-abbr -a -- wip 'commit (git-wip-message --staged); git show HEAD'
+abbr -a -- wip 'commit (git-wip-message --staged) && git show HEAD'
