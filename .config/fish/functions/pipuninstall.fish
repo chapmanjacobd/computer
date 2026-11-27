@@ -34,7 +34,7 @@ function pipuninstall --wraps='pip uninstall'
                 echo 'Refusing to uninstall non-interactively. Re-run with --force to skip this check.' >&2
                 return 1
             end
-            read --local --prompt 'Continue with uninstall? [y/N] ' answer
+            read --local --prompt-str 'Continue with uninstall? [y/N] ' answer
             if not string match --quiet --regex '^[yY]' -- "$answer"
                 echo 'Aborted.' >&2
                 return 1
