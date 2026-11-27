@@ -1,19 +1,25 @@
 # Defined in - @ line 2
 function path.increment -a file
-    set match (string match -e -r '(.+)\.(\d+)\.([^.]+)' $file)
+    # A counter followed by an extension: foo.2.txt -> foo.3.txt
+    set -l match (string match -r '^(.*)\.(\d+)\.([^.]+)$' -- $file)
     if test $status -eq 0
-        set root $match[-3]
-        set n (math $match[-2] + 1)
-        set ext $match[-1]
-    else
-        set match (string match -e -r '(.+)\.([^.]+)' $file)
-        if test $status -ne 0
-            # file does not have a dot. what to do?
-        end
-        set root $match[-2]
-        set n 1
-        set ext $match[-1]
+        echo $match[2].(math $match[3] + 1).$match[4]
+        return
     end
 
-    echo $root.$n.$ext
+    # A counter with no extension: foo.2 -> foo.3
+    set match (string match -r '^(.*)\.(\d+)$' -- $file)
+    if test $status -eq 0
+        echo $match[2].(math $match[3] + 1)
+        return
+    end
+
+    # No counter yet: .hidden -> .hidden.1, foo -> foo.1, a.tar.gz -> a.tar.1.gz
+    set -l ext (string replace -r '^\.' '' -- (path extension -- $file))
+    if test -z "$ext"
+        echo $file.1
+    else
+        set -l root (string replace -r -- '\.[^.]*$' '' $file)
+        echo $root.1.$ext
+    end
 end
