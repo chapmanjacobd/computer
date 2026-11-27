@@ -10,6 +10,9 @@ it prints the path and the script itself instead of executing it.  Fish
 functions, builtins, and keywords are shown with their definitions, so it can
 stand in for ``type`` without losing shell context.
 
+Package ownership comes from RPM on Fedora and from ``dpkg-query`` under
+Termux.
+
 Examples::
 
     cmd.info git
@@ -46,6 +49,7 @@ MAX_SOURCE_LINES = 60
 MAX_VERSION_LEN = 160
 VERSION_TIMEOUT = 2.0
 RPM_TIMEOUT = 2.0
+DPKG_TIMEOUT = 2.0
 FISH_TIMEOUT = 3.0
 
 _ESCAPE_SEQUENCE = re.compile(
@@ -486,14 +490,119 @@ def rpm_info(
     return (parts[0], parts[1])
 
 
+def parse_dpkg_owner(output: str) -> str:
+    """Extract the first package name from ``dpkg-query -S`` output.
+
+    Parameters
+    ----------
+    output : str
+        Standard output from ``dpkg-query -S``.
+
+    Returns
+    -------
+    str
+        Package name, including a multiarch qualifier when present, or an
+        empty string.
+
+    Examples
+    --------
+    >>> parse_dpkg_owner("bash: /data/data/com.termux/files/usr/bin/bash")
+    'bash'
+    >>> parse_dpkg_owner("libc6:amd64: /data/data/com.termux/files/usr/lib/libc.so")
+    'libc6:amd64'
+    >>> parse_dpkg_owner("pkg1, pkg2: /path")
+    'pkg1'
+    >>> parse_dpkg_owner("no owner")
+    ''
+    """
+    for line in output.splitlines():
+        if line.startswith("diversion by ") or ": " not in line:
+            continue
+        packages = line.rsplit(": ", 1)[0]
+        return packages.split(",", 1)[0].strip()
+    return ""
+
+
+def dpkg_info(
+    path: str,
+    dpkg_query: str = "dpkg-query",
+    timeout: float = DPKG_TIMEOUT,
+) -> tuple[str, str]:
+    """Look up the dpkg package that owns a file.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(package, version)``, or ``("", "")`` when unowned or unavailable.
+    """
+    try:
+        owner = subprocess.run(
+            [dpkg_query, "-S", path],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("dpkg query failed for %s: %s", path, exc)
+        return ("", "")
+    if owner.returncode != 0:
+        return ("", "")
+    package = parse_dpkg_owner(owner.stdout)
+    if not package:
+        return ("", "")
+    try:
+        version = subprocess.run(
+            [dpkg_query, "-W", "-f=${Version}", package],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("dpkg version query failed for %s: %s", package, exc)
+        return (package, "")
+    version_text = version.stdout.strip() if version.returncode == 0 else ""
+    return (package, version_text)
+
+
+def termux_prefix(environment: dict[str, str] | None = None) -> str:
+    """Return ``$PREFIX`` when the process appears to run under Termux.
+
+    Examples
+    --------
+    >>> termux_prefix({"PREFIX": "/usr"})
+    ''
+    >>> termux_prefix({"PREFIX": "/data/data/com.termux/files/usr"})
+    '/data/data/com.termux/files/usr'
+    """
+    env = environment if environment is not None else os.environ
+    prefix = env.get("PREFIX", "")
+    if not prefix:
+        return ""
+    if env.get("TERMUX_VERSION") or "com.termux" in prefix:
+        return prefix
+    return ""
+
+
 def origin_info(
     path: str,
     *,
     home: str | None = None,
     rpm: str = "rpm",
+    dpkg_query: str = "dpkg-query",
+    prefix: str | None = None,
     enabled: bool = True,
 ) -> Origin:
-    """Describe where a file came from."""
+    """Describe where a file came from.
+
+    Files under the Termux prefix are looked up with dpkg-query; other system
+    files use RPM.  User-directory files are labelled by installation style.
+    """
     real = os.path.realpath(path)
     home_real = os.path.realpath(home or str(Path.home()))
     if _within(real, home_real):
@@ -506,6 +615,15 @@ def origin_info(
         return Origin("user", "user file")
     if not enabled:
         return Origin("", "")
+    termux = prefix if prefix is not None else termux_prefix()
+    if termux and _within(real, termux):
+        name, version = dpkg_info(path, dpkg_query=dpkg_query)
+        if not name:
+            name, version = dpkg_info(real, dpkg_query=dpkg_query)
+        if name:
+            label = f"{name} {version}".strip()
+            return Origin("dpkg", label)
+        return Origin("termux", "termux prefix")
     name, version = rpm_info(path, rpm=rpm)
     if not name:
         name, version = rpm_info(real, rpm=rpm)
@@ -886,7 +1004,10 @@ def render_info(info: CommandInfo, *, color: bool = False) -> str:
             rows.append(("interpreter", info.interpreter))
         if info.origin:
             rows.append(
-                ("package" if info.origin_kind == "rpm" else "origin", info.origin)
+                (
+                    "package" if info.origin_kind in ("rpm", "dpkg") else "origin",
+                    info.origin,
+                )
             )
         if info.version:
             rows.append(("version", info.version))
@@ -956,7 +1077,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-package",
         action="store_true",
-        help="do not look up RPM package ownership",
+        help="do not look up RPM or dpkg package ownership",
     )
     parser.add_argument(
         "--full",

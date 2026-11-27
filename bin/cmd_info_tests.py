@@ -304,6 +304,101 @@ def test_origin_info_labels_install_styles(
     assert origin.label == label
 
 
+@pytest.mark.parametrize(
+    ("output", "expected"),
+    [
+        ("bash: /data/data/com.termux/files/usr/bin/bash\n", "bash"),
+        ("libc6:amd64: /data/data/com.termux/files/usr/lib/libc.so\n", "libc6:amd64"),
+        ("pkg1, pkg2: /data/data/com.termux/files/usr/bin/tool\n", "pkg1"),
+        ("diversion by foo from: /old\ndiversion by foo to: /new\n", ""),
+        ("no owner\n", ""),
+        ("", ""),
+    ],
+)
+def test_parse_dpkg_owner(output: str, expected: str) -> None:
+    assert ci.parse_dpkg_owner(output) == expected
+
+
+def test_dpkg_info_reads_owner_and_version(tmp_path: Path) -> None:
+    stub = make_exec(
+        tmp_path / "dpkg-query",
+        """#!/bin/sh
+case "$1" in
+    -S) printf 'bash: %s\\n' "$2" ;;
+    -W) printf '5.2.37\\n' ;;
+esac
+""",
+    )
+
+    assert ci.dpkg_info("/data/data/com.termux/files/usr/bin/bash", str(stub)) == (
+        "bash",
+        "5.2.37",
+    )
+
+
+def test_dpkg_info_returns_empty_when_unowned(tmp_path: Path) -> None:
+    stub = make_exec(tmp_path / "dpkg-query", "#!/bin/sh\nexit 1\n")
+
+    assert ci.dpkg_info("/data/data/com.termux/files/usr/bin/tool", str(stub)) == (
+        "",
+        "",
+    )
+
+
+@pytest.mark.parametrize(
+    ("environment", "expected"),
+    [
+        ({}, ""),
+        ({"PREFIX": "/usr"}, ""),
+        (
+            {"PREFIX": "/data/data/com.termux/files/usr"},
+            "/data/data/com.termux/files/usr",
+        ),
+        ({"PREFIX": "/custom", "TERMUX_VERSION": "0.118"}, "/custom"),
+    ],
+)
+def test_termux_prefix(environment: dict[str, str], expected: str) -> None:
+    assert ci.termux_prefix(environment) == expected
+
+
+def test_origin_info_uses_dpkg_for_the_termux_prefix(tmp_path: Path) -> None:
+    prefix = tmp_path / "termux" / "usr"
+    stub = make_exec(
+        tmp_path / "dpkg-query",
+        """#!/bin/sh
+case "$1" in
+    -S) printf 'bash: %s\\n' "$2" ;;
+    -W) printf '5.2.37\\n' ;;
+esac
+""",
+    )
+
+    origin = ci.origin_info(
+        str(prefix / "bin" / "bash"),
+        home=str(tmp_path / "home"),
+        prefix=str(prefix),
+        dpkg_query=str(stub),
+    )
+
+    assert origin.kind == "dpkg"
+    assert origin.label == "bash 5.2.37"
+
+
+def test_origin_info_labels_unowned_termux_files(tmp_path: Path) -> None:
+    prefix = tmp_path / "termux" / "usr"
+    stub = make_exec(tmp_path / "dpkg-query", "#!/bin/sh\nexit 1\n")
+
+    origin = ci.origin_info(
+        str(prefix / "bin" / "local-tool"),
+        home=str(tmp_path / "home"),
+        prefix=str(prefix),
+        dpkg_query=str(stub),
+    )
+
+    assert origin.kind == "termux"
+    assert origin.label == "termux prefix"
+
+
 def test_origin_info_uses_rpm(monkeypatch) -> None:
     monkeypatch.setattr(ci, "rpm_info", lambda *args, **kwargs: ("coreutils", "9.7-1"))
 
@@ -510,7 +605,8 @@ def test_render_info_for_a_script() -> None:
     assert "echo hello" in text
 
 
-def test_render_info_calls_an_rpm_owner_a_package() -> None:
+@pytest.mark.parametrize("kind", ["rpm", "dpkg"])
+def test_render_info_calls_a_package_owner_a_package(kind: str) -> None:
     info = ci.CommandInfo(
         name="ls",
         kind="file",
@@ -518,7 +614,7 @@ def test_render_info_calls_an_rpm_owner_a_package() -> None:
         description="ELF",
         size=1,
         origin="coreutils 9.7-1",
-        origin_kind="rpm",
+        origin_kind=kind,
     )
 
     text = ci.render_info(info)
