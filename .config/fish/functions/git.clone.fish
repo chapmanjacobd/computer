@@ -1,4 +1,4 @@
-function git.clone --description 'Clone a repository, rewriting an https URL to ssh when possible'
+function git.clone --wraps='git clone' --description 'Clone a repository, rewriting an https URL to ssh when possible'
     set -l args
     for url in $argv
         switch $url

@@ -1,3 +1,3 @@
-function git.rebase
+function git.rebase --wraps='git rebase'
     git -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" git commit --amend --no-edit' rebase $argv
 end

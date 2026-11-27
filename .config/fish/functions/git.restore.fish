@@ -1,4 +1,4 @@
-function git.restore
+function git.restore --wraps='git restore'
     if test (count $argv) -gt 0
         git diff -- $argv
         git restore -- $argv
