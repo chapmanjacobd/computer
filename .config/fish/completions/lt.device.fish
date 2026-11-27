@@ -1,0 +1,5 @@
+complete -c lt.device -f -n '__fish_is_nth_token 1' -a len -d 'Bedroom speaker'
+complete -c lt.device -f -n '__fish_is_nth_token 1' -a pakon -d 'Kitchen speaker'
+complete -c lt.device -f -n '__fish_is_nth_token 1' -a phone -d 'Bathroom speaker'
+complete -c lt.device -f -n '__fish_is_nth_token 1' -a localhost -d 'Bathroom speaker'
+complete -c lt.device -f -n '__fish_is_nth_token 1' -a '(__fish_print_hostnames)' -d 'Hostname'

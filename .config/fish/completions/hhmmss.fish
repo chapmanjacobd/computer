@@ -1,0 +1,1 @@
+complete -c hhmmss -f
