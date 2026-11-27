@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Show commits in main that are not on HEAD, oldest first.
+set -euo pipefail
+exec git log --reverse --oneline ..main "$@"

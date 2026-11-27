@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+set -l base_branch (git originhead)
+set -l diff_args $argv
+if test (count $argv) -gt 0; and not string match -q -- '-*' $argv[1]
+    set base_branch $argv[1]
+    set diff_args $argv[2..-1]
+end
+
+git log -p --reverse --first-parent $base_branch..HEAD

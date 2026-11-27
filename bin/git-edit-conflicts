@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Open every unmerged file in the configured Git editor.
+set -euo pipefail
+
+mapfile -d '' -t files < <(git diff --name-only --diff-filter U -z)
+(( ${#files[@]} )) || exit 0
+
+read -r -a editor <<<"$(git var GIT_EDITOR)"
+exec "${editor[@]}" -- "${files[@]}"
