@@ -1,0 +1,11 @@
+complete -c wg-container -f
+complete -c wg-container -s i -x -d 'Network interface (default: enp5s0)'
+complete -c wg-container -s v -d 'Verbose mode'
+complete -c wg-container -s h -d 'Show help'
+complete -c wg-container -s m -d 'Use multi mode'
+complete -c wg-container -n '__fish_is_nth_token 1' -a up -d 'Start a VPN connection'
+complete -c wg-container -n '__fish_is_nth_token 1' -a down -d 'Stop a VPN connection'
+complete -c wg-container -n '__fish_is_nth_token 1' -a exec -d 'Run a command in the VPN namespace'
+complete -c wg-container -n '__fish_is_nth_token 1' -a direct -d 'Run a command in a config without starting or stopping it'
+complete -c wg-container -n '__fish_is_nth_token 1' -a list -d 'Show active VPNs'
+complete -c wg-container -n '__fish_is_nth_token 1' -a help -d 'Show help'
