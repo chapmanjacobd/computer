@@ -1,4 +1,4 @@
 # Defined in /tmp/fish.FCdsd2/yt.title.fish @ line 2
-function yt.print.path
+function yt.print.path --wraps='yt-dlp'
     ytdl -i -o "%(playlist_index)s-%(title)s-%(uploader)s-%(id)s" --get-filename --skip-download $argv
 end
