@@ -21,7 +21,7 @@
 [branch]
 	sort = -committerdate
 [tag]
-	sort = taggerdate
+	sort = -taggerdate
 [alias]
 	history = log --follow -p --
 	create = !git checkout DEV && git checkout -b
