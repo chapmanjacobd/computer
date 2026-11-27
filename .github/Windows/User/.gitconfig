@@ -42,8 +42,6 @@
 	indentheuristic = true
 	colormoved = zebra
 	context = 5
-	tool = delta
-	difftool = delta
 [delta]
 	navigate = true
 [push]
