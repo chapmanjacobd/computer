@@ -1,0 +1,1030 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
+
+"""Describe a command for interactive use.
+
+``cmd.info`` combines the useful parts of ``type``, ``which``, ``file``, and
+``rpm -qf``.  For an executable binary it prints the path, the file type, the
+owning package, and the version the command reports.  For a printable script
+it prints the path and the script itself instead of executing it.  Fish
+functions, builtins, and keywords are shown with their definitions, so it can
+stand in for ``type`` without losing shell context.
+
+Examples::
+
+    cmd.info git
+    cmd.info /home/xk/bin/git-originhead
+    cmd.info --which -a python3
+    cmd.info --no-version --no-source ls
+
+Safety: scripts are never executed.  A binary is asked for ``--version`` only
+when it is a regular, non-setuid, non-setgid, not world-writable file.  The
+probe runs without a terminal, without stdin, from ``/``, with a sanitised
+environment, in its own session, and with a timeout.  Use ``--no-version`` to
+skip version probes entirely.
+"""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import os
+import re
+import shlex
+import signal
+import stat
+import subprocess
+import sys
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TextIO
+
+LOG = logging.getLogger("cmd_info")
+
+MAX_SOURCE_LINES = 60
+MAX_VERSION_LEN = 160
+VERSION_TIMEOUT = 2.0
+RPM_TIMEOUT = 2.0
+FISH_TIMEOUT = 3.0
+
+_ESCAPE_SEQUENCE = re.compile(
+    r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-_])"
+)
+_CONTROL_CHAR = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+_GO_VERSION = re.compile(r":\s*(go\S+)")
+
+
+def clean_text(text: str) -> str:
+    """Remove terminal escape sequences and control characters from text.
+
+    Parameters
+    ----------
+    text : str
+        Text that may contain terminal escape sequences or control
+        characters.
+
+    Returns
+    -------
+    str
+        Printable text with escape sequences and control characters removed.
+
+    Examples
+    --------
+    >>> clean_text("\\x1b[31mtool\\x1b[0m")
+    'tool'
+    >>> clean_text("tool\\x07 1.0")
+    'tool 1.0'
+    """
+    return _CONTROL_CHAR.sub("", _ESCAPE_SEQUENCE.sub("", text))
+
+
+def human_size(size: int) -> str:
+    """Format a byte count for humans.
+
+    Parameters
+    ----------
+    size : int
+        Number of bytes.
+
+    Returns
+    -------
+    str
+        Byte count with binary units.
+
+    Examples
+    --------
+    >>> human_size(1024)
+    '1.0 KiB'
+    >>> human_size(1536)
+    '1.5 KiB'
+    """
+    if size < 1024:
+        return f"{size} B"
+    value = float(size)
+    for unit in ("KiB", "MiB", "GiB", "TiB", "PiB"):
+        value /= 1024.0
+        if value < 1024.0 or unit == "PiB":
+            return f"{value:.1f} {unit}"
+    return f"{size} B"
+
+
+def split_path(path_value: str) -> list[str]:
+    """Split ``$PATH`` into unique absolute directories.
+
+    Relative entries are resolved against the current directory and entries
+    that point at the same real directory are dropped, keeping the first one.
+
+    Parameters
+    ----------
+    path_value : str
+        Value of ``$PATH``.
+
+    Returns
+    -------
+    list[str]
+        Directories in lookup order.
+
+    Examples
+    --------
+    >>> split_path("/a:/b:/a")
+    ['/a', '/b']
+    """
+    directories: list[str] = []
+    seen: set[str] = set()
+    for entry in path_value.split(os.pathsep):
+        if not entry:
+            continue
+        directory = os.path.abspath(os.path.expanduser(entry))
+        real = os.path.realpath(directory)
+        if real in seen:
+            continue
+        seen.add(real)
+        directories.append(directory)
+    return directories
+
+
+def find_matches(name: str, path_value: str, *, cwd: str | None = None) -> list[str]:
+    """Find executable files for a command name.
+
+    A name containing a path separator is treated as an explicit path and may
+    point at a non-executable text file, which is useful for inspecting a
+    script.  A bare name is searched in ``$PATH`` and must be executable.
+
+    Parameters
+    ----------
+    name : str
+        Command name or explicit path.
+    path_value : str
+        Value of ``$PATH``.
+    cwd : str | None
+        Directory used to resolve relative explicit paths.  ``None`` uses the
+        current directory.
+
+    Returns
+    -------
+    list[str]
+        Matching paths in lookup order, deduplicated by real path.
+
+    Examples
+    --------
+    >>> find_matches("/definitely/not/here", "")
+    []
+    """
+    cwd = cwd or os.getcwd()
+    if os.sep in name or (os.altsep is not None and os.altsep in name):
+        expanded = os.path.expanduser(name)
+        candidate = expanded if os.path.isabs(expanded) else os.path.join(cwd, expanded)
+        candidate = os.path.abspath(candidate)
+        return [candidate] if os.path.isfile(candidate) else []
+
+    matches: list[str] = []
+    seen: set[str] = set()
+    for directory in split_path(path_value):
+        candidate = os.path.join(directory, name)
+        if not os.path.isfile(candidate):
+            continue
+        if not os.access(candidate, os.X_OK):
+            continue
+        real = os.path.realpath(candidate)
+        if real in seen:
+            continue
+        seen.add(real)
+        matches.append(candidate)
+    return matches
+
+
+@dataclass(frozen=True)
+class FileFacts:
+    """Filesystem facts about one command candidate.
+
+    Parameters
+    ----------
+    path : str
+        Path as it was found, without resolving symlinks.
+    real_path : str
+        Symlink-resolved path.
+    link_target : str
+        Raw symlink target, or an empty string when ``path`` is not a link.
+    description : str
+        ``file(1)`` description.
+    size : int
+        File size in bytes.
+    mode : int
+        ``st_mode``.
+    is_text : bool
+        Whether the beginning of the file looks printable.
+    is_regular : bool
+        Whether the file is a regular file.
+    is_setuid : bool
+        Whether the setuid bit is set.
+    is_setgid : bool
+        Whether the setgid bit is set.
+    is_world_writable : bool
+        Whether other users may write the file.
+    shebang : str
+        First line when it starts with ``#!``.
+    interpreter : str
+        Interpreter derived from the shebang.
+    """
+
+    path: str
+    real_path: str
+    link_target: str
+    description: str
+    size: int
+    mode: int
+    is_text: bool
+    is_regular: bool
+    is_setuid: bool
+    is_setgid: bool
+    is_world_writable: bool
+    shebang: str
+    interpreter: str
+
+
+@dataclass(frozen=True)
+class Origin:
+    """Where a command came from.
+
+    Parameters
+    ----------
+    kind : str
+        ``rpm``, ``uv``, ``cargo``, ``user``, ``user-install``, or empty.
+    label : str
+        Human-readable origin, such as ``coreutils 9.7-1``.
+    """
+
+    kind: str
+    label: str
+
+
+@dataclass(frozen=True)
+class FishInfo:
+    """A fish function, builtin, or keyword."""
+
+    kind: str
+    details: str
+    source_lines: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class CommandInfo:
+    """Everything needed to render one command."""
+
+    name: str
+    kind: str
+    path: str = ""
+    real_path: str = ""
+    link_target: str = ""
+    description: str = ""
+    size: int = -1
+    origin: str = ""
+    origin_kind: str = ""
+    version: str = ""
+    interpreter: str = ""
+    source_lines: tuple[str, ...] = ()
+    source_truncated: bool = False
+    details: str = ""
+    occurrences: tuple[str, ...] = ()
+
+
+def read_head(path: str, limit: int = 8192) -> bytes:
+    """Read the beginning of a file without failing on I/O errors."""
+    try:
+        with open(path, "rb") as handle:
+            return handle.read(limit)
+    except OSError as exc:
+        LOG.debug("could not read %s: %s", path, exc)
+        return b""
+
+
+def is_probably_text(data: bytes) -> bool:
+    """Decide whether bytes look printable.
+
+    Parameters
+    ----------
+    data : bytes
+        Beginning of a file.
+
+    Returns
+    -------
+    bool
+        True for empty, UTF-8, or mostly printable non-NUL data.
+
+    Examples
+    --------
+    >>> is_probably_text(b"#!/bin/sh\\n")
+    True
+    >>> is_probably_text(b"\\x7fELF\\x00")
+    False
+    """
+    if not data:
+        return True
+    if b"\x00" in data:
+        return False
+    try:
+        data.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        pass
+    printable = sum(
+        1 for byte in data if byte in (9, 10, 13) or 32 <= byte < 127 or byte >= 160
+    )
+    return printable / len(data) >= 0.95
+
+
+def parse_shebang(line: str) -> str:
+    """Extract the interpreter from a shebang line.
+
+    ``env`` is unwrapped, including ``env -S`` and leading environment
+    assignments.
+
+    Parameters
+    ----------
+    line : str
+        First line of a file.
+
+    Returns
+    -------
+    str
+        Interpreter and its arguments, or an empty string when there is no
+        shebang.
+
+    Examples
+    --------
+    >>> parse_shebang("#!/usr/bin/env -S uv run --script")
+    'uv run --script'
+    >>> parse_shebang("#!/bin/sh -e")
+    'sh -e'
+    >>> parse_shebang("not a shebang")
+    ''
+    """
+    if not line.startswith("#!"):
+        return ""
+    try:
+        parts = shlex.split(line[2:].strip())
+    except ValueError:
+        return ""
+    if not parts:
+        return ""
+    command = parts[0]
+    arguments = parts[1:]
+    if os.path.basename(command) == "env":
+        command, arguments = _env_command(arguments)
+        if not command:
+            return ""
+    else:
+        command = os.path.basename(command)
+    return " ".join([command, *arguments]).strip()
+
+
+def _env_command(arguments: list[str]) -> tuple[str, list[str]]:
+    """Find the command after ``env`` options and assignments."""
+    index = 0
+    while index < len(arguments):
+        argument = arguments[index]
+        if argument in ("-S", "--split-string"):
+            index += 1
+            continue
+        if argument.startswith(("--unset=", "--chdir=")):
+            index += 1
+            continue
+        if argument in ("-u", "--unset", "-C", "--chdir"):
+            index += 2
+            continue
+        if argument.startswith("-"):
+            index += 1
+            continue
+        if "=" in argument:
+            name = argument.partition("=")[0]
+            if name.replace("_", "a").isalnum():
+                index += 1
+                continue
+        break
+    if index >= len(arguments):
+        return "", []
+    return os.path.basename(arguments[index]), arguments[index + 1 :]
+
+
+def describe_file(path: str, *, file_cmd: str = "file", timeout: float = 2.0) -> str:
+    """Ask ``file`` for a one-line description."""
+    try:
+        completed = subprocess.run(
+            [file_cmd, "--brief", "--", path],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("file probe failed for %s: %s", path, exc)
+        return ""
+    return clean_text(completed.stdout.strip())
+
+
+def file_facts(path: str, *, file_cmd: str = "file") -> FileFacts:
+    """Collect filesystem facts about one file."""
+    status = os.stat(path)
+    real_path = os.path.realpath(path)
+    link_target = os.readlink(path) if os.path.islink(path) else ""
+    head = read_head(path)
+    is_text = is_probably_text(head) if head or status.st_size == 0 else False
+    first_line = head.split(b"\n", 1)[0].decode("utf-8", errors="replace")
+    shebang = first_line if is_text and first_line.startswith("#!") else ""
+    description = describe_file(path, file_cmd=file_cmd)
+    if not description:
+        description = "text file" if is_text else "binary file"
+    return FileFacts(
+        path=os.path.abspath(path),
+        real_path=real_path,
+        link_target=link_target,
+        description=description,
+        size=status.st_size,
+        mode=status.st_mode,
+        is_text=is_text,
+        is_regular=stat.S_ISREG(status.st_mode),
+        is_setuid=bool(status.st_mode & stat.S_ISUID),
+        is_setgid=bool(status.st_mode & stat.S_ISGID),
+        is_world_writable=bool(status.st_mode & stat.S_IWOTH),
+        shebang=shebang,
+        interpreter=parse_shebang(first_line),
+    )
+
+
+def rpm_info(
+    path: str, rpm: str = "rpm", timeout: float = RPM_TIMEOUT
+) -> tuple[str, str]:
+    """Look up the RPM package that owns a file.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(package, version)``, or ``("", "")`` when unowned or unavailable.
+    """
+    query_format = "%{NAME} %{VERSION}-%{RELEASE}"
+    try:
+        completed = subprocess.run(
+            [rpm, "-qf", "--queryformat", query_format, "--", path],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("rpm query failed for %s: %s", path, exc)
+        return ("", "")
+    if completed.returncode != 0:
+        return ("", "")
+    parts = completed.stdout.strip().split(maxsplit=1)
+    if len(parts) != 2:
+        return ("", "")
+    return (parts[0], parts[1])
+
+
+def origin_info(
+    path: str,
+    *,
+    home: str | None = None,
+    rpm: str = "rpm",
+    enabled: bool = True,
+) -> Origin:
+    """Describe where a file came from."""
+    real = os.path.realpath(path)
+    home_real = os.path.realpath(home or str(Path.home()))
+    if _within(real, home_real):
+        if "/.local/share/uv/" in real:
+            return Origin("uv", "uv")
+        if "/.cargo/bin/" in real:
+            return Origin("cargo", "cargo")
+        if "/.local/bin/" in real:
+            return Origin("user-install", "user install")
+        return Origin("user", "user file")
+    if not enabled:
+        return Origin("", "")
+    name, version = rpm_info(path, rpm=rpm)
+    if not name:
+        name, version = rpm_info(real, rpm=rpm)
+    if name:
+        return Origin("rpm", f"{name} {version}")
+    return Origin("", "")
+
+
+def _within(path: str, parent: str) -> bool:
+    """Return whether ``path`` is inside ``parent``."""
+    try:
+        return os.path.commonpath(
+            [os.path.realpath(path), os.path.realpath(parent)]
+        ) == os.path.realpath(parent)
+    except ValueError:
+        return False
+
+
+def parse_go_build_info(output: str) -> str:
+    """Extract a readable version from ``go version -m`` output.
+
+    Examples
+    --------
+    >>> parse_go_build_info(
+    ...     "/tmp/tool: go1.25.1\\n\\tmod\\texample.com/tool\\tv1.2.3\\t\\n"
+    ... )
+    'go1.25.1 · example.com/tool v1.2.3'
+    >>> parse_go_build_info("not a Go executable")
+    ''
+    """
+    lines = [line for line in output.splitlines() if line.strip()]
+    if not lines:
+        return ""
+    match = _GO_VERSION.search(lines[0])
+    if match is None:
+        return ""
+    go_version = match.group(1)
+    module = ""
+    for line in lines[1:]:
+        fields = line.strip().split("\t")
+        if len(fields) < 2 or fields[0] != "mod":
+            continue
+        name = fields[1].strip()
+        version = fields[2].strip() if len(fields) > 2 else ""
+        if not name or name == "command-line-arguments":
+            continue
+        module = (
+            f"{name} (devel)" if version in ("", "(devel)") else f"{name} {version}"
+        )
+        break
+    label = f"{go_version} · {module}" if module else go_version
+    return label[:MAX_VERSION_LEN]
+
+
+def go_version(path: str, *, go: str = "go", timeout: float = VERSION_TIMEOUT) -> str:
+    """Read Go build information without running the target binary."""
+    if not go:
+        return ""
+    try:
+        completed = subprocess.run(
+            [go, "version", "-m", path],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+            cwd="/",
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("go build info probe failed for %s: %s", path, exc)
+        return ""
+    return parse_go_build_info(completed.stdout)
+
+
+def should_probe_version(facts: FileFacts) -> bool:
+    """Return whether running ``--version`` on a file is considered safe.
+
+    Scripts are excluded because their contents are shown instead.  Setuid,
+    setgid, and world-writable binaries are excluded because running them can
+    change the trust boundary.
+    """
+    return (
+        facts.is_regular
+        and not facts.is_text
+        and not facts.is_setuid
+        and not facts.is_setgid
+        and not facts.is_world_writable
+        and facts.size > 0
+    )
+
+
+def _probe_environment() -> dict[str, str]:
+    """Build an environment for version probes that discourages interaction."""
+    environment = dict(os.environ)
+    environment["NO_COLOR"] = "1"
+    environment["TERM"] = "dumb"
+    for name in (
+        "DISPLAY",
+        "WAYLAND_DISPLAY",
+        "XAUTHORITY",
+        "SSH_ASKPASS",
+        "SUDO_ASKPASS",
+    ):
+        environment.pop(name, None)
+    for name in ("PAGER", "GIT_PAGER", "SYSTEMD_PAGER", "MANPAGER"):
+        environment[name] = "cat"
+    return environment
+
+
+def _kill_process_group(process: subprocess.Popen[str]) -> None:
+    """Kill a probe and every process it started."""
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        process.kill()
+
+
+def _run_probe(
+    command: list[str], timeout: float, environment: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
+    """Run a probe without a controlling terminal."""
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        errors="replace",
+        cwd="/",
+        env=environment,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _kill_process_group(process)
+        try:
+            stdout, stderr = process.communicate(timeout=1.0)
+        except subprocess.TimeoutExpired:
+            for pipe in (process.stdout, process.stderr):
+                if pipe is not None:
+                    pipe.close()
+            try:
+                process.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            stdout, stderr = "", ""
+        return subprocess.CompletedProcess(command, -signal.SIGKILL, stdout, stderr)
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def probe_version(
+    executable: str, timeout: float = VERSION_TIMEOUT, *, filter_output: bool = True
+) -> str:
+    """Ask an executable for its version.
+
+    The probe has no terminal, no stdin, and a timeout.  Failures and empty
+    output produce an empty string.
+
+    Examples
+    --------
+    >>> probe_version("/definitely/not/here") == ''
+    True
+    """
+    try:
+        completed = _run_probe([executable, "--version"], timeout, _probe_environment())
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("version probe failed for %s: %s", executable, exc)
+        return ""
+    output = (completed.stdout or "").strip() or (completed.stderr or "").strip()
+    if not output:
+        return ""
+    if completed.returncode != 0 and not (completed.stdout or "").strip():
+        return ""
+    line = output.splitlines()[0].strip()
+    if filter_output:
+        line = clean_text(line)
+    if line.lower().startswith(
+        ("usage:", "usage ", "unknown option", "unrecognized option", "invalid option")
+    ):
+        # Usage text from a rejected --version is not a version.
+        return ""
+    return line[:MAX_VERSION_LEN]
+
+
+def read_source(
+    path: str, *, max_lines: int = MAX_SOURCE_LINES, full: bool = False
+) -> tuple[tuple[str, ...], bool]:
+    """Read a printable file, optionally truncating it.
+
+    Returns
+    -------
+    tuple[tuple[str, ...], bool]
+        Lines and whether more lines were left unread.
+    """
+    limit = None if full else max_lines
+    lines: list[str] = []
+    truncated = False
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            if limit is not None and len(lines) >= limit:
+                truncated = True
+                break
+            lines.append(line.rstrip("\r\n"))
+    return tuple(lines), truncated
+
+
+def _run_fish(
+    fish: str, script: str, name: str, timeout: float = FISH_TIMEOUT
+) -> subprocess.CompletedProcess[str] | None:
+    """Run a fish snippet with one safely quoted argument."""
+    try:
+        return subprocess.run(
+            [fish, "-c", script, "--", name],
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        LOG.debug("fish query failed for %s: %s", name, exc)
+        return None
+
+
+def fish_info(name: str, *, fish: str = "fish") -> FishInfo | None:
+    """Look up a fish function, builtin, or keyword.
+
+    Returns ``None`` for names that fish resolves to a file or does not know.
+    """
+    if not fish or "/" in name:
+        return None
+    kind_probe = _run_fish(fish, "builtin type -t -- $argv[1]", name)
+    if kind_probe is None or kind_probe.returncode != 0:
+        return None
+    kind = kind_probe.stdout.strip().splitlines()
+    if not kind:
+        return None
+    kind_name = kind[0].strip()
+    if kind_name not in ("function", "builtin", "keyword"):
+        return None
+    if kind_name != "function":
+        return FishInfo(kind_name, "", ())
+    details_probe = _run_fish(fish, "functions --details -- $argv[1]", name)
+    details = ""
+    if details_probe is not None and details_probe.returncode == 0:
+        details = details_probe.stdout.strip()
+        if details == "n/a":
+            details = "interactive"
+    source_probe = _run_fish(fish, "functions -- $argv[1]", name)
+    source_lines: tuple[str, ...] = ()
+    if source_probe is not None and source_probe.returncode == 0:
+        source_lines = tuple(source_probe.stdout.rstrip("\n").splitlines())
+        while source_lines and source_lines[0].startswith("# Defined "):
+            source_lines = source_lines[1:]
+    return FishInfo(kind_name, details, source_lines)
+
+
+def inspect(
+    name: str,
+    *,
+    path_value: str,
+    which_mode: bool = False,
+    all_matches: bool = False,
+    versions: bool = True,
+    source: bool = True,
+    packages: bool = True,
+    full: bool = False,
+    home: str | None = None,
+    fish: str = "fish",
+    max_source_lines: int = MAX_SOURCE_LINES,
+) -> list[CommandInfo]:
+    """Inspect one command and return one or more display records."""
+    if not which_mode:
+        shell_info = fish_info(name, fish=fish)
+        if shell_info is not None:
+            LOG.debug("fish resolves %s to a %s", name, shell_info.kind)
+            return [
+                CommandInfo(
+                    name=name,
+                    kind=shell_info.kind,
+                    details=shell_info.details,
+                    source_lines=shell_info.source_lines if source else (),
+                )
+            ]
+
+    matches = find_matches(name, path_value)
+    LOG.debug("PATH matches for %s: %s", name, matches)
+    if not matches:
+        return [CommandInfo(name=name, kind="missing")]
+
+    selected = matches if all_matches else matches[:1]
+    infos: list[CommandInfo] = []
+    for match in selected:
+        try:
+            facts = file_facts(match)
+        except OSError as exc:
+            LOG.debug("could not inspect %s: %s", match, exc)
+            infos.append(CommandInfo(name=name, kind="missing"))
+            continue
+        origin = origin_info(match, home=home, enabled=packages)
+        LOG.debug("origin for %s: %s", match, origin.label or "unknown")
+        version = ""
+        if versions and should_probe_version(facts):
+            LOG.debug("probing version of %s", match)
+            pieces: list[str] = []
+            go_label = go_version(match)
+            if go_label:
+                pieces.append(go_label)
+            probed = probe_version(match, timeout=VERSION_TIMEOUT)
+            if probed:
+                pieces.append(probed)
+            version = " · ".join(pieces)[:MAX_VERSION_LEN]
+        elif versions:
+            LOG.debug("skipping version probe for %s: not safe", match)
+        source_lines: tuple[str, ...] = ()
+        source_truncated = False
+        if source and facts.is_text:
+            try:
+                source_lines, source_truncated = read_source(
+                    match, max_lines=max_source_lines, full=full
+                )
+            except OSError as exc:
+                LOG.debug("could not read source of %s: %s", match, exc)
+        infos.append(
+            CommandInfo(
+                name=name,
+                kind="file",
+                path=facts.path,
+                real_path=facts.real_path,
+                link_target=facts.link_target,
+                description=facts.description,
+                size=facts.size,
+                origin=origin.label,
+                origin_kind=origin.kind,
+                version=version,
+                interpreter=facts.interpreter,
+                source_lines=source_lines,
+                source_truncated=source_truncated,
+                occurrences=tuple(matches) if not all_matches else (match,),
+            )
+        )
+    return infos
+
+
+def _style(text: str, code: str, enabled: bool) -> str:
+    """Wrap text in an ANSI style when colour is enabled."""
+    return f"\x1b[{code}m{text}\x1b[0m" if enabled else text
+
+
+def render_info(info: CommandInfo, *, color: bool = False) -> str:
+    """Render one command record as text."""
+    if info.kind == "missing":
+        return f"{info.name}: not found"
+
+    lines = [_style(info.name, "1", color)]
+    rows: list[tuple[str, str]] = []
+    if info.kind in ("function", "builtin", "keyword"):
+        rows.append(("kind", f"fish {info.kind}"))
+        if info.details:
+            rows.append(("defined", info.details))
+    else:
+        rows.append(("path", info.path))
+        if info.link_target:
+            rows.append(("link", info.link_target))
+        if info.real_path and info.real_path != info.path:
+            rows.append(("real path", info.real_path))
+        if info.description:
+            rows.append(("type", info.description))
+        if info.size >= 0:
+            rows.append(("size", human_size(info.size)))
+        if info.interpreter:
+            rows.append(("interpreter", info.interpreter))
+        if info.origin:
+            rows.append(
+                ("package" if info.origin_kind == "rpm" else "origin", info.origin)
+            )
+        if info.version:
+            rows.append(("version", info.version))
+        if len(info.occurrences) > 1:
+            rows.append(("also on PATH", ", ".join(info.occurrences[1:])))
+
+    width = max((len(label) for label, _ in rows), default=0)
+    for label, value in rows:
+        lines.append(f"  {_style(label.ljust(width), '2', color)}  {value}")
+    if info.source_lines:
+        lines.append(_style("  source:", "2", color))
+        lines.extend(info.source_lines)
+        if info.source_truncated:
+            lines.append("... more lines (use --full to print all)")
+    return "\n".join(lines)
+
+
+def _supports_color(stream: TextIO) -> bool:
+    """Return whether ANSI colour should be used for a stream."""
+    if os.environ.get("NO_COLOR"):
+        return False
+    if os.environ.get("TERM") == "dumb":
+        return False
+    return bool(getattr(stream, "isatty", lambda: False)())
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser."""
+    parser = argparse.ArgumentParser(
+        prog="cmd.info",
+        description=(
+            "Describe commands like type/which, but show binary metadata and "
+            "script source instead of only a path."
+        ),
+        epilog=(
+            "Scripts are never executed. Binary version probes run with a "
+            "timeout, no terminal, no stdin, and a sanitised environment."
+        ),
+    )
+    parser.add_argument(
+        "names",
+        nargs="+",
+        metavar="COMMAND|PATH",
+        help="command name or explicit path",
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        help="show every PATH match instead of only the first",
+    )
+    parser.add_argument(
+        "--which",
+        action="store_true",
+        help="search PATH only; ignore fish functions and builtins",
+    )
+    parser.add_argument(
+        "--no-version",
+        action="store_true",
+        help="do not show version information",
+    )
+    parser.add_argument(
+        "--no-source",
+        action="store_true",
+        help="do not print script or function source",
+    )
+    parser.add_argument(
+        "--no-package",
+        action="store_true",
+        help="do not look up RPM package ownership",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help=f"print all source lines instead of the first {MAX_SOURCE_LINES}",
+    )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="disable ANSI colour",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="log lookup and probe details",
+    )
+    return parser
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    path_value: str | None = None,
+    home: str | None = None,
+    out: TextIO | None = None,
+    err: TextIO | None = None,
+) -> int:
+    """Run the command-line interface."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.WARNING,
+        format="%(levelname)s: %(message)s",
+    )
+
+    out = out or sys.stdout
+    err = err or sys.stderr
+    if path_value is None:
+        path_value = os.environ.get("PATH", "")
+    color = not args.no_color and _supports_color(out)
+
+    missing = 0
+    printed = False
+    for name in args.names:
+        infos = inspect(
+            name,
+            path_value=path_value,
+            which_mode=args.which,
+            all_matches=args.all,
+            versions=not args.no_version,
+            source=not args.no_source,
+            packages=not args.no_package,
+            full=args.full,
+            home=home,
+        )
+        for info in infos:
+            if info.kind == "missing":
+                print(f"{name}: not found", file=err)
+                missing += 1
+                continue
+            if printed:
+                print(file=out)
+            print(render_info(info, color=color), file=out)
+            printed = True
+    return 1 if missing else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
