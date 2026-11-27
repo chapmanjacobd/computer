@@ -2,15 +2,15 @@
 function roman.to.number --description 'Convert Roman numeral to number (filter)'
     # Read from stdin if no argument
     if test (count $argv) -eq 0
-        while read -l number.to.roman
-            roman.to.number $roman
+        while read -l numeral
+            roman.to.number $numeral
         end
         return
     end
 
     # Validate input
-    set -l number.to.roman (string upper $argv[1])
-    if ! string match -qr '^[IVXLCDM]+$' -- $roman
+    set -l numeral (string upper -- $argv[1])
+    if ! string match -qr '^[IVXLCDM]+$' -- $numeral
         echo "Error: Input must be a valid Roman numeral (I, V, X, L, C, D, M)" >&2
         return 1
     end
@@ -19,7 +19,7 @@ function roman.to.number --description 'Convert Roman numeral to number (filter)
     set -l total 0
     set -l prev 0
 
-    for c in (string split "" $roman | tac)
+    for c in (string split "" $numeral | tac)
         switch $c
             case I
                 set val 1
