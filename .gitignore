@@ -380,3 +380,4 @@
 /.radian_history
 /.config/zimantic/config.toml.lock
 /.ssh/config.local
+/.config/tasker
