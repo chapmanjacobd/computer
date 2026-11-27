@@ -214,6 +214,7 @@ python3-evdev
 python3-ipdb
 python3-pyicu
 python3-qgis
+python3-tabulate
 python3-tkinter
 python3-xattr
 qalc
@@ -275,6 +276,7 @@ thermald
 timidity
 tiresias-info-z-fonts
 tiresias-pc-z-fonts
+tmux
 translate-shell
 trash-cli
 trurl
