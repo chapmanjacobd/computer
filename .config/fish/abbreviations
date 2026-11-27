@@ -1262,7 +1262,6 @@ abbr -a -- gs 'git diff --stat; git diff --staged --stat;git status --short --un
 abbr -a -- links.expand 'lb links extract --local-html (cb.file.html) --href | open.browser'
 abbr -a -- gl git log --oneline --decorate --first-parent --stat
 abbr -a -- git.clean git clean -fd --interactive
-abbr -a -- wip 'commit (git-wip-message --staged)'
 
 abbr -a -- gitedit git-edit
 abbr -a -- gitamendundo git-amend-undo
@@ -1274,3 +1273,4 @@ abbr -a -- gitdifffiles git-changed-files
 abbr -a -- gitmerge git.merge
 abbr -a -- gitrebase git.rebase
 abbr -a -- gitrestore git.restore
+abbr -a -- wip 'commit (git-wip-message --staged); git show HEAD'
