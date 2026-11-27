@@ -291,6 +291,7 @@ def test_origin_info_labels_user_files(tmp_path: Path) -> None:
     [
         (".local/share/uv/tools/demo/bin/demo", "uv", "uv"),
         (".cargo/bin/demo", "cargo", "cargo"),
+        (".local/share/cargo/bin/demo", "cargo", "cargo"),
         (".local/bin/demo", "user-install", "user install"),
     ],
 )

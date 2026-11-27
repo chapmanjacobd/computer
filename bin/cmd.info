@@ -499,7 +499,7 @@ def origin_info(
     if _within(real, home_real):
         if "/.local/share/uv/" in real:
             return Origin("uv", "uv")
-        if "/.cargo/bin/" in real:
+        if "/cargo/bin/" in real or "/.cargo/bin/" in real:
             return Origin("cargo", "cargo")
         if "/.local/bin/" in real:
             return Origin("user-install", "user install")
