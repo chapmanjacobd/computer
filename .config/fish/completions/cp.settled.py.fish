@@ -1,6 +1,6 @@
 complete -c cp.settled.py -f
-complete -c cp.settled.py -l src -r -a '(__fish_complete_directories)' -d 'Source folder to monitor'
-complete -c cp.settled.py -l dst -r -a '(__fish_complete_directories)' -d 'Destination folder'
+complete -c cp.settled.py -l src -r -f -a '(__fish_complete_directories)' -d 'Source folder to monitor'
+complete -c cp.settled.py -l dst -r -f -a '(__fish_complete_directories)' -d 'Destination folder'
 complete -c cp.settled.py -l mv -d 'Move instead of copy from source to destination'
 complete -c cp.settled.py -l debug -d 'Enable debug output'
 complete -c cp.settled.py -l quiet -d "Don't log to stdout"

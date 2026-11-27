@@ -2,5 +2,5 @@ complete -c files.goal -s S -l size -l sizes -r -d 'Constrain total size (fd syn
 complete -c files.goal -s d -l duration -r -d 'Constrain total duration (e.g. 2h)'
 complete -c files.goal -s s -l sort -x -a 'bitrate size duration name' -d 'Sort criterion (default: bitrate)'
 complete -c files.goal -s u -l reverse -d 'Reverse sort order'
-complete -c files.goal -n '__fish_is_nth_token 1' -a '(__fish_complete_directories)' -d 'Backing directory'
-complete -c files.goal -n '__fish_is_nth_token 2' -a '(__fish_complete_directories)' -d 'Staging directory'
+complete -c files.goal -n '__fish_is_nth_token 1' -f -a '(__fish_complete_directories)' -d 'Backing directory'
+complete -c files.goal -n '__fish_is_nth_token 2' -f -a '(__fish_complete_directories)' -d 'Staging directory'

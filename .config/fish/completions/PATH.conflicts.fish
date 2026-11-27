@@ -1,5 +1,5 @@
 complete -c PATH.conflicts -f
-complete -c PATH.conflicts -l path -r -d 'PATH-like string to inspect (default: $PATH)'
+complete -c PATH.conflicts -l path -x -d 'PATH-like string to inspect (default: $PATH)'
 complete -c PATH.conflicts -l timeout -x -d 'Seconds allowed per version probe (default: 5)'
 complete -c PATH.conflicts -l jobs -x -d 'Parallel version probes (default: 16)'
 complete -c PATH.conflicts -l tablefmt -x -a 'simple plain github grid fancy_grid pipe orgtbl psql rst html latex tsv' -d 'tabulate table format'

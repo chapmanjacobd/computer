@@ -1,5 +1,5 @@
 complete -c organize.folders.by.ext -s D -l depth -x -d 'Depth to descend (default: 0)'
-complete -c organize.folders.by.ext -l move -l destination -r -a '(__fish_complete_directories)' -d 'Directory to move files or folders into'
+complete -c organize.folders.by.ext -l move -l destination -r -f -a '(__fish_complete_directories)' -d 'Directory to move files or folders into'
 complete -c organize.folders.by.ext -o mD -l modify-depth -r -d 'Trim path parts from each source'
 complete -c organize.folders.by.ext -l relative -d 'Shortcut for --relative-to=/'
 complete -c organize.folders.by.ext -l relative-to -r -d 'Preserve directory hierarchy relative to this path'

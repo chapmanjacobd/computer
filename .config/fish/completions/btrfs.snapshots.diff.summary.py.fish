@@ -1,5 +1,5 @@
-complete -c btrfs.snapshots.diff.summary.py -s p -l parent -r -F -d 'Parent snapshot (must exist and be read-only)'
-complete -c btrfs.snapshots.diff.summary.py -s c -l child -r -F -d 'Child snapshot (created if missing)'
+complete -c btrfs.snapshots.diff.summary.py -s p -l parent -r -f -a "(__fish_complete_directories)" -d 'Parent snapshot (must exist and be read-only)'
+complete -c btrfs.snapshots.diff.summary.py -s c -l child -r -f -a "(__fish_complete_directories)" -d 'Child snapshot (created if missing)'
 complete -c btrfs.snapshots.diff.summary.py -s f -l file -r -F -d 'Diff file'
 complete -c btrfs.snapshots.diff.summary.py -s t -l filter -d 'Hide temporary files and earlier modifications'
 complete -c btrfs.snapshots.diff.summary.py -s a -l by_path -d 'Group commands by path'
