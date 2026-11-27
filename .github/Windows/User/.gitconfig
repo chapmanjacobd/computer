@@ -45,7 +45,6 @@
 [delta]
 	navigate = true
 [push]
-	default = current
 	autosetupremote = true
 	followtags = true
 [core]
