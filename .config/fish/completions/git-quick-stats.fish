@@ -1,0 +1,26 @@
+complete -c git-quick-stats -f
+
+complete -c git-quick-stats -s T -l detailed-git-stats -d 'Detailed list of git stats'
+complete -c git-quick-stats -s R -l git-stats-by-branch -d 'Detailed list of git stats by branch'
+complete -c git-quick-stats -s c -l changelogs -d 'See changelogs'
+complete -c git-quick-stats -s L -l changelogs-by-author -d 'See changelogs by author'
+complete -c git-quick-stats -s S -l my-daily-stats -d 'See your current daily stats'
+complete -c git-quick-stats -s V -l csv-output-by-branch -d 'Output daily stats by branch in CSV format'
+complete -c git-quick-stats -s j -l json-output -d 'Save git log as a JSON file'
+
+complete -c git-quick-stats -s b -l branch-tree -d 'Show an ASCII graph of branch history'
+complete -c git-quick-stats -s D -l branches-by-date -d 'Show branches by date'
+complete -c git-quick-stats -s C -l contributors -d 'List everyone who contributed'
+complete -c git-quick-stats -s a -l commits-per-author -d 'List commits per author'
+complete -c git-quick-stats -s d -l commits-per-day -d 'List commits per day'
+complete -c git-quick-stats -s m -l commits-by-month -d 'List commits by month'
+complete -c git-quick-stats -s Y -l commits-by-year -d 'List commits by year'
+complete -c git-quick-stats -s w -l commits-by-weekday -d 'List commits by weekday'
+complete -c git-quick-stats -s W -l commits-by-author-by-weekday -d 'List commits per weekday by author'
+complete -c git-quick-stats -s o -l commits-by-hour -d 'List commits by hour'
+complete -c git-quick-stats -s A -l commits-by-author-by-hour -d 'List commits per hour by author'
+complete -c git-quick-stats -s z -l commits-by-timezone -d 'List commits by timezone'
+complete -c git-quick-stats -s Z -l commits-by-author-by-timezone -d 'List commits per timezone by author'
+
+complete -c git-quick-stats -s r -l suggest-reviewers -d 'Suggest the best people to review code'
+complete -c git-quick-stats -s h -s '?' -l help -d 'Display help text'

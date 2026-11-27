@@ -1,0 +1,5 @@
+complete -c files.diff.similar.groupby -s i -l ignore-case -d 'Ignore upper-case'
+complete -c files.diff.similar.groupby -l stable -d 'Keep the first example per group (default)'
+complete -c files.diff.similar.groupby -l no-stable -d 'Replace the example with the most recent match'
+complete -c files.diff.similar.groupby -s m -l minimum-similarity -x -d 'Minimum similarity (0.0-1.0)'
+complete -c files.diff.similar.groupby -s M -l maximum-similarity -x -d 'Maximum similarity (0.0-1.0)'

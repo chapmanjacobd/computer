@@ -1,0 +1,6 @@
+complete -c buffer.to.coastline.py -n '__fish_is_nth_token 3' -f -d 'Buffer distance in meters (0 = clip only)'
+complete -c buffer.to.coastline.py -l target-pct -x -d 'Binary-search the max buffer under P% of US landmass'
+complete -c buffer.to.coastline.py -l simplify -x -d 'Simplify to TOL meters before buffering (default 50)'
+complete -c buffer.to.coastline.py -l format -x -a 'zip shp fgb gpkg' -d 'Output format'
+complete -c buffer.to.coastline.py -l out-dir -r -d 'Output folder (default: LAYER folder)'
+complete -c buffer.to.coastline.py -l us-land-km2 -x -d 'US landmass in km^2 for percentage column'

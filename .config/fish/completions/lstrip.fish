@@ -1,0 +1,1 @@
+complete -c lstrip -f

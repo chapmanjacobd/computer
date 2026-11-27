@@ -1,0 +1,5 @@
+complete -c savings.py -l simulations -x -d 'Number of Monte Carlo trials'
+complete -c savings.py -l seed -x -d 'Random seed'
+complete -c savings.py -l objective -x -a 'median mean p10 p25 min_tax emergency drawdown retirement_success shortfall warnings' -d 'Optimization objective'
+complete -c savings.py -l workers -x -d 'Parallel worker processes'
+complete -c savings.py -l top -x -d 'Number of priority orders to print'

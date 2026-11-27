@@ -1,0 +1,6 @@
+complete -c syncthing.send.py -l host -x -a '(__fish_print_hostnames)' -d 'Syncthing WebUI host'
+complete -c syncthing.send.py -l port -x -d 'Syncthing WebUI port'
+complete -c syncthing.send.py -l api-key -x -d 'Syncthing API key'
+complete -c syncthing.send.py -s I -l interval -x -d 'Seconds to wait between checks'
+complete -c syncthing.send.py -l timeout -x -a '24h 1h 30m' -d 'Max time to wait'
+complete -c syncthing.send.py -l help -s h -d 'Show help'

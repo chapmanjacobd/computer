@@ -1,0 +1,12 @@
+complete -c perf.tune -f
+complete -c perf.tune -s x -l execute -d 'Apply runtime changes'
+complete -c perf.tune -l permanent -d 'Preview persistent /etc file diffs; write them with -x'
+complete -c perf.tune -l aggressive -d 'Include power-costly or riskier tweaks'
+complete -c perf.tune -l profile -x -a 'latency balanced throughput' -d 'Tuning policy (default: latency)'
+complete -c perf.tune -l bench -d 'Run memory-copy and fsync microbenchmarks'
+complete -c perf.tune -l duration -x -d 'Counter and latency sampling window in seconds (default: 2.0)'
+complete -c perf.tune -l etc -r -a '(__fish_complete_directories)' -d 'Configuration root (default: /etc)'
+complete -c perf.tune -l json -d 'Emit machine-readable JSON'
+complete -c perf.tune -s q -l quiet -d 'Only show warnings, critical findings, and actions'
+complete -c perf.tune -s v -l verbose -d 'Log diagnostic detail'
+complete -c perf.tune -l version -d 'Show version'

@@ -1,0 +1,7 @@
+complete -c sqlite.fill.imdb -l table -x -d 'Table to enrich'
+complete -c sqlite.fill.imdb -l force -d 'Overwrite existing values'
+complete -c sqlite.fill.imdb -l refresh -d 'Re-download the IMDb dataset files'
+complete -c sqlite.fill.imdb -l rebuild-index -d 'Rebuild the local lookup index from cached files'
+complete -c sqlite.fill.imdb -l max-age -x -d 'Auto re-download datasets older than N days'
+complete -c sqlite.fill.imdb -l dry-run -d 'Report changes without writing'
+complete -c sqlite.fill.imdb -s v -l verbose -d 'Show unmatched rows'
