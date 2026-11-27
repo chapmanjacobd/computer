@@ -17,7 +17,6 @@ freezegun
 fsspec
 gallery-dl
 gcsfs
-gdal
 geopandas
 ghostscript
 git-filter-repo

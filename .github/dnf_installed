@@ -68,6 +68,7 @@ gamemode
 gcc-aarch64-linux-gnu
 gdal
 gdal-devel
+gdal-python-tools
 gdisk
 genisoimage
 gh
