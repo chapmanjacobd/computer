@@ -33,7 +33,7 @@
 ## Python Tooling
 
 - Use `uv` to manage Python environments and dependencies.
-- Use `uv run` to execute Python scripts and commands.
+- Use `uv run` to execute Python project scripts and commands.
 - Use `pytest` for testing your code.
 - Use the `hypothesis` library for property-based testing when you have complex input spaces or need to test edge cases.
 - Don't edit `pyproject.toml` directly. Instead, use `uv add` and `uv add --dev` to manage dependencies.
