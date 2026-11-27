@@ -1,134 +1,134 @@
 # This is Git's per-user configuration file.
 [user]
-    name = Jacob Chapman
-    email = 7908073+chapmanjacobd@users.noreply.github.com
+	name = Jacob Chapman
+	email = 7908073+chapmanjacobd@users.noreply.github.com
 	signingkey = /home/xk/.ssh/id_ed25519.pub
 [push]
-    default = upstream
-    autosetupremote = true
-    followTags = true
+	default = upstream
+	autosetupremote = true
+	followtags = true
     #useForceIfIncludes = true
 [core]
-    pager = delta --syntax-theme GitHub --max-line-length 1024  # --keep-plus-minus-markers
-    excludesfile = /home/xk/.config/git/ignore
-    preloadindex = true
-    fscache = true
-    eol = lf
-    autocrlf = false
-    logallrefupdates = true
-    attributesfile = /home/xk/.config/git/attributes
-	hooksPath = /dev/null
-	commitGraph = true
-	multiPackIndex = true
+	pager = delta --syntax-theme GitHub --max-line-length 1024  # --keep-plus-minus-markers
+	excludesfile = /home/xk/.config/git/ignore
+	preloadindex = true
+	fscache = true
+	eol = lf
+	autocrlf = false
+	logallrefupdates = true
+	attributesfile = /home/xk/.config/git/attributes
+	hookspath = /dev/null
+	commitgraph = true
+	multipackindex = true
 [transfer]
-    fsckobjects = true
+	fsckobjects = true
 [fetch]
-    fsckobjects = true
-	writeCommitGraph = true
+	fsckobjects = true
+	writecommitgraph = true
 [receive]
-    fsckObjects = true
+	fsckobjects = true
 [init]
-    defaultBranch = main
+	defaultbranch = main
 [pull]
-    rebase = merges
+	rebase = merges
 [rebase]
-    autoStash = true
-    autosquash = true
-    missingCommitsCheck = warn
+	autostash = true
+	autosquash = true
+	missingcommitscheck = warn
 [rerere]
 	enabled = true
-    autoupdate = true
+	autoupdate = true
 [filter "lfs"]
-    clean = git-lfs clean -- %f
-    smudge = git-lfs smudge -- %f
-    process = git-lfs filter-process
-    required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
 [credential]
-    helper = cache
+	helper = cache
 [help]
-    autocorrect = prompt
+	autocorrect = prompt
 [log]
-    date = relative-local
+	date = relative-local
 [advice]
-    skippedCherryPicks = false
+	skippedcherrypicks = false
 [branch]
-    sort = -committerdate
+	sort = -committerdate
 [tag]
-    sort = -taggerdate
+	sort = -taggerdate
 [commit]
-    template = ~/.config/git/message
-    verbose = true
-	gpgSign = true
+	template = ~/.config/git/message
+	verbose = true
+	gpgsign = true
 [receive "fsck"]
-    zeroPaddedFilemode = warn
+	zeropaddedfilemode = warn
 [fetch "fsck"]
-    zeroPaddedFilemode = ignore
+	zeropaddedfilemode = ignore
 [gpg]
 	format = ssh
 [interactive]
-    diffFilter = delta --syntax-theme GitHub --color-only --features=interactive
+	difffilter = delta --syntax-theme GitHub --color-only --features=interactive
 [diff]
-    algorithm = histogram
-    indentHeuristic = true
+	algorithm = histogram
+	indentheuristic = true
 	tool = kdiff3
-    colormoved = zebra
-    context = 5
-    mnemonicPrefix = true
+	colormoved = zebra
+	context = 5
+	mnemonicprefix = true
 	guitool = kdiff3
-	colorMovedWS = ignore-all-space
+	colormovedws = ignore-all-space
 [delta]
-    navigate = true
+	navigate = true
 [diff "sqlite3"]
-    binary = true
-    textconv = "echo .dump | sqlite3"
+	binary = true
+	textconv = "echo .dump | sqlite3"
 [difftool "vscode"]
-    cmd = code --wait --diff $LOCAL $REMOTE
+	cmd = code --wait --diff $LOCAL $REMOTE
 [merge]
-    autoStash = true
+	autostash = true
 	conflictstyle = zdiff3
-    summary = true
-    diffstat = true
-    log = 50
+	summary = true
+	diffstat = true
+	log = 50
 	tool = kdiff3
 	guitool = kdiff3
 [merge "mergiraf"]
 	name = mergiraf
 	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
 [color]
-    ui = auto
+	ui = auto
 [color "diff-highlight"]
-    oldNormal = red bold
-    oldHighlight = red bold 52
-    newNormal = green bold
-    newHighlight = green bold 22
+	oldnormal = red bold
+	oldhighlight = red bold 52
+	newnormal = green bold
+	newhighlight = green bold 22
 [color "diff"]
-    meta = yellow
-    commit = yellow bold
-    old = red bold
-    new = green bold
-    whitespace = red reverse
-[color.grep]
-    match = red normal bold
-    filename = magenta
-    lineNumber = green
-    column = green
-    separator = cyan
+	meta = yellow
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color "grep"]
+	match = red normal bold
+	filename = magenta
+	linenumber = green
+	column = green
+	separator = cyan
 [difftool]
 	prompt = false
 [difftool "kdiff3"]
-	trustExitCode = false
+	trustexitcode = false
 [mergetool "kdiff3"]
-	trustExitCode = false
+	trustexitcode = false
 [pack]
-	writeBitmapLookup = true
+	writebitmaplookup = true
 [maintenance]
 	repo = /home/xk
 	repo = /home/xk/github/xk/mc
 [maintenance "prefetch"]
 	enabled = false
 [credential "https://github.com"]
-	helper = 
+	helper =
 	helper = !/usr/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
+	helper =
 	helper = !/usr/bin/gh auth git-credential
