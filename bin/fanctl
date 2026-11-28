@@ -1,0 +1,1022 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
+
+"""Inspect and override hwmon fan speeds from the terminal.
+
+fanctl is a small, dependency-free companion to lm-sensors.  It is meant for
+quick manual overrides ("make the fans quieter right now"), not for fan curves;
+use ``pwmconfig``/``fancontrol`` or CoolerControl if you want temperature-driven
+curves.
+
+Examples
+--------
+    fanctl                      # interactive TUI
+    fanctl status               # one-shot table, no root needed
+    fanctl status --json        # machine-readable
+    fanctl set nct6798:2 50%    # 50% duty, manual mode
+    fanctl set 2 128 --raw      # raw 0..255 duty
+    fanctl auto nct6798:2       # hand control back to the chip
+    fanctl max nct6798:2        # pwm_enable=0, fans at full speed
+    fanctl save                 # snapshot manual channels + boot service
+    fanctl restore              # re-apply the snapshot
+    fanctl unsave               # remove snapshot and disable boot service
+
+Targets are ``CHIP:PWM`` (for example ``nct6798:2``), ``CHIP/pwm2``,
+``hwmon8:2``, ``pwm2``, or just ``2``.  A bare number is only accepted when it
+is unambiguous across all hwmon chips.
+
+Percentages are rounded to the nearest raw PWM value.  Note the kernel
+convention: ``pwm_enable=0`` means full speed, while ``pwm=0`` means the lowest
+duty (on many boards the fan stops).
+
+Writes need root, so fanctl re-executes itself through sudo for commands that
+modify sysfs.
+"""
+
+from __future__ import annotations
+
+import argparse
+import curses
+import json
+import locale
+import logging
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+
+HWMON_ROOT = Path(os.environ.get("FANCTL_HWMON_ROOT", "/sys/class/hwmon"))
+STATE_DIR = Path(os.environ.get("FANCTL_STATE_DIR", "/etc/fanctl"))
+SNAPSHOT_PATH = STATE_DIR / "boot.json"
+UNIT_PATH = Path("/etc/systemd/system/fanctl.service")
+SERVICE_NAME = "fanctl.service"
+
+MANUAL = 1
+FULL_SPEED = 0
+
+MODE_LABELS = {
+    0: "max",
+    1: "manual",
+    2: "thermal",
+    3: "speed",
+    4: "smart III",
+    5: "smart IV",
+}
+
+ROOT_COMMANDS = {"tui", "set", "auto", "max", "save", "restore", "unsave"}
+
+log = logging.getLogger("fanctl")
+
+
+@dataclass
+class Channel:
+    """One pwm channel of one hwmon device."""
+
+    chip: str
+    hwmon: Path
+    pwm: int
+    value: int | None
+    enable: int | None
+    fan_rpm: int | None
+    temp_index: int | None
+    temp_label: str | None
+    temp_value: int | None
+
+    @property
+    def key(self) -> str:
+        """Human-readable unique key, for example ``nct6798:2``."""
+        return f"{self.chip}:{self.pwm}"
+
+    @property
+    def pwm_path(self) -> Path:
+        return self.hwmon / f"pwm{self.pwm}"
+
+    @property
+    def enable_path(self) -> Path:
+        return self.hwmon / f"pwm{self.pwm}_enable"
+
+    @property
+    def duty_percent(self) -> int | None:
+        """Duty cycle as a rounded percentage, if it can be read."""
+        return duty_percent(self.value)
+
+
+def read_int(path: Path) -> int | None:
+    """Read a sysfs integer, returning None when absent or unreadable."""
+    try:
+        return int(path.read_text().strip())
+    except (OSError, ValueError):
+        return None
+
+
+def read_str(path: Path) -> str | None:
+    """Read a sysfs string, returning None when absent or unreadable."""
+    try:
+        return path.read_text().strip()
+    except OSError:
+        return None
+
+
+def write_attr(path: Path, value: int | str) -> None:
+    """Write a value to a sysfs attribute.
+
+    Parameters
+    ----------
+    path : Path
+        Attribute to write.
+    value : int | str
+        Value to store.
+
+    Raises
+    ------
+    OSError
+        If the attribute cannot be written (permissions, EBUSY, EINVAL).
+    """
+    log.debug("write %s=%s", path, value)
+    path.write_text(str(value))
+
+
+def percent_to_pwm(percent: float) -> int:
+    """Convert a 0..100 duty percentage to the kernel's 0..255 range.
+
+    Examples
+    --------
+    >>> percent_to_pwm(0)
+    0
+    >>> percent_to_pwm(50)
+    128
+    >>> percent_to_pwm(100)
+    255
+    """
+    if not 0 <= percent <= 100:
+        raise ValueError(f"percentage must be 0..100: {percent!r}")
+    return int(float(percent) * 255 / 100 + 0.5)
+
+
+def duty_percent(value: int | None) -> int | None:
+    """Convert a 0..255 duty value to a rounded percentage.
+
+    Examples
+    --------
+    >>> duty_percent(0)
+    0
+    >>> duty_percent(128)
+    50
+    >>> duty_percent(255)
+    100
+    >>> duty_percent(None) is None
+    True
+    """
+    if value is None:
+        return None
+    return int(value * 100 / 255 + 0.5)
+
+
+def parse_duty(text: str, raw: bool = False) -> int:
+    """Parse a duty argument into 0..255.
+
+    A trailing ``%`` always means percentage.  Without ``--raw`` a bare number
+    is also a percentage; with ``--raw`` it is the sysfs value.
+
+    Examples
+    --------
+    >>> parse_duty("50%")
+    128
+    >>> parse_duty("50")
+    128
+    >>> parse_duty("128", raw=True)
+    128
+    """
+    text = text.strip()
+    try:
+        if text.endswith("%"):
+            return percent_to_pwm(int(text[:-1]))
+        number = int(text)
+    except ValueError as error:
+        raise ValueError(f"invalid duty value: {text!r}") from error
+    if raw:
+        if 0 <= number <= 255:
+            return number
+        raise ValueError(f"raw duty must be 0..255: {text!r}")
+    return percent_to_pwm(number)
+
+
+def mode_label(enable: int | None) -> str:
+    """Return a short label for a pwm_enable value.
+
+    Examples
+    --------
+    >>> mode_label(1)
+    'manual'
+    >>> mode_label(5)
+    'smart IV'
+    >>> mode_label(9)
+    'mode 9'
+    """
+    if enable is None:
+        return "-"
+    return MODE_LABELS.get(enable, f"mode {enable}")
+
+
+def _natural_key(name: str) -> list[int | str]:
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+def discover(root: Path = HWMON_ROOT) -> list[Channel]:
+    """Discover every hwmon pwm channel below *root*.
+
+    Examples
+    --------
+    >>> channels = discover()  # doctest: +SKIP
+    >>> channels[0].key  # doctest: +SKIP
+    'nvme:1'
+    """
+    channels: list[Channel] = []
+    try:
+        devices = sorted(root.glob("hwmon*"), key=lambda path: _natural_key(path.name))
+    except OSError:
+        return channels
+
+    for hwmon in devices:
+        chip = read_str(hwmon / "name") or hwmon.name
+        try:
+            pwm_files = list(hwmon.glob("pwm*"))
+        except OSError:
+            continue
+        for pwm_path in pwm_files:
+            match = re.fullmatch(r"pwm(\d+)", pwm_path.name)
+            if match is None:
+                continue
+            pwm = int(match.group(1))
+            temp_index = read_int(hwmon / f"pwm{pwm}_temp_sel")
+            temp_label = None
+            temp_value = None
+            if temp_index is not None:
+                temp_label = (
+                    read_str(hwmon / f"temp{temp_index}_label") or f"temp{temp_index}"
+                )
+                temp_value = read_int(hwmon / f"temp{temp_index}_input")
+            channels.append(
+                Channel(
+                    chip=chip,
+                    hwmon=hwmon,
+                    pwm=pwm,
+                    value=read_int(pwm_path),
+                    enable=read_int(hwmon / f"pwm{pwm}_enable"),
+                    fan_rpm=read_int(hwmon / f"fan{pwm}_input"),
+                    temp_index=temp_index,
+                    temp_label=temp_label,
+                    temp_value=temp_value,
+                )
+            )
+    channels.sort(
+        key=lambda channel: (
+            channel.chip.lower(),
+            channel.pwm,
+            _natural_key(channel.hwmon.name),
+        )
+    )
+    log.debug("discovered %d pwm channel(s) under %s", len(channels), root)
+    return channels
+
+
+def resolve_target(target: str, channels: list[Channel]) -> Channel:
+    """Resolve a CLI target such as ``nct6798:2`` or ``2`` to one channel.
+
+    Raises
+    ------
+    ValueError
+        If the target is malformed, missing, or ambiguous.
+    """
+    spec = target.strip()
+    if not spec:
+        raise ValueError("empty target")
+
+    chip_part: str | None = None
+    index_part = spec
+    if ":" in spec or "/" in spec:
+        head, _, tail = spec.replace("/", ":").rpartition(":")
+        if head and re.fullmatch(r"(?:pwm)?\d+", tail):
+            chip_part, index_part = head, tail
+    index_part = index_part.removeprefix("pwm")
+    if not re.fullmatch(r"\d+", index_part):
+        raise ValueError(f"invalid target: {target!r} (use CHIP:PWM or PWM)")
+    pwm = int(index_part)
+
+    candidates = [channel for channel in channels if channel.pwm == pwm]
+    if chip_part is not None:
+        wanted = chip_part.lower()
+        candidates = [
+            channel
+            for channel in candidates
+            if channel.chip.lower() == wanted or channel.hwmon.name.lower() == wanted
+        ]
+
+    if not candidates:
+        known = ", ".join(channel.key for channel in channels) or "none"
+        raise ValueError(f"no channel matches {target!r}; available: {known}")
+    if len(candidates) > 1:
+        known = ", ".join(
+            f"{channel.key} ({channel.hwmon.name})" for channel in candidates
+        )
+        raise ValueError(f"ambiguous target {target!r}; use CHIP:PWM: {known}")
+    return candidates[0]
+
+
+def auto_mode_for(channel: Channel) -> int:
+    """Pick the most capable automatic mode available for *channel*.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> channel = Channel("x", Path("/nonexistent"), 1, 0, 1, 0, None, None, None)
+    >>> auto_mode_for(channel)
+    2
+    """
+    if (channel.hwmon / f"pwm{channel.pwm}_auto_point1_pwm").exists():
+        return 5
+    return 2
+
+
+def set_manual(channel: Channel, value: int) -> None:
+    """Switch *channel* to manual mode and set its duty to *value* (0..255).
+
+    The mode is written first because the chip may reject pwm writes while an
+    automatic mode owns the output.
+    """
+    if not 0 <= value <= 255:
+        raise ValueError(f"duty must be 0..255, got {value}")
+    if channel.enable_path.exists():
+        write_attr(channel.enable_path, MANUAL)
+    write_attr(channel.pwm_path, value)
+    channel.enable = MANUAL
+    channel.value = value
+
+
+def set_auto(channel: Channel) -> int:
+    """Return *channel* to an automatic mode and report which mode was used."""
+    errors: list[str] = []
+    for mode in dict.fromkeys((auto_mode_for(channel), 5, 2)):
+        try:
+            write_attr(channel.enable_path, mode)
+        except OSError as error:
+            errors.append(f"mode {mode}: {error}")
+            continue
+        channel.enable = mode
+        return mode
+    raise OSError(
+        f"could not enable automatic control for {channel.key}: {'; '.join(errors)}"
+    )
+
+
+def set_max(channel: Channel) -> None:
+    """Put *channel* into pwm_enable=0 (full speed)."""
+    if channel.enable_path.exists():
+        write_attr(channel.enable_path, FULL_SPEED)
+        channel.enable = FULL_SPEED
+    else:
+        write_attr(channel.pwm_path, 255)
+        channel.value = 255
+
+
+def read_snapshot(path: Path = SNAPSHOT_PATH) -> list[dict[str, int | str]]:
+    """Read the boot snapshot, returning an empty list if absent or corrupt."""
+    try:
+        raw = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(raw, list):
+        return []
+    entries: list[dict[str, int | str]] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        chip = item.get("chip")
+        pwm = item.get("pwm")
+        value = item.get("value")
+        enable = item.get("enable", MANUAL)
+        if (
+            isinstance(chip, str)
+            and isinstance(pwm, int)
+            and isinstance(value, int)
+            and isinstance(enable, int)
+        ):
+            entries.append({"chip": chip, "pwm": pwm, "enable": enable, "value": value})
+    return entries
+
+
+def write_snapshot(path: Path, entries: list[dict[str, int | str]]) -> None:
+    """Atomically write the boot snapshot."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(entries, indent=2) + "\n")
+    os.replace(temporary, path)
+
+
+def snapshot_channels(channels: list[Channel]) -> list[dict[str, int | str]]:
+    """Snapshot only channels currently under manual control."""
+    entries: list[dict[str, int | str]] = []
+    for channel in channels:
+        if channel.enable == MANUAL and channel.value is not None:
+            entries.append(
+                {
+                    "chip": channel.chip,
+                    "pwm": channel.pwm,
+                    "enable": MANUAL,
+                    "value": channel.value,
+                }
+            )
+    return entries
+
+
+def upsert_snapshot(
+    entries: list[dict[str, int | str]], entry: dict[str, int | str]
+) -> list[dict[str, int | str]]:
+    """Replace the matching chip+pwm entry, or append it."""
+    updated: list[dict[str, int | str]] = []
+    replaced = False
+    for existing in entries:
+        if existing["chip"] == entry["chip"] and existing["pwm"] == entry["pwm"]:
+            updated.append(entry)
+            replaced = True
+        else:
+            updated.append(existing)
+    if not replaced:
+        updated.append(entry)
+    return updated
+
+
+def remove_from_snapshot(
+    entries: list[dict[str, int | str]], channel: Channel
+) -> list[dict[str, int | str]]:
+    """Drop *channel* from a boot snapshot."""
+    return [
+        entry
+        for entry in entries
+        if not (entry["chip"] == channel.chip and entry["pwm"] == channel.pwm)
+    ]
+
+
+def channel_from_entry(
+    entry: dict[str, int | str], channels: list[Channel]
+) -> Channel | None:
+    """Find the current Channel described by a snapshot entry."""
+    for channel in channels:
+        if channel.chip == entry["chip"] and channel.pwm == entry["pwm"]:
+            return channel
+    return None
+
+
+def apply_entry(channel: Channel, entry: dict[str, int | str]) -> None:
+    """Apply one snapshot entry to a live channel."""
+    if entry["enable"] == FULL_SPEED:
+        set_max(channel)
+    else:
+        set_manual(channel, int(entry["value"]))
+
+
+def service_unit(executable: str) -> str:
+    """Return the systemd unit that restores the snapshot at boot."""
+    return f"""[Unit]
+Description=Restore fanctl fan speed overrides
+After=systemd-modules-load.service
+Wants=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart={executable} restore
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+
+def run_systemctl(*args: str) -> bool:
+    """Run systemctl, returning False when it is unavailable or fails."""
+    systemctl = shutil.which("systemctl")
+    if systemctl is None:
+        return False
+    try:
+        subprocess.run([systemctl, *args], check=True, capture_output=True, text=True)
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return True
+
+
+def install_boot(entries: list[dict[str, int | str]]) -> None:
+    """Write the snapshot and enable the boot restore service."""
+    write_snapshot(SNAPSHOT_PATH, entries)
+    executable = os.path.realpath(__file__)
+    UNIT_PATH.write_text(service_unit(executable))
+    ok = run_systemctl("daemon-reload")
+    ok = run_systemctl("enable", "--now", SERVICE_NAME) and ok
+    if not ok:
+        print(
+            f"warning: wrote {SNAPSHOT_PATH} and {UNIT_PATH}, "
+            f"but could not enable {SERVICE_NAME}; run 'systemctl daemon-reload && "
+            f"systemctl enable --now {SERVICE_NAME}' manually",
+            file=sys.stderr,
+        )
+
+
+def remove_boot() -> None:
+    """Delete the snapshot and disable the boot restore service."""
+    run_systemctl("disable", "--now", SERVICE_NAME)
+    try:
+        UNIT_PATH.unlink()
+    except FileNotFoundError:
+        pass
+    run_systemctl("daemon-reload")
+    try:
+        SNAPSHOT_PATH.unlink()
+    except FileNotFoundError:
+        pass
+
+
+def restore_snapshot(entries: list[dict[str, int | str]], timeout: float = 15.0) -> int:
+    """Apply *entries*, waiting briefly for hwmon devices to appear.
+
+    Returns the number of channels that could not be applied.
+    """
+    if not entries:
+        print("fanctl: no saved fan settings", file=sys.stderr)
+        return 0
+
+    deadline = time.monotonic() + timeout
+    channels: list[Channel] = []
+    while True:
+        channels = discover()
+        pending = [
+            entry for entry in entries if channel_from_entry(entry, channels) is None
+        ]
+        if not pending or time.monotonic() >= deadline:
+            break
+        time.sleep(0.5)
+
+    failures = 0
+    applied = 0
+    for entry in entries:
+        channel = channel_from_entry(entry, channels)
+        if channel is None:
+            print(f"fanctl: {entry['chip']}:{entry['pwm']} not found", file=sys.stderr)
+            failures += 1
+            continue
+        try:
+            apply_entry(channel, entry)
+            applied += 1
+        except (OSError, ValueError) as error:
+            print(f"fanctl: {channel.key}: {error}", file=sys.stderr)
+            failures += 1
+    print(f"fanctl: restored {applied} channel(s)")
+    return failures
+
+
+def ensure_root(argv: list[str]) -> None:
+    """Re-execute through sudo when a command needs to write sysfs."""
+    if os.geteuid() == 0:
+        return
+    if os.environ.get("FANCTL_ROOT_REEXEC") == "1":
+        sys.exit("fanctl: still not root after re-exec; cannot write fan controls")
+    sudo = shutil.which("sudo") or shutil.which("doas")
+    if sudo is None:
+        sys.exit("fanctl: this command needs root; run it with sudo")
+    environment = dict(os.environ, FANCTL_ROOT_REEXEC="1")
+    sys.stderr.write("fanctl: requesting root through sudo\n")
+    sys.stderr.flush()
+    os.execvpe(
+        sudo,
+        [sudo, "-E", sys.executable, os.path.realpath(__file__), *argv],
+        environment,
+    )
+
+
+def format_temp(channel: Channel) -> str:
+    """Format the channel's controlling temperature for the status table."""
+    if channel.temp_value is None:
+        return "-"
+    label = (channel.temp_label or "temp")[:12]
+    return f"{label} {channel.temp_value / 1000:.1f}\u00b0C"
+
+
+def format_status(channels: list[Channel]) -> str:
+    """Render the non-interactive status table."""
+    header = f"{'CHIP':<12} {'PWM':>3}  {'MODE':<9} {'DUTY':>4} {'RPM':>5}  TEMP"
+    lines = [header, "-" * len(header)]
+    for channel in channels:
+        duty = channel.duty_percent
+        duty_text = "?" if duty is None else f"{duty}%"
+        rpm_text = "-" if channel.fan_rpm is None else str(channel.fan_rpm)
+        lines.append(
+            f"{channel.chip:<12.12} {channel.pwm:>3}  {mode_label(channel.enable):<9.9} "
+            f"{duty_text:>4} {rpm_text:>5}  {format_temp(channel)}"
+        )
+    if not channels:
+        lines.append("no pwm channels found")
+    return "\n".join(lines)
+
+
+def safe_addstr(
+    window: curses.window, row: int, column: int, text: str, attr: int = 0
+) -> None:
+    """addnstr that clips to the window instead of raising."""
+    height, width = window.getmaxyx()
+    if row < 0 or row >= height or column >= width:
+        return
+    try:
+        window.addnstr(row, column, text, max(0, width - column - 1), attr)
+    except curses.error:
+        pass
+
+
+def duty_bar(value: int | None, width: int = 16) -> str:
+    """Draw a textual duty bar."""
+    if value is None:
+        return "-" * width
+    filled = round(value * width / 255)
+    return "#" * filled + "-" * (width - filled)
+
+
+def prompt_duty(window: curses.window) -> str:
+    """Read a duty string from the footer."""
+    height, width = window.getmaxyx()
+    row = height - 2
+    label = " duty (0-100%, Enter to cancel): "
+    safe_addstr(window, row, 0, " " * (width - 1))
+    safe_addstr(window, row, 0, label, curses.A_BOLD)
+    window.timeout(-1)
+    try:
+        curses.curs_set(1)
+    except curses.error:
+        pass
+    try:
+        raw = window.getstr(row, min(len(label), width - 2), 8)
+    except curses.error:
+        raw = b""
+    finally:
+        try:
+            curses.curs_set(0)
+        except curses.error:
+            pass
+        window.timeout(500)
+    return raw.decode(errors="replace").strip()
+
+
+def tui_loop(window: curses.window) -> None:
+    """Interactive curses UI."""
+    try:
+        locale.setlocale(locale.LC_ALL, "")
+    except locale.Error:
+        pass
+    try:
+        curses.curs_set(0)
+    except curses.error:
+        pass
+    window.timeout(500)
+
+    use_color = curses.has_colors()
+    if use_color:
+        curses.start_color()
+        try:
+            curses.use_default_colors()
+            background = -1
+        except curses.error:
+            background = curses.COLOR_BLACK
+        curses.init_pair(1, curses.COLOR_CYAN, background)
+        curses.init_pair(2, curses.COLOR_YELLOW, background)
+        curses.init_pair(3, curses.COLOR_GREEN, background)
+        curses.init_pair(4, curses.COLOR_RED, background)
+        curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_CYAN)
+
+    cursor = 0
+    offset = 0
+    message = ""
+    channels: list[Channel] = []
+
+    while True:
+        channels = discover()
+        if channels:
+            cursor = min(cursor, len(channels) - 1)
+        else:
+            cursor = 0
+
+        height, width = window.getmaxyx()
+        visible_rows = max(1, height - 5)
+        if cursor < offset:
+            offset = cursor
+        elif cursor >= offset + visible_rows:
+            offset = cursor - visible_rows + 1
+        offset = max(0, min(offset, max(0, len(channels) - visible_rows)))
+
+        window.erase()
+        title = "fanctl - hwmon fan control"
+        if os.geteuid() != 0:
+            title += " (read-only: run with sudo to change)"
+        safe_addstr(
+            window,
+            0,
+            0,
+            title,
+            curses.A_BOLD | (curses.color_pair(1) if use_color else 0),
+        )
+
+        table_header = (
+            f"  {'CHIP':<12} {'PWM':>3}  {'MODE':<9} {'DUTY':>4}  "
+            f"{'BAR':<16} {'RPM':>5}  TEMP"
+        )
+        safe_addstr(window, 1, 0, table_header, curses.A_UNDERLINE)
+
+        for screen_row, channel in enumerate(
+            channels[offset : offset + visible_rows], start=2
+        ):
+            selected = offset + screen_row - 2 == cursor
+            marker = ">" if selected else " "
+            duty = channel.duty_percent
+            duty_text = "?" if duty is None else f"{duty}%"
+            rpm_text = "-" if channel.fan_rpm is None else str(channel.fan_rpm)
+            row = (
+                f"{marker} {channel.chip:<12.12} {channel.pwm:>3}  "
+                f"{mode_label(channel.enable):<9.9} {duty_text:>4}  "
+                f"{duty_bar(channel.value)} {rpm_text:>5}  {format_temp(channel)}"
+            )
+            attr = 0
+            if use_color:
+                if channel.enable == MANUAL:
+                    attr = curses.color_pair(2)
+                elif channel.enable == FULL_SPEED:
+                    attr = curses.color_pair(4)
+                elif channel.enable is not None:
+                    attr = curses.color_pair(3)
+            if selected:
+                attr |= curses.A_REVERSE | curses.A_BOLD
+            safe_addstr(window, screen_row, 0, row, attr)
+
+        if not channels:
+            safe_addstr(window, 2, 0, "no pwm channels found", curses.A_BOLD)
+
+        footer_row = height - 1
+        help_text = (
+            "up/down select  left/right 5%  [/] 1%  Enter set  "
+            "m manual  a auto  x max  s boot  q quit"
+        )
+        safe_addstr(window, height - 2, 0, " " * (width - 1))
+        if message:
+            safe_addstr(window, height - 2, 0, message, curses.A_BOLD)
+        safe_addstr(window, footer_row, 0, help_text[: width - 1], curses.A_DIM)
+        window.refresh()
+
+        key = window.getch()
+        if key == -1:
+            continue
+        if key in (ord("q"), 27):
+            return
+        if not channels:
+            continue
+        channel = channels[cursor]
+
+        try:
+            if key in (curses.KEY_UP, ord("k")):
+                cursor = max(0, cursor - 1)
+            elif key in (curses.KEY_DOWN, ord("j")):
+                cursor = min(len(channels) - 1, cursor + 1)
+            elif key in (curses.KEY_LEFT, ord("h"), ord("-")):
+                new_value = max(0, (channel.value or 0) - 13)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key in (curses.KEY_RIGHT, ord("l"), ord("+")):
+                new_value = min(255, (channel.value or 0) + 13)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key == ord("["):
+                new_value = max(0, (channel.value or 0) - 3)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key == ord("]"):
+                new_value = min(255, (channel.value or 0) + 3)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key in (curses.KEY_PPAGE,):
+                new_value = min(255, (channel.value or 0) + 26)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key in (curses.KEY_NPAGE,):
+                new_value = max(0, (channel.value or 0) - 26)
+                set_manual(channel, new_value)
+                message = f"{channel.key}: {duty_percent(new_value)}%"
+            elif key == curses.KEY_HOME:
+                set_manual(channel, 0)
+                message = f"{channel.key}: 0%"
+            elif key == curses.KEY_END:
+                set_manual(channel, 255)
+                message = f"{channel.key}: 100%"
+            elif key in (ord("m"),):
+                set_manual(channel, channel.value or 0)
+                message = f"{channel.key}: manual at {channel.duty_percent}%"
+            elif key == ord("a"):
+                mode = set_auto(channel)
+                message = f"{channel.key}: {mode_label(mode)}"
+            elif key == ord("x"):
+                set_max(channel)
+                message = f"{channel.key}: full speed (pwm_enable=0)"
+            elif key == ord("s"):
+                entries = snapshot_channels(discover())
+                if entries:
+                    install_boot(entries)
+                    message = f"saved {len(entries)} manual channel(s) for boot"
+                else:
+                    message = "nothing to save: no channels are in manual mode"
+            elif key in (curses.KEY_ENTER, 10, 13, ord("v")):
+                text = prompt_duty(window)
+                if text:
+                    value = parse_duty(text)
+                    set_manual(channel, value)
+                    message = f"{channel.key}: {duty_percent(value)}%"
+            elif key == ord("r"):
+                message = "reloaded"
+        except (OSError, ValueError) as error:
+            message = f"error: {error}"
+
+
+def tui() -> None:
+    """Run the interactive TUI."""
+    if not sys.stdin.isatty() or not sys.stdout.isatty():
+        sys.exit("fanctl: tui needs a terminal; use 'fanctl status' instead")
+    curses.wrapper(tui_loop)
+
+
+def watch(interval: float) -> None:
+    """Print the status table repeatedly until interrupted."""
+    try:
+        while True:
+            sys.stdout.write("\x1b[H\x1b[2J")
+            sys.stdout.write(format_status(discover()) + "\n")
+            sys.stdout.write(f"\nrefresh {interval:g}s - Ctrl-C to quit\n")
+            sys.stdout.flush()
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        pass
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="fanctl",
+        description="inspect and override hwmon fan speeds",
+        epilog=(
+            "pwm_enable=0 means full speed; pwm=0 means lowest duty and may stop "
+            "the fan. Writes need root and are applied through sudo."
+        ),
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="log discovery and sysfs writes"
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    status = subparsers.add_parser("status", help="show pwm channels")
+    status.add_argument("--json", action="store_true", help="emit JSON")
+
+    subparsers.add_parser("tui", help="interactive fan control (default)")
+
+    set_parser = subparsers.add_parser("set", help="set a manual duty")
+    set_parser.add_argument("target", help="CHIP:PWM, pwmN, or N")
+    set_parser.add_argument("value", help="0-100%% (or raw 0-255 with --raw)")
+    set_parser.add_argument(
+        "--raw", action="store_true", help="value is a raw sysfs 0..255"
+    )
+    set_parser.add_argument("--boot", action="store_true", help="also persist at boot")
+
+    auto = subparsers.add_parser("auto", help="return channels to automatic control")
+    auto.add_argument("targets", nargs="+", help="CHIP:PWM, pwmN, or N")
+    auto.add_argument("--boot", action="store_true", help="remove from boot snapshot")
+
+    max_parser = subparsers.add_parser("max", help="pwm_enable=0 (full speed)")
+    max_parser.add_argument("targets", nargs="+", help="CHIP:PWM, pwmN, or N")
+
+    subparsers.add_parser(
+        "save", help="persist manual channels and enable boot restore"
+    )
+    subparsers.add_parser("restore", help="apply the saved boot snapshot now")
+    subparsers.add_parser("unsave", help="remove the boot snapshot and service")
+
+    watch_parser = subparsers.add_parser("watch", help="refresh the status table")
+    watch_parser.add_argument(
+        "--interval", type=float, default=1.0, help="seconds (default 1)"
+    )
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.WARNING,
+        format="fanctl: %(levelname)s: %(message)s",
+    )
+    command = args.command or "tui"
+    if command == "tui" and not (sys.stdin.isatty() and sys.stdout.isatty()):
+        print(
+            "fanctl: tui needs a terminal; use 'fanctl status' instead", file=sys.stderr
+        )
+        return 2
+    if command in ROOT_COMMANDS:
+        ensure_root(argv or ["tui"])
+
+    try:
+        if command == "tui":
+            tui()
+        elif command == "status":
+            channels = discover()
+            if args.json:
+                print(
+                    json.dumps(
+                        [
+                            {
+                                "key": channel.key,
+                                "hwmon": channel.hwmon.name,
+                                "chip": channel.chip,
+                                "pwm": channel.pwm,
+                                "mode": mode_label(channel.enable),
+                                "enable": channel.enable,
+                                "value": channel.value,
+                                "duty_percent": channel.duty_percent,
+                                "fan_rpm": channel.fan_rpm,
+                                "temp_label": channel.temp_label,
+                                "temp_millidegrees": channel.temp_value,
+                            }
+                            for channel in channels
+                        ],
+                        indent=2,
+                    )
+                )
+            else:
+                print(format_status(channels))
+        elif command == "set":
+            channel = resolve_target(args.target, discover())
+            value = parse_duty(args.value, raw=args.raw)
+            set_manual(channel, value)
+            print(f"{channel.key}: manual at {duty_percent(value)}% (pwm={value})")
+            if args.boot:
+                entry = {
+                    "chip": channel.chip,
+                    "pwm": channel.pwm,
+                    "enable": MANUAL,
+                    "value": value,
+                }
+                install_boot(upsert_snapshot(read_snapshot(), entry))
+                print(f"fanctl: saved {channel.key} for boot")
+        elif command == "auto":
+            channels = discover()
+            entries = read_snapshot()
+            for target in args.targets:
+                channel = resolve_target(target, channels)
+                mode = set_auto(channel)
+                print(f"{channel.key}: {mode_label(mode)}")
+                if args.boot:
+                    entries = remove_from_snapshot(entries, channel)
+            if args.boot:
+                if entries:
+                    install_boot(entries)
+                else:
+                    remove_boot()
+                    print(
+                        f"fanctl: removed last boot override and disabled {SERVICE_NAME}"
+                    )
+        elif command == "max":
+            channels = discover()
+            for target in args.targets:
+                channel = resolve_target(target, channels)
+                set_max(channel)
+                print(f"{channel.key}: full speed (pwm_enable=0)")
+        elif command == "save":
+            entries = snapshot_channels(discover())
+            if not entries:
+                print(
+                    "fanctl: nothing to save: no channels are in manual mode",
+                    file=sys.stderr,
+                )
+                return 1
+            install_boot(entries)
+            print(f"fanctl: saved {len(entries)} channel(s) to {SNAPSHOT_PATH}")
+            print(f"fanctl: enabled {SERVICE_NAME}")
+        elif command == "restore":
+            return 1 if restore_snapshot(read_snapshot()) else 0
+        elif command == "unsave":
+            remove_boot()
+            print(f"fanctl: removed {SNAPSHOT_PATH} and disabled {SERVICE_NAME}")
+        elif command == "watch":
+            watch(args.interval)
+    except (OSError, ValueError, RuntimeError) as error:
+        print(f"fanctl: error: {error}", file=sys.stderr)
+        if isinstance(error, PermissionError):
+            print("fanctl: writes to /sys need root", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
