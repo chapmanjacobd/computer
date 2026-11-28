@@ -1,0 +1,2 @@
+#!/usr/bin/env fish
+git check-ignore -v $argv
