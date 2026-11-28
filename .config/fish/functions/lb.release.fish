@@ -24,7 +24,7 @@ function lb.release --argument newver
     git status
     if gum confirm --default=no
         pip install --upgrade pip
-        uv lock --upgrade
+        uv lock --upgrade --exclude-newer "60 hours"
         uv build --no-sources --clear
         git add uv.lock
         git commit -m "$newver"
