@@ -1,0 +1,2 @@
+[tool.uv]
+exclude-newer = "18 hours"
