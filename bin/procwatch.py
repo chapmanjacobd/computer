@@ -8,9 +8,11 @@
 
 procwatch samples /proc, records a per-command baseline in SQLite under the
 XDG state directory, and highlights processes that are new, rare, returning,
-or behaving unlike their baseline. The main view groups processes by what they
-are doing (serving, connecting, writing, computing, ...). The all-processes
-view sorts on connections, privilege/capability score, write rate, network
+or behaving unlike their baseline. NEW means the command path has never
+appeared in the baseline; a known command run with different arguments or by
+another user is not novel. The main view groups processes by what they are
+doing (serving, connecting, writing, computing, ...). The all-processes view
+sorts on connections, privilege/capability score, write rate, network
 transmit rate, CPU, memory, age, or novelty. Additional views aggregate
 commands and cgroups, list network endpoints, and show risky processes.
 
@@ -93,7 +95,7 @@ import subprocess
 import sys
 import time
 import tomllib
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -1019,7 +1021,7 @@ class Procfs:
 
 
 def process_fingerprint(exe: str, cmdline: str, comm: str, uid: int) -> str:
-    """Stable identity for a command, independent of pid.
+    """Stable identity for a command invocation, independent of pid.
 
     Kernel threads have no exe or cmdline and their comm often contains
     per-instance suffixes such as ``kworker/13:1-mm_percpu_wq``. Fold those
@@ -1031,6 +1033,28 @@ def process_fingerprint(exe: str, cmdline: str, comm: str, uid: int) -> str:
     else:
         raw = "\0".join((exe or comm, cmdline, str(uid)))
     return hashlib.sha1(raw.encode("utf-8", "replace")).hexdigest()[:20]
+
+
+def command_key(exe: str, cmdline: str, comm: str) -> str:
+    """Identify the command behind a process, ignoring arguments and user.
+
+    ``exe`` is the command path. When it cannot be read, as happens for
+    another user's process outside root, fall back to argv[0] and then to
+    the kernel's comm. Kernel threads have neither exe nor cmdline and
+    collapse onto a normalized comm so worker churn is not treated as a
+    new command.
+    """
+    if not exe and not cmdline:
+        base = re.split(r"[/:+]", comm.strip("[]"), maxsplit=1)[0] or comm
+        return f"kernel:{base}"
+    if exe:
+        return exe
+    return cmdline.split(" ", 1)[0] or comm
+
+
+def process_command_key(process: Process) -> str:
+    """Command identity for one live process sample."""
+    return command_key(process.exe, process.cmdline, process.comm)
 
 
 # ---------------------------------------------------------------------------
@@ -1493,8 +1517,16 @@ def assess_novelty(
     rates: Rates,
     now: float,
     config: Config,
+    *,
+    known_commands: Collection[str] = (),
 ) -> Novelty:
-    """Compare a process against its baseline and score the difference."""
+    """Compare a process against its baseline and score the difference.
+
+    A process is NEW only when its command has never been recorded: the
+    executable path, or the command name when the path is unreadable.
+    Known commands run with different arguments or by another user get
+    their own baseline identity but are not novel.
+    """
     reasons: list[str] = []
     score = 0
     level = "KNOWN"
@@ -1505,8 +1537,10 @@ def assess_novelty(
         reasons.append(reason)
 
     if profile is None:
+        if process_command_key(process) in known_commands:
+            return Novelty(0, "KNOWN", ())
         level = "NEW"
-        add(60, "first seen in baseline")
+        add(60, "command not seen before")
         if process.euid == 0:
             add(10, "runs as root")
         if process.exe_deleted:
@@ -2172,6 +2206,9 @@ class Dashboard:
             return
         rates = self.tracker.update(snapshot)
         profiles = self.baseline.profiles()
+        known_commands = {
+            command_key(item.exe, item.cmdline, item.comm) for item in profiles.values()
+        }
         identities_before = len(profiles)
         self.identity_count = identities_before
         self.warming = identities_before < self.config.warm_identities
@@ -2182,6 +2219,7 @@ class Dashboard:
                 rates.get(process.pid, Rates()),
                 ts,
                 self.config,
+                known_commands=known_commands,
             )
             for process in snapshot.processes
         }

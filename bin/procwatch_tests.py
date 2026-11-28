@@ -27,6 +27,7 @@ from procwatch import (
     build_rows,
     capability_names,
     categorize,
+    command_key,
     decode_inet_addr,
     filter_rows,
     format_age,
@@ -559,7 +560,7 @@ def test_novelty_new_rare_known_and_dormant():
     new = assess_novelty(p, None, Rates(), now, cfg)
     assert new.level == "NEW"
     assert new.score >= 60
-    assert "first seen" in " ".join(new.reasons)
+    assert "not seen before" in " ".join(new.reasons)
 
     rare = assess_novelty(
         p, make_profile(observations=1, last_seen=now), Rates(), now, cfg
@@ -616,6 +617,41 @@ def test_novelty_new_process_risk_markers():
     assert nov.score == 100
     assert "root" in text
     assert "/tmp" in text or "deleted" in text
+
+
+def test_command_key_is_the_executable_path_ignoring_arguments_and_user():
+    assert command_key("/usr/bin/demo", "demo --flag", "demo") == "/usr/bin/demo"
+    assert command_key("/usr/bin/demo", "demo --other", "demo") == command_key(
+        "/usr/bin/demo", "demo --flag", "demo"
+    )
+    # Unreadable exe links fall back to argv[0], then to comm.
+    assert command_key("", "/usr/sbin/daemon -f", "daemon") == "/usr/sbin/daemon"
+    assert command_key("", "", "kworker/13:1-mm_percpu_wq") == command_key(
+        "", "", "kworker/u81:12+btrfs-endio"
+    )
+
+
+def test_novelty_known_command_with_new_arguments_is_not_new():
+    cfg = Config()
+    p = make_process(cmdline="demo --other-flag", uid=0, euid=0)
+    seen = {command_key("/usr/bin/demo", "demo --flag", "demo")}
+    novelty = assess_novelty(p, None, Rates(), 100.0, cfg, known_commands=seen)
+    assert novelty == Novelty(0, "KNOWN", ())
+
+
+def test_novelty_new_kernel_thread_uses_normalized_command():
+    cfg = Config()
+    seen = {command_key("", "", "kworker/u81:12+btrfs-endio")}
+    known = make_process(pid=7, exe="", cmdline="", comm="kworker/13:1-mm_percpu_wq")
+    assert (
+        assess_novelty(known, None, Rates(), 100.0, cfg, known_commands=seen).level
+        == "KNOWN"
+    )
+    unseen = make_process(pid=8, exe="", cmdline="", comm="ksoftirqd/0")
+    assert (
+        assess_novelty(unseen, None, Rates(), 100.0, cfg, known_commands=seen).level
+        == "NEW"
+    )
 
 
 def test_baseline_events_dedupe_and_reset(tmp_path):
@@ -856,6 +892,35 @@ def test_dashboard_new_process_floats_to_top(proc_tree, tmp_path):
     text = "\n".join(line.text for line in dash.render(140, 40))
     assert text.index("intruder") < text.index("server")
     assert "NEW & CHANGING" in text
+    store.close()
+
+
+def test_dashboard_new_requires_an_unseen_command(proc_tree, tmp_path):
+    write_proc(
+        proc_tree,
+        100,
+        comm="firefox",
+        exe="/opt/firefox/firefox",
+        cmdline="firefox -contentproc -id 1",
+    )
+    cfg = Config(rare_observations=1)
+    store = Baseline(tmp_path / "b.db", cfg)
+    dash = Dashboard(Procfs(proc_tree, use_ss=False), store, cfg)
+    dash.poll(now=100.0)
+
+    write_proc(
+        proc_tree,
+        200,
+        comm="firefox",
+        exe="/opt/firefox/firefox",
+        cmdline="firefox -contentproc -id 2",
+    )
+    dash.poll(now=101.0)
+    assert dash.novelty[200].level == "KNOWN"
+
+    write_proc(proc_tree, 300, comm="intruder", exe="/tmp/intruder")
+    dash.poll(now=102.0)
+    assert dash.novelty[300].level == "NEW"
     store.close()
 
 
