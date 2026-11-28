@@ -11,16 +11,26 @@ import tempfile
 from pathlib import Path
 
 PROG = "git edit"
-USAGE = f"usage: {PROG} [<commit>]"
+USAGE = f"""usage: {PROG} [<commit>[:<path>]]
+       {PROG} <commit> <path>"""
 
 HELP = f"""{USAGE}
 
 Interactively choose which hunks of <commit> (default: HEAD) to keep.
 The commit message is preserved. Unselected hunks are left as unstaged
-changes. When editing an older commit, unselected changes are stashed
-and restored after the rewritten history has been replayed. Binary
-changes cannot be hunk-selected and are kept automatically. Skip-worktree
-paths are kept as-is and cannot be hunk-selected."""
+changes, and a file whose hunks are all unselected is reverted to its
+parent version (deleted if the commit added it).
+
+With <path>, only that file's changes in the commit are editable and
+the rest of the commit is kept as-is. <path> is relative to the current
+directory, or to the repository root when absolute.
+
+When editing an older commit, unselected changes are stashed and
+restored after the rewritten history has been replayed. Merges in that
+history are preserved, but the edited commit itself cannot be a merge.
+Binary changes cannot be hunk-selected: whole-commit mode keeps them
+automatically, and a binary <path> is rejected. Skip-worktree paths are
+kept as-is and cannot be hunk-selected."""
 
 
 class AmeditError(Exception):
@@ -64,6 +74,46 @@ def join_z(paths):
     if not paths:
         return b""
     return b"\0".join(os.fsencode(path) for path in paths) + b"\0"
+
+
+def tree_entry(tree, path, env):
+    """Return the NUL-terminated ls-tree entry for blob *path*, or b""."""
+    data = git_out(["ls-tree", "-z", tree, "--", path], env=env)
+    for entry in data.split(b"\0"):
+        if not entry:
+            continue
+        meta, _, name = entry.partition(b"\t")
+        fields = meta.split(b" ")
+        if len(fields) >= 2 and fields[1] == b"blob" and os.fsdecode(name) == path:
+            return meta + b"\t" + name + b"\0"
+    return b""
+
+
+def drop_empty_additions(paths, env, empty_blob):
+    """Remove intent-to-add entries that were left completely unselected."""
+    if not paths:
+        return
+    stale = []
+    wanted = set(paths)
+    for chunk in chunks(paths):
+        entries = git_out(["ls-files", "-s", "-z", "--", *chunk], env=env)
+        for entry in entries.split(b"\0"):
+            if not entry:
+                continue
+            meta, _, name = entry.partition(b"\t")
+            fields = meta.split(b" ")
+            if (
+                len(fields) >= 2
+                and fields[1] == empty_blob
+                and os.fsdecode(name) in wanted
+            ):
+                stale.append(os.fsdecode(name))
+    if stale:
+        git_run(
+            ["update-index", "--force-remove", "-z", "--stdin"],
+            env=env,
+            input=join_z(stale),
+        )
 
 
 def chunks(items, size=500):
@@ -139,13 +189,25 @@ def main(argv):
         print(HELP)
         return 0
 
-    if len(argv) > 1:
+    commit = "HEAD"
+    path = None
+    if len(argv) == 3 and argv[1] == "--":
+        commit, path = argv[0], argv[2]
+    elif len(argv) == 2:
+        commit, path = argv
+    elif len(argv) == 1:
+        commit, sep, maybe_path = argv[0].partition(":")
+        if sep:
+            path = maybe_path
+    elif argv:
         print(USAGE, file=sys.stderr)
         return 2
 
-    commit = argv[0] if argv else "HEAD"
     if commit.startswith("-"):
         print(USAGE, file=sys.stderr)
+        return 2
+    if path is not None and not path:
+        print(f"{PROG}: empty path", file=sys.stderr)
         return 2
 
     real_env = os.environ.copy()
@@ -161,6 +223,22 @@ def main(argv):
         ):
             raise AmeditError("not inside a git work tree")
 
+        invocation_cwd = os.getcwd()
+        toplevel = os.fsdecode(
+            git_out(["rev-parse", "--show-toplevel"], env=real_env).strip()
+        )
+        os.chdir(toplevel)
+        if path is not None:
+            absolute = (
+                path if os.path.isabs(path) else os.path.join(invocation_cwd, path)
+            )
+            relative = os.path.relpath(absolute, toplevel)
+            if relative == os.pardir or relative.startswith(os.pardir + os.sep):
+                raise AmeditError(f"path is outside the repository: {path}")
+            path = relative.replace(os.sep, "/")
+        pathspec_env = real_env.copy()
+        pathspec_env["GIT_LITERAL_PATHSPECS"] = "1"
+
         for marker in (
             "rebase-merge",
             "rebase-apply",
@@ -168,8 +246,8 @@ def main(argv):
             "CHERRY_PICK_HEAD",
             "REVERT_HEAD",
         ):
-            path = git_path(marker, real_env)
-            if path and os.path.exists(path):
+            marker_path = git_path(marker, real_env)
+            if marker_path and os.path.exists(marker_path):
                 raise AmeditError(f"another git operation is in progress ({marker})")
 
         if diff_has_changes(["--quiet", "--ignore-submodules", "--"], real_env):
@@ -218,6 +296,37 @@ def main(argv):
         if len(parent_line) > 2:
             raise AmeditError("merge commits are not supported")
 
+        path_in_parent = False
+        if path is not None:
+            proc = _git(
+                ["cat-file", "-t", f"{target}:{path}"],
+                env=real_env,
+                capture=True,
+                check=False,
+            )
+            if proc.returncode != 0:
+                raise AmeditError(f"path does not exist in {target[:12]}: {path}")
+            if proc.stdout.strip() != b"blob":
+                raise AmeditError(f"not a file in {target[:12]}: {path}")
+            path_in_parent = bool(tree_entry(parent, path, pathspec_env))
+            changed = False
+            binary_path = False
+            numstat = git_out(
+                ["diff", "--numstat", "-z", "--no-renames", parent, target, "--", path],
+                env=pathspec_env,
+            )
+            for entry in numstat.split(b"\0"):
+                if not entry:
+                    continue
+                fields = entry.split(b"\t", 2)
+                if len(fields) == 3 and os.fsdecode(fields[2]) == path:
+                    changed = True
+                    binary_path = fields[0] == b"-" and fields[1] == b"-"
+            if not changed:
+                raise AmeditError(f"{path} has no changes in {target[:12]}")
+            if binary_path:
+                raise AmeditError(f"cannot hunk-select a binary path: {path}")
+
         if target != head:
             if not git_ok(
                 ["merge-base", "--is-ancestor", target, "HEAD"], env=real_env
@@ -231,17 +340,6 @@ def main(argv):
             if target not in first_parent:
                 raise AmeditError(
                     f"{commit} is not on the first-parent history of HEAD"
-                )
-            merges = (
-                git_out(
-                    ["rev-list", "--min-parents=2", f"{target}..HEAD"], env=real_env
-                )
-                .strip()
-                .decode()
-            )
-            if merges:
-                raise AmeditError(
-                    f"history between {commit} and HEAD contains merge commits"
                 )
             rebasing = True
 
@@ -267,10 +365,12 @@ def main(argv):
         for entry in skip_output.split(b"\0"):
             if not entry:
                 continue
-            tag, _, path = entry.partition(b" ")
+            tag, _, skip_path = entry.partition(b" ")
             if tag == b"S":
-                skip_paths.append(os.fsdecode(path))
+                skip_paths.append(os.fsdecode(skip_path))
         skip_set = set(skip_paths)
+        if path is not None and path in skip_set:
+            raise AmeditError(f"cannot edit a skip-worktree path: {path}")
 
         if rebasing:
             editor = (
@@ -284,6 +384,8 @@ def main(argv):
                 "rebase.abbreviateCommands=false",
                 "rebase",
                 "-i",
+                "--rebase-merges",
+                "--no-autosquash",
             ]
             rebase_args += ["--root"] if is_root else [parent]
             proc = _git(rebase_args, env=rebase_env, capture=False, check=False)
@@ -304,8 +406,10 @@ def main(argv):
 
         temp_env = real_env.copy()
         temp_env["GIT_INDEX_FILE"] = tmp_index
+        if path is not None:
+            temp_env["GIT_LITERAL_PATHSPECS"] = "1"
 
-        git_run(["read-tree", parent], env=temp_env)
+        git_run(["read-tree", target if path is not None else parent], env=temp_env)
 
         added = split_z(
             git_out(
@@ -321,96 +425,129 @@ def main(argv):
                 env=real_env,
             )
         )
-        to_add = [path for path in added if path not in skip_set]
-        for chunk in chunks(to_add):
-            git_run(["add", "-N", "-f", "--", *chunk], env=temp_env)
 
-        if skip_paths:
-            for chunk in chunks(skip_paths):
-                entries = git_out(
-                    ["ls-files", "-s", "-z", "--", *chunk], env=real_index_env
+        add_args = ["add", "-p"]
+        if path is not None:
+            entry = tree_entry(parent, path, pathspec_env)
+            if entry:
+                git_run(
+                    ["update-index", "-z", "--index-info"],
+                    env=temp_env,
+                    input=entry,
                 )
-                if entries:
-                    git_run(
-                        ["update-index", "-z", "--index-info"],
-                        env=temp_env,
-                        input=entries,
-                    )
-            git_run(
-                ["update-index", "--skip-worktree", "-z", "--stdin"],
-                env=temp_env,
-                input=join_z(skip_paths),
-            )
+            else:
+                git_run(
+                    ["update-index", "--force-remove", "-z", "--stdin"],
+                    env=temp_env,
+                    input=join_z([path]),
+                )
+                git_run(["add", "-N", "-f", "--", path], env=temp_env)
+            add_args += ["--", path]
+        else:
+            to_add = [added_path for added_path in added if added_path not in skip_set]
+            for chunk in chunks(to_add):
+                git_run(["add", "-N", "-f", "--", *chunk], env=temp_env)
 
-        deleted = split_z(
-            git_out(
-                [
-                    "diff",
-                    "--no-renames",
-                    "--name-only",
-                    "-z",
-                    "--diff-filter=D",
-                    parent,
-                    target,
-                ],
-                env=real_env,
-            )
-        )
-        removed = set()
-        if deleted:
-            sparse_proc = _git(
-                ["config", "--bool", "core.sparseCheckout"],
-                env=real_env,
-                capture=True,
-                check=False,
-            )
-            if sparse_proc.returncode == 0 and sparse_proc.stdout.strip() == b"true":
-                try:
-                    rules = git_out(
-                        ["sparse-checkout", "check-rules", "-z"],
-                        env=real_env,
-                        input=join_z(deleted),
+            if skip_paths:
+                for chunk in chunks(skip_paths):
+                    entries = git_out(
+                        ["ls-files", "-s", "-z", "--", *chunk], env=real_index_env
                     )
-                except AmeditError:
-                    rules = None
-                if rules is not None:
-                    in_cone = set(split_z(rules))
-                    outside = [path for path in deleted if path not in in_cone]
-                    if outside:
+                    if entries:
                         git_run(
-                            ["update-index", "--force-remove", "-z", "--stdin"],
+                            ["update-index", "-z", "--index-info"],
                             env=temp_env,
-                            input=join_z(outside),
+                            input=entries,
                         )
-                        removed.update(outside)
+                git_run(
+                    ["update-index", "--skip-worktree", "-z", "--stdin"],
+                    env=temp_env,
+                    input=join_z(skip_paths),
+                )
 
-        binary = []
-        numstat = git_out(
-            ["diff", "--numstat", "-z", "--no-renames", parent, target],
-            env=real_env,
-        )
-        for entry in numstat.split(b"\0"):
-            if not entry:
-                continue
-            fields = entry.split(b"\t", 2)
-            if len(fields) == 3 and fields[0] == b"-" and fields[1] == b"-":
-                path = os.fsdecode(fields[2])
-                if path not in skip_set and path not in removed:
-                    binary.append(path)
-        if binary:
-            print(
-                f"{PROG}: keeping binary changes (not hunk-selectable):",
-                file=sys.stderr,
+            deleted = split_z(
+                git_out(
+                    [
+                        "diff",
+                        "--no-renames",
+                        "--name-only",
+                        "-z",
+                        "--diff-filter=D",
+                        parent,
+                        target,
+                    ],
+                    env=real_env,
+                )
             )
-            for path in binary:
-                print(f"  {path}", file=sys.stderr)
-            for chunk in chunks(binary):
-                git_run(["add", "-f", "--", *chunk], env=temp_env)
+            removed = set()
+            if deleted:
+                sparse_proc = _git(
+                    ["config", "--bool", "core.sparseCheckout"],
+                    env=real_env,
+                    capture=True,
+                    check=False,
+                )
+                if (
+                    sparse_proc.returncode == 0
+                    and sparse_proc.stdout.strip() == b"true"
+                ):
+                    try:
+                        rules = git_out(
+                            ["sparse-checkout", "check-rules", "-z"],
+                            env=real_env,
+                            input=join_z(deleted),
+                        )
+                    except AmeditError:
+                        rules = None
+                    if rules is not None:
+                        in_cone = set(split_z(rules))
+                        outside = [p for p in deleted if p not in in_cone]
+                        if outside:
+                            git_run(
+                                ["update-index", "--force-remove", "-z", "--stdin"],
+                                env=temp_env,
+                                input=join_z(outside),
+                            )
+                            removed.update(outside)
 
-        subprocess.run(["git", "add", "-p"], env=temp_env, check=False)
+            binary = []
+            numstat = git_out(
+                ["diff", "--numstat", "-z", "--no-renames", parent, target],
+                env=real_env,
+            )
+            for entry in numstat.split(b"\0"):
+                if not entry:
+                    continue
+                fields = entry.split(b"\t", 2)
+                if len(fields) == 3 and fields[0] == b"-" and fields[1] == b"-":
+                    changed_path = os.fsdecode(fields[2])
+                    if changed_path not in skip_set and changed_path not in removed:
+                        binary.append(changed_path)
+            if binary:
+                print(
+                    f"{PROG}: keeping binary changes (not hunk-selectable):",
+                    file=sys.stderr,
+                )
+                for binary_path in binary:
+                    print(f"  {binary_path}", file=sys.stderr)
+                for chunk in chunks(binary):
+                    git_run(["add", "-f", "--", *chunk], env=temp_env)
+
+        subprocess.run(["git", *add_args], env=temp_env, check=False)
+
+        if path is not None:
+            empty_additions = [] if path_in_parent else [path]
+        else:
+            empty_additions = [
+                added_path for added_path in added if added_path not in skip_set
+            ]
+        empty_blob = git_out(
+            ["hash-object", "-t", "blob", "--stdin"], env=real_env, input=b""
+        ).strip()
+        drop_empty_additions(empty_additions, temp_env, empty_blob)
 
         selection = _git(
-            ["diff", "--cached", "--quiet", parent],
+            ["diff-index", "--cached", "--quiet", target],
             env=temp_env,
             capture=True,
             check=False,
@@ -419,13 +556,13 @@ def main(argv):
             if rebasing:
                 abort_rebase(real_env)
                 rebasing = False
-            print(f"{PROG}: no hunks selected; commit unchanged", file=sys.stderr)
+            print(f"{PROG}: no changes; commit unchanged", file=sys.stderr)
             return 0
         if selection.returncode > 1:
             raise AmeditError("could not inspect the selected changes")
 
         try:
-            git_run(["commit", "--amend", "-C", "HEAD"], env=temp_env)
+            git_run(["commit", "--amend", "--allow-empty", "-C", "HEAD"], env=temp_env)
         except AmeditError:
             if rebasing:
                 abort_rebase(real_env)
